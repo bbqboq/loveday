@@ -573,6 +573,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
     .simple-mode .sp-pvbtn { display: inline-flex; margin-left: auto; height: 32px; align-items: center; padding: 0 12px; border-radius: 99px; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 12.5px; font-weight: 700; }
     .simple-mode.sp-pv .sp-pvbtn { background: #1B1A18; color: #fff; border-color: #1B1A18; }
     .sp-head { padding: 14px 16px 10px; } .sp-steps { padding: 0 12px 6px; } .sp-body { padding: 14px 16px 40px; } .sp-nav { padding: 10px 16px 14px; bottom: 60px; }
+    .simple-mode .simple-pane { overflow: visible; } /* 휴대폰은 화면 전체가 스크롤 - 왼쪽 칸이 스크롤 상자면 아래 [이전·다음]이 붙어 있지 못하고 아래 버튼 줄에 가려졌음 */
     .sp-row { grid-template-columns: 56px 1fr 1fr; }
 }
 
@@ -13630,7 +13631,7 @@ function spRender() {
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>${spStep + 1} / ${steps.length} · ${esc(st.t)}</b></div><div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button></div>
         <nav class="sp-steps">${steps.map((x, i) => `<button type="button" class="${i === spStep ? 'on' : i < spStep ? 'done' : ''}" data-sp-go="${i}"><i>${i < spStep ? '✓' : i + 1}</i><span>${esc(x.t)}</span></button>`).join('')}</nav>
         <div class="sp-body" id="spBody"></div>
-        <div class="sp-nav"><button type="button" class="wz-back" id="spPrev"${spStep === 0 ? ' style="visibility:hidden"' : ''}>이전</button><button type="button" class="wz-next" id="spNext">${spStep === steps.length - 1 ? '저장하기' : '다음'}</button></div>`;
+        <div class="sp-nav"><button type="button" class="wz-back" id="spPrev"${spStep === 0 ? ' style="visibility:hidden"' : ''}>이전</button>${spStep === steps.length - 1 && spOpt('finish', 'preview') ? '<button type="button" class="wz-back" id="spNavPv">미리보기</button>' : ''}<button type="button" class="wz-next" id="spNext">${spStep === steps.length - 1 ? '저장하기' : '다음'}</button></div>`;
     pane.querySelectorAll('[data-sp-go]').forEach(b => b.addEventListener('click', () => { spStep = +b.dataset.spGo; spHeroPhase = 'pick'; spRender(); }));
     pane.querySelector('#spPrev').addEventListener('click', () => { if (st.k === 'hero' && spHeroPhase === 'scroll') { spHeroPhase = 'pick'; spRender(); return; } spStep--; spHeroPhase = steps[spStep] && steps[spStep].k === 'hero' && spHeroScrollOk() ? 'scroll' : 'pick'; spRender(); });
     pane.querySelector('#spNext').addEventListener('click', () => {
@@ -13638,6 +13639,7 @@ function spRender() {
         if (st.k === 'hero' && spHeroPhase !== 'scroll' && spHeroScrollOk()) { spHeroToScroll(pane.querySelector('#spBody')); return; } // 스크롤 버튼까지 고르고 넘어가기
         spStep++; spRender();
     });
+    pane.querySelector('#spNavPv')?.addEventListener('click', spPreviewAll);
     pane.querySelector('#spToFull').addEventListener('click', () => spInPlace ? spExitInPlace() : simpleToFull());
     pane.querySelector('#spUndo').addEventListener('click', () => { scheduleSnapshot(); undoHistory(); });
     pane.querySelector('#spRedo').addEventListener('click', () => redoHistory());
@@ -14140,15 +14142,14 @@ function spAccount(box) {
     box.querySelector('#spPar')?.addEventListener('click', e => { const p = box.querySelector('#spParents'), on = !p.classList.contains('on'); p.classList.toggle('on', on); e.currentTarget.textContent = on ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'; });
 }
 // 7. 마무리
+// 마무리 단계 아래 줄 [미리보기]: 처음부터 실제 청첩장처럼 (발행하기는 맨 아래 버튼 줄에만 - 저장하기와 헷갈리지 않게)
+function spPreviewAll() { const pb = document.getElementById('previewBtn'); if (pb && pb.getAttribute('href') && pb.getAttribute('href') !== '#') window.open(pb.href, '_blank'); else document.querySelector('.preview-pane').scrollTo({ top: 0, behavior: 'smooth' }); }
 function spFinish(box) {
     ensureExtraState();
-    box.innerHTML = spH('거의 다 됐어요', '마지막으로 켜고 끌 것만 고르고 저장하세요. 발행하면 하객에게 보낼 수 있는 주소가 생겨요.') + `
+    box.innerHTML = spH('거의 다 됐어요', '마지막으로 켜고 끌 것만 고르고 아래 [저장하기]를 누르세요. 하객에게 보낼 주소는 맨 아래 [발행하기]로 만들어요.') + `
         ${spOpt('finish', 'intro') ? `<label class="sp-sw"><span><b>인트로</b><small>청첩장을 열 때 "${wzEsc(state.intro.text || '우리 결혼합니다')}" 짧은 애니메이션</small></span><input type="checkbox" id="spIntro" ${state.intro.enabled ? 'checked' : ''}><i></i></label>` : ''}
-        <div class="sp-done">${spOpt('finish', 'preview') ? '<button type="button" class="wz-btn2" id="spPreviewAll">처음부터 미리보기</button>' : ''}${spOpt('finish', 'publish') ? '<button type="button" class="wz-next" id="spPublish">발행하기</button>' : ''}</div>
         <p class="wz-hint">글자 위치·스티커·섹션 순서까지 바꾸고 싶으면 위의 <b>전문가 모드</b>를 누르세요. 언제든 간편 만들기로 돌아올 수 있어요.</p>`;
     box.querySelector('#spIntro')?.addEventListener('change', e => { state.intro.enabled = e.target.checked; spChanged(); });
-    box.querySelector('#spPreviewAll')?.addEventListener('click', () => { const pb = document.getElementById('previewBtn'); if (pb && pb.getAttribute('href') && pb.getAttribute('href') !== '#') window.open(pb.href, '_blank'); else document.querySelector('.preview-pane').scrollTo({ top: 0, behavior: 'smooth' }); });
-    box.querySelector('#spPublish')?.addEventListener('click', () => document.getElementById('publishBtn').click());
 }
 
 function spExitInPlace() {

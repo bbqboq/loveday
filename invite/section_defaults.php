@@ -235,7 +235,7 @@ const SECTION_EASY_OPTS = [
     'guestbook' => ['desc' => '안내 문구', 'allowWrite' => '하객 글쓰기 켜고 끄기', 'style' => '모양 (카드 / 줄글)'],
     'video' => ['title' => '영상 제목', 'fullWidth' => '가로 꽉 채우기'],
     'music' => ['library' => '기본 음악 고르기', 'upload' => '내 음악 올리기', 'autoplay' => '자동 재생', 'volume' => '음량'],
-    'finish' => ['intro' => '인트로', 'preview' => '처음부터 미리보기', 'publish' => '발행하기 버튼'],
+    'finish' => ['intro' => '인트로', 'preview' => '미리보기 버튼 (아래 줄)'],
 ];
 /** 끈 세부 옵션 정리 {step: [key, ...]} */
 function section_easy_off_clean($in): array
