@@ -910,6 +910,33 @@
         sms: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.2"/><path d="M3.6 6.6L12 12.8l8.4-6.2"/></svg>'
     };
 
+    // ---------- 엔딩 크레딧 (스탭롤): 화면 가득 사진 위, 정해진 칸 안에서만 글자가 아주 천천히 올라감 (끝나면 처음부터 다시) ----------
+    //  줄 내용의 {신랑} {신부} {날짜} {시간} {예식장}은 지금 청첩장 값으로 바꿔서 보여줌 (setDesign으로 받은 디자인)
+    const CREDIT_ROWS_DEFAULT = [
+        { id: 'cr1', label: 'Date', text: '{날짜}' }, { id: 'cr2', label: 'Location', text: '{예식장}' }, { id: 'cr3', label: 'Time', text: '{시간}' },
+        { id: 'cr4', label: 'Produced by', text: 'our family' }, { id: 'cr5', label: 'Story begins', text: 'since 2022' },
+        { id: 'cr6', label: 'Directed by', text: '{신랑}, {신부}' }, { id: 'cr7', label: 'Special Thanks to', text: 'Everyone for Your Love, Blessings' },
+        { id: 'cr8', label: 'Forever with', text: 'Love & Happiness' }
+    ];
+    function creditVars() {
+        const bl = (CUR_DESIGN && CUR_DESIGN.blocks) || [], fd = id => ((bl.find(b => b.id === id && b.enabled !== false) || bl.find(b => b.id === id) || {}).fields) || {};
+        const h = Object.assign({}, fd('heroVideo'), fd('hero')), d = fd('dday'), loc = fd('location');
+        const hr = Number(d.hour), mi = Number(d.minute) || 0;
+        const time = d.hour != null && d.hour !== '' ? `${((hr + 11) % 12) + 1}:${String(mi).padStart(2, '0')} ${hr < 12 ? 'AM' : 'PM'}` : '';
+        return { '신랑': h.groomName || '', '신부': h.brideName || '', '날짜': d.year ? `${d.year}.${d.month}.${d.day}` : '', '시간': time, '예식장': loc.venue || '' };
+    }
+    function creditsHtml(f) {
+        const v = creditVars(), fill = t => String(t || '').replace(/\{(신랑|신부|날짜|시간|예식장)\}/g, (m, k) => v[k] || '');
+        const rows = (f.creditRows || []).map(r => ({ l: fill(r.label), t: fill(r.text) })).filter(r => r.l || r.t);
+        const list = rows.map(r => `<div class="ib-cr-row"><b>${esc(r.l)}</b><span>${esc(r.t)}</span></div>`).join('');
+        const sec = Math.max(20, Math.min(120, Number(f.creditSpeed) || 45)), top = Math.max(5, Math.min(60, Number(f.creditTop) || 24)), hh = Math.max(20, Math.min(80, Number(f.creditH) || 46));
+        const pos = { top: 'flex-start', center: 'center', bottom: 'flex-end' }[f.align] || 'flex-end';
+        // 같은 목록을 두 번 이어 붙여 -50%까지 올리면 끊김 없이 반복됨. 칸 위·아래는 흐려지게(mask)
+        return `<div class="ib-block ib-ending ib-credits${f.image ? '' : ' ib-credits-noimg'}${f.creditAlign === 'center' ? ' ib-cr-center' : ''}" style="justify-content:${pos};">
+            ${f.image ? `<img loading="lazy" decoding="async" src="${esc(imgUrl(f.image))}" alt=""><div class="ib-ending-shade" style="background:rgba(0,0,0,${(Number(f.overlay) || 0) / 100});"></div>` : ''}
+            <div class="ib-cr-win" style="top:${top}%;height:${hh}%;"><div class="ib-cr-roll" style="animation-duration:${sec}s;">${rows.length ? `<div class="ib-cr-list">${list}</div><div class="ib-cr-list" aria-hidden="true">${list}</div>` : ''}</div></div>
+        </div>`;
+    }
     const BLOCKS = {
         // ---------- 연락하기 (신랑신부 + 혼주) ----------
         contact: {
@@ -1137,14 +1164,27 @@
         // ---------- 엔딩 ----------
         ending: {
             label: '엔딩', color: '#34495E',
-            defaults: { image: '', text: '저희의 새로운 시작을\n함께해 주셔서 감사합니다.', align: 'bottom', overlay: 35 },
+            defaults: { image: '', text: '저희의 새로운 시작을\n함께해 주셔서 감사합니다.', align: 'bottom', overlay: 35,
+                credits: false, creditRows: CREDIT_ROWS_DEFAULT.map(r => Object.assign({}, r)), creditSpeed: 45, creditAlign: 'left', creditTop: 24, creditH: 46 },
             editor: [
+                { key: 'credits', label: '', type: 'check', checkLabel: '엔딩 크레딧(스탭롤)로 보여주기',
+                  hint: '사진을 화면 가득 깔고, 그 위 정해진 칸 안에서만 글자가 영화 엔딩처럼 아주 천천히 올라가요.' },
                 { key: 'image', label: '사진', type: 'image' },
-                { key: 'text', label: '글귀', type: 'textarea' },
+                { key: 'text', label: '글귀', type: 'textarea', showIf: '!credits' },
                 { key: 'align', label: '글 위치 (사진 위)', type: 'choice', options: [['top', '상단'], ['center', '중간'], ['bottom', '하단']], showIf: 'image' },
-                { key: 'overlay', label: '사진 어둡게 (글씨 강조)', type: 'range', min: 0, max: 80, unit: '%', showIf: 'image' }
+                { key: 'overlay', label: '사진 어둡게 (글씨 강조)', type: 'range', min: 0, max: 80, unit: '%', showIf: 'image' },
+                { key: 'creditRows', label: '크레딧 줄', type: 'items', addLabel: '줄 추가', item: { label: '', text: '' }, showIf: 'credits', fields: [
+                    { key: 'label', label: '왼쪽 (항목)', type: 'text', placeholder: 'Directed by' },
+                    { key: 'text', label: '오른쪽 (내용)', type: 'text', placeholder: '{신랑}, {신부}',
+                      hint: '{신랑} {신부} {날짜} {시간} {예식장}을 적으면 청첩장에 적은 값으로 바뀌어요.' }
+                ] },
+                { key: 'creditSpeed', label: '올라가는 속도 (한 바퀴 걸리는 시간)', type: 'range', min: 20, max: 120, unit: '초', showIf: 'credits' },
+                { key: 'creditAlign', label: '글자 정렬', type: 'choice', options: [['left', '왼쪽'], ['center', '가운데']], showIf: 'credits' },
+                { key: 'creditTop', label: '글자 칸 위치 (위에서)', type: 'range', min: 5, max: 60, unit: '%', showIf: 'credits' },
+                { key: 'creditH', label: '글자 칸 높이', type: 'range', min: 20, max: 80, unit: '%', showIf: 'credits' }
             ],
             render(f) {
+                if (f.credits) return creditsHtml(f);
                 const pos = { top: 'flex-start', center: 'center', bottom: 'flex-end' }[f.align] || 'flex-end';
                 if (!f.image) return `<div class="ib-block ib-ending ib-ending-noimg"><p>${nl2br(f.text)}</p></div>`;
                 return `<div class="ib-block ib-ending" style="justify-content:${pos};">
