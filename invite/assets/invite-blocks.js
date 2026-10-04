@@ -480,12 +480,21 @@
     const HERO_RATIOS = [['auto', '원본 비율'], ['1/1', '정사각'], ['4/5', '세로 4:5'], ['3/4', '세로 3:4'], ['16/9', '가로 16:9'], ['screen', '전체화면'], ['px', '높이조정']];
     // 사진 칸 모드 (메인 레이아웃): 화면 한 장(바탕색) 위 원하는 자리에 사진을 놓음 - x·y·w·h는 화면 기준 %, frame 모양, fade 아래쪽 흐려짐 %
     const HERO_BOX_FRAMES = [['none', '사각형'], ['rounded', '둥근 모서리'], ['arch', '아치'], ['polaroid', '폴라로이드'], ['shadow', '그림자']];
-    function heroBoxHtml(f, src, pri) {
-        const b = f.heroBox, n = (v, d, mn, mx) => Math.max(mn, Math.min(mx, Number.isFinite(+v) ? +v : d));
+    function heroBoxGeom(b) { // 사진 칸(heroBox) 자리·모양 - 사진 히어로와 유튜브 히어로가 같이 씀
+        const n = (v, d, mn, mx) => Math.max(mn, Math.min(mx, Number.isFinite(+v) ? +v : d));
         const fr = HERO_BOX_FRAMES.some(x => x[0] === b.frame) ? b.frame : 'none', fade = n(b.fade, 0, 0, 90);
         const mask = fade ? `-webkit-mask-image:linear-gradient(#000 ${100 - fade}%, transparent);mask-image:linear-gradient(#000 ${100 - fade}%, transparent);` : '';
-        const bg = /^#[0-9A-Fa-f]{6}$/.test(b.bg || '') ? ` style="background:${b.bg}"` : '';
-        return `<div class="hero-photo-wrap hero-full-wrap hero-boxed"${bg}><div class="hero-box hb-fr-${fr}" style="left:${n(b.x, 0, -50, 100)}%;top:${n(b.y, 0, -50, 100)}%;width:${n(b.w, 100, 5, 200)}%;height:${n(b.h, 60, 5, 200)}%;${mask}"><img${pri} class="hero-photo" src="${src}" alt=""></div>${heroTextOn(f, 'hero') && f.heroShade && f.heroShade !== 'none' ? heroShadeHtml(f, 'hero') : ''}</div>`;
+        return { fr, bg: /^#[0-9A-Fa-f]{6}$/.test(b.bg || '') ? b.bg : '', style: `left:${n(b.x, 0, -50, 100)}%;top:${n(b.y, 0, -50, 100)}%;width:${n(b.w, 100, 5, 200)}%;height:${n(b.h, 60, 5, 200)}%;${mask}` };
+    }
+    // 유튜브 히어로 + 사진 칸 레이아웃: 영상을 칸 안에 (전체화면일 때만). 칸이 없으면 영상 그대로
+    function heroVideoBox(f, iframeHtml) {
+        if (!f || f.heightMode !== 'full' || !f.heroBox || typeof f.heroBox !== 'object') return { cls: '', style: '', html: iframeHtml };
+        const g = heroBoxGeom(f.heroBox);
+        return { cls: ' hero-boxed', style: g.bg ? `background:${g.bg};` : '', html: `<div class="hero-box hb-fr-${g.fr}" style="${g.style}"><div class="hero-vbox">${iframeHtml}</div></div>` };
+    }
+    function heroBoxHtml(f, src, pri) {
+        const g = heroBoxGeom(f.heroBox), bg = g.bg ? ` style="background:${g.bg}"` : '', fr = g.fr;
+        return `<div class="hero-photo-wrap hero-full-wrap hero-boxed"${bg}><div class="hero-box hb-fr-${fr}" style="${g.style}"><img${pri} class="hero-photo" src="${src}" alt=""></div>${heroTextOn(f, 'hero') && f.heroShade && f.heroShade !== 'none' ? heroShadeHtml(f, 'hero') : ''}</div>`;
     }
     function heroPhotoHtml(f, opts) {
         if (!f || !f.heroImage) return '';
@@ -1008,20 +1017,20 @@
         }), { threshold: .15 });
         els.forEach(e => io.observe(e));
     }
-    function playHeroAnims(root) {
-        if (!root) return; const els = [...root.querySelectorAll('.op-layer.hl-anim')]; if (!els.length) return;
+    function playHeroAnims(root, only) { // only = 문구 칸 키 하나만 (에디터에서 그 줄 효과를 고를 때 - 기다림 없이 바로)
+        if (!root) return; const els = [...root.querySelectorAll('.op-layer.hl-anim')].filter(e => !only || e.dataset.part === only); if (!els.length) return;
         let end = 0;
-        els.forEach(e => { e.classList.remove('hl-run'); e.classList.add('hl-arm'); const cs = getComputedStyle(e); end = Math.max(end, (parseFloat(cs.getPropertyValue('--hl-dur')) || 1.8) + (parseFloat(cs.getPropertyValue('--hl-delay')) || 0)); });
+        els.forEach(e => { e.classList.remove('hl-run'); e.classList.add('hl-arm'); if (only) { if (e.dataset.hlD == null) e.dataset.hlD = e.style.getPropertyValue('--hl-delay'); e.style.setProperty('--hl-delay', '0s'); } const cs = getComputedStyle(e); end = Math.max(end, (parseFloat(cs.getPropertyValue('--hl-dur')) || 1.8) + (parseFloat(cs.getPropertyValue('--hl-delay')) || 0)); });
         void root.offsetWidth;
         requestAnimationFrame(() => requestAnimationFrame(() => els.forEach(e => e.classList.add('hl-run'))));
-        clearTimeout(playHeroAnims._t); playHeroAnims._t = setTimeout(() => els.forEach(e => e.classList.remove('hl-arm', 'hl-run')), (end + .4) * 1000);
+        clearTimeout(playHeroAnims._t); playHeroAnims._t = setTimeout(() => els.forEach(e => { e.classList.remove('hl-arm', 'hl-run'); if (e.dataset.hlD != null) { e.style.setProperty('--hl-delay', e.dataset.hlD || '0s'); delete e.dataset.hlD; } }), (end + .4) * 1000);
         return end;
     }
     // 에디터에서 효과·레이아웃을 고르면: 한 번 → 끝나고 1.3초 뒤 한 번 더 (스크롤 버튼 효과와 같은 방식)
-    function playHeroAnimsTwice(root) {
+    function playHeroAnimsTwice(root, only) {
         clearTimeout(playHeroAnimsTwice._t);
-        const end = playHeroAnims(root); if (!end) return;
-        playHeroAnimsTwice._t = setTimeout(() => playHeroAnims(root), (end + 1.3) * 1000);
+        const end = playHeroAnims(root, only); if (!end) return;
+        playHeroAnimsTwice._t = setTimeout(() => playHeroAnims(root, only), (end + 1.3) * 1000);
     }
     // 메인 레이아웃 (기본 제공). 고르면 메인 사진·영상의 화면 크기·글자 자리·글꼴·색과 문구 칸을 이 모양으로 바꾸고, 사진·이름 같은 내용은 그대로 둠
     //  parts: 이름·날짜·하트 칸 / layers: 더 얹는 문구 칸 / hide: 안 보이게 할 칸 (layers로 대신 쓸 때) - 좌표는 화면(사진) 기준 %, 글자 크기는 폭 390 기준 px
@@ -1039,7 +1048,7 @@
           hide: ['groomName', 'brideName', 'heart', 'datetime'],
           layers: [{ text: "We're getting\nMarried!", x: 50, y: 70, fontSize: 50, font: 'alex-brush', color: '#F2A3B6', rotation: -8, anim: 'write', animDur: 2.4 }] },
         // 3. 위 양쪽 이름 + 세로 영문 이름 · 아래 양쪽 세로 예식장·날짜
-        { id: 'names-vertical', label: '이름 양쪽 · 세로 글씨', desc: '위 양쪽에 이름, 가장자리에 세로 글씨',
+        { id: 'names-vertical', label: '이름 양쪽 · 세로 글씨', desc: '위 양쪽에 이름, 가장자리에 세로 글씨', edge: true, // 가장자리까지 글자를 끌 수 있게 (에디터 dragRange)
           photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'both', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'both', heroShadeLv: '1' },
           parts: { groomName: { x: 15, y: 4.5, fontSize: 20, color: '#FFFFFF', ls: 20 }, brideName: { x: 85, y: 4.5, fontSize: 20, color: '#FFFFFF', ls: 20 } },
           hide: ['heart', 'datetime'],
@@ -1100,7 +1109,8 @@
         if (!block || !lay) return;
         const f = block.fields = block.fields || {}, isV = block.id === 'heroVideo';
         Object.assign(f, JSON.parse(JSON.stringify((isV ? lay.video : lay.photo) || {})));
-        if (!isV) { if (lay.box) f.heroBox = JSON.parse(JSON.stringify(lay.box)); else delete f.heroBox; }
+        if (lay.box) f.heroBox = JSON.parse(JSON.stringify(lay.box)); else delete f.heroBox;
+        if (isV && lay.box && !lay.video) Object.assign(f, { heightMode: 'full', videoTextOver: true, heroShade: 'none' }); // 사진 칸 레이아웃을 영상에: 영상이 칸 안으로
         f.layout = f.layout || {};
         (f.heroLayers || []).forEach(k => { delete f[k]; delete f.layout[k]; });
         f.heroLayers = [];
@@ -1375,9 +1385,9 @@
                 { key: 'text', label: '글귀', type: 'textarea', showIf: '!credits' },
                 { key: 'align', label: '글 위치 (사진 위)', type: 'choice', options: [['top', '상단'], ['center', '중간'], ['bottom', '하단']], showIf: 'image' },
                 { key: 'overlay', label: '사진 어둡게 (글씨 강조)', type: 'range', min: 0, max: 80, unit: '%', showIf: 'image' },
-                { key: 'creditRows', label: '크레딧 줄', type: 'items', addLabel: '줄 추가', item: { label: '', text: '' }, showIf: 'credits', fields: [
-                    { key: 'label', label: '왼쪽 (항목)', type: 'text', placeholder: 'Directed by' },
-                    { key: 'text', label: '오른쪽 (내용)', type: 'text', placeholder: '{신랑}, {신부}',
+                { key: 'creditRows', label: '크레딧 줄', type: 'items', addLabel: '줄 추가', item: { label: '', text: '' }, showIf: 'credits', compact: true, fields: [
+                    { key: 'label', label: '왼쪽 (항목)', short: '항목 (왼쪽)', type: 'text', placeholder: 'Directed by' },
+                    { key: 'text', label: '오른쪽 (내용)', short: '내용 (오른쪽)', type: 'text', placeholder: '{신랑}, {신부}',
                       hint: '{신랑} {신부} {날짜} {시간} {예식장}을 적으면 청첩장에 적은 값으로 바뀌어요.' }
                 ] },
                 { key: 'creditSpeed', label: '올라가는 속도 (한 바퀴 걸리는 시간)', type: 'range', min: 20, max: 120, unit: '초', showIf: 'credits' },
@@ -3053,5 +3063,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

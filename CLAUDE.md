@@ -7,7 +7,7 @@
 
 - 답변은 **한국어**, 제목·볼드·표로 정리. "~라고 하셨듯이" 같은 서두 금지. 후속 질문은 최대 1개.
 - 결과물은 **바뀐 파일만** 전달 (`invite/...` 폴더 구조 유지한 zip 또는 커밋).
-- 공용 자산(`assets/invite-blocks.js` 등)을 바꾸면 에디터의 `?v=` 값을 올린다 (현재 `v=1017h`).
+- 공용 자산(`assets/invite-blocks.js` 등)을 바꾸면 에디터의 `?v=` 값을 올린다 (현재 `v=1017i`).
 - 디자인은 **차분하고 세련된(muted)** 톤.
 - 버튼·안내 문구는 왕초보도 알아듣는 쉬운 말.
 
@@ -59,6 +59,10 @@
 - 메인 레이아웃 2차: 문구 칸 세로(`vertical`)·곡선(`arc`,`arcW`)·등장 효과(`anim` write/fade/up/zoom), 사진 칸 모드 `heroBox`(x·y·w·h %, frame, fade). 기본 레이아웃 9개(참고 샘플 구성).
 - 안내 말씀 모양: 카드·박스·**슬라이드**·**탭** + 예시(포토부스·주차·답례품·식사·화환·셔틀) `NOTICE_TPL`.
 - **사이트 색상**: 화면 CSS의 베이지는 `var(--ui-page|tint|soft|line, #원래색)`. 관리자 → 사이트 정보 → 사이트 색상(프리셋/직접) → `app_settings.ui_colors` → `site_colors.php`(`:root` 값). 새 화면을 만들면 색을 이 4개 변수로 쓰고 `<?= site_colors_link() ?>`를 `</head>` 앞에. `assets/admin.css`는 저장소에 없어서 아직 안 바꿈.
+- 메인 문구 칸 편집(A안): 글 칸 오른쪽 [효과 ▾] → 작은 창(`hlPopHtml`, 간편=효과만 / 전문가=효과·방향·휘기), 아래 "모두 같게" 한 줄. 고른 줄만 재생 `playHeroAnimsTwice(root, key)`. 곡선 글씨는 `fitHeroArcs`가 곡선 길이에 맞춰 글자 크기를 줄임.
+- 글자 끌기 범위 `dragRange`: 보통 8~92%, 레이아웃에 `edge:true`(이름 양쪽·세로 글씨)면 1~99%.
+- 유튜브 히어로도 사진 칸 레이아웃 가능: `heroVideoBox`가 영상을 `.hero-box > .hero-vbox` 안에 넣고 `fitVideoCover`는 칸 크기로 맞춤 (에디터·render-invite 둘 다).
+- 공용 섹션 편집창 목록(`type:'items'`)도 `showIf` 적용, `compact:true`면 한 줄짜리 목록(엔딩 크레딧 줄).
 - zip으로 줄 때 루트 `invite/render-invite.js`는 빼고 `invite/assets/render-invite.js`만 (서버는 assets만 씀).
 
 ### 기타

@@ -557,12 +557,35 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 /* 나타나는 효과 [▶ 다시 보기] · 줄마다 따로 꾸미기 (접어 둠, 효과·방향·휘기를 고르기 칸으로 한 줄에) - 간편·전문가 같이 씀 */
 .hl-play { border: 1px solid var(--ui-line, #DED8CF); background: #fff; border-radius: 99px; padding: 4px 10px; font: inherit; font-size: 11.5px; font-weight: 600; color: #555; cursor: pointer; white-space: nowrap; } .hl-play:hover { border-color: #bbb; color: #222; }
 .wz-lab .hl-play { margin-left: auto; align-self: center; } .hl-ex .hl-xh .hl-play { margin-top: 8px; }
-.hl-more { margin-top: 12px; border-top: 1px solid var(--ui-line, #EAE6E0); padding-top: 8px; }
-.hl-more summary { cursor: pointer; font-size: 12px; font-weight: 600; color: #777; list-style: none; display: flex; align-items: center; gap: 6px; } .hl-more summary::-webkit-details-marker { display: none; }
-.hl-more summary::before { content: ''; width: 0; height: 0; border-style: solid; border-width: 4px 0 4px 6px; border-color: transparent transparent transparent currentColor; transition: transform .15s; } .hl-more[open] summary::before { transform: rotate(90deg); }
-.hl-mg { display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 5px 6px; align-items: center; margin-top: 8px; }
-.hl-mg small { font-size: 10.5px; color: #999; padding-left: 2px; } .hl-mg b { font-size: 11.5px; font-weight: 600; color: #666; white-space: nowrap; padding-right: 2px; }
-.hl-mg select { width: 100%; min-width: 0; padding: 6px 4px; border: 1px solid var(--ui-line, #DED8CF); border-radius: 8px; background: #fff; font: inherit; font-size: 12px; color: #333; }
+.hl-lines { display: grid; gap: 6px; }
+.hl-line { position: relative; display: flex; align-items: flex-start; gap: 4px; border: 1px solid var(--wz-line2, #DED8CF); border-radius: 12px; background: #fff; padding: 3px 4px 3px 0; }
+.hl-line:focus-within { border-color: var(--wz-ink, #1B1A18); }
+.hl-line textarea, .hl-ex .hl-line textarea { flex: 1; min-width: 0; border: 0 !important; box-shadow: none !important; background: transparent; padding: 7px 12px; margin: 0; resize: none; overflow: hidden; font: inherit; font-size: 14.5px; line-height: 1.45; color: var(--wz-ink, #222); outline: 0; box-sizing: border-box; min-height: 0; height: auto; }
+.hl-ex .hl-line { border-radius: 8px; border-color: #ddd; } .hl-ex .hl-line textarea { font-size: 13px; padding: 6px 10px; }
+.hl-fxb { flex: none; display: inline-flex; align-items: center; gap: 5px; margin-top: 2px; border: 1px solid transparent; background: var(--ui-soft, #F3EEE6); border-radius: 99px; padding: 5px 9px 5px 11px; font: inherit; font-size: 11.5px; font-weight: 600; color: #8A847C; cursor: pointer; white-space: nowrap; }
+.hl-fxb.on { color: var(--wz-ink, #1B1A18); background: #fff; border-color: var(--wz-line2, #DED8CF); }
+/* [효과 ▾] 버튼이 눈에 띄게: 효과 없음 = 글자에 빛이 스쳐 감 / 효과 있음 = 버튼 글자가 그 효과로 움직여 보여 줌 (2번, 마우스를 올리면 계속) */
+.hl-fxb b { display: inline-block; font-weight: inherit; }
+@media (prefers-reduced-motion: no-preference) {
+  .hl-fxb:not(.on) b { background: linear-gradient(100deg, currentColor 35%, #2A2622 50%, currentColor 65%) 0 0 / 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: hlBtnShine 2.6s ease-in-out .4s 2; }
+  .hl-fxb.hl-fx-write b { -webkit-mask-image: linear-gradient(90deg, #000 40%, transparent 60%); mask-image: linear-gradient(90deg, #000 40%, transparent 60%); -webkit-mask-size: 250% 100%; mask-size: 250% 100%; animation: hlBtnWrite 3s ease .3s 2 both; }
+  .hl-fxb.hl-fx-fade b { animation: hlBtnFade 3s ease .3s 2 both; } .hl-fxb.hl-fx-up b { animation: hlBtnUp 3s ease .3s 2 both; } .hl-fxb.hl-fx-zoom b { animation: hlBtnZoom 3s ease .3s 2 both; }
+  .hl-fxb:hover b { animation-iteration-count: infinite; } .hl-fxb.open b { animation: none; }
+}
+@keyframes hlBtnShine { 0% { background-position: 100% 0; } 60%, 100% { background-position: 0 0; } }
+@keyframes hlBtnWrite { 0% { -webkit-mask-position: 100% 0; mask-position: 100% 0; } 45%, 100% { -webkit-mask-position: 0 0; mask-position: 0 0; } }
+@keyframes hlBtnFade { 0% { opacity: 0; } 40%, 100% { opacity: 1; } }
+@keyframes hlBtnUp { 0% { opacity: 0; transform: translateY(5px); } 40%, 100% { opacity: 1; transform: none; } }
+@keyframes hlBtnZoom { 0% { opacity: 0; transform: scale(.7); } 40%, 100% { opacity: 1; transform: none; } }
+.hl-fxb i { width: 0; height: 0; border-style: solid; border-width: 4px 3.5px 0 3.5px; border-color: currentColor transparent transparent transparent; opacity: .7; transition: transform .15s; } .hl-fxb.open i { transform: rotate(180deg); }
+.hl-ex .hl-fxb { border-radius: 6px; } .hl-ex .hl-fxb.on { background: #3D4F66; border-color: #3D4F66; color: #fff; }
+.hl-pop { position: absolute; z-index: 30; right: 0; top: calc(100% + 4px); width: max-content; max-width: min(320px, 100%); background: #fff; border: 1px solid var(--wz-line2, #DED8CF); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.12); padding: 8px 10px; display: grid; gap: 8px; }
+.hl-pg small { display: block; font-size: 10.5px; font-weight: 600; color: #A39D95; margin: 0 0 4px 2px; } .hl-pg > div { display: flex; flex-wrap: wrap; gap: 4px; }
+.hl-pg button { border: 1px solid var(--wz-line2, #E3DED6); background: #fff; border-radius: 99px; padding: 5px 10px; font: inherit; font-size: 12px; color: #555; cursor: pointer; white-space: nowrap; }
+.hl-pg button.on { background: var(--wz-ink, #1B1A18); border-color: var(--wz-ink, #1B1A18); color: #fff; } .hl-ex .hl-pg button { border-radius: 6px; } .hl-ex .hl-pg button.on { background: #3D4F66; border-color: #3D4F66; }
+.hl-all { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; margin-top: 8px; font-size: 12px; } .hl-all span { color: #A39D95; font-size: 11.5px; margin-right: 2px; }
+.hl-all button { border: 0; background: none; padding: 2px 0; font: inherit; font-size: 12px; color: #8A847C; cursor: pointer; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; }
+.hl-all button:hover { color: #333; text-decoration-color: currentColor; } .hl-all button.on { color: var(--wz-ink, #1B1A18); font-weight: 700; }
 .hl-ex textarea { resize: none; overflow: hidden; line-height: 1.45; }
 .hl-ex { --wz-ink: #1B1A18; --wz-sub: #6F6A63; --wz-mute: #A39D95; --wz-line: var(--ui-line, #EAE6E0); --wz-line2: var(--ui-line, #DED8CF); --wz-card: #fff; --wz-acc: #8A4B55; }
 .hl-ex .wz-lab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700; margin-bottom: 8px; } .hl-ex .wz-lab small { font-weight: 400; font-size: 11.5px; color: var(--wz-mute); }
@@ -582,7 +605,6 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .hl-m .hl-sh { position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.28), rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,.32)); }
 .hl-m span { position: absolute; white-space: nowrap; line-height: 1.02; text-align: center; text-shadow: 0 1px 6px rgba(0,0,0,.2); }
 .hl-ins { display: grid; gap: 6px; }
-.hl-ins textarea.wz-inp.hl-tx { height: auto; min-height: 0; padding: 10px 14px; border-radius: 12px; resize: none; overflow: hidden; font-size: 14.5px; line-height: 1.45; }
 .hl-chips { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 2px; border-radius: 99px; background: var(--ui-soft, #F3EEE6); }
 .hl-chips button { border: 0; background: none; border-radius: 99px; padding: 4px 9px; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--wz-sub); cursor: pointer; white-space: nowrap; }
 .hl-chips button.on { background: #fff; color: var(--wz-ink); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
@@ -4021,6 +4043,19 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 .pz-pop { display: none; border: 1px solid var(--line); background: #fff; border-radius: 14px; box-shadow: 0 10px 24px rgba(40,30,20,.12); padding: 10px 11px; }
 .pz-pop.show { display: block; animation: pzIn .16s ease; }
 @keyframes pzIn { from { opacity: 0; transform: translateY(-4px); } }
+.pz-chips > .pz-ytid { grid-column: 1 / -2; display: flex; flex-direction: column; justify-content: center; gap: 1px; min-height: 42px; box-sizing: border-box; border: 1px solid #E4E1D9; border-radius: 11px; background: #fff; padding: 4px 10px; margin: 0 !important; min-width: 0; }
+.pz-chips > .pz-ytid:focus-within { border-color: #232320; }
+.pz-chips > .pz-ytid > label { display: block; font-size: 10px; font-weight: 600; color: #6B675F; margin: 0 !important; line-height: 1.25; }
+.pz-chips > .pz-ytid > input { width: 100%; min-width: 0; border: 0 !important; box-shadow: none !important; padding: 0 !important; height: auto !important; min-height: 0; background: transparent; font: inherit; font-size: 11.5px; font-weight: 800; color: #232320; outline: 0; }
+/* 한 줄짜리 목록 (엔딩 크레딧 줄 등) */
+.sf-crows .sf-cr { display: grid; grid-template-columns: var(--sf-cols); gap: 4px; align-items: center; margin-top: 4px; }
+.sf-crows .sf-cr > b { font-size: 10.5px; font-weight: 700; color: #A39D95; text-align: center; }
+.sf-crows .sf-cr input { width: 100%; min-width: 0; height: 30px !important; padding: 0 8px !important; font-size: 12.5px; box-sizing: border-box; }
+.sf-crows .sf-cr-h { margin-top: 0; } .sf-crows .sf-cr-h small { font-size: 10.5px; color: #A39D95; padding-left: 2px; }
+.sf-crows .sf-cr-b { display: inline-flex; gap: 1px; } .sf-crows .sf-cr-b button { width: 22px; height: 26px; padding: 0; border: 0; border-radius: 6px; background: none; color: #8A847C; font-size: 12px; cursor: pointer; }
+.sf-crows .sf-cr-b button:hover:not(:disabled) { background: var(--ui-soft, #F3EEE6); color: #333; } .sf-crows .sf-cr-b button:disabled { opacity: .3; cursor: default; }
+.sf-crows .sf-cr-h > span:last-child { width: 68px; }
+.sf-crows .sf-cr-f { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; } .sf-crows .sf-cr-f .pill { padding: 5px 10px; font-size: 12px; } .sf-crows .sf-cr-f .field-hint { margin: 0; flex: 1; min-width: 160px; }
 .pz-pop > .pz-item:not(.on) { display: none !important; }
 .pz-pop > .pz-item { margin: 0 !important; padding: 0 !important; border: 0 !important; }
 .pz-pop > .pz-item > label:first-child, .pz-pop > .pz-item > .mini-label:first-child { display: block; margin: 0 0 8px; font-size: 11.5px; font-weight: 800; color: var(--ink); }
@@ -4059,14 +4094,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017h">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017h">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017i">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017i">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017h"></script>
-<script src="assets/tip-demos.js?v=1017h"></script>
-<script src="assets/ld-dialog.js?v=1017h"></script>
+<script src="assets/invite-blocks.js?v=1017i"></script>
+<script src="assets/tip-demos.js?v=1017i"></script>
+<script src="assets/ld-dialog.js?v=1017i"></script>
 </head>
 <body>
 
@@ -5790,14 +5825,15 @@ const templates = {
         const L = f.layout, s = k => partStyle(L, k);
         const wrapStyle = f.heightMode === 'full' ? 'height:100vh; height:100svh; aspect-ratio:auto;' : `aspect-ratio:${f.heightMode};`; // svh = 휴대폰 주소창·도구막대를 뺀 실제 보이는 높이
         const over = InviteBlocks.heroTextOn(f, 'video'); // 끄면 이름·날짜가 영상 아래 글자 칸으로 (켜면 아래 칸 없음 = 자동 0)
-        const ink = over ? 'on-dark' : 'on-light';
+        const ink = over && !(f.heightMode === 'full' && f.heroBox) ? 'on-dark' : 'on-light'; // 사진 칸 레이아웃이면 글자가 밝은 바탕 위
         const parts = `${(f.hideParts || []).includes('datetime') ? '' : `<span class="drag-part ${ink} op-datetime" data-part="datetime" data-drag-el style="${s('datetime')}" title="${DRAG_HINT}">${esc(f.datetime)}</span>`}
         ${(f.hideParts || []).includes('groomName') ? '' : `<span class="drag-part ${ink} op-name" data-part="groomName" data-drag-el style="${s('groomName')}" title="${DRAG_HINT}">${esc(f.groomName)}</span>`}
         ${f.hideHeart ? '' : `<span class="drag-part ${ink} op-heart" data-part="heart" data-drag-el style="${s('heart')}" title="${DRAG_HINT}">♥</span>`}
         ${(f.hideParts || []).includes('brideName') ? '' : `<span class="drag-part ${ink} op-name" data-part="brideName" data-drag-el style="${s('brideName')}" title="${DRAG_HINT}">${esc(f.brideName)}</span>`}${InviteBlocks.heroLayersHtml(f, ink, s, true)}`;
         const band = InviteBlocks.videoBandSpace ? InviteBlocks.videoBandSpace(f) : 0; // 영상 아래 글자 칸 (글자는 영상+칸 어디든)
-        return `<div class="blk-hero-video${over ? '' : ' vt-under'}${band ? ' vt-overband' : ''}"><div class="video-cover-wrap${over && !band ? ' drag-canvas' : ''}" style="${wrapStyle}">
-        <iframe src="${ytEmbedSrc(f.youtubeId)}" data-cover data-video-position="${f.videoPosition}" data-video-focus="${esc(f.videoFocus || '')}"${f.videoVertical ? ' data-vertical="1"' : ''}${+f.videoLb > 100 ? ` data-video-zoom="${+f.videoLb}"` : ''} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen playsinline title="배경 영상"></iframe>
+        const vb = InviteBlocks.heroVideoBox ? InviteBlocks.heroVideoBox(f, `<iframe src="${ytEmbedSrc(f.youtubeId)}" data-cover data-video-position="${f.videoPosition}" data-video-focus="${esc(f.videoFocus || '')}"${f.videoVertical ? ' data-vertical="1"' : ''}${+f.videoLb > 100 ? ` data-video-zoom="${+f.videoLb}"` : ''} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen playsinline title="배경 영상"></iframe>`) : { cls: '', style: '', html: `<iframe src="${ytEmbedSrc(f.youtubeId)}" data-cover data-video-position="${f.videoPosition}" data-video-focus="${esc(f.videoFocus || '')}"${f.videoVertical ? ' data-vertical="1"' : ''}${+f.videoLb > 100 ? ` data-video-zoom="${+f.videoLb}"` : ''} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen playsinline title="배경 영상"></iframe>` }; // 사진 칸 레이아웃이면 영상을 칸 안에
+        return `<div class="blk-hero-video${over ? '' : ' vt-under'}${band ? ' vt-overband' : ''}"><div class="video-cover-wrap${over && !band ? ' drag-canvas' : ''}${vb.cls}" style="${wrapStyle}${vb.style}">
+        ${vb.html}
         <button type="button" class="video-fullscreen-btn" title="전체화면으로 보기">⤢</button>
         ${over ? `${InviteBlocks.heroShadeHtml(f, 'video')}${band ? '' : parts}${InviteBlocks.nextBtnHtml(f, 'video')}` : ''}
         </div>${band ? `<div class="hero-text-space" style="height:${(band / 390 * 100).toFixed(3)}cqw;"></div><div class="free-canvas drag-canvas hero-over-canvas">${parts}</div>` : (over && !InviteBlocks.heroFull(f, 'video') ? '<div class="hero-text-space vt-sp0" style="height:0"></div>' : '')}${over ? '' : `<div class="free-canvas drag-canvas vt-band" style="height:220px;">${parts}</div>`}</div>`;
@@ -6625,7 +6661,17 @@ function renderSchemaEditor(wrap, block) {
     let html = `<h3>${esc(blockLabels[block.id] || def.label)} 편집</h3>`;
     def.editor.forEach(d => {
         if (d.type !== 'items') { html += fieldHtml(d, d.key); return; }
+        if (d.showIf && showIfHidden(d.showIf)) return; // 목록도 showIf대로 (예: 엔딩 크레딧 줄은 크레딧을 켰을 때만)
         const items = Array.isArray(f[d.key]) ? f[d.key] : (f[d.key] = []);
+        if (d.compact) { // 한 줄짜리 목록: 번호 · 칸들 · ↑↓✕ 를 한 줄에 (칸 이름은 맨 위에 한 번만)
+            const hint = d.fields.map(x => x.hint).find(Boolean), cols = `14px ${d.fields.map((x, i) => i ? '1.35fr' : '1fr').join(' ')} auto`;
+            html += `<div class="field sf-crows" style="--sf-cols:${cols}"><label>${esc(d.label)}</label>
+                <div class="sf-cr sf-cr-h"><span></span>${d.fields.map(x => `<small>${esc(x.short || x.label)}</small>`).join('')}<span></span></div>
+                ${items.map((it, i) => `<div class="sf-cr"><b>${i + 1}</b>${d.fields.map(sub => renderSchemaInput(sub, sfGet(f, `${d.key}.${i}.${sub.key}`), `${d.key}.${i}.${sub.key}`, f)).join('')}
+                    <span class="sf-cr-b"><button type="button" data-sf-move="${d.key}.${i}" data-dir="-1" title="위로" ${i === 0 ? 'disabled' : ''}>↑</button><button type="button" data-sf-move="${d.key}.${i}" data-dir="1" title="아래로" ${i === items.length - 1 ? 'disabled' : ''}>↓</button><button type="button" data-sf-del="${d.key}.${i}" title="지우기">✕</button></span></div>`).join('')}
+                <div class="sf-cr-f"><button type="button" class="pill pill-primary-outline" data-sf-add="${d.key}">+ ${esc(d.addLabel || '추가')}</button>${hint ? `<p class="field-hint">${esc(hint)}</p>` : ''}</div></div>`;
+            return;
+        }
         html += `<div class="mini-label" style="margin:16px 0 6px;">${esc(d.label)}</div>`;
         html += items.map((it, i) => `
             <div class="panel" style="margin-bottom:10px;padding:12px;">
@@ -7594,7 +7640,7 @@ function appendVideoFocusControls(wrap, block) {
     wrap.appendChild(box);
     const stage = box.querySelector('.vfp-stage'), win = box.querySelector('.vfp-win'), note = box.querySelector('.vfp-note');
     const iframe = () => document.querySelector(`#previewRoot .col[data-block-id="${block.id}"] iframe[data-cover]`);
-    const frameAspect = () => { const w = iframe()?.closest('.video-cover-wrap'); return w && w.clientHeight ? w.clientWidth / w.clientHeight : 16 / 9; };
+    const frameAspect = () => { const w = iframe()?.closest('.hero-vbox') || iframe()?.closest('.video-cover-wrap'); return w && w.clientHeight ? w.clientWidth / w.clientHeight : 16 / 9; };
     let xy = videoFocusXY(f.videoFocus, f.videoPosition);
     const layout = () => {
         const fa = frameAspect(), va = 16 / 9, z = Math.max(1, (+f.videoLb || 100) / 100); // (레터박스 맞춤만큼 보이는 창이 작아짐)
@@ -11413,7 +11459,7 @@ function bakeAutoWidths() {
 // object-fit:cover가 iframe에서 잘 지원되지 않는 브라우저(특히 모바일 Safari)를 위해
 // 실측 크기를 직접 계산해 영상이 항상 프레임을 꽉 채우도록 함
 function fitVideoCover(iframe) {
-    const wrap = iframe.closest('.video-cover-wrap');
+    const wrap = iframe.closest('.hero-vbox') || iframe.closest('.video-cover-wrap'); // 사진 칸 레이아웃이면 칸 크기로
     if (!wrap) return;
     const cw = wrap.clientWidth, ch = wrap.clientHeight;
     if (!cw || !ch) return;
@@ -11447,7 +11493,7 @@ function fitAllVideoCovers() {
         fitVideoCover(iframe);
         if (!iframe._coverObserverAttached) {
             iframe._coverObserverAttached = true;
-            const wrap = iframe.closest('.video-cover-wrap');
+            const wrap = iframe.closest('.hero-vbox') || iframe.closest('.video-cover-wrap');
             // 카카오톡 인앱 브라우저 등 구형 웹뷰에서 ResizeObserver/최초 측정이 실패하는 경우를 대비해
             // ResizeObserver + onload + 반복 재시도를 전부 같이 걸어둔다 (이중 안전장치)
             if (wrap && typeof ResizeObserver !== 'undefined') {
@@ -11461,6 +11507,14 @@ function fitAllVideoCovers() {
 window.addEventListener('resize', fitAllVideoCovers);
 document.addEventListener('fullscreenchange', () => requestAnimationFrame(fitAllVideoCovers));
 
+// 글자를 끌 수 있는 범위 (화면 %). 보통 8~92% - 가장자리까지 쓰는 레이아웃(edge, 예: 이름 양쪽·세로 글씨)은 1~99%
+//  이미 범위 밖에 놓인 글자(레이아웃이 놓은 자리)는 살짝 눌렀을 때 안쪽으로 튀지 않게 그 자리까지는 허용
+function dragRange(blockId, start) {
+    const b = blockId && state.blocks.find(x => x.id === blockId), lid = b && b.fields && b.fields.heroLayout;
+    const edge = !!(lid && (InviteBlocks.HERO_LAYOUTS.find(l => l.id === lid) || {}).edge);
+    const lo = edge ? 1 : 8, hi = edge ? 99 : 92, v = Number(start);
+    return isFinite(v) ? [Math.min(lo, v), Math.max(hi, v)] : [lo, hi];
+}
 function initDraggableOverlays() {
     const CLICK_THRESHOLD = 4; // 이 픽셀 이하로 움직이면 드래그가 아니라 클릭으로 간주
     document.querySelectorAll('#previewRoot [data-drag-el]').forEach(el => {
@@ -11514,16 +11568,18 @@ function initDraggableOverlays() {
                 showGridLines(groupItems.map(it => it.canvasEl));
                 const dxPix = e.clientX - startX, dyPix = e.clientY - startY;
                 groupItems.forEach(item => {
-                    const nx = snapToGrid(Math.min(92, Math.max(8, item.startLeft + dxPix / item.canvasRect.width * 100)));
-                    const ny = snapToGrid(Math.min(92, Math.max(8, item.startTop + dyPix / item.canvasRect.height * 100)));
+                    const [xl, xh] = dragRange(item.block.id, item.startLeft), [yl, yh] = dragRange(item.block.id, item.startTop);
+                    const nx = snapToGrid(Math.min(xh, Math.max(xl, item.startLeft + dxPix / item.canvasRect.width * 100)));
+                    const ny = snapToGrid(Math.min(yh, Math.max(yl, item.startTop + dyPix / item.canvasRect.height * 100)));
                     item.el.style.left = nx + '%'; item.el.style.top = ny + '%';
                     item.pendingX = nx; item.pendingY = ny;
                 });
             } else {
                 if (!rect) return;
                 showGridLines([dragCanvasEl]);
-                const nx = snapToGrid(Math.min(92, Math.max(8, startLeft + (e.clientX - startX) / rect.width * 100)));
-                const ny = snapToGrid(Math.min(92, Math.max(8, startTop + (e.clientY - startY) / rect.height * 100)));
+                const bid = el.closest('[data-block-id]')?.dataset.blockId, [xl, xh] = dragRange(bid, startLeft), [yl, yh] = dragRange(bid, startTop);
+                const nx = snapToGrid(Math.min(xh, Math.max(xl, startLeft + (e.clientX - startX) / rect.width * 100)));
+                const ny = snapToGrid(Math.min(yh, Math.max(yl, startTop + (e.clientY - startY) / rect.height * 100)));
                 el.style.left = nx + '%'; el.style.top = ny + '%';
                 el._pendingX = nx; el._pendingY = ny;
             }
@@ -14136,7 +14192,7 @@ function spPhotoCrop(holder, blk) {
 let HERO_LAYOUTS_ADMIN = []; // 관리자가 저장한 레이아웃 (hero_layouts.php)
 const spHeroLayouts = () => ((window.InviteBlocks && InviteBlocks.HERO_LAYOUTS) || []).concat(HERO_LAYOUTS_ADMIN);
 function spHeroLayoutMini(lay, hb, kind) {
-    const f = hb.fields, sk = skins[state.skin] || skins.classic, box = kind === 'photo' && lay.box;
+    const f = hb.fields, sk = skins[state.skin] || skins.classic, box = lay.box; // 사진 칸 레이아웃은 영상도 칸 안에 (영상은 썸네일로)
     const img = kind === 'photo' ? (f.heroImage ? `url('${esc(InviteBlocks.imgUrl(f.heroImage))}')` : '') : (f.youtubeId ? `url('https://i.ytimg.com/vi/${encodeURIComponent(f.youtubeId)}/hqdefault.jpg')` : '');
     const ph = img || `linear-gradient(160deg, ${sk.accent}, ${sk.ink})`;
     const txt = (L, t) => { if (!L) return ''; if (L.font) loadFontCss(L.font);
@@ -14154,42 +14210,52 @@ function spHeroLayoutMini(lay, hb, kind) {
     return `<span class="hl-m" style="background-image:${ph};"><i class="hl-sh"></i>${parts}${layers}</span>`;
 }
 function spHeroLayoutHtml(hb, kind) {
-    const f = hb.fields, list = spHeroLayouts().filter(l => kind === 'photo' || !l.box), adv = !document.documentElement.classList.contains('simple-mode'); // 사진 칸 레이아웃은 사진에만
+    const f = hb.fields, list = spHeroLayouts(), adv = !document.documentElement.classList.contains('simple-mode'); // 사진 칸 레이아웃은 사진에만
     if (!list.length) return '';
     const cur = f.heroLayout || '';
     const cards = list.map(l => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${spHeroLayoutMini(l, hb, kind)}<b>${esc(l.label)}</b></button>`).join('');
     const keys = (f.heroLayers || []).filter(k => f.layout && f.layout[k]);
-    // 문구 칸 (쉽게): ① 글자 바꾸기 = 글 칸만 · ② 나타나는 효과 = 한 줄로 모든 문구에 · ③ 줄마다 따로 꾸미기 = 접어 둠 (효과·방향·휘기를 고르기 칸으로 한 줄에)
+    // 문구 칸 (A안): 글 칸 오른쪽 끝에 [효과 ▾] - 누르면 작은 창 (효과 · 전문가 모드는 방향·휘기도) / 맨 아래 "모두 같게" 한 줄
     const FX = InviteBlocks.HL_ANIMS.map(([v, l]) => [v, { '': '없음', write: '써지듯', fade: '나타나기', up: '위로', zoom: '커지며' }[v] || l]);
-    const SHAPE = [['', '가로'], ['up', '세로'], ['side', '세로 눕힘']], CURVE = [[0, '곧게'], [30, '위로 휘게'], [-30, '아래로 휘게']];
-    const curveOf = L => [0, 30, -30].includes(Number(L.arc) || 0) ? Number(L.arc) || 0 : (Number(L.arc) > 0 ? 30 : -30);
     const anims = keys.map(k => f.layout[k].anim || ''), allFx = anims.every(v => v === anims[0]) ? anims[0] : null, anyAnim = anims.some(Boolean);
     const rowsOf = t => Math.min(4, Math.max(1, String(t || '').split('\n').length));
-    const sel = (k, key, opts, cur) => `<select data-hl-k="${esc(k)}" data-hl-p="${key}">${opts.map(([v, l]) => `<option value="${esc(String(v))}"${String(cur ?? '') === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
-    const more = keys.length ? `<details class="hl-more"${hlMoreOpen ? ' open' : ''}><summary>줄마다 따로 꾸미기</summary><div class="hl-mg"><span></span><small>효과</small><small>방향</small><small>휘기</small>
-        ${keys.map((k, i) => { const L = f.layout[k]; return `<b>문구 ${i + 1}</b>${sel(k, 'anim', FX, L.anim || '')}${sel(k, 'vertical', SHAPE, L.vertical || '')}${sel(k, 'arc', CURVE, curveOf(L))}`; }).join('')}</div></details>` : '';
+    const fxName = v => (FX.find(x => x[0] === (v || '')) || FX[0])[1];
+    const lines = keys.map(k => `<div class="hl-line" data-hl-line="${esc(k)}"><textarea${adv ? '' : ' class="hl-tx"'} rows="${rowsOf(f[k])}" data-hl="${esc(k)}" spellcheck="false">${wzEsc(f[k] || '')}</textarea><button type="button" class="hl-fxb${f.layout[k].anim ? ' on hl-fx-' + esc(f.layout[k].anim) : ''}" data-hl-fxb="${esc(k)}" aria-haspopup="true" title="이 문구가 나타나는 효과"><b>${f.layout[k].anim ? esc(fxName(f.layout[k].anim)) : '효과'}</b><i></i></button></div>`).join('');
+    const all = `<div class="hl-all"><span>모두 같게</span>${FX.map(([v, l]) => `<button type="button" class="${allFx === v ? 'on' : ''}" data-hl-all="${esc(v)}">${esc(l)}</button>`).join('')}</div>`;
     const tip = '{신랑} {신부} {날짜:영문} 처럼 적으면 이름·날짜로 바뀌어요.';
     const replay = anyAnim ? '<button type="button" class="hl-play" data-hl-replay>▶ 다시 보기</button>' : '';
-    if (adv) { // 전문가 모드: 편집창의 다른 칸과 같은 모양 (label · mini-label · width-btn)
-        const wb = (opts, cur) => opts.map(([v, l]) => `<button type="button" class="width-btn ${cur === v ? 'active' : ''}" data-hl-all="${esc(v)}">${esc(l)}</button>`).join('');
+    if (adv) { // 전문가 모드: 편집창의 다른 칸과 같은 모양 (label · mini-label · field-hint)
         return `<label>메인 레이아웃 <small style="font-weight:400;opacity:.7">(글자 모양·자리를 한 번에)</small></label><div class="hl-row">${cards}</div>
-            ${keys.length ? `<div class="mini-label hl-xl">글자 바꾸기</div>${keys.map(k => `<textarea rows="${rowsOf(f[k])}" data-hl="${esc(k)}" spellcheck="false">${wzEsc(f[k] || '')}</textarea>`).join('')}<p class="field-hint" style="margin-top:4px">${tip}</p>
-            <div class="hl-xh"><div class="mini-label hl-xl">나타나는 효과</div>${replay}</div><div class="width-row hl-xr">${wb(FX, allFx)}</div>${more}` : ''}`;
+            ${keys.length ? `<div class="hl-xh"><div class="mini-label hl-xl">글자 · 효과</div>${replay}</div><div class="hl-lines">${lines}</div>${all}<p class="field-hint" style="margin-top:6px">${tip}</p>` : ''}`;
     }
-    const chips = FX.map(([v, l]) => `<button type="button" class="${allFx === v ? 'on' : ''}" data-hl-all="${esc(v)}">${esc(l)}</button>`).join('');
     return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div><div class="hl-row">${cards}</div></div>
-        ${keys.length ? `<div class="wz-field"><div class="wz-lab"><span>글자 바꾸기</span></div><div class="hl-ins">${keys.map(k => `<textarea class="wz-inp hl-tx" rows="${rowsOf(f[k])}" data-hl="${esc(k)}" spellcheck="false">${wzEsc(f[k] || '')}</textarea>`).join('')}<p class="wz-hint">${tip}</p></div></div>
-        <div class="wz-field"><div class="wz-lab"><span>나타나는 효과</span>${replay}</div><div class="hl-chips">${chips}</div>${more}</div>` : ''}`;
+        ${keys.length ? `<div class="wz-field"><div class="wz-lab"><span>글자 · 효과</span>${replay}</div><div class="hl-lines">${lines}</div>${all}<p class="wz-hint" style="margin:6px 0 0">${tip}</p></div>` : ''}`;
 }
-let hlMoreOpen = false; // "줄마다 따로 꾸미기"를 펼쳐 뒀는지 (다시 그려도 그대로)
+// [효과 ▾] 작은 창 - 고른 줄만 다시 그려도 열린 채 (방향·휘기를 이어서 고를 수 있게)
+let hlPopKey = '';
+function hlPopHtml(L, adv) {
+    const FX = InviteBlocks.HL_ANIMS.map(([v, l]) => [v, { '': '없음', write: '써지듯', fade: '나타나기', up: '위로', zoom: '커지며' }[v] || l]);
+    const SHAPE = [['', '가로'], ['up', '세로'], ['side', '세로 눕힘']], CURVE = [[0, '곧게'], [30, '위로 휘게'], [-30, '아래로 휘게']];
+    const curve = [0, 30, -30].includes(Number(L.arc) || 0) ? Number(L.arc) || 0 : (Number(L.arc) > 0 ? 30 : -30);
+    const grp = (t, key, opts, cur) => `<div class="hl-pg"><small>${t}</small><div>${opts.map(([v, l]) => `<button type="button" class="${String(cur ?? '') === String(v) ? 'on' : ''}" data-hl-p="${key}" data-v="${esc(String(v))}">${esc(l)}</button>`).join('')}</div></div>`;
+    return grp('효과', 'anim', FX, L.anim || '') + (adv ? grp('방향', 'vertical', SHAPE, L.vertical || '') + grp('휘기', 'arc', CURVE, curve) : '');
+}
 let hlRowLeft = 0; // 레이아웃 줄의 옆 스크롤 자리 - 고르면 칸을 다시 그려서 맨 앞으로 돌아가던 것 (고른 자리 그대로)
 function spBindHeroLayout(box, hb, after) {
     after = after || (() => spRender());
     const row = box.querySelector('.hl-row');
-    if (row) { row.scrollLeft = hlRowLeft; requestAnimationFrame(() => { row.scrollLeft = hlRowLeft; }); row.addEventListener('scroll', () => { hlRowLeft = row.scrollLeft; }, { passive: true }); }
+    // 옆 스크롤 자리 지키기: 다시 그린 뒤 칸이 옮겨지면(전문가 모드 편집창) 스크롤이 0이 되면서 그 0이 기억돼 버렸음
+    //  → 사람이 직접 만진 뒤의 스크롤만 기억하고, 그 전엔 저절로 바뀌면 원래 자리로 되돌림
+    if (row) {
+        const want = hlRowLeft; let user = false;
+        const put = () => { if (!user && row.isConnected && row.scrollLeft !== want) row.scrollLeft = want; };
+        put(); requestAnimationFrame(put); [0, 80, 250, 600].forEach(t => setTimeout(put, t));
+        ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(ev => row.addEventListener(ev, () => { user = true; }, { passive: true }));
+        row.addEventListener('scroll', () => { if (row._dead || !row.isConnected) return; if (user) hlRowLeft = row.scrollLeft; else put(); }, { passive: true });
+    }
     box.querySelectorAll('[data-hl-pick]').forEach(b => b.addEventListener('click', () => {
         const lay = spHeroLayouts().find(l => l.id === b.dataset.hlPick); if (!lay) return;
-        if (row) hlRowLeft = row.scrollLeft;
+        if (row) { hlRowLeft = row.scrollLeft; row._dead = true; } // 이 줄은 곧 다시 그려짐 (사라질 때 생기는 스크롤 0은 무시)
         scheduleSnapshot();
         const was = InviteBlocks.heroFull(hb.fields, hb.id === 'heroVideo' ? 'video' : 'hero');
         InviteBlocks.applyHeroLayout(hb, lay);
@@ -14207,14 +14273,30 @@ function spBindHeroLayout(box, hb, after) {
         renderPreview(); scheduleSnapshot(); after();
         if (v) playTwice();
     }));
-    box.querySelectorAll('select[data-hl-p]').forEach(c => c.addEventListener('change', () => {
-        const L = hb.fields.layout[c.dataset.hlK]; if (!L) return; const p = c.dataset.hlP;
-        L[p] = p === 'arc' ? Number(c.value) || 0 : c.value;
-        if (p === 'arc' && L.arc && !L.arcW) L.arcW = 70;
-        renderPreview(); scheduleSnapshot(); after();
-        if (p === 'anim' && L.anim) playTwice();
-    }));
-    box.querySelector('.hl-more')?.addEventListener('toggle', e => { hlMoreOpen = e.target.open; });
+    // [효과 ▾] → 작은 창 (한 번에 하나, 바깥을 누르거나 Esc면 닫힘)
+    const adv = !document.documentElement.classList.contains('simple-mode');
+    const closePop = () => { box.querySelectorAll('.hl-pop').forEach(x => x.remove()); box.querySelectorAll('.hl-fxb.open').forEach(x => x.classList.remove('open')); hlPopKey = ''; };
+    const openPop = k => {
+        const line = box.querySelector(`[data-hl-line="${CSS.escape(k)}"]`), L = hb.fields.layout[k]; if (!line || !L) return;
+        closePop(); hlPopKey = k;
+        const pop = document.createElement('div'); pop.className = 'hl-pop'; pop.innerHTML = hlPopHtml(L, adv); line.appendChild(pop);
+        line.querySelector('.hl-fxb').classList.add('open');
+        pop.querySelectorAll('[data-hl-p]').forEach(c => c.addEventListener('click', () => {
+            const p = c.dataset.hlP; L[p] = p === 'arc' ? Number(c.dataset.v) || 0 : c.dataset.v;
+            if (p === 'arc' && L.arc && !L.arcW) L.arcW = 70;
+            renderPreview(); scheduleSnapshot();
+            if (p === 'anim') hlPopKey = ''; // 효과를 고르면 닫고 그 문구만 재생, 방향·휘기는 열어 둔 채
+            after();
+            if (p === 'anim' && L.anim) { spScrollPreview([hb.id]); setTimeout(() => InviteBlocks.playHeroAnimsTwice(document.getElementById('previewRoot'), k), 250); }
+        }));
+        const r = pop.getBoundingClientRect(); if (r.bottom > innerHeight - 70) pop.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    };
+    box.querySelectorAll('[data-hl-fxb]').forEach(btn => btn.addEventListener('click', e => { e.stopPropagation(); hlPopKey === btn.dataset.hlFxb && btn.classList.contains('open') ? closePop() : openPop(btn.dataset.hlFxb); }));
+    if (hlPopKey) openPop(hlPopKey);
+    if (!spBindHeroLayout._doc) { spBindHeroLayout._doc = 1; // 바깥 누름·Esc로 닫기 (문서에 한 번만)
+        document.addEventListener('pointerdown', e => { if (!e.target.closest('.hl-pop, .hl-fxb')) { document.querySelectorAll('.hl-pop').forEach(x => x.remove()); document.querySelectorAll('.hl-fxb.open').forEach(x => x.classList.remove('open')); hlPopKey = ''; } }, true);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.querySelector('.hl-pop')) { document.querySelectorAll('.hl-pop').forEach(x => x.remove()); document.querySelectorAll('.hl-fxb.open').forEach(x => x.classList.remove('open')); hlPopKey = ''; } });
+    }
     box.querySelector('[data-hl-replay]')?.addEventListener('click', playTwice);
     box.querySelectorAll('[data-hl]').forEach(t => {
         t.addEventListener('input', () => { hb.fields[t.dataset.hl] = t.value; t.rows = Math.min(4, Math.max(1, t.value.split('\n').length)); renderPreview(); });
@@ -18444,6 +18526,15 @@ function pzTransform(fe) {
     }
     if (group) Q('.pz-content').append(group);
     if (tipQ) Q('.pz-content').append(tipQ);
+    // 유튜브 메인: 영상 주소 칸을 [세로 영상] 옆으로 (같은 카드 모양 - 작은 이름 + 굵은 값)
+    if (sid === 'heroVideo') {
+        const yf = Q('.pz-content [data-field="youtubeId"]')?.closest('.field'), ch = Q('.pz-chips');
+        if (yf && ch) {
+            yf.classList.add('pz-ytid'); ch.prepend(yf);
+            const lb = yf.querySelector(':scope > label'); if (lb) { lb.textContent = '유튜브 영상 주소'; lb.title = '유튜브 주소를 그대로 붙여 넣어도 돼요'; }
+            const inp = yf.querySelector('input'); if (inp) inp.placeholder = '주소를 붙여 넣어요';
+        }
+    }
     // 디데이: [달력 보여주기 | 달력 모양] / [카운트 보여주기 | 카운터 모양] 한 줄씩 짝지어 보이게
     root.classList.toggle('pz-dd', sid === 'dday' && mode === 'C');
     if (sid === 'dday' && mode === 'C') {

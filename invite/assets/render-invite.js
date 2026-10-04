@@ -670,14 +670,15 @@ const templates = {
         const L = f.layout, s = k => partStyle(L, k);
         const wrapStyle = f.heightMode === 'full' ? 'height:100vh; height:100svh; aspect-ratio:auto;' : `aspect-ratio:${f.heightMode};`; // svh = 휴대폰 주소창·도구막대를 뺀 실제 보이는 높이
         const over = InviteBlocks.heroTextOn(f, 'video'); // 끄면 이름·날짜가 영상 아래 글자 칸으로 (켜면 아래 칸 없음)
-        const ink = over ? 'on-dark' : 'on-light';
+        const ink = over && !(f.heightMode === 'full' && f.heroBox) ? 'on-dark' : 'on-light'; // 사진 칸 레이아웃이면 글자가 밝은 바탕 위
         const parts = `${(f.hideParts || []).includes('datetime') ? '' : `<span class="drag-part ${ink} op-datetime" style="${s('datetime')}">${esc(f.datetime)}</span>`}
         ${(f.hideParts || []).includes('groomName') ? '' : `<span class="drag-part ${ink} op-name" style="${s('groomName')}">${esc(f.groomName)}</span>`}
         ${f.hideHeart ? '' : `<span class="drag-part ${ink} op-heart" style="${s('heart')}">♥</span>`}
         ${(f.hideParts || []).includes('brideName') ? '' : `<span class="drag-part ${ink} op-name" style="${s('brideName')}">${esc(f.brideName)}</span>`}${InviteBlocks.heroLayersHtml(f, ink, s)}`;
         const band = InviteBlocks.videoBandSpace ? InviteBlocks.videoBandSpace(f) : 0; // 영상 아래 글자 칸 (글자는 영상+칸 어디든)
-        return `<div class="blk-hero-video${over ? '' : ' vt-under'}${band ? ' vt-overband' : ''}"><div class="video-cover-wrap${over && !band ? ' drag-canvas' : ''}" style="${wrapStyle}">
-        <iframe src="${ytEmbedSrc(f.youtubeId)}" data-cover data-video-position="${f.videoPosition}" data-video-focus="${esc(f.videoFocus || '')}"${f.videoVertical ? ' data-vertical="1"' : ''}${+f.videoLb > 100 ? ` data-video-zoom="${+f.videoLb}"` : ''} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen playsinline title="배경 영상"></iframe>
+        const vb = InviteBlocks.heroVideoBox ? InviteBlocks.heroVideoBox(f, `<iframe src="${ytEmbedSrc(f.youtubeId)}" data-cover data-video-position="${f.videoPosition}" data-video-focus="${esc(f.videoFocus || '')}"${f.videoVertical ? ' data-vertical="1"' : ''}${+f.videoLb > 100 ? ` data-video-zoom="${+f.videoLb}"` : ''} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen playsinline title="배경 영상"></iframe>`) : { cls: '', style: '', html: `<iframe src="${ytEmbedSrc(f.youtubeId)}" data-cover data-video-position="${f.videoPosition}" data-video-focus="${esc(f.videoFocus || '')}"${f.videoVertical ? ' data-vertical="1"' : ''}${+f.videoLb > 100 ? ` data-video-zoom="${+f.videoLb}"` : ''} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen playsinline title="배경 영상"></iframe>` }; // 사진 칸 레이아웃이면 영상을 칸 안에
+        return `<div class="blk-hero-video${over ? '' : ' vt-under'}${band ? ' vt-overband' : ''}"><div class="video-cover-wrap${over && !band ? ' drag-canvas' : ''}${vb.cls}" style="${wrapStyle}${vb.style}">
+        ${vb.html}
         <button type="button" class="video-fullscreen-btn" title="전체화면으로 보기">⤢</button>
         ${over ? `${InviteBlocks.heroShadeHtml(f, 'video')}${band ? '' : parts}${InviteBlocks.nextBtnHtml(f, 'video')}` : ''}
         </div>${band ? `<div class="hero-text-space" style="height:${(band / 390 * 100).toFixed(3)}cqw;"></div><div class="free-canvas drag-canvas hero-over-canvas">${parts}</div>` : ''}${over ? '' : `<div class="free-canvas drag-canvas vt-band" style="height:220px;">${parts}</div>`}</div>`;
@@ -861,7 +862,7 @@ function groupIntoRows(blocks) {
 }
 
 function fitVideoCover(iframe) {
-    const wrap = iframe.closest('.video-cover-wrap');
+    const wrap = iframe.closest('.hero-vbox') || iframe.closest('.video-cover-wrap'); // 사진 칸 레이아웃이면 칸 크기로
     if (!wrap) return;
     const cw = wrap.clientWidth, ch = wrap.clientHeight;
     if (!cw || !ch) return;
@@ -894,7 +895,7 @@ function fitAllVideoCovers(root) {
         fitVideoCover(iframe);
         if (!iframe._coverObserverAttached) {
             iframe._coverObserverAttached = true;
-            const wrap = iframe.closest('.video-cover-wrap');
+            const wrap = iframe.closest('.hero-vbox') || iframe.closest('.video-cover-wrap');
             if (wrap && typeof ResizeObserver !== 'undefined') {
                 new ResizeObserver(() => fitVideoCover(iframe)).observe(wrap);
             }
