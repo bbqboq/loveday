@@ -13682,6 +13682,8 @@ function spHeroScroll(box) {
     const on = !!f.nextBtn, st = NBP_STY.some(x => x[0] === f.nextStyle) ? f.nextStyle : 'glass';
     const what = kind === 'video' ? '유튜브 영상' : '사진';
     const IB = InviteBlocks;
+    // 전체화면이면 글자가 늘 사진·영상 위라 "글자 잘 보이게"가 제일 필요함 - 접힌 목록 대신 이 화면에도 둠
+    const shadeOn = spOpt('hero', 'shade') && IB.heroTextOn(f, kind === 'video' ? 'video' : 'hero');
     const chip = (k, l) => `<button type="button" class="nbp-c${(k === 'none' ? !on : on && st === k) ? ' on' : ''}" data-sp-nb="${k}">${k === 'none' ? '<span class="nbp-scr off"><i class="nbp-ghost">⊘</i></span>' : `<span class="nbp-scr">${nbpMini(f, k)}${k === 'custom' ? '<i class="nbp-pen">✎</i>' : ''}</span>`}${l}</button>`;
     const pick = (key, list, cur, n) => `<div class="wz-field sp-in"><div class="wz-lab">${n}</div><div class="sp-chips">${list.map(([v, l]) => `<button type="button" class="${String(cur) === String(v) ? 'on' : ''}" data-sp-nk="${key}" data-v="${v}">${l}</button>`).join('')}</div></div>`;
     const has = (list, v, d) => list.some(x => x[0] === v) ? v : d;
@@ -13695,6 +13697,7 @@ function spHeroScroll(box) {
     }
     box.innerHTML = spH('↓ 스크롤 버튼', '전체화면 아래쪽에 "아래로 내려보세요" 버튼을 띄울지 골라요. 누르면 다음 섹션으로 넘어가요.') +
         `<div class="sp-sum sp-in"><span><b>${what}</b> · 전체화면</span><button type="button" class="sp-link" id="spHeroBack">← 다시 고르기</button></div>
+        ${shadeOn ? `<div class="sp-shade sp-in" data-blk="${b.id}">${shadeFieldHtml(f, kind === 'video' ? 'video' : 'hero')}</div>` : ''}
         <div class="wz-field sp-in"><div class="wz-lab"><span><span class="sp-n">4</span>버튼 모양</span></div><div class="sp-nbp">${chip('none', '없음')}${NBP_STY.filter(([k]) => k !== 'custom' || spOpt('hero', 'scrollCustom') || st === 'custom').map(([k, l]) => chip(k, l)).join('')}</div></div>
         ${on ? (spOpt('hero', 'scrollCustom') ? custom : '') + (spOpt('hero', 'scrollSize') ? pick('nextSize', IB.NEXT_SIZES, sz, '버튼 크기') : '')
             + (spOpt('hero', 'scrollOpacity') ? `<div class="wz-field sp-in"><div class="wz-lab"><span>진하기</span><small id="spNbOpV">${f.nextOpacity || 85}%</small></div><div class="sp-range"><span>흐리게</span><input type="range" id="spNbOp" min="30" max="100" step="5" value="${f.nextOpacity || 85}"><span>진하게</span></div></div>` : '')
@@ -13703,6 +13706,7 @@ function spHeroScroll(box) {
     box.querySelectorAll('.sp-in').forEach((el, i) => { el.style.animationDelay = (i * 50) + 'ms'; });
     const after = () => { spChanged(); scheduleSnapshot(); spRender(); setTimeout(spScrollToNextBtn, 60); };
     box.querySelector('#spHeroBack').addEventListener('click', () => { spHeroPhase = 'pick'; spRender(); });
+    box.querySelectorAll('.sp-shade').forEach(sh => { bindShadeField(sh, b); sh.addEventListener('click', ev => { if (ev.target.closest('[data-shade], [data-shade-lv]')) setTimeout(() => spRender(), 0); }); });
     box.querySelectorAll('[data-sp-nb]').forEach(c => c.addEventListener('click', () => {
         const v = c.dataset.spNb;
         if (v === 'none') f.nextBtn = false; else { feFx.playNext = true; f.nextBtn = true; f.nextStyle = v; } // 모양을 누를 때마다 등장 효과 재생 → 1.3초 → 한 번 더
