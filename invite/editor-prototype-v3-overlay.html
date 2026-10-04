@@ -7810,7 +7810,7 @@ function addHeroBandHandle(root) {
         ok.addEventListener('pointerdown', e => e.stopPropagation());
         ok.addEventListener('click', e => {
             e.preventDefault(); e.stopPropagation();
-            hhState.bandOff = true; area.remove(); h.remove(); ok.remove();
+            hhState.bandOff = true; area.remove(); h.remove(); ok.remove(); updateSectionRuler(); // 잠가 둔 여백 눈금자 다시 풀기
             if (hhMobile() && hhState.bandOk) { hhState.bandOk = false; reopenSectionPanel(id); }
         });
         hero.append(area, h, ok);
@@ -11125,8 +11125,11 @@ function updateSectionRuler() {
         mkLine('top');
         mkLine('bottom');
     });
-    // 히어로 사진 "높이조정" 손잡이(↕)가 떠 있으면, 그 자리와 겹치는 섹션 여백 눈금자(히어로 아래쪽 · 바로 아래 섹션 위쪽)는 잠시 잠금
-    const hhCol = heroHHOn() || heroBandOn() ? root.querySelector('.col[data-block-id="hero"]') : null;
+    // 메인 사진·영상의 높이 손잡이(사진 "높이조정" ↕ · 사진/영상 아래 "글자 칸")가 떠 있는 동안은 그 섹션 높이는 손잡이로만 정함
+    //  → 겹치는 섹션 여백 눈금자(메인 아래쪽 · 바로 아래 섹션 위쪽)는 잠금 (예전엔 사진만 보고, 글자 칸 손잡이는 못 알아봤음)
+    const bandShown = id => selectedId === id && !(hhState.bandSel === selectedId && hhState.bandOff) && heroBandOn(id);
+    const hhId = heroHHOn() || bandShown('hero') ? 'hero' : bandShown('heroVideo') ? 'heroVideo' : null;
+    const hhCol = hhId ? root.querySelector(`.col[data-block-id="${hhId}"]`) : null;
     if (hhCol) {
         const cols = [...root.querySelectorAll('.col[data-block-id]')].filter(c => c.offsetParent !== null);
         const nextCol = cols[cols.indexOf(hhCol) + 1];
@@ -11134,7 +11137,7 @@ function updateSectionRuler() {
             const m = line._rulerMeta;
             if (m && ((m.col === hhCol && m.edge === 'bottom') || (m.col === nextCol && m.edge === 'top'))) {
                 line.classList.add('ruler-locked');
-                line.title = '사진 높이조정 손잡이와 겹쳐서 잠시 잠갔어요 (높이조정을 다른 옵션으로 바꾸면 다시 조정돼요)';
+                line.title = hhId === 'hero' && heroHHOn() ? '사진 높이조정 손잡이와 겹쳐서 잠시 잠갔어요 (높이조정을 다른 옵션으로 바꾸면 다시 조정돼요)' : '글자 칸 높이를 정하는 동안은 잠가 뒀어요 (노란 칸 옆 OK를 누르면 다시 조정돼요)';
             }
         });
     }
