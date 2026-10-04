@@ -1182,6 +1182,7 @@ function renderInviteReadOnly(rootEl, design, masked) {
     });
     if (window.InviteBlocks && InviteBlocks.applyImgFocus) InviteBlocks.applyImgFocus(rootEl, design.imgFocus, design.imgZoom); // 사진 "보이는 부분" (에디터에서 정함)
     if (window.InviteBlocks) InviteBlocks.bindInteractions(rootEl); // 계좌 복사 버튼, 슬라이드 갤러리 진행바
+    if (window.InviteBlocks && InviteBlocks.armHeroAnims) InviteBlocks.armHeroAnims(rootEl); // 메인 문구 칸 등장 효과 (인트로가 끝난 뒤 화면에 보이면)
     if (window.InviteBlocks) InviteBlocks.initExtras(rootEl, design); // 공유 버튼, 배경음악, 상단 메뉴
     // 스크롤바 모양 (에디터 화면 설정 → 부가기능). 페이지 전체 스크롤바라 html에 붙이고, 색은 청첩장 색을 복사
     if (window.InviteBlocks && InviteBlocks.applyScrollbar) InviteBlocks.applyScrollbar(document.documentElement, design.extras && design.extras.scrollbar, rootEl, { color: design.extras && design.extras.scrollbarColor, opacity: design.extras && design.extras.scrollbarOpacity }); // 스크롤바 모양·색·진하기

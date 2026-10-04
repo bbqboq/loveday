@@ -465,7 +465,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-ud button svg { width: 16px; height: 16px; fill: none; stroke: var(--wz-ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .sp-ud button:disabled { opacity: .35; cursor: default; }
 .sp-ud button:not(:disabled):hover { border-color: var(--wz-ink); }
-.sp-view { align-self: flex-start; margin: -4px 24px 8px; border: 0; background: none; padding: 0; font: inherit; font-size: 12px; font-weight: 700; color: var(--wz-acc); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.sp-view { display: block; margin: 4px 0 0; border: 0; background: none; padding: 0; font: inherit; font-size: 12px; font-weight: 700; color: var(--wz-acc); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .sp-stepn { font-size: 11.5px; font-weight: 600; opacity: .6; margin-left: 4px; letter-spacing: .02em; }
 .sp-list { display: flex; flex-direction: column; gap: 8px; padding: 6px 20px 8px; }
 .sp-li { background: #fff; border: 1px solid var(--wz-line); border-radius: 14px; }
@@ -551,6 +551,10 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-seg button b { font-size: 14px; } .sp-seg button small { font-size: 11.5px; color: var(--wz-mute); line-height: 1.35; }
 .sp-seg button:hover { border-color: var(--wz-line2); }
 .sp-seg button.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink) inset; }
+.hl-ex { --wz-ink: #1B1A18; --wz-sub: #6F6A63; --wz-mute: #A39D95; --wz-line: #EAE6E0; --wz-line2: #DED8CF; --wz-card: #fff; --wz-acc: #8A4B55; }
+.hl-ex .wz-lab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700; margin-bottom: 8px; } .hl-ex .wz-lab small { font-weight: 400; font-size: 11.5px; color: var(--wz-mute); }
+.hl-ex .wz-inp { width: 100%; border: 1px solid var(--wz-line2); border-radius: 10px; background: #fff; font: inherit; color: var(--wz-ink); box-sizing: border-box; }
+.hl-ex .wz-hint { font-size: 11.5px; color: var(--wz-mute); line-height: 1.5; }
 .hl-admin { border-top: 1px dashed var(--line); padding-top: 14px; margin-top: 14px; }
 .hl-admin input[type=text] { width: 100%; margin-top: 6px; }
 .hl-admin-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
@@ -565,8 +569,17 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .hl-m .hl-sh { position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.28), rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,.32)); }
 .hl-m span { position: absolute; white-space: nowrap; line-height: 1.02; text-align: center; text-shadow: 0 1px 6px rgba(0,0,0,.2); }
 .hl-ins { display: grid; gap: 8px; margin-top: 10px; }
+.hl-in { display: grid; gap: 6px; }
+.hl-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-left: 62px; } .hl-opts small { font-size: 11px; color: var(--wz-mute); font-weight: 700; }
+.hl-sel { height: 30px; border: 1px solid var(--wz-line2); border-radius: 8px; background: #fff; font: inherit; font-size: 12px; padding: 0 6px; color: var(--wz-ink); }
+.hl-foot { display: flex; gap: 8px; } .hl-replay { border: 1px solid var(--wz-line2); background: #fff; border-radius: 99px; padding: 6px 12px; font: inherit; font-size: 12px; font-weight: 700; color: var(--wz-ink); cursor: pointer; }
+.hl-m-box .hl-mb { position: absolute; overflow: hidden; display: block; } .hl-m-box .hl-mb em { position: absolute; inset: 0; background: center / cover no-repeat; }
+.hl-m-box .hb-fr-rounded { border-radius: 5px; } .hl-m-box .hb-fr-arch { border-radius: 999px 999px 0 0; } .hl-m-box .hb-fr-shadow { box-shadow: 0 4px 10px rgba(0,0,0,.2); }
+.hl-m-box .hb-fr-polaroid { background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.15); } .hl-m-box .hb-fr-polaroid em { inset: 5% 5% 26% 5%; }
+.hl-m-box span { text-shadow: none; }
+.hl-m .hl-vert { writing-mode: vertical-rl; text-orientation: upright; line-height: 1.15; } .hl-m .hl-vert-side { text-orientation: mixed; } .hl-m .hl-curve { line-height: 0; } .hl-m .hl-arc { display: block; overflow: visible; }
 .hl-ins label { display: grid; grid-template-columns: 54px 1fr; gap: 8px; align-items: center; font-size: 12px; font-weight: 700; color: var(--wz-sub); }
-.hl-ins textarea { resize: none; min-height: 44px; font-size: 14px; line-height: 1.4; padding-top: 11px; }
+.hl-ins textarea.wz-inp { resize: none; height: auto; min-height: 46px; font-size: 15px; line-height: 1.45; padding: 11px 14px; }
 .hl-ins .wz-hint { grid-column: 1 / -1; margin: 0; }
 .sp-dsg { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid var(--wz-line); border-radius: 14px; background: #fff; }
 .sp-dsg small { display: block; font-size: 11px; color: var(--wz-mute); font-weight: 600; } .sp-dsg b { font-size: 14px; }
@@ -1667,6 +1680,7 @@ body.tippick-on, body.tippick-on * { cursor: crosshair !important; }
 .hero-photo-wrap { padding: 0 32px; margin-bottom: 8px; }
 /* 에디터 미리보기에서는 "휴대폰 화면 꽉"을 휴대폰 화면 비율(9:19.5)로 보여줌 (실제 청첩장은 100svh) */
 .invite-preview .hero-photo.hero-full.ratio-screen { height: 216cqw; }
+.invite-preview .hero-photo-wrap.hero-boxed { height: 216cqw; } /* 사진 칸 모드도 휴대폰 화면 한 장 높이로 */
 .invite-preview .blk-hero-video .video-cover-wrap[style*="100svh"] { height: 216cqw !important; } /* 메인 영상 전체화면도 휴대폰 화면 한 장 높이로 (100vh = 에디터 창 높이라 글자가 화면 밖 아래로 놓였음) */
 .invite-preview .ib-ending.ib-credits { height: 216cqw; } /* 엔딩 크레딧도 휴대폰 화면 한 장 높이로 */
 .hero-photo { display: block; width: 100%; object-fit: cover; }
@@ -4033,13 +4047,13 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017b">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017b">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017c">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017c">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
-<script src="assets/invite-blocks.js?v=1017b"></script>
-<script src="assets/tip-demos.js?v=1017b"></script>
-<script src="assets/ld-dialog.js?v=1017b"></script>
+<script src="assets/invite-blocks.js?v=1017c"></script>
+<script src="assets/tip-demos.js?v=1017c"></script>
+<script src="assets/ld-dialog.js?v=1017c"></script>
 </head>
 <body>
 
@@ -7484,6 +7498,11 @@ function renderFieldEditor() {
     }));
     if (block.id === 'heroVideo') { appendVideoVerticalToggle(wrap, block); appendVideoTextControls(wrap, block); appendVideoFocusControls(wrap, block); }
     if (block.id === 'hero' || block.id === 'heroVideo') appendNextBtnControls(wrap, block);
+    if (block.id === 'hero' || block.id === 'heroVideo') { // 메인 레이아웃 고르기 (간편 만들기와 같은 것) - 편집창 맨 위
+        const hlBox = document.createElement('div'); hlBox.className = 'field hl-ex';
+        hlBox.innerHTML = spHeroLayoutHtml(block, block.id === 'heroVideo' ? 'video' : 'photo');
+        if (hlBox.innerHTML) { const first = wrap.querySelector(':scope > h3, :scope > .field-editor-title-row'); first ? first.after(hlBox) : wrap.prepend(hlBox); spBindHeroLayout(hlBox, block, () => renderFieldEditor()); }
+    }
     if ((block.id === 'hero' || block.id === 'heroVideo') && HL_ADMIN) appendHeroLayoutAdmin(wrap, block);
     appendSectionSpacingControls(wrap, block);
 }
@@ -13144,7 +13163,7 @@ let HL_ADMIN = false;
 function hlRefreshEasy() { try { if (document.documentElement.classList.contains('simple-mode')) spRender(); } catch (e) {} }
 fetch('hero_layouts.php?a=list', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { if (j && Array.isArray(j.items)) { HERO_LAYOUTS_ADMIN = j.items; hlRefreshEasy(); } }).catch(() => {});
 fetch('hero_layouts.php?a=me', { cache: 'no-store', credentials: 'same-origin' }).then(r => r.ok ? r.json() : null).then(j => { HL_ADMIN = !!(j && j.ok && j.admin); }).catch(() => {});
-const HL_ST = ['x', 'y', 'fontSize', 'scaleX', 'widthAuto', 'width', 'rotation', 'ls', 'font', 'color', 'align', 'outline', 'shadow', 'glow'];
+const HL_ST = ['x', 'y', 'fontSize', 'scaleX', 'widthAuto', 'width', 'rotation', 'ls', 'font', 'color', 'align', 'outline', 'shadow', 'glow', 'vertical', 'arc', 'arcW', 'anim', 'animDur', 'animDelay'];
 function heroLayoutFromBlock(b) { // 지금 메인 화면 → 레이아웃 (글자 칸 자리·모양 + 화면 크기만, 사진·이름은 안 담음)
     const f = b.fields, isV = b.id === 'heroVideo', L = f.layout || {};
     const pick = (o, ks) => { const r = {}; ks.forEach(k => { if (o && o[k] !== undefined && o[k] !== null) r[k] = o[k]; }); return r; };
@@ -13153,7 +13172,9 @@ function heroLayoutFromBlock(b) { // 지금 메인 화면 → 레이아웃 (글�
     const parts = {}; ['groomName', 'heart', 'brideName', 'datetime'].forEach(k => { if (L[k]) parts[k] = pick(L[k], HL_ST); });
     const hide = (f.hideParts || []).slice(); if (f.hideHeart) hide.push('heart');
     const layers = (f.heroLayers || []).filter(k => L[k]).map(k => Object.assign({ text: f[k] || '' }, pick(L[k], HL_ST)));
-    return { photo, video, parts, hide, layers };
+    const out = { photo, video, parts, hide, layers };
+    if (!isV && f.heroBox) out.box = JSON.parse(JSON.stringify(f.heroBox));
+    return out;
 }
 async function hlPost(a, body) {
     const r = await fetch('hero_layouts.php?a=' + a, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -13870,8 +13891,7 @@ function spRender() {
     if (same) pane.style.minHeight = pane.offsetHeight + 'px';
     const tpl = (allDesigns().find(p => p.id === (state.sampleId || state.presetId)) || {}).label || '';
     try { stopBgmPreview(); } catch (e) {}
-    pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>${spStep + 1} / ${steps.length} · ${esc(st.t)}</b></div><div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button></div>
-        ${quick ? '' : `<button type="button" class="sp-view" id="spViewBtn">한 번에 보기 (옵션 창)</button>`}
+    pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>${spStep + 1} / ${steps.length} · ${esc(st.t)}</b>${quick ? '' : '<button type="button" class="sp-view" id="spViewBtn">한 번에 보기 (옵션 창)</button>'}</div><div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button></div>
         <nav class="sp-steps"${quick ? ' hidden' : ''}>${steps.map((x, i) => `<button type="button" class="${i === spStep ? 'on' : i < spStep ? 'done' : ''}" data-sp-go="${i}"><i>${i < spStep ? '✓' : i + 1}</i><span>${esc(x.t)}</span></button>`).join('')}</nav>
         <div class="sp-body" id="spBody"></div>
         <div class="sp-nav"><button type="button" class="wz-back" id="spPrev"${spStep === 0 ? ' style="visibility:hidden"' : ''}>이전</button><button type="button" class="wz-next" id="spNext">다음${quick ? ` <small class="sp-stepn">STEP ${spStep + 1}/${steps.length}</small>` : ''}</button></div>`;
@@ -13921,8 +13941,7 @@ function spRenderList() {
     const swOf = st => { if (SP_LIST_NOSW.includes(st.k)) return null; const ids = (st.s || []).filter(id => spHas(id)); return ids.length === 1 ? ids[0] : null; };
     const item = st => { const sw = swOf(st), on = sw ? spBlock(sw).enabled : true, open = spOpenSet.has(st.k);
         return `<section class="sp-li${open ? ' open' : ''}${on ? '' : ' off'}" data-li="${st.k}"><div class="sp-li-h"><button type="button" class="sp-li-t" data-li-tog="${st.k}" aria-expanded="${open}">${esc(st.k === 'finish' ? '인트로' : st.t)}</button>${sw ? `<label class="sp-li-sw" title="${on ? '끄면 청첩장에서 빠져요' : '켜면 청첩장에 들어가요'}"><input type="checkbox" data-li-sw="${sw}" ${on ? 'checked' : ''}><i></i></label>` : ''}<button type="button" class="sp-li-c" data-li-tog="${st.k}" aria-label="펼치기"></button></div>${open ? `<div class="sp-li-b" data-li-body="${st.k}"></div>` : ''}</section>`; };
-    pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 꾸미기</b></div><div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button></div>
-        <button type="button" class="sp-view" id="spViewBtn">단계별로 보기</button>
+    pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 꾸미기</b><button type="button" class="sp-view" id="spViewBtn">단계별로 보기</button></div><div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button></div>
         <div class="sp-list">${steps.map(item).join('')}</div>
         <div class="sp-list-end"><button type="button" class="wz-next" id="spListDone">완성본 보기</button><p class="wz-hint">저장하고 다 된 모습을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.</p></div>`;
     pane.querySelector('#spToFull').addEventListener('click', () => spInPlace ? spExitInPlace() : simpleToFull());
@@ -14104,27 +14123,40 @@ function spPhotoCrop(holder, blk) {
 let HERO_LAYOUTS_ADMIN = []; // 관리자가 저장한 레이아웃 (hero_layouts.php)
 const spHeroLayouts = () => ((window.InviteBlocks && InviteBlocks.HERO_LAYOUTS) || []).concat(HERO_LAYOUTS_ADMIN);
 function spHeroLayoutMini(lay, hb, kind) {
-    const f = hb.fields, sk = skins[state.skin] || skins.classic;
-    const bg = kind === 'photo' ? (f.heroImage ? `url('${esc(InviteBlocks.imgUrl(f.heroImage))}')` : '') : (f.youtubeId ? `url('https://i.ytimg.com/vi/${encodeURIComponent(f.youtubeId)}/hqdefault.jpg')` : '');
+    const f = hb.fields, sk = skins[state.skin] || skins.classic, box = kind === 'photo' && lay.box;
+    const img = kind === 'photo' ? (f.heroImage ? `url('${esc(InviteBlocks.imgUrl(f.heroImage))}')` : '') : (f.youtubeId ? `url('https://i.ytimg.com/vi/${encodeURIComponent(f.youtubeId)}/hqdefault.jpg')` : '');
+    const ph = img || `linear-gradient(160deg, ${sk.accent}, ${sk.ink})`;
     const txt = (L, t) => { if (!L) return ''; if (L.font) loadFontCss(L.font);
-        const fam = partFontFamily(L.font) || String(L.font === undefined ? '' : sk.headFont).replace(/"/g, "'");
-        return `<span style="left:${L.x}%;top:${L.y}%;font-size:${(L.fontSize / 390 * 100).toFixed(2)}cqw;${fam ? `font-family:${fam};` : ''}color:${L.color || '#fff'};${L.ls ? `letter-spacing:${L.ls / 1000}em;` : ''}transform:translate(-50%,-50%) rotate(${L.rotation || 0}deg);${L.align ? `text-align:${L.align};` : ''}">${esc(t).replace(/\n/g, '<br>')}</span>`; };
+        const fam = partFontFamily(L.font) || String(sk.headFont || '').replace(/"/g, "'");
+        const col = L.color || (box ? sk.ink : '#fff');
+        return `<span class="${InviteBlocks.heroLayerCls(Object.assign({}, L, { anim: '' }))}" style="left:${L.x}%;top:${L.y}%;font-size:${(L.fontSize / 390 * 100).toFixed(2)}cqw;${fam ? `font-family:${fam};` : ''}color:${col};${L.ls ? `letter-spacing:${L.ls / 1000}em;` : ''}transform:translate(-50%,-50%) rotate(${L.rotation || 0}deg);${L.align ? `text-align:${L.align};` : ''}${InviteBlocks.heroLayerCss(Object.assign({}, L, { anim: '' }))}">${InviteBlocks.heroLayerInner(t, L)}</span>`; };
     const hide = lay.hide || [], P = lay.parts || {};
     const parts = [['groomName', f.groomName], ['heart', '♥'], ['brideName', f.brideName], ['datetime', f.datetime]].filter(([k]) => !hide.includes(k) && P[k]).map(([k, t]) => txt(P[k], t || '')).join('');
     const layers = (lay.layers || []).map(L => txt(L, InviteBlocks.heroFill(L.text, f))).join('');
-    return `<span class="hl-m" style="${bg ? `background-image:${bg};` : `background:linear-gradient(160deg, ${sk.accent}, ${sk.ink});`}"><i class="hl-sh"></i>${parts}${layers}</span>`;
+    if (box) {
+        const fr = box.frame || 'none', fade = Number(box.fade) || 0;
+        const mask = fade ? `-webkit-mask-image:linear-gradient(#000 ${100 - fade}%,transparent);mask-image:linear-gradient(#000 ${100 - fade}%,transparent);` : '';
+        return `<span class="hl-m hl-m-box" style="background:${box.bg || sk.bg}"><i class="hl-mb hb-fr-${esc(fr)}" style="left:${box.x}%;top:${box.y}%;width:${box.w}%;height:${box.h}%;${mask}"><em style="background-image:${ph}"></em></i>${parts}${layers}</span>`;
+    }
+    return `<span class="hl-m" style="background-image:${ph};"><i class="hl-sh"></i>${parts}${layers}</span>`;
 }
 function spHeroLayoutHtml(hb, kind) {
-    const f = hb.fields, list = spHeroLayouts();
+    const f = hb.fields, list = spHeroLayouts().filter(l => kind === 'photo' || !l.box), adv = !document.documentElement.classList.contains('simple-mode'); // 사진 칸 레이아웃은 사진에만
     if (!list.length) return '';
     const cur = f.heroLayout || '';
     const cards = list.map(l => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${spHeroLayoutMini(l, hb, kind)}<b>${esc(l.label)}</b></button>`).join('');
     const keys = (f.heroLayers || []).filter(k => f.layout && f.layout[k]);
-    const inputs = keys.length ? `<div class="hl-ins">${keys.map((k, i) => `<label><span>문구 ${i + 1}</span><textarea class="wz-inp" rows="${String(f[k] || '').includes('\n') ? 2 : 1}" data-hl="${esc(k)}">${wzEsc(f[k] || '')}</textarea></label>`).join('')}
+    const sel = (k, key, opts, cur) => `<select class="hl-sel" data-hl-k="${esc(k)}" data-hl-p="${key}">${opts.map(([v, l]) => `<option value="${esc(String(v))}"${String(cur ?? '') === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+    const anyAnim = keys.some(k => f.layout[k].anim);
+    const inputs = keys.length ? `<div class="hl-ins">${keys.map((k, i) => { const L = f.layout[k];
+        return `<div class="hl-in"><label><span>문구 ${i + 1}</span><textarea class="wz-inp" rows="${String(f[k] || '').includes('\n') ? 2 : 1}" data-hl="${esc(k)}">${wzEsc(f[k] || '')}</textarea></label>
+            <div class="hl-opts"><small>효과</small>${sel(k, 'anim', InviteBlocks.HL_ANIMS, L.anim || '')}${adv ? `<small>모양</small>${sel(k, 'vertical', [['', '가로'], ['up', '세로'], ['side', '세로(눕힘)']], L.vertical || '')}${sel(k, 'arc', [[0, '곧게'], [30, '살짝 둥글게'], [60, '둥글게'], [-30, '아래로 살짝'], [-60, '아래로 둥글게']], Number(L.arc) || 0)}` : ''}</div></div>`; }).join('')}
+        <div class="hl-foot">${anyAnim ? '<button type="button" class="hl-replay" data-hl-replay>▶ 효과 다시 보기</button>' : ''}</div>
         <p class="wz-hint">{신랑} {신부} {날짜:영문} {날짜:점} 처럼 적으면 적어 둔 이름·날짜로 바뀌어요. 줄을 바꾸려면 Enter.</p></div>` : '';
     return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div><div class="hl-row">${cards}</div>${inputs}</div>`;
 }
-function spBindHeroLayout(box, hb) {
+function spBindHeroLayout(box, hb, after) {
+    after = after || (() => spRender());
     box.querySelectorAll('[data-hl-pick]').forEach(b => b.addEventListener('click', () => {
         const lay = spHeroLayouts().find(l => l.id === b.dataset.hlPick); if (!lay) return;
         scheduleSnapshot();
@@ -14132,8 +14164,16 @@ function spBindHeroLayout(box, hb) {
         InviteBlocks.applyHeroLayout(hb, lay);
         try { syncFullscreenPad(hb); } catch (e) {}
         if (!was) spHeroPhase = 'pick'; // 레이아웃은 바로 전체화면이 되니 스크롤 버튼 화면으로 접지 않음
-        spChanged([hb.id]); scheduleSnapshot(); spRender();
+        renderPreview(); scheduleSnapshot(); after();
     }));
+    box.querySelectorAll('[data-hl-p]').forEach(sl => sl.addEventListener('change', () => {
+        const L = hb.fields.layout[sl.dataset.hlK]; if (!L) return; const p = sl.dataset.hlP;
+        L[p] = p === 'arc' ? Number(sl.value) || 0 : sl.value;
+        if (p === 'arc' && L.arc && !L.arcW) L.arcW = 70;
+        renderPreview(); scheduleSnapshot(); after();
+        if (p === 'anim' && L.anim) setTimeout(() => InviteBlocks.playHeroAnims(document.getElementById('previewRoot')), 120);
+    }));
+    box.querySelector('[data-hl-replay]')?.addEventListener('click', () => { spScrollPreview([hb.id]); setTimeout(() => InviteBlocks.playHeroAnims(document.getElementById('previewRoot')), 250); });
     box.querySelectorAll('[data-hl]').forEach(t => {
         t.addEventListener('input', () => { hb.fields[t.dataset.hl] = t.value; t.rows = t.value.includes('\n') ? 2 : 1; renderPreview(); });
         t.addEventListener('change', () => scheduleSnapshot());

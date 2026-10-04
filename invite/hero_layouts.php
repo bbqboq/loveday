@@ -55,6 +55,9 @@ function hl_style($s): array
         if ($n !== null) $o[$k] = $n;
     }
     foreach (['widthAuto', 'outline', 'shadow'] as $k) if (isset($s[$k])) $o[$k] = (bool) $s[$k];
+    foreach (['arc' => [-100, 100], 'arcW' => [10, 100], 'animDur' => [0.3, 8], 'animDelay' => [0, 8]] as $k => [$mn, $mx]) { $n = hl_num($s[$k] ?? null, $mn, $mx); if ($n !== null) $o[$k] = $n; }
+    if (isset($s['vertical']) && in_array($s['vertical'], ['', 'up', 'side'], true)) $o['vertical'] = $s['vertical'];
+    if (isset($s['anim']) && in_array($s['anim'], ['', 'write', 'fade', 'up', 'zoom'], true)) $o['anim'] = $s['anim'];
     if (isset($s['font']) && is_string($s['font']) && preg_match('/^[a-z0-9-]{0,30}$/', $s['font'])) $o['font'] = $s['font'];
     if (isset($s['color'])) $o['color'] = hl_hex($s['color']);
     if (isset($s['glow'])) $o['glow'] = hl_hex($s['glow']);
@@ -80,6 +83,16 @@ function hl_view($v, bool $video): array
     if (isset($v['heroShadeLv']) && in_array((string) $v['heroShadeLv'], ['1', '2', '3'], true)) $o['heroShadeLv'] = (string) $v['heroShadeLv'];
     return $o;
 }
+/** 사진 칸 (화면 기준 %, 모양, 아래쪽 흐려짐) - 없으면 null */
+function hl_box($b): ?array
+{
+    if (!is_array($b)) return null;
+    $o = [];
+    foreach (['x' => [-50, 100], 'y' => [-50, 100], 'w' => [5, 200], 'h' => [5, 200], 'fade' => [0, 90]] as $k => [$mn, $mx]) { $n = hl_num($b[$k] ?? null, $mn, $mx); if ($n !== null) $o[$k] = $n; }
+    $o['frame'] = in_array($b['frame'] ?? '', ['none', 'rounded', 'arch', 'polaroid', 'shadow'], true) ? $b['frame'] : 'none';
+    if (hl_hex($b['bg'] ?? '') !== '') $o['bg'] = hl_hex($b['bg']);
+    return $o;
+}
 function hl_clean(array $l): array
 {
     $parts = [];
@@ -98,6 +111,7 @@ function hl_clean(array $l): array
         'parts' => $parts,
         'hide' => array_values(array_intersect(HL_PART_KEYS, is_array($l['hide'] ?? null) ? $l['hide'] : [])),
         'layers' => $layers,
+        'box' => hl_box($l['box'] ?? null),
         'updated' => date('Y-m-d H:i'),
     ];
 }

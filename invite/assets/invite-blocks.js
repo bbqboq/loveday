@@ -478,11 +478,21 @@
     // heroWidth: 'frame' = 프레임 모양 안에 (예전 그대로) / 'full' = 가로 100% (좌우 여백 없이)
     // 가로 100%일 때 heroRatio: auto(원본 비율) · 1/1 · 4/5 · 3/4 · 16/9 · screen(휴대폰 화면 꽉) · px(직접 heroHeightPx)
     const HERO_RATIOS = [['auto', '원본 비율'], ['1/1', '정사각'], ['4/5', '세로 4:5'], ['3/4', '세로 3:4'], ['16/9', '가로 16:9'], ['screen', '전체화면'], ['px', '높이조정']];
+    // 사진 칸 모드 (메인 레이아웃): 화면 한 장(바탕색) 위 원하는 자리에 사진을 놓음 - x·y·w·h는 화면 기준 %, frame 모양, fade 아래쪽 흐려짐 %
+    const HERO_BOX_FRAMES = [['none', '사각형'], ['rounded', '둥근 모서리'], ['arch', '아치'], ['polaroid', '폴라로이드'], ['shadow', '그림자']];
+    function heroBoxHtml(f, src, pri) {
+        const b = f.heroBox, n = (v, d, mn, mx) => Math.max(mn, Math.min(mx, Number.isFinite(+v) ? +v : d));
+        const fr = HERO_BOX_FRAMES.some(x => x[0] === b.frame) ? b.frame : 'none', fade = n(b.fade, 0, 0, 90);
+        const mask = fade ? `-webkit-mask-image:linear-gradient(#000 ${100 - fade}%, transparent);mask-image:linear-gradient(#000 ${100 - fade}%, transparent);` : '';
+        const bg = /^#[0-9A-Fa-f]{6}$/.test(b.bg || '') ? ` style="background:${b.bg}"` : '';
+        return `<div class="hero-photo-wrap hero-full-wrap hero-boxed"${bg}><div class="hero-box hb-fr-${fr}" style="left:${n(b.x, 0, -50, 100)}%;top:${n(b.y, 0, -50, 100)}%;width:${n(b.w, 100, 5, 200)}%;height:${n(b.h, 60, 5, 200)}%;${mask}"><img${pri} class="hero-photo" src="${src}" alt=""></div>${heroTextOn(f, 'hero') && f.heroShade && f.heroShade !== 'none' ? heroShadeHtml(f, 'hero') : ''}</div>`;
+    }
     function heroPhotoHtml(f, opts) {
         if (!f || !f.heroImage) return '';
         const o = opts || {};
         const src = esc(o.src ? o.src(f.heroImage) : f.heroImage);
         const pri = o.priority ? ' fetchpriority="high"' : '';
+        if (f.heroWidth === 'full' && f.heroRatio === 'screen' && f.heroBox && typeof f.heroBox === 'object') return heroBoxHtml(f, src, pri);
         if (f.heroWidth === 'full') {
             const r = HERO_RATIOS.some(x => x[0] === f.heroRatio) ? f.heroRatio : 'auto';
             const px = Math.max(160, Math.min(1000, Number(f.heroHeightPx) || 480));
@@ -944,39 +954,123 @@
         return Object.assign(v, { '신랑': f.groomName || v['신랑'], '신부': f.brideName || v['신부'], '날짜': f.datetime || v['날짜'],
             '날짜:영문': dt ? `${EN_DAY[dt.getDay()].slice(0, 3)}, ${EN_MON[dt.getMonth()].slice(0, 3)} ${ord(dt.getDate())}, ${dt.getFullYear()}` : '',
             '날짜:점': dt ? `${dt.getFullYear()}.${String(dt.getMonth() + 1).padStart(2, '0')}.${String(dt.getDate()).padStart(2, '0')}` : '',
-            '요일:영문': dt ? EN_DAY[dt.getDay()].toUpperCase() : '' });
+            '요일:영문': dt ? EN_DAY[dt.getDay()].toUpperCase() : '', '요일:영문짧게': dt ? EN_DAY[dt.getDay()].slice(0, 3).toUpperCase() : '',
+            '년:2': dt ? String(dt.getFullYear()).slice(-2) : '', '월': dt ? String(dt.getMonth() + 1) : '', '일': dt ? String(dt.getDate()) : '' });
     }
-    function heroFill(text, f) { const v = heroVars(f); return String(text || '').replace(/\{(신랑|신부|날짜:영문|날짜:점|날짜|요일:영문|시간|예식장)\}/g, (m, k) => v[k] || ''); }
+    function heroFill(text, f) { const v = heroVars(f); return String(text || '').replace(/\{(신랑|신부|날짜:영문|날짜:점|날짜|요일:영문짧게|요일:영문|년:2|월|일|시간|예식장)\}/g, (m, k) => v[k] || ''); }
+    // 문구 칸 모양: vertical(세로쓰기 'up'=글자 바로 / 'side'=눕혀서) · arc(곡선 -100~100, 폭 arcW%) · anim(등장 효과 write 써지듯 / fade / up / zoom, animDur·animDelay 초)
+    const HL_ANIMS = [['', '없음'], ['write', '써지듯이'], ['fade', '천천히 나타나기'], ['up', '아래에서 위로'], ['zoom', '커지며 나타나기']];
+    let hlArcN = 0;
+    function heroArcSvg(text, L) { // 곡선 글자 (SVG 글자 길): 폭 arcW%를 1000칸으로 보고 글자 크기를 그만큼 키움
+        const W = 1000, wpx = Math.max(10, Math.min(100, Number(L.arcW) || 70)) / 100 * FONT_BASE, k = W / wpx, fs = (Number(L.fontSize) || 16) * k;
+        const bend = Math.max(-100, Math.min(100, Number(L.arc) || 0)), c = W - fs * 0.6, h = Math.max(1, Math.abs(bend) / 200 * c), r = (c * c / 4 + h * h) / (2 * h);
+        const up = bend >= 0, H = h + fs * 1.5, y0 = up ? H - fs * 0.35 : fs * 1.1, x0 = (W - c) / 2, id = 'hlarc' + (++hlArcN);
+        return `<svg class="hl-arc" viewBox="0 0 ${W} ${H.toFixed(0)}" width="100%" role="img" aria-label="${esc(text)}"><path id="${id}" d="M${x0.toFixed(1)},${y0.toFixed(1)} A${r.toFixed(1)},${r.toFixed(1)} 0 0 ${up ? 1 : 0} ${(x0 + c).toFixed(1)},${y0.toFixed(1)}" fill="none"/><text font-size="${fs.toFixed(1)}" text-anchor="middle" fill="currentColor"><textPath href="#${id}" startOffset="50%">${esc(String(text).replace(/\n+/g, ' '))}</textPath></text></svg>`;
+    }
+    function heroLayerInner(text, L) { return L && Number(L.arc) ? heroArcSvg(text, L) : nl2br(text); }
+    function heroLayerCls(L) { return (L.vertical ? ' hl-vert' + (L.vertical === 'side' ? ' hl-vert-side' : '') : '') + (L.anim && HL_ANIMS.some(x => x[0] === L.anim) ? ` hl-anim hl-a-${L.anim}` : '') + (Number(L.arc) ? ' hl-curve' : ''); }
+    function heroLayerCss(L) { return (Number(L.arc) ? `width:${Math.max(10, Math.min(100, Number(L.arcW) || 70))}%;` : '') + (L.anim ? `--hl-dur:${Math.max(.3, Math.min(8, Number(L.animDur) || 1.8))}s;--hl-delay:${Math.max(0, Math.min(8, Number(L.animDelay) || 0))}s;` : ''); }
     function heroLayersHtml(f, ink, styleOf, editor) {
-        return ((f && f.heroLayers) || []).filter(k => f.layout && f.layout[k]).map(k =>
-            `<span class="drag-part ${ink || 'on-light'} op-layer" data-part="${esc(k)}"${editor ? ' data-drag-el' : ''} style="${styleOf(k)}">${nl2br(heroFill(f[k], f))}</span>`).join('');
+        return ((f && f.heroLayers) || []).filter(k => f.layout && f.layout[k]).map(k => { const L = f.layout[k];
+            return `<span class="drag-part ${ink || 'on-light'} op-layer${heroLayerCls(L)}" data-part="${esc(k)}"${editor ? ' data-drag-el' : ''} style="${styleOf(k)}${heroLayerCss(L)}">${heroLayerInner(heroFill(f[k], f), L)}</span>`; }).join('');
+    }
+    // 등장 효과: 공개 페이지는 화면에 보이면(인트로가 끝난 뒤) 한 번 / 에디터는 [효과 다시 보기]를 누를 때만 (평소엔 다 나온 모습)
+    const hlReduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function armHeroAnims(root) {
+        if (!root || typeof IntersectionObserver === 'undefined' || hlReduced()) return;
+        const els = [...root.querySelectorAll('.op-layer.hl-anim:not(.hl-armed)')]; if (!els.length) return;
+        els.forEach(e => e.classList.add('hl-arm', 'hl-armed'));
+        let n = 0;
+        const go = () => { const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { requestAnimationFrame(() => en.target.classList.add('hl-run')); io.unobserve(en.target); } }), { threshold: .15 }); els.forEach(e => io.observe(e)); };
+        const wait = () => { if (document.querySelector('.intro-overlay') && n++ < 80) return setTimeout(wait, 250); go(); };
+        wait();
+    }
+    function playHeroAnims(root) {
+        if (!root) return; const els = [...root.querySelectorAll('.op-layer.hl-anim')]; if (!els.length) return;
+        let end = 0;
+        els.forEach(e => { e.classList.remove('hl-run'); e.classList.add('hl-arm'); const cs = getComputedStyle(e); end = Math.max(end, (parseFloat(cs.getPropertyValue('--hl-dur')) || 1.8) + (parseFloat(cs.getPropertyValue('--hl-delay')) || 0)); });
+        void root.offsetWidth;
+        requestAnimationFrame(() => requestAnimationFrame(() => els.forEach(e => e.classList.add('hl-run'))));
+        clearTimeout(playHeroAnims._t); playHeroAnims._t = setTimeout(() => els.forEach(e => e.classList.remove('hl-arm', 'hl-run')), (end + .4) * 1000);
     }
     // 메인 레이아웃 (기본 제공). 고르면 메인 사진·영상의 화면 크기·글자 자리·글꼴·색과 문구 칸을 이 모양으로 바꾸고, 사진·이름 같은 내용은 그대로 둠
     //  parts: 이름·날짜·하트 칸 / layers: 더 얹는 문구 칸 / hide: 안 보이게 할 칸 (layers로 대신 쓸 때) - 좌표는 화면(사진) 기준 %, 글자 크기는 폭 390 기준 px
     const HERO_LAYOUTS = [
-        { id: 'poster-script', label: '포스터 · 영문 필기체', desc: '사진 가득, 위에 큰 필기체 · 아래 이름과 날짜',
+        // 1. 위에 세 줄 세리프 + 아래 영문 날짜·글귀
+        { id: 'our-wedding-day', label: 'our wedding day', desc: '위에 세 줄 세리프 · 아래 영문 날짜와 글귀',
           photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'both', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'both', heroShadeLv: '1' },
-          parts: { groomName: { x: 38, y: 86, fontSize: 19, color: '#FFFFFF', ls: 60 }, heart: { x: 50, y: 86, fontSize: 12, color: '#FFFFFF' }, brideName: { x: 62, y: 86, fontSize: 19, color: '#FFFFFF', ls: 60 },
-                   datetime: { x: 50, y: 92, fontSize: 11.5, color: '#FFFFFF', ls: 80 } },
-          layers: [{ text: 'our wedding day', x: 50, y: 16, fontSize: 58, font: 'great-vibes', color: '#FFF0D0', rotation: -4 }] },
-        { id: 'poster-serif', label: '포스터 · 영문 세리프', desc: '세 줄로 크게 · 아래 영문 날짜',
-          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'top', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'top', heroShadeLv: '1' },
-          parts: { groomName: { x: 41, y: 88, fontSize: 15, color: '#FFFFFF', ls: 40 }, heart: { x: 50, y: 88, fontSize: 10, color: '#FFFFFF' }, brideName: { x: 59, y: 88, fontSize: 15, color: '#FFFFFF', ls: 40 } },
-          hide: ['datetime'],
-          layers: [{ text: 'our\nwedding\nday', x: 50, y: 21, fontSize: 64, font: 'cormorant', color: '#FFF0D0', ls: -20 },
-                   { text: '{날짜:영문}', x: 50, y: 93, fontSize: 12, font: 'cormorant', color: '#FFFFFF', ls: 60 }] },
-        { id: 'center-script', label: '가운데 필기체', desc: '사진 가운데 필기체 한 줄 · 위에 이름',
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'our\nwedding\nday', x: 50, y: 17, fontSize: 66, font: 'cormorant', color: '#FFF3DE', ls: -20, anim: 'fade', animDur: 2 },
+                   { text: '~ {날짜:영문} ~', x: 50, y: 83, fontSize: 13, font: 'cormorant', color: '#FFFFFF', ls: 40, anim: 'fade', animDelay: .8 },
+                   { text: 'Forever begins with a single step,\nAnd love guides us every step of the way.', x: 50, y: 89, fontSize: 12.5, font: 'cormorant', color: '#FFFFFF', anim: 'fade', animDelay: 1.2 }] },
+        // 2. 가운데 아래 분홍 필기체
+        { id: 'getting-married', label: "We're getting Married!", desc: '사진 가득 · 분홍 필기체 한 줄',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'none' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: "We're getting\nMarried!", x: 50, y: 70, fontSize: 50, font: 'alex-brush', color: '#F2A3B6', rotation: -8, anim: 'write', animDur: 2.4 }] },
+        // 3. 위 양쪽 이름 + 세로 영문 이름 · 아래 양쪽 세로 예식장·날짜
+        { id: 'names-vertical', label: '이름 양쪽 · 세로 글씨', desc: '위 양쪽에 이름, 가장자리에 세로 글씨',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'both', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'both', heroShadeLv: '1' },
+          parts: { groomName: { x: 15, y: 4.5, fontSize: 20, color: '#FFFFFF', ls: 20 }, brideName: { x: 85, y: 4.5, fontSize: 20, color: '#FFFFFF', ls: 20 } },
+          hide: ['heart', 'datetime'],
+          layers: [{ text: 'Groom', x: 15, y: 13, fontSize: 13, font: 'cormorant', color: '#FFFFFF', vertical: 'side', ls: 80 },
+                   { text: 'Bride', x: 85, y: 13, fontSize: 13, font: 'cormorant', color: '#FFFFFF', vertical: 'side', ls: 80 },
+                   { text: '{예식장}', x: 7, y: 80, fontSize: 13, color: '#FFFFFF', vertical: 'up', ls: 60 },
+                   { text: '{날짜:점} {시간}', x: 93, y: 80, fontSize: 13, color: '#FFFFFF', vertical: 'side', ls: 60 }] },
+        // 4. 폴라로이드 + 필기체 + 세로 이름 · 아래 날짜·예식장
+        { id: 'polaroid', label: '폴라로이드', desc: '흰 카드 속 사진 · 필기체 · 아래 날짜와 예식장',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 9, y: 4, w: 82, h: 60, frame: 'polaroid' },
+          parts: { datetime: { x: 50, y: 72, fontSize: 12.5, ls: 20 } },
+          hide: ['groomName', 'brideName', 'heart'],
+          layers: [{ text: 'Happy wedding day', x: 50, y: 56, fontSize: 30, font: 'great-vibes', color: '#3A3430', anim: 'write', animDur: 2.2 },
+                   { text: '{신랑} {신부}', x: 85.5, y: 15, fontSize: 11.5, color: '#6F6A63', vertical: 'up', ls: 120 },
+                   { text: '{예식장}', x: 50, y: 76.5, fontSize: 12.5, ls: 20 }] },
+        // 5. 아래 왼쪽 금색 필기체 두 줄
+        { id: 'happily-ever-after', label: 'happily ever after', desc: '아래 왼쪽에 금색 필기체 두 줄',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'bottom', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'bottom', heroShadeLv: '1' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'happily\never after', x: 34, y: 74, fontSize: 36, font: 'great-vibes', color: '#E8C67C', rotation: -10, ls: 20, anim: 'write', animDur: 2.6 }] },
+        // 6. 가운데 흰 필기체
+        { id: 'happy-wedding-day', label: 'Happy wedding day', desc: '사진 가득 · 가운데 흰 필기체',
           photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'full', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'full', heroShadeLv: '1' },
-          parts: { groomName: { x: 12, y: 6, fontSize: 15, color: '#FFFFFF', align: 'left', ls: 20 }, brideName: { x: 88, y: 6, fontSize: 15, color: '#FFFFFF', align: 'right', ls: 20 },
-                   datetime: { x: 50, y: 93, fontSize: 11.5, color: '#FFFFFF', ls: 60 } },
-          hide: ['heart'],
-          layers: [{ text: "We're getting\nMarried!", x: 50, y: 64, fontSize: 46, font: 'pinyon', color: '#F7D6DC', rotation: -3 }] }
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'Happy wedding day', x: 50, y: 66, fontSize: 40, font: 'alex-brush', color: '#FFFFFF', rotation: -4, anim: 'write', animDur: 2.2 }] },
+        // 7. SAVE The DATE + 오른쪽 큰 숫자
+        { id: 'save-the-date', label: 'SAVE The DATE', desc: '왼쪽 사진 · 오른쪽 큰 날짜 숫자 · 아래 이름',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 5, y: 13, w: 64, h: 42, frame: 'none' },
+          parts: { datetime: { x: 50, y: 62, fontSize: 12.5, ls: 20 } },
+          hide: ['groomName', 'brideName', 'heart'],
+          layers: [{ text: 'SAVE', x: 22, y: 7, fontSize: 30, font: 'playfair', ls: 60 }, { text: 'The', x: 50, y: 7, fontSize: 36, font: 'great-vibes' }, { text: 'DATE', x: 78, y: 7, fontSize: 30, font: 'playfair', ls: 60 },
+                   { text: '{년:2}\n{월}\n{일}', x: 84, y: 34, fontSize: 54, font: 'playfair', ls: 20 },
+                   { text: '{신랑} & {신부}', x: 50, y: 69, fontSize: 21, ls: 20 },
+                   { text: '{예식장}', x: 50, y: 74.5, fontSize: 12.5, ls: 20 }] },
+        // 8. 아치 사진 + 곡선 글씨 + 양쪽 세로 이름
+        { id: 'arch', label: '아치 · 곡선 글씨', desc: '아치 사진 위 곡선 글씨 · 양쪽 세로 이름',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 17, y: 9, w: 66, h: 47, frame: 'arch' },
+          parts: { datetime: { x: 50, y: 64, fontSize: 12, ls: 20 } },
+          hide: ['groomName', 'brideName', 'heart'],
+          layers: [{ text: 'We are getting married!', x: 50, y: 6.2, fontSize: 13.5, ls: 40, arc: 35, arcW: 62 },
+                   { text: '{신랑}', x: 8, y: 33, fontSize: 18, vertical: 'up', ls: 200 }, { text: '{신부}', x: 92, y: 33, fontSize: 18, vertical: 'up', ls: 200 },
+                   { text: '{예식장}', x: 50, y: 68.5, fontSize: 12, ls: 20 }] },
+        // 9. 아래로 흐려지는 사진 + 큰 날짜
+        { id: 'fade-date', label: '흐려지는 사진 · 큰 날짜', desc: '사진이 아래로 흐려지고 큰 날짜 · 이름',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 0, y: 0, w: 100, h: 66, frame: 'none', fade: 34 },
+          parts: { groomName: { x: 40, y: 82, fontSize: 15, ls: 20 }, heart: { x: 50, y: 82, fontSize: 11 }, brideName: { x: 60, y: 82, fontSize: 15, ls: 20 } },
+          hide: ['datetime'],
+          layers: [{ text: '{월}.{일}', x: 50, y: 66, fontSize: 32, font: 'playfair', ls: 40 },
+                   { text: '{요일:영문짧게} {시간}', x: 50, y: 71.5, fontSize: 12, ls: 80 },
+                   { text: '{예식장}', x: 50, y: 75.5, fontSize: 12, ls: 20 }] }
     ];
-    const HL_RESET = { font: '', color: '', ls: 0, rotation: 0, align: '', outline: false, shadow: false, glow: '', scaleX: 100, widthAuto: true, width: 80 };
+    const HL_RESET = { font: '', color: '', ls: 0, rotation: 0, align: '', outline: false, shadow: false, glow: '', scaleX: 100, widthAuto: true, width: 80, vertical: '', arc: 0, arcW: 70, anim: '', animDur: 1.8, animDelay: 0 };
     function applyHeroLayout(block, lay) {
         if (!block || !lay) return;
         const f = block.fields = block.fields || {}, isV = block.id === 'heroVideo';
         Object.assign(f, JSON.parse(JSON.stringify((isV ? lay.video : lay.photo) || {})));
+        if (!isV) { if (lay.box) f.heroBox = JSON.parse(JSON.stringify(lay.box)); else delete f.heroBox; }
         f.layout = f.layout || {};
         (f.heroLayers || []).forEach(k => { delete f[k]; delete f.layout[k]; });
         f.heroLayers = [];
@@ -2907,5 +3001,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { heroFill, heroLayersHtml, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, HL_ANIMS, armHeroAnims, playHeroAnims, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);
