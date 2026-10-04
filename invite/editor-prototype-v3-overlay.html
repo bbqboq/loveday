@@ -425,6 +425,13 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
     display: flex; flex-direction: column; width: 440px; flex: none; background: #F6F4F1; border-right: 1px solid var(--line); overflow-y: auto; color: var(--wz-ink); }
 .simple-mode .editor-pane, .simple-mode #pcSettingsBtn, .simple-mode #pcWidthIcons, .simple-mode .topbar-icons, .simple-mode #backToInfo, .simple-mode #addTextTopBtn,
 .simple-mode #widthFabRow, .simple-mode .width-fab-row, .simple-mode .controls-fab, .simple-mode .sections-fab, .simple-mode #undoTab, .simple-mode .mm-gen, .simple-mode .mm-dock, .simple-mode #stickerPalette, .simple-mode .controls-fab-backdrop, .simple-mode #topControls { display: none !important; }
+/* PC 간편 만들기도 전문가 모드처럼: 왼쪽 아래 떠 있는 되돌리기 탭(옮기기·접기) + 머리줄 오른쪽 끝에 되돌리기·전문가 모드 */
+@media (min-width: 861px) {
+    .simple-mode body:not(.ud-top) #undoTab { display: flex !important; }
+    .simple-mode .sp-top-right { display: flex; align-items: center; gap: 8px; margin-left: auto; flex: none; }
+    .sp-top-right .sp-ud { margin-left: 0; }
+}
+.sp-top-right { display: none; --wz-ink: #1B1A18; --wz-line2: #DED8CF; color: var(--wz-ink); } /* 간편 칸의 색 이름을 머리줄에서도 */
 .simple-mode #previewRoot { pointer-events: none; } /* 미리보기는 보기만 (글자·스티커 옮기기는 전문가 모드에서) */
 /* 단, 지금 단계 섹션의 높이(위·아래 여백 눈금자)와 마음 전하실 곳 계좌 줄 옮기기는 간편 만들기에서도 됨 (spLiveSync) */
 .simple-mode #previewRoot .section-ruler, .simple-mode #previewRoot .col.sp-live { pointer-events: auto; }
@@ -4074,6 +4081,7 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
         <button type="button" id="pBezelToggle" class="width-fab-btn tb-tg active" title="폰 테두리 켜기/끄기"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg><span class="tb-l">테두리</span></button>
         <button type="button" class="width-fab-btn tb-tg" data-autofocus-toggle><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="tb-l">포커스</span></button>
     </div>
+    <div class="sp-top-right" id="spTopRight"></div><!-- 간편 만들기(PC): 되돌리기·전문가 모드 버튼을 spRender가 여기로 옮김 -->
     <div class="topbar-icons">
         <button type="button" id="qtHelp" title="편집 팁 다시 보기" aria-label="편집 팁 다시 보기" hidden style="display:none"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/></svg></button><!-- 편집 팁(첫 방문 안내 팝업·둘러보기) 다시 보기 - 보여줄 게 있을 때만 나타남 -->
         <button type="button" id="qtMultiSelect" title="여러 개 한꺼번에 고르기 (스티커·글자를 끌어서 함께 선택)"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="13" height="13" rx="2" stroke-dasharray="3 2.6"/><path d="M12.5 12.5l7.5 3-3.2 1.3-1.3 3.2z" fill="currentColor"/></svg></button>
@@ -12962,6 +12970,8 @@ syncQuickToggles();
     window.addEventListener('resize', () => { const k = KEY(); if (k !== place._k) { place._k = k; st = load() || {}; } place(); });
     place._k = KEY();
     requestAnimationFrame(place); window.addEventListener('load', place); [600, 1500, 3000].forEach(t => setTimeout(place, t)); // 화면 크기 막대·아래 버튼줄이 늦게 자리 잡아도 다시 맞춤
+    // 숨겨져 있다가(디자인 고르기·간편 만들기 등) 보이게 되면 그때 크기로 다시 자리 잡음 - 숨긴 채 재면 높이 0이라 화면 아래로 반쯤 잘렸음
+    if (window.ResizeObserver) new ResizeObserver(() => { if (tab.offsetWidth) place(); }).observe(tab);
     updateHistoryButtons();
 })();
 
@@ -13643,6 +13653,9 @@ function spRender() {
     pane.querySelector('#spToFull').addEventListener('click', () => spInPlace ? spExitInPlace() : simpleToFull());
     pane.querySelector('#spUndo').addEventListener('click', () => { scheduleSnapshot(); undoHistory(); });
     pane.querySelector('#spRedo').addEventListener('click', () => redoHistory());
+    // PC: 되돌리기·다시하기·전문가 모드는 머리줄 오른쪽 끝으로 (휴대폰은 칸 위쪽 그대로)
+    const topR = document.getElementById('spTopRight');
+    if (topR) { topR.innerHTML = ''; if (window.innerWidth > 860) topR.append(...pane.querySelectorAll('.sp-head .sp-ud, .sp-head #spToFull')); }
     const body = pane.querySelector('#spBody');
     st.fn(body);
     spBindIncl(body);
