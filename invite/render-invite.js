@@ -756,10 +756,11 @@ const templates = {
             ? `<span class="drag-part on-light acc-row" style="${s(k)}--acc-vw:${vw}em;"><b class="acc-l">${label}</b><span class="acc-v"${f._masked ? ` data-masked="1" data-reveal="value" data-part="${k}"` : ''}>${val(k)}</span></span>`
             : `<span class="drag-part on-light" ${maskAttr(k)} style="${s(k)}">${label} · ${val(k)}</span>`;
         const extraSpans = activeExtras.map(k => line(k, extraLabels[k])).join('');
+        const main = (k, label) => f[k] ? line(k, label) : ''; // 비워 둔 신랑·신부 줄은 "신부측" 글자만 남지 않게 뺌
         return `<div class="blk-account"><div class="free-canvas drag-canvas" style="height:${canvasHeight}px;">
         <span class="drag-part on-light op-title" style="${s('title')}">마음 전하실 곳</span>
-        ${line('groomBank', '신랑측')}
-        ${line('brideBank', '신부측')}
+        ${main('groomBank', '신랑측')}
+        ${main('brideBank', '신부측')}
         ${extraSpans}
         </div></div>`;
     },

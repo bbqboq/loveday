@@ -5755,10 +5755,11 @@ const templates = {
         const cols = !!f.accCols, vw = Math.max(6, Math.min(30, Number(f.accVw) || 14));
         const line = (k, label) => `<span class="drag-part on-light${cols ? ' acc-row' : ''}" data-part="${k}" data-drag-el style="${s(k)}${cols ? `--acc-vw:${vw}em;` : ''}" title="${DRAG_HINT}">${cols ? `<b class="acc-l">${label}</b><span class="acc-v">${esc(accTxt(f[k]))}</span>` : `${label} · ${esc(accTxt(f[k]))}`}</span>`;
         const extraSpans = activeExtras.map(k => line(k, extraLabels[k])).join('');
+        const main = (k, label) => f[k] ? line(k, label) : ''; // 비워 둔 신랑·신부 줄은 빼고 그림 (공개 페이지와 같게)
         return `<div class="blk-account"><div class="free-canvas drag-canvas" style="height:${canvasHeight}px;">
         <span class="drag-part on-light op-title" data-part="title" data-drag-el style="${s('title')}" title="${DRAG_HINT}">마음 전하실 곳</span>
-        ${line('groomBank', '신랑측')}
-        ${line('brideBank', '신부측')}
+        ${main('groomBank', '신랑측')}
+        ${main('brideBank', '신부측')}
         ${extraSpans}
         </div></div>`;
     },
@@ -6791,14 +6792,14 @@ function accAutoArrange() {
     const b = state.blocks.find(x => x.id === 'account');
     if (!b || !b.enabled || b.fields.display === 'cards') return;
     const f = b.fields, L = f.layout || (f.layout = {});
-    const G = ['groomBank', 'groomFatherBank', 'groomMotherBank'].filter(k => k === 'groomBank' || f[k]);
-    const B = ['brideBank', 'brideFatherBank', 'brideMotherBank'].filter(k => k === 'brideBank' || f[k]);
+    const G = ['groomBank', 'groomFatherBank', 'groomMotherBank'].filter(k => f[k]); // 비운 줄은 미리보기에도 없으니 자리도 안 잡음
+    const B = ['brideBank', 'brideFatherBank', 'brideMotherBank'].filter(k => f[k]);
     const keys = G.concat(B), keySig = keys.join(','), sig = keySig + '|' + keys.map(k => accTxt(f[k]).length).join(',');
     if (f.accFree) { if (f._accKeys == null) { f._accKeys = keySig; return; } if (f._accKeys === keySig) return; } // 손으로 옮긴 뒤 줄 구성이 그대로면 손대지 않음
     if (!f.accFree && f._accSig === sig) return;      // 이미 맞춰 둔 상태
     const canvas = document.querySelector('#previewRoot .col[data-block-id="account"] .free-canvas');
     if (!canvas || !canvas.clientWidth) return;
-    const H = 220 + (keys.length - 2) * 40; // 템플릿의 칸 높이(px)와 같게
+    const H = 220 + keys.filter(k => k !== 'groomBank' && k !== 'brideBank').length * 40; // 템플릿의 칸 높이(px)와 같게 (혼주 줄만큼 늘어남)
     const lineH = Math.min(34, (H - 70 - 16) / (keys.length + 1.2)), titleGap = lineH * 1.5, groupGap = B.length && G.length ? 16 : 0;
     const total = titleGap + keys.length * lineH + groupGap;
     let y = Math.max(18, (H - total) / 2) + lineH / 2;
@@ -14084,11 +14085,15 @@ function spAccount(box) {
         const k = c.dataset.k, nm = (roles.find(r => r[0] === k) || [])[2] || '';
         const get = () => parts(k);
         // 번호를 아직 안 적었어도 은행·이름은 바로 미리보기에 (번호를 적으면 "은행 번호 (예금주)"로 완성)
-        const put = a => { spAccCache[k] = a; f[k] = a.number ? composeAccountParts({ bank: a.bank, number: a.number, holder: a.holder || nm }) : (a.bank || a.holder ? `${a.bank || ''}${a.holder ? ` (${a.holder})` : ''}`.trim() : ''); spChanged(['account']); scheduleSnapshot(); };
+        const put = a => { spAccCache[k] = a; f[k] = a.number ? composeAccountParts({ bank: a.bank, number: a.number, holder: a.holder || nm }) : (a.bank || a.holder ? `${a.bank || ''}${a.holder ? ` (${a.holder})` : ''}`.trim() : ''); spChanged(['account']); scheduleSnapshot(); syncHead(); };
+        // 적기 시작하면 "디자인 예시" 안내는 지우고 [비우기]를 보여줌 (칸 전체를 다시 그리면 입력 중 커서가 끊겨서 머리줄만 고침)
+        const syncHead = () => { const ex = c.querySelector('.sp-acc-ex'); if (!f[k] || isEx(f[k]) || !ex) return; ex.remove();
+            if (!c.querySelector('[data-clear]')) { const btn = document.createElement('button'); btn.type = 'button'; btn.dataset.clear = ''; btn.textContent = '비우기'; c.querySelector('.wz-acc-h').appendChild(btn); btn.addEventListener('click', clear); } };
+        const clear = () => { f[k] = ''; delete spAccCache[k]; spChanged(['account']); spRender(); };
         c.querySelector('[data-bank]').addEventListener('click', () => { const g = c.querySelector('.wz-banks'), on = !g.classList.contains('on'); box.querySelectorAll('.wz-banks.on').forEach(x => x.classList.remove('on')); g.classList.toggle('on', on); });
         c.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => { const a = get(); a.bank = b.dataset.pick; put(a); c.querySelector('[data-bank]').innerHTML = wzEsc(a.bank) + WZ_DOWN_SVG; c.querySelectorAll('[data-pick]').forEach(x => x.classList.toggle('on', x === b)); c.querySelector('.wz-banks').classList.remove('on'); c.querySelector('[data-af="number"]').focus(); }));
         c.querySelectorAll('[data-af]').forEach(i => i.addEventListener('input', () => { if (i.dataset.af === 'number') i.value = i.value.replace(/[^\d-]/g, ''); const a = get(); a[i.dataset.af] = i.value.trim(); put(a); }));
-        const cl = c.querySelector('[data-clear]'); if (cl) cl.addEventListener('click', () => { f[k] = ''; delete spAccCache[k]; spChanged(['account']); spRender(); });
+        const cl = c.querySelector('[data-clear]'); if (cl) cl.addEventListener('click', clear);
     });
     spBindChoice(box, f, 'account');
     box.querySelectorAll('[data-sp-f]').forEach(inp => inp.addEventListener('input', () => { f[inp.dataset.spF] = inp.value.trim(); spChanged(['account']); }));
