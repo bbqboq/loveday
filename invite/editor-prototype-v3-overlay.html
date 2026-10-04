@@ -426,6 +426,8 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .simple-mode .editor-pane, .simple-mode #pcSettingsBtn, .simple-mode #pcWidthIcons, .simple-mode .topbar-icons, .simple-mode #backToInfo, .simple-mode #addTextTopBtn,
 .simple-mode #widthFabRow, .simple-mode .width-fab-row, .simple-mode .controls-fab, .simple-mode .sections-fab, .simple-mode #undoTab, .simple-mode .mm-gen, .simple-mode .mm-dock, .simple-mode #stickerPalette, .simple-mode .controls-fab-backdrop, .simple-mode #topControls { display: none !important; }
 .simple-mode #previewRoot { pointer-events: none; } /* 미리보기는 보기만 (글자·스티커 옮기기는 전문가 모드에서) */
+/* 단, 지금 단계 섹션의 높이(위·아래 여백 눈금자)와 마음 전하실 곳 계좌 줄 옮기기는 간편 만들기에서도 됨 (spLiveSync) */
+.simple-mode #previewRoot .section-ruler, .simple-mode #previewRoot .col.sp-live { pointer-events: auto; }
 .simple-mode #previewRoot .col.sp-flash { animation: spFlash 1.4s ease; }
 @keyframes spFlash { 0%, 50% { box-shadow: inset 0 0 0 2px rgba(138,75,85,.55); } 100% { box-shadow: inset 0 0 0 2px transparent; } }
 .sp-head { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 24px 12px; background: #F6F4F1; }
@@ -11031,6 +11033,7 @@ function renderPreviewNow() {
     try { edBgmSync(); } catch (e) {} // 미리보기 오른쪽 위 음악 버튼
     try { edTopMenuSync(); } catch (e) {} // 섹션 바로가기 메뉴
     try { accAutoArrange(); } catch (e) {} // 마음 전하실 곳 자동 정렬
+    try { spLiveSync(root); } catch (e) {} // 간편 만들기: 지금 단계 섹션만 손으로 조절 가능
     heroUnifyText(); // 예전 "글자 사진 아래" 청첩장 → 사진 + 아래 글자 칸 하나로 (보이던 자리 그대로)
     // 스크롤바 모양 - 미리보기 칸(PC)의 스크롤바에 바로 입혀서 보여준다
     if (window.InviteBlocks && InviteBlocks.applyScrollbar) InviteBlocks.applyScrollbar(document.querySelector('.preview-pane'), state.extras && state.extras.scrollbar, root, { color: state.extras && state.extras.scrollbarColor, opacity: state.extras && state.extras.scrollbarOpacity });
@@ -13586,6 +13589,21 @@ function spScrollToNextBtn() {
     pane.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 }
 function spChanged(ids) { renderPreview(); if (ids) setTimeout(() => spScrollPreview(ids), 60); }
+// 간편 만들기 미리보기는 보기만인데, 지금 단계 섹션은 높이(위·아래 여백 눈금자)를 끌어 바꿀 수 있고
+// 마음 전하실 곳은 계좌 줄도 끌어 옮길 수 있게 (전문가 모드와 같은 값)
+const SP_DRAG_STEPS = ['account'];
+function spLiveSync(root) {
+    root = root || document.getElementById('previewRoot');
+    if (!root || !document.documentElement.classList.contains('simple-mode')) return;
+    const st = spSteps()[spStep]; if (!st) return;
+    root.querySelectorAll('.col.sp-live').forEach(c => c.classList.remove('sp-live'));
+    if (SP_DRAG_STEPS.includes(st.k)) (st.s || []).forEach(id => { const c = root.querySelector(`.col[data-block-id="${id}"]`); if (c) c.classList.add('sp-live'); });
+}
+function spSelectStep(st) { // 눈금자는 고른 섹션(selectedId)에 뜸 → 지금 단계의 켜진 섹션을 고른 것으로
+    const id = (st.s || []).find(x => { const b = spBlock(x); return b && b.enabled && !padHidden(b); }) || null;
+    if (selectedId !== id) { selectedId = id; try { updateSectionRuler(); } catch (e) {} }
+    spLiveSync();
+}
 
 function spRender() {
     const pane = document.getElementById('simplePane'); if (!pane) return;
@@ -13614,6 +13632,7 @@ function spRender() {
     const body = pane.querySelector('#spBody');
     st.fn(body);
     spBindIncl(body);
+    spSelectStep(st);
     if (same) {
         body.style.animation = 'none';
         body.querySelectorAll('.sp-in').forEach(x => { x.style.animation = 'none'; });
