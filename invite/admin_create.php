@@ -92,10 +92,10 @@ $tabCount = array_map(fn($g) => array_sum(array_map('count', $g)), $tabs);
     .iv-mc { display: flex; justify-content: flex-end; }
     .iv-head { padding: 9px 14px; background: #FCFBF9; border-bottom: 1px solid #ECE8E2; font-size: 11.5px; font-weight: 600; color: #A29C94; }
     .iv-head span:last-child { text-align: right; }
-    .ivw { position: relative; overflow: hidden; border-bottom: 1px solid #F1EEE9; }
+    .ivw { position: relative; overflow: hidden; border-bottom: 1px solid var(--ui-soft, #F1EEE9); }
     .ivt > .ivw:last-child, .iv-gbody > .ivw:last-child { border-bottom: 0; }
     .ivr { position: relative; z-index: 1; background: #fff; padding: 8px 14px; min-height: 40px; font-size: 13px; cursor: pointer; transition: transform .22s ease, background .15s; touch-action: pan-y; }
-    .ivr:hover { background: #FBF9F6; }
+    .ivr:hover { background: var(--ui-tint, #FBF9F6); }
     .ivw.dragging .ivr { transition: none; }
     .iv-no { font-size: 11.5px; color: #A29C94; font-weight: 600; }
     .iv-nm { min-width: 0; display: flex; align-items: center; gap: 6px; }
@@ -111,7 +111,7 @@ $tabCount = array_map(fn($g) => array_sum(array_map('count', $g)), $tabs);
     .iv-ph, .iv-dt { font-size: 12px; color: #8F8980; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .iv-dt .s { display: none; }
     .iv-more { justify-self: end; width: 32px; height: 30px; border: 0; border-radius: 8px; background: transparent; font-size: 18px; line-height: 1; color: #6F6A63; cursor: pointer; }
-    .iv-more:hover, .iv-more.on { background: #F1EDE7; }
+    .iv-more:hover, .iv-more.on { background: var(--ui-soft, #F1EDE7); }
     .iv-act { position: absolute; inset: 0 0 0 auto; display: none; }
     .iv-act a, .iv-act button { display: grid; place-items: center; width: 64px; border: 0; color: #fff; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; }
     .iv-act .e { background: #5E6B7E; } .iv-act .d { background: #A8434B; }
@@ -133,7 +133,7 @@ $tabCount = array_map(fn($g) => array_sum(array_map('count', $g)), $tabs);
     .iv-menu a, .iv-menu button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 11px; border: 0; border-radius: 8px; background: none; font: inherit; font-size: 13px; color: #2B2B2B; text-decoration: none; text-align: left; cursor: pointer; }
     .iv-menu a:hover, .iv-menu button:hover { background: #F6F3EE; }
     .iv-menu .del { color: #A8434B; }
-    .iv-menu hr { border: 0; border-top: 1px solid #F1EEE9; margin: 4px 2px; }
+    .iv-menu hr { border: 0; border-top: 1px solid var(--ui-soft, #F1EEE9); margin: 4px 2px; }
     .tab-note .mo { display: none; }
     /* 검색 */
     .ls-search { display: flex; gap: 8px; margin: 4px 0 6px; }
@@ -163,6 +163,7 @@ $tabCount = array_map(fn($g) => array_sum(array_map('count', $g)), $tabs);
         .tab-note .pc-note { display: none; } .tab-note .mo { display: inline; }
     }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('list', '청첩장 관리'); ?>

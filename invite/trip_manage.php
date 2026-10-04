@@ -47,7 +47,7 @@ else $state = ['ok', '하객에게 보이는 중' . ($blk['delay'] ? " · 새 �
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <link rel="stylesheet" href="assets/invite-blocks.css?v=<?= $v('invite-blocks.css') ?>">
 <style>
-:root { --bg:#F6F4F1; --ink:#1B1A18; --sub:#6F6A63; --faint:#A39D95; --line:#EAE6E0; --soft:#F1EEEA; --accent:#C7823A; --ok:#2F7D55;
+:root { --bg:var(--ui-page, #F6F4F1); --ink:#1B1A18; --sub:#6F6A63; --faint:#A39D95; --line:var(--ui-line, #EAE6E0); --soft:#F1EEEA; --accent:#C7823A; --ok:#2F7D55;
   --p-bg:#FAF7F0; --p-ink:#2B2320; --p-accent:#7A3B41; --p-line:#E1D6C6; --p-muted:#8A7F72; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing: antialiased; word-break: keep-all; }
@@ -88,6 +88,7 @@ textarea { min-height: 78px; resize: vertical; }
 .bar { position: fixed; left: 0; right: 0; bottom: 0; height: 3px; background: transparent; z-index: 9; }
 .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
 <div class="top"><a href="dashboard.php?t=<?= $h($token) ?>">← 내 청첩장</a><b style="margin-left:auto;margin-right:auto;transform:translateX(-36px)">신혼여행 라이브</b></div>

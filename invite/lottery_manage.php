@@ -38,7 +38,7 @@ $v = fn($f) => @filemtime(__DIR__ . '/assets/' . $f) ?: 1;
 <title>추첨 진행 · LOVE DAY</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <style>
-:root { --bg:#F6F4F1; --ink:#1B1A18; --sub:#6F6A63; --faint:#A39D95; --line:#EAE6E0; --soft:#F1EEEA; --accent:#C0566B; --ok:#2F7D55; }
+:root { --bg:var(--ui-page, #F6F4F1); --ink:#1B1A18; --sub:#6F6A63; --faint:#A39D95; --line:var(--ui-line, #EAE6E0); --soft:#F1EEEA; --accent:#C0566B; --ok:#2F7D55; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing: antialiased; word-break: keep-all; }
 .top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; background: rgba(246,244,241,.92); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
@@ -89,6 +89,7 @@ input[type=number] { width: 96px; flex: none; text-align: center; }
 .show button { margin-top: 26px; padding: 14px 30px; border: 0; border-radius: 12px; background: #fff; color: #1B1A18; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
 @keyframes pop { from { transform: scale(.5); opacity: 0; } }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
 <div class="top"><a href="dashboard.php?t=<?= $h($token) ?>">← 내 청첩장</a><b>추첨 진행</b></div>

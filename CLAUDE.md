@@ -56,6 +56,9 @@
 - 영문 글꼴 6개(`en:true`, 전체 글꼴 목록에선 숨김). 글꼴 목록은 **4곳**을 같이 고칠 것: 에디터 `fontOptions`, `render-invite.js` `fontOptions`, `invite_view.php` `$fontCssUrls`, `invite-blocks.js` `FONT_CSS`.
 - 엔딩 섹션 "엔딩 크레딧(스탭롤)" 모양(`creditsHtml`). 계좌 복사: 첫 누름에 받아온 뒤 복사, 자유 배치 줄 누르면 복사(`data-ib-copyrow`).
 - 마음 전하실 곳 자유 배치: 이름 칸 폭 `accLw`(신랑·신부만이면 좁게 → 가운데 정렬), 빈 줄 숨김.
+- 메인 레이아웃 2차: 문구 칸 세로(`vertical`)·곡선(`arc`,`arcW`)·등장 효과(`anim` write/fade/up/zoom), 사진 칸 모드 `heroBox`(x·y·w·h %, frame, fade). 기본 레이아웃 9개(참고 샘플 구성).
+- 안내 말씀 모양: 카드·박스·**슬라이드**·**탭** + 예시(포토부스·주차·답례품·식사·화환·셔틀) `NOTICE_TPL`.
+- **사이트 색상**: 화면 CSS의 베이지는 `var(--ui-page|tint|soft|line, #원래색)`. 관리자 → 사이트 정보 → 사이트 색상(프리셋/직접) → `app_settings.ui_colors` → `site_colors.php`(`:root` 값). 새 화면을 만들면 색을 이 4개 변수로 쓰고 `<?= site_colors_link() ?>`를 `</head>` 앞에. `assets/admin.css`는 저장소에 없어서 아직 안 바꿈.
 - zip으로 줄 때 루트 `invite/render-invite.js`는 빼고 `invite/assets/render-invite.js`만 (서버는 assets만 씀).
 
 ### 기타

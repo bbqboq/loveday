@@ -134,11 +134,11 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
     /* 칸이 줄어들 수 있게 (관리자 화면 폭이 좁아도 ⋯가 잘리지 않게) */
     .tv-cols { display: grid; grid-template-columns: 22px 44px minmax(100px, 1.5fr) 78px 66px minmax(80px, 1fr) 68px 82px minmax(104px, .9fr) 40px; align-items: center; column-gap: 10px; }
     .tv-head { padding: 9px 14px; background: #FCFBF9; border-bottom: 1px solid #ECE8E2; font-size: 11.5px; font-weight: 600; color: #A29C94; }
-    .tv-w { border-bottom: 1px solid #F1EEE9; }
+    .tv-w { border-bottom: 1px solid var(--ui-soft, #F1EEE9); }
     .tv-w:last-of-type { border-bottom: 0; }
     .tv-w[hidden] { display: none; }
     .tv-r { background: #fff; padding: 8px 14px; min-height: 42px; font-size: 13px; cursor: pointer; transition: background .15s; }
-    .tv-r:hover { background: #FBF9F6; }
+    .tv-r:hover { background: var(--ui-tint, #FBF9F6); }
     .tv-w.sel .tv-r { background: #F7F4EE; }
     .tvt input[type=checkbox] { width: 16px; height: 16px; margin: 0; accent-color: #2B2B2B; cursor: pointer; }
     .tv-no { font-size: 11.5px; color: #A29C94; font-weight: 600; }
@@ -158,7 +158,7 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
     .tv-dd .s, .hd-dd .s { display: none; }
     .tv-mc { display: flex; justify-content: flex-end; }
     .tv-more { width: 32px; height: 30px; border: 0; border-radius: 8px; background: transparent; font-size: 18px; line-height: 1; color: #6F6A63; cursor: pointer; }
-    .tv-more:hover, .tv-more.on { background: #F1EDE7; }
+    .tv-more:hover, .tv-more.on { background: var(--ui-soft, #F1EDE7); }
     .tv-none { padding: 26px; text-align: center; color: #A29C94; font-size: 13px; }
 
     /* 선택했을 때 막대 (PC: 표 위 / 모바일: 화면 아래에 떠 있음) */
@@ -173,7 +173,7 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
     .tv-menu a, .tv-menu button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 11px; border: 0; border-radius: 8px; background: none; font: inherit; font-size: 13px; color: #2B2B2B; text-decoration: none; text-align: left; cursor: pointer; }
     .tv-menu a:hover, .tv-menu button:hover { background: #F6F3EE; }
     .tv-menu .del { color: #A8434B; }
-    .tv-menu hr { border: 0; border-top: 1px solid #F1EEE9; margin: 4px 2px; }
+    .tv-menu hr { border: 0; border-top: 1px solid var(--ui-soft, #F1EEE9); margin: 4px 2px; }
     .tr-note .mo { display: none; }
 
     /* 모바일: 늘 선택 모드 (체크 칸 + 아래 막대) */
@@ -194,6 +194,7 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
     }
     @media (min-width: 721px) { .tv-bulk.bottom { display: none !important; } }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('trash', '휴지통'); ?>

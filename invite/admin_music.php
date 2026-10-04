@@ -222,6 +222,7 @@ $mb = fn($b) => $b ? number_format($b / 1048576, 1) . 'MB' : '-';
     @media (max-width: 760px) { .lib-row { grid-template-columns: 1fr; } .lib-prog i { flex-basis: 140px; } }
     @media (max-width: 760px) { .mrow { grid-template-columns: 1fr; } .tabs form { margin-left: 0; width: 100%; } .tabs input { flex: 1; } }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('music', '배경음악 관리'); ?>

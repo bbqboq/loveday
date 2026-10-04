@@ -170,7 +170,7 @@ function sa_perm_list(array $groups, array $groupIcon, array $perms, string $nam
 /* 부관리자 카드 */
 .su { background: #fff; border: 1px solid #ECE8E2; border-radius: 16px; margin: 0 0 16px; overflow: hidden; }
 .su.off { opacity: .72; }
-.su-h { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #F1EEE9; flex-wrap: wrap; }
+.su-h { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--ui-soft, #F1EEE9); flex-wrap: wrap; }
 .su-av { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: #EEF2F7; color: #4A5A73; font-weight: 800; font-size: 16px; }
 .su-id { flex: 1; min-width: 140px; }
 .su-id b { font-size: 15px; } .su-id b[contenteditable] { outline: none; border-radius: 6px; padding: 0 3px; margin-left: -3px; }
@@ -208,6 +208,7 @@ function sa_perm_list(array $groups, array $groupIcon, array $perms, string $nam
     .su-h, .su-b { padding-left: 14px; padding-right: 14px; }
 }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('subadmin', '부관리자'); ?>

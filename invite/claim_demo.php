@@ -19,8 +19,8 @@ function claim_page(string $title, string $msg): void
     $h = fn($s) => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
     ?><!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
     <title><?= $h($title) ?></title><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-    <style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F6F4F1;font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;color:#1B1A18;padding:20px;box-sizing:border-box}
-    .b{background:#fff;border:1px solid #EAE6E0;border-radius:20px;padding:32px 26px;max-width:380px;text-align:center;line-height:1.7;word-break:keep-all}h3{margin:0 0 8px;font-size:18px}p{margin:0 0 20px;color:#6F6A63;font-size:14px}
+    <style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ui-page, #F6F4F1);font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;color:#1B1A18;padding:20px;box-sizing:border-box}
+    .b{background:#fff;border:1px solid var(--ui-line, #EAE6E0);border-radius:20px;padding:32px 26px;max-width:380px;text-align:center;line-height:1.7;word-break:keep-all}h3{margin:0 0 8px;font-size:18px}p{margin:0 0 20px;color:#6F6A63;font-size:14px}
     a{display:inline-block;padding:13px 22px;border-radius:12px;background:#1B1A18;color:#fff;text-decoration:none;font-weight:600;font-size:14.5px}</style></head>
     <body><div class="b"><h3><?= $h($title) ?></h3><p><?= $msg ?></p><a href="/">처음으로</a></div></body></html><?php
     exit;

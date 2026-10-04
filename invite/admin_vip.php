@@ -91,9 +91,9 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 .slug-prev { font-size: 12px; color: var(--muted); margin-top: 5px; }
 .slug-prev b { color: #2B2B2B; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .vip-list { background: #fff; border: 1px solid #ECE8E2; border-radius: 14px; overflow: hidden; }
-.vip-list a { display: grid; grid-template-columns: 44px minmax(0, 1fr) 64px 50px 76px; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #F1EEE9; color: inherit; text-decoration: none; font-size: 13px; }
+.vip-list a { display: grid; grid-template-columns: 44px minmax(0, 1fr) 64px 50px 76px; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--ui-soft, #F1EEE9); color: inherit; text-decoration: none; font-size: 13px; }
 .vip-list a:last-child { border-bottom: 0; }
-.vip-list a:hover { background: #FBF9F6; }
+.vip-list a:hover { background: var(--ui-tint, #FBF9F6); }
 .vip-list .no { font-size: 11.5px; color: #A29C94; font-weight: 600; }
 .vip-list .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .vip-list .cd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #6F6A63; overflow: hidden; text-overflow: ellipsis; }
@@ -105,6 +105,7 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
     .vip-list .no, .vip-list .cd { display: none; }
 }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('vip', 'VIP 코드 생성'); ?>

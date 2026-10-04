@@ -624,3 +624,55 @@ function permanently_delete_invitation(PDO $pdo, int $invitationId): void
     }
     $pdo->prepare('DELETE FROM invitation_orders WHERE id = ?')->execute([$invitationId]);
 }
+
+/* =========================================================
+ * 사이트 화면 색 (관리자 → 사이트 정보 → 사이트 색상)
+ *  에디터·내 청첩장·관리자 화면 CSS가 var(--ui-page, #원래색)처럼 써 둔 4가지 색을 바꾼다.
+ *  page 바탕 / tint 옅은 면 / soft 칸·버튼·칩 / line 선. 값은 app_settings 'ui_colors' (JSON)
+ * ======================================================= */
+const SITE_COLOR_KEYS = ['page' => '바탕', 'tint' => '옅은 면', 'soft' => '칸·버튼', 'line' => '선'];
+const SITE_COLOR_PRESETS = [
+    'warm'  => ['label' => '따뜻한 베이지 (처음 색)', 'page' => '#F6F4F1', 'tint' => '#FBF9F6', 'soft' => '#F3EEE6', 'line' => '#E5DED3'],
+    'white' => ['label' => '깨끗한 흰색',            'page' => '#FFFFFF', 'tint' => '#FAFAFA', 'soft' => '#F3F3F4', 'line' => '#E6E6E8'],
+    'gray'  => ['label' => '차분한 회색',            'page' => '#F5F6F7', 'tint' => '#FAFAFB', 'soft' => '#ECEEF0', 'line' => '#DEE1E5'],
+    'blue'  => ['label' => '블루 그레이',            'page' => '#F3F6F9', 'tint' => '#F8FAFC', 'soft' => '#E7EDF3', 'line' => '#D7E0E9'],
+    'rose'  => ['label' => '연한 로즈',              'page' => '#FAF6F6', 'tint' => '#FDFAFA', 'soft' => '#F3E9EA', 'line' => '#E8DADC'],
+];
+function site_colors_get(): array
+{
+    static $c = null;
+    if ($c !== null) return $c;
+    $c = ['preset' => 'warm'];
+    try {
+        $st = get_pdo()->prepare('SELECT setting_value FROM app_settings WHERE setting_key = ?');
+        $st->execute(['ui_colors']);
+        $j = json_decode((string) $st->fetchColumn(), true);
+        if (is_array($j)) $c = $j;
+    } catch (Throwable $e) { /* 테이블이 없으면 처음 색 */ }
+    return $c;
+}
+/** 실제로 쓸 4가지 색 (프리셋이면 프리셋 값, 직접이면 고른 값 - 잘못된 값은 처음 색) */
+function site_colors_values(?array $c = null): array
+{
+    $c = $c ?? site_colors_get();
+    $base = SITE_COLOR_PRESETS['warm'];
+    $p = SITE_COLOR_PRESETS[$c['preset'] ?? ''] ?? null;
+    $out = [];
+    foreach (array_keys(SITE_COLOR_KEYS) as $k) {
+        $v = $p ? $p[$k] : (string) ($c[$k] ?? '');
+        $out[$k] = preg_match('/^#[0-9A-Fa-f]{6}$/', $v) ? strtoupper($v) : $base[$k];
+    }
+    return $out;
+}
+function site_colors_css(): string
+{
+    $c = site_colors_get();
+    if (($c['preset'] ?? 'warm') === 'warm') return "/* 사이트 색상: 처음 색 그대로 */\n";
+    $v = site_colors_values($c);
+    return ':root{' . implode('', array_map(fn($k) => "--ui-$k:{$v[$k]};", array_keys($v))) . "}\n";
+}
+/** 각 화면 <head>에 넣는 링크 (색이 바뀌면 주소가 바뀌어 바로 반영) */
+function site_colors_link(): string
+{
+    return '<link rel="stylesheet" href="/invite/site_colors.php?v=' . substr(md5(json_encode(site_colors_get())), 0, 8) . '">';
+}

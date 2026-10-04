@@ -90,6 +90,7 @@ $csrf = csrf_token();
 .cols { font-size: 12.5px; color: #666; line-height: 1.9; columns: 2; margin: 10px 0 0; padding-left: 18px; }
 @media (max-width: 600px) { .tz-grid { grid-template-columns: 1fr; } .cols { columns: 1; } }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
 <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('extra', '서버 시간 점검'); ?>

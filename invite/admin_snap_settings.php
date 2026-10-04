@@ -111,6 +111,7 @@ $csrf = csrf_token();
     table.stat { width: 100%; border-collapse: collapse; font-size: 13px; }
     table.stat th, table.stat td { padding: 8px 6px; border-bottom: 1px solid #eee; text-align: left; }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('snap', '게스트스냅 설정'); ?>

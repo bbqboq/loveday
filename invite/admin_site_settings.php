@@ -37,7 +37,19 @@ $groups = [
 ];
 
 $notice = ''; $error = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// 사이트 색상 (에디터·내 청첩장·관리자 화면의 바탕·옅은 면·칸·선) - 아래 큰 폼과 따로 저장
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ui_form'])) {
+    csrf_verify($_POST['csrf_token'] ?? null);
+    $preset = (string) ($_POST['ui_preset'] ?? 'warm');
+    $val = ['preset' => isset(SITE_COLOR_PRESETS[$preset]) || $preset === 'custom' ? $preset : 'warm'];
+    if ($val['preset'] === 'custom') foreach (array_keys(SITE_COLOR_KEYS) as $k) {
+        $v = strtoupper(trim((string) ($_POST['ui_' . $k] ?? '')));
+        $val[$k] = preg_match('/^#[0-9A-F]{6}$/', $v) ? $v : SITE_COLOR_PRESETS['warm'][$k];
+    }
+    try { save_app_setting($pdo, 'ui_colors', json_encode($val)); header('Location: admin_site_settings.php?saved=ui#ui-colors'); exit; }
+    catch (Throwable $e) { $error = '색을 저장하지 못했어요.'; }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST['ui_form'])) {
     csrf_verify($_POST['csrf_token'] ?? null);
     $vals = [];
     foreach ($groups as $fields) {
@@ -65,7 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-if (isset($_GET['saved'])) $notice = '저장했습니다. 홈페이지에 바로 반영됩니다.';
+if (isset($_GET['saved'])) $notice = $_GET['saved'] === 'ui' ? '사이트 색상을 저장했어요. 에디터는 5분 안에 바뀌어요(열려 있으면 새로고침).' : '저장했습니다. 홈페이지에 바로 반영됩니다.';
+$uiCur = site_colors_get(); $uiPreset = $uiCur['preset'] ?? 'warm'; $uiVals = site_colors_values();
 $csrf = csrf_token();
 $cur = fn(string $k) => $error ? (string) ($_POST[$k] ?? '') : app_setting($k);
 ?>
@@ -86,7 +99,21 @@ $cur = fn(string $k) => $error ? (string) ($_POST[$k] ?? '') : app_setting($k);
     h3.grp { margin: 22px 0 4px; font-size: 15px; }
     h3.grp:first-of-type { margin-top: 0; }
     @media (max-width: 640px) { .set-row { grid-template-columns: 1fr; gap: 4px; } }
+    .ui-presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 10px 0 14px; }
+    .ui-p { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1.5px solid #e3e3e3; border-radius: 12px; cursor: pointer; background: #fff; font-size: 13px; }
+    .ui-p:has(input:checked) { border-color: #1B1A18; box-shadow: 0 0 0 1px #1B1A18; }
+    .ui-p input { position: absolute; opacity: 0; }
+    .ui-sw { display: flex; height: 34px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,0,0,.08); }
+    .ui-sw i { flex: 1; }
+    .ui-custom[hidden] { display: none; }
+    .ui-custom { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 6px 0 14px; }
+    .ui-custom label { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .ui-custom input[type=color] { width: 44px; height: 32px; border: 1px solid #ddd; border-radius: 8px; padding: 2px; background: #fff; }
+    .ui-demo { display: flex; gap: 10px; align-items: stretch; padding: 14px; border-radius: 12px; border: 1px solid var(--d-line); background: var(--d-page); font-size: 12.5px; max-width: 520px; }
+    .ui-demo > div { flex: 1; border-radius: 10px; padding: 12px; background: var(--d-tint); border: 1px solid var(--d-line); display: flex; flex-direction: column; gap: 8px; }
+    .ui-demo span { display: inline-block; padding: 6px 10px; border-radius: 99px; background: var(--d-soft); }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('site', '사이트 정보'); ?>
@@ -115,6 +142,32 @@ $cur = fn(string $k) => $error ? (string) ($_POST[$k] ?? '') : app_setting($k);
             <?php endforeach; ?>
             <p style="margin-top:18px;"><button class="btn" type="submit">저장</button> <a href="/" target="_blank" rel="noopener" style="margin-left:10px;font-size:13px;">홈페이지 열어보기 ↗</a></p>
         </form>
+
+        <form method="post" class="panel" id="ui-colors">
+            <input type="hidden" name="csrf_token" value="<?= snap_h($csrf) ?>"><input type="hidden" name="ui_form" value="1">
+            <h3 class="grp">사이트 색상 (에디터 · 내 청첩장 · 관리자 화면)</h3>
+            <p class="help" style="font-size:12.5px;color:#888;margin:4px 0 0;">화면 바탕과 칸·버튼에 쓰는 베이지 색을 바꿔요. 하객이 보는 청첩장 색(디자인 색)은 바뀌지 않아요.</p>
+            <div class="ui-presets">
+                <?php foreach (SITE_COLOR_PRESETS + ['custom' => ['label' => '직접 고르기'] + $uiVals] as $pk => $pv): ?>
+                <label class="ui-p"><input type="radio" name="ui_preset" value="<?= $pk ?>" <?= $uiPreset === $pk ? 'checked' : '' ?> data-c='<?= snap_h(json_encode(array_intersect_key($pk === 'custom' ? $uiVals : $pv, SITE_COLOR_KEYS))) ?>'>
+                    <span class="ui-sw"><?php foreach (array_keys(SITE_COLOR_KEYS) as $k): ?><i style="background:<?= snap_h(($pk === 'custom' ? $uiVals : $pv)[$k]) ?>"></i><?php endforeach; ?></span><b><?= snap_h($pv['label']) ?></b></label>
+                <?php endforeach; ?>
+            </div>
+            <div class="ui-custom" id="uiCustom"<?= $uiPreset === 'custom' ? '' : ' hidden' ?>>
+                <?php foreach (SITE_COLOR_KEYS as $k => $lab): ?><label><input type="color" name="ui_<?= $k ?>" value="<?= snap_h($uiVals[$k]) ?>"><?= snap_h($lab) ?></label><?php endforeach; ?>
+            </div>
+            <div class="ui-demo" id="uiDemo"><div><b>미리 보기</b><span>칸·버튼</span><span>선택 칩</span></div><div>옅은 면 위의 글<br><small style="color:#888">바탕 위에 옅은 면 · 칸 · 선이 이렇게 보여요</small></div></div>
+            <p style="margin-top:14px;"><button class="btn" type="submit">색 저장</button></p>
+        </form>
+        <script>
+        (function () { // 고르는 대로 미리 보기
+            const f = document.getElementById('ui-colors'), demo = document.getElementById('uiDemo'), cu = document.getElementById('uiCustom');
+            const apply = () => { const r = f.querySelector('[name=ui_preset]:checked'); if (!r) return; const custom = r.value === 'custom'; cu.hidden = !custom;
+                const c = custom ? Object.fromEntries([...cu.querySelectorAll('input')].map(i => [i.name.slice(3), i.value])) : JSON.parse(r.dataset.c);
+                ['page', 'tint', 'soft', 'line'].forEach(k => demo.style.setProperty('--d-' + k, c[k])); };
+            f.addEventListener('input', apply); f.addEventListener('change', apply); apply();
+        })();
+        </script>
     </div>
 <script src="assets/ld-dialog.js"></script>
 </body>

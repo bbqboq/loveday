@@ -194,6 +194,7 @@ $csrf = csrf_token();
 <title>청첩장 수정 - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('list', '청첩장 수정'); ?>
@@ -393,7 +394,7 @@ $csrf = csrf_token();
     </div>
 <style>
 .exp-now { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 10px 0 6px; }
-.exp-now.sub { margin-top: 0; padding-top: 8px; border-top: 1px dashed #EAE6E0; }
+.exp-now.sub { margin-top: 0; padding-top: 8px; border-top: 1px dashed var(--ui-line, #EAE6E0); }
 .exp-now.sub .exp-left { font-size: 22px; color: #9A3434; }
 .exp-lb { width: 100%; font-size: 12px; font-weight: 600; color: var(--muted); }
 .exp-lb small { font-weight: 400; }

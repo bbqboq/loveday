@@ -126,11 +126,11 @@ $bg = function (string $slot) use ($state): string {
 .pv-cap { position: absolute; left: 12px; top: 12px; z-index: 5; font-size: 11px; font-weight: 700; letter-spacing: .08em; padding: 4px 9px; border-radius: 999px; background: rgba(255, 255, 255, .9); color: #6F6A63; }
 @keyframes hbob { 50% { translate: 0 -7px; } }
 /* 홈 미리보기 */
-.pv-home { height: 360px; background: #F6F4F1; position: relative; }
+.pv-home { height: 360px; background: var(--ui-page, #F6F4F1); position: relative; }
 .pv-home::before { content: ''; position: absolute; left: 8%; top: 8%; width: 84%; height: 80%; border-radius: 50%; background: radial-gradient(circle at 42% 40%, rgba(138, 75, 85, .24), rgba(214, 170, 150, .12) 45%, transparent 70%); filter: blur(22px); }
 .mph { position: absolute; width: 150px; height: 306px; border-radius: 24px; border: 6px solid #151413; background: #fff; overflow: hidden; box-shadow: 0 20px 40px rgba(40, 25, 20, .2); animation: hbob 7s ease-in-out infinite; }
 .mph.a { left: calc(50% - 150px); top: 30px; transform: rotate(-4deg); }
-.mph.b { left: calc(50% - 22px); top: 42px; transform: rotate(5deg); animation-duration: 8s; animation-delay: -2s; background: #FBF9F6; padding: 22px 11px; }
+.mph.b { left: calc(50% - 22px); top: 42px; transform: rotate(5deg); animation-duration: 8s; animation-delay: -2s; background: var(--ui-tint, #FBF9F6); padding: 22px 11px; }
 .mph .scr { position: absolute; inset: 0; transition: background .25s; }
 .mph .t { position: absolute; left: 0; right: 0; top: 52%; text-align: center; color: #fff; }
 .mph .t small { font-size: 6.5px; letter-spacing: .28em; opacity: .85; }
@@ -168,7 +168,7 @@ $bg = function (string $slot) use ($state): string {
 .slot-b { flex: 1; min-width: 0; }
 .slot-b b { display: block; font-size: 13.5px; }
 .slot-b small { display: block; font-size: 11.5px; color: #A29C94; line-height: 1.5; margin: 2px 0 8px; }
-.slot-b .tag { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; background: #F1EEE9; color: #8A847B; margin-bottom: 8px; }
+.slot-b .tag { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; background: var(--ui-soft, #F1EEE9); color: #8A847B; margin-bottom: 8px; }
 .slot-b .tag.photo { background: #E9F5EE; color: #2F7A4E; }
 .slot-b .tag.new { background: #2B2B2B; color: #fff; }
 .slot-act { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -181,8 +181,8 @@ $bg = function (string $slot) use ($state): string {
 
 /* 샘플 디자인 */
 .hi-sec.wide { grid-template-columns: 1fr; }
-.pv-samples { background: #F6F4F1; padding: 44px 16px 18px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
-.msm { position: relative; height: 210px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 0 #EAE6E0; transition: background .25s; }
+.pv-samples { background: var(--ui-page, #F6F4F1); padding: 44px 16px 18px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.msm { position: relative; height: 210px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 0 var(--ui-line, #EAE6E0); transition: background .25s; }
 .mk { position: absolute; inset: 0; display: flex; flex-direction: column; pointer-events: none; }
 .mk .top { height: 52%; position: relative; }
 .mk .nm { text-align: center; margin-top: 10px; font-size: 11px; font-weight: 600; }
@@ -191,7 +191,7 @@ $bg = function (string $slot) use ($state): string {
 .msm .lb small { display: block; color: #A39D95; font-weight: 500; font-size: 9.5px; }
 .msm .ord { position: absolute; top: 7px; left: 7px; width: 20px; height: 20px; border-radius: 50%; background: rgba(27, 26, 24, .8); color: #fff; font-size: 10.5px; font-weight: 700; display: grid; place-items: center; }
 .msm.auto .ord { background: rgba(255, 255, 255, .85); color: #8A847B; }
-.pv-note { padding: 0 16px 14px; background: #F6F4F1; font-size: 11.5px; color: #8A847B; }
+.pv-note { padding: 0 16px 14px; background: var(--ui-page, #F6F4F1); font-size: 11.5px; color: #8A847B; }
 .slot .thumb .mk .nm { font-size: 8px; margin-top: 6px; } .slot .thumb .mk .ln { height: 3px; margin-top: 4px; }
 .homesw { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin: 0 0 8px; font-size: 12px; color: #6F6A63; white-space: nowrap; cursor: pointer; }
 .homesw b { font-size: 10.5px; font-weight: 700; color: #fff; background: #2B2B2B; border-radius: 999px; padding: 1px 7px; }
@@ -222,6 +222,7 @@ body { padding-bottom: 90px; }
 }
 @media (prefers-reduced-motion: reduce) { .mph, .mcard { animation: none; } }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('homeimg', '홈 이미지'); ?>

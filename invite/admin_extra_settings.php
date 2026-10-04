@@ -96,6 +96,7 @@ $csrf = csrf_token();
     h3.grp:first-of-type { margin-top: 0; }
     @media (max-width: 560px) { .set-row { grid-template-columns: 1fr; gap: 6px; } }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('extra', '부가기능'); ?>

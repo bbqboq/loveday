@@ -39,7 +39,7 @@ $h = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>
-body { background: #F6F4F1; }
+body { background: var(--ui-page, #F6F4F1); }
 .fd-intro { font-size: 13px; color: #8A847B; margin: -14px 0 20px; line-height: 1.75; }
 .fd-card { background: #fff; border: 1px solid #ECE8E2; border-radius: 16px; padding: 18px; margin: 0 0 18px; }
 .fd-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 12px; }
@@ -54,7 +54,7 @@ body { background: #F6F4F1; }
 .fd-chip .sw u { position: absolute; left: 50%; bottom: 7px; transform: translateX(-50%); font-size: 9px; text-decoration: none; }
 .fd-chip b { font-size: 13.5px; }
 .fd-chip .ord { display: flex; gap: 2px; margin-left: 4px; }
-.fd-chip .ord button { width: 26px; height: 26px; border: 1px solid #E5DED3; background: #fff; border-radius: 8px; cursor: pointer; font-size: 12px; color: #6F6A63; }
+.fd-chip .ord button { width: 26px; height: 26px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; border-radius: 8px; cursor: pointer; font-size: 12px; color: #6F6A63; }
 .fd-chip .ord button:disabled { opacity: .3; cursor: default; }
 .fd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
 .fd-p { position: relative; border: 1.5px solid #ECE8E2; border-radius: 14px; background: #fff; overflow: hidden; cursor: pointer; text-align: left; padding: 0; font: inherit; color: inherit; transition: border-color .15s, box-shadow .15s; }
@@ -64,34 +64,35 @@ body { background: #F6F4F1; }
 .fd-p .pv i { width: 64%; height: 48px; border-radius: 8px; }
 .fd-p .pv span { font-size: 14px; }
 .fd-p .pv .hrt { font-size: .7em; margin: 0 .35em; }
-.fd-p .tx { display: block; padding: 10px 12px 12px; border-top: 1px solid #F1EEE9; }
+.fd-p .tx { display: block; padding: 10px 12px 12px; border-top: 1px solid var(--ui-soft, #F1EEE9); }
 .fd-p .tx b { display: block; font-size: 13.5px; margin-bottom: 2px; }
 .fd-p .tx small { font-size: 11.5px; color: #8A847B; line-height: 1.5; display: block; }
-.fd-p .ck { position: absolute; top: 8px; right: 8px; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 99px; background: rgba(255,255,255,.92); border: 1px solid #DED8CF; font-size: 11.5px; font-weight: 700; display: grid; place-items: center; color: #A29C94; }
+.fd-p .ck { position: absolute; top: 8px; right: 8px; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 99px; background: rgba(255,255,255,.92); border: 1px solid var(--ui-line, #DED8CF); font-size: 11.5px; font-weight: 700; display: grid; place-items: center; color: #A29C94; }
 .fd-p.on .ck { background: #2B2320; border-color: #2B2320; color: #fff; }
-.fd-bar { position: sticky; bottom: 0; display: flex; align-items: center; gap: 12px; justify-content: flex-end; padding: 14px 0; background: linear-gradient(rgba(246,244,241,0), #F6F4F1 40%); }
+.fd-bar { position: sticky; bottom: 0; display: flex; align-items: center; gap: 12px; justify-content: flex-end; padding: 14px 0; background: linear-gradient(rgba(246,244,241,0), var(--ui-page, #F6F4F1) 40%); }
 .fd-bar span { font-size: 13px; color: #8A847B; margin-right: auto; }
 .fd-bar button { height: 44px; padding: 0 22px; border-radius: 12px; border: 0; background: #2B2320; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
-.fd-bar button.ghost { background: #fff; color: #6F6A63; border: 1px solid #E5DED3; }
+.fd-bar button.ghost { background: #fff; color: #6F6A63; border: 1px solid var(--ui-line, #E5DED3); }
 .fd-bar button:disabled { opacity: .45; cursor: default; }
 .fd-toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: #2B2320; color: #fff; padding: 10px 18px; border-radius: 99px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .fd-toast.on { opacity: 1; }
 .fd-p { cursor: default; display: flex; flex-direction: column; }
 .fd-p .top { all: unset; display: block; cursor: pointer; position: relative; }
 .fd-p .acts { display: flex; gap: 6px; padding: 0 12px 12px; flex-wrap: wrap; margin-top: auto; }
-.fd-p .acts a, .fd-p .acts button { height: 30px; padding: 0 10px; border-radius: 9px; border: 1px solid #E5DED3; background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: #4A453F; text-decoration: none; display: inline-flex; align-items: center; cursor: pointer; }
+.fd-p .acts a, .fd-p .acts button { height: 30px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: #4A453F; text-decoration: none; display: inline-flex; align-items: center; cursor: pointer; }
 .fd-p .acts a.main { background: #2B2320; border-color: #2B2320; color: #fff; }
 .fd-p .acts button.del { color: #B24A4A; }
 .fd-p .tag { position: absolute; left: 8px; top: 8px; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: #E7F4EC; color: #2F7A4E; }
 .fd-p .tag.draft { background: #FFF3DC; color: #9A6B12; }
-.fd-new { display: grid; grid-template-columns: 1fr 1fr 1.4fr auto; gap: 8px; align-items: end; margin: 0 0 14px; padding: 14px; border: 1px dashed #DED8CF; border-radius: 14px; background: #FBF9F6; }
+.fd-new { display: grid; grid-template-columns: 1fr 1fr 1.4fr auto; gap: 8px; align-items: end; margin: 0 0 14px; padding: 14px; border: 1px dashed var(--ui-line, #DED8CF); border-radius: 14px; background: var(--ui-tint, #FBF9F6); }
 .fd-new[hidden] { display: none; }
 .fd-new label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 700; color: #6F6A63; }
-.fd-new select, .fd-new input { height: 40px; border: 1px solid #DED8CF; border-radius: 10px; padding: 0 10px; font: inherit; font-size: 13.5px; background: #fff; }
+.fd-new select, .fd-new input { height: 40px; border: 1px solid var(--ui-line, #DED8CF); border-radius: 10px; padding: 0 10px; font: inherit; font-size: 13.5px; background: #fff; }
 .fd-new button, .fd-addbtn { height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: #2B2320; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
 .fd-addbtn { background: #fff; color: #2B2320; border: 1px solid #2B2320; }
 @media (max-width: 760px) { .fd-new { grid-template-columns: 1fr; } }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('designs', '추천 디자인'); ?>

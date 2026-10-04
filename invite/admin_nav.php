@@ -57,7 +57,7 @@ function admin_topbar(string $active, string $pageTitle = ''): void
 .adm-nav::-webkit-scrollbar { display: none; }
 .adm-nav > a:first-child { margin-left: auto; } /* 넓은 화면에서는 오른쪽 정렬, 좁으면 왼쪽부터 밀어서 봄 */
 .adm-nav a { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 999px; font-size: 13px; color: #555; text-decoration: none; white-space: nowrap; transition: background .15s, color .15s; }
-.adm-nav a:hover { background: #F4F1EC; color: #2B2320; }
+.adm-nav a:hover { background: var(--ui-tint, #F4F1EC); color: #2B2320; }
 .adm-nav a.on { background: #2B2320; color: #fff; }
 .adm-nav .adm-badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #C7823A; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
 /* PC: 메뉴 아래 회색 반투명 가로 스크롤바 (메뉴가 넘칠 때만, 끌거나 눌러서 이동) */
@@ -73,7 +73,7 @@ function admin_topbar(string $active, string $pageTitle = ''): void
 .adm-nav.fade-l.fade-r { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent); }
 /* 로그인한 사람 */
 .adm-me { position: relative; flex: none; }
-.adm-me > button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #E3DED6; background: #F4F1EC; color: #2B2320; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; padding: 0; }
+.adm-me > button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #E3DED6; background: var(--ui-tint, #F4F1EC); color: #2B2320; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; padding: 0; }
 .adm-me > button.sub { background: #EEF2F7; color: #4A5A73; border-color: #D8E0EA; font-size: 13px; }
 .adm-me-pop { position: absolute; right: 0; top: 42px; z-index: 70; min-width: 190px; background: #fff; border: 1px solid #ECE8E2; border-radius: 12px; box-shadow: 0 14px 34px rgba(30, 20, 10, .14); padding: 12px; display: none; }
 .adm-me.open .adm-me-pop { display: block; }
@@ -97,7 +97,7 @@ function admin_topbar(string $active, string $pageTitle = ''): void
 .adm-sess-pop p { margin: 0 0 18px; font-size: 13.5px; line-height: 1.65; color: #6F6A63; }
 .adm-sess-pop p b { color: #C2410C; font-size: 15px; font-variant-numeric: tabular-nums; }
 .adm-sess-pop .btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
-.adm-sess-pop .btns button { border: 0; border-radius: 12px; padding: 12px 0; font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; background: #F1EEE9; color: #2B2320; }
+.adm-sess-pop .btns button { border: 0; border-radius: 12px; padding: 12px 0; font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; background: var(--ui-soft, #F1EEE9); color: #2B2320; }
 .adm-sess-pop .btns button.main { background: #2B2320; color: #fff; }
 .adm-sess-pop .btns button:disabled { opacity: .5; }
 .adm-sess-pop .sub { display: flex; justify-content: center; gap: 16px; margin-top: 14px; }

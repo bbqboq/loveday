@@ -55,6 +55,7 @@ $csrf = csrf_token();
 .wm-preview img.loading { opacity: .6; }
 @media (max-width: 640px) { .wm-layout { flex-direction: column-reverse; gap: 18px; } .wm-preview { align-self: center; } .wm-preview img { width: 260px; } }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('watermark', '워터마크 설정'); ?>

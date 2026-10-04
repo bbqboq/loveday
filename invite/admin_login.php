@@ -127,7 +127,7 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap">
 <style>
-:root { --bg: #F6F4F1; --ink: #1B1A18; --sub: #6F6A63; --faint: #A39D95; --line: #EAE6E0; --soft: #F1EEEA; --accent: #8A4B55; --accent-soft: #F4ECEC; --wine: #2A1C1F; }
+:root { --bg: var(--ui-page, #F6F4F1); --ink: #1B1A18; --sub: #6F6A63; --faint: #A39D95; --line: var(--ui-line, #EAE6E0); --soft: #F1EEEA; --accent: #8A4B55; --accent-soft: #F4ECEC; --wine: #2A1C1F; }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; -webkit-font-smoothing: antialiased; word-break: keep-all; }
@@ -230,6 +230,7 @@ button, input { font-family: inherit; }
 .pv-bar a { color: #F0C4C9; text-decoration: none; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .glow, .card, .chip, .box { animation: none; } }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
 <?php if ($preview): ?><div class="pv-bar">👀 미리보기 화면이에요 · 로그인은 되지 않아요 <a href="admin_home_images.php">← 홈 이미지로</a></div><?php endif; ?>

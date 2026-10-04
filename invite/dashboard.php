@@ -65,9 +65,9 @@ if ($mode === 'token') {
             $pinError = 'PIN 번호가 올바르지 않습니다.';
         }
         ?><!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer"><meta name="robots" content="noindex">
-        <title>PIN 확인</title><style>body{margin:0;background:#F6F4F1;font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;color:#1B1A18;display:flex;min-height:100vh;align-items:center;justify-content:center}
-        .b{background:#fff;border:1px solid #EAE6E0;border-radius:18px;padding:30px 26px;width:min(340px,90vw);text-align:center}h3{margin:0 0 16px;font-size:17px}
-        input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #EAE6E0;border-radius:10px;font-size:18px;text-align:center;letter-spacing:.4em}
+        <title>PIN 확인</title><style>body{margin:0;background:var(--ui-page, #F6F4F1);font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;color:#1B1A18;display:flex;min-height:100vh;align-items:center;justify-content:center}
+        .b{background:#fff;border:1px solid var(--ui-line, #EAE6E0);border-radius:18px;padding:30px 26px;width:min(340px,90vw);text-align:center}h3{margin:0 0 16px;font-size:17px}
+        input{width:100%;box-sizing:border-box;padding:13px;border:1px solid var(--ui-line, #EAE6E0);border-radius:10px;font-size:18px;text-align:center;letter-spacing:.4em}
         button{margin-top:12px;width:100%;padding:13px;border:0;border-radius:10px;background:#1B1A18;color:#fff;font-size:15px;font-weight:600}.e{color:#B24A4A;font-size:13px}</style></head>
         <body><form class="b" method="post"><h3>PIN 번호를 입력해주세요</h3><?php if ($pinError): ?><p class="e"><?= $h($pinError) ?></p><?php endif; ?>
         <input type="hidden" name="csrf_token" value="<?= $h(csrf_token()) ?>"><input type="hidden" name="t" value="<?= $h($token) ?>">
@@ -324,7 +324,7 @@ elseif (isset($_GET['demo_gone'])) $flash = '둘러보기 청첩장은 보관 �
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <style>
-:root{--bg:#F6F4F1;--surface:#fff;--ink:#1B1A18;--sub:#6F6A63;--faint:#A39D95;--line:#EAE6E0;--soft:#F1EEEA;--accent:#8A4B55;--accent-soft:#F4ECEC;--ok:#3E8A68;--warn:#C7823A;--idle:#B9B2A8;--danger:#B24A4A}
+:root{--bg:var(--ui-page, #F6F4F1);--surface:#fff;--ink:#1B1A18;--sub:#6F6A63;--faint:#A39D95;--line:var(--ui-line, #EAE6E0);--soft:#F1EEEA;--accent:#8A4B55;--accent-soft:#F4ECEC;--ok:#3E8A68;--warn:#C7823A;--idle:#B9B2A8;--danger:#B24A4A}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -515,6 +515,7 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stro
   .mfoot{padding:0 20px 30px;text-align:center;font-size:12px;color:var(--faint)}
 }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
 <svg style="display:none" aria-hidden="true">

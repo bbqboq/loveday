@@ -152,6 +152,7 @@ $dispatch = app_setting('naver_auto_dispatch');
     .mini { font-size: 12.5px; padding: 6px 10px; }
     @media (max-width: 760px) { .set-row { grid-template-columns: 1fr; gap: 4px; } table.nv thead { display: none; } table.nv td { display: block; border: 0; padding: 4px 8px; } table.nv tr { display: block; border-bottom: 1px solid #eee; padding: 8px 0; } }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
     <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('naver', '스마트스토어 연동'); ?>

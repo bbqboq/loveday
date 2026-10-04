@@ -44,7 +44,7 @@ $readonly = function_exists('admin_page_readonly') && admin_page_readonly();
 .tt-h { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .tt-h b { font-size: 14.5px; }
 .tt-h .sp { flex: 1; }
-.tt-btn { height: 34px; padding: 0 14px; border: 0; border-radius: 10px; background: #F3EEE6; color: #4A3F37; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.tt-btn { height: 34px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--ui-soft, #F3EEE6); color: #4A3F37; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; }
 .tt-btn:hover { background: #EAE2D6; }
 .tt-btn.dark { background: var(--ink); color: #fff; }
 .tt-btn.pick { background: #FFF4D6; color: #8A5A00; }
@@ -82,7 +82,7 @@ $readonly = function_exists('admin_page_readonly') && admin_page_readonly();
 .tt-pv { position: sticky; top: 76px; }
 .tt-pv.big { position: fixed; z-index: 60; top: 70px; right: 16px; bottom: 16px; width: min(1180px, calc(100vw - 32px)); background: #fff; border-radius: 18px; padding: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: auto; }
 .tt-pv-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-.tt-frame { position: relative; background: #EDE9E3; border-radius: 16px; overflow: hidden; display: flex; justify-content: center; }
+.tt-frame { position: relative; background: var(--ui-soft, #EDE9E3); border-radius: 16px; overflow: hidden; display: flex; justify-content: center; }
 .tt-frame iframe { border: 0; background: #fff; transform-origin: 0 0; display: block; }
 .tt-tip { font-size: 12px; color: var(--muted); line-height: 1.6; margin: 8px 2px 0; }
 .tt-tip b { color: #8A5A00; }
@@ -92,6 +92,7 @@ $readonly = function_exists('admin_page_readonly') && admin_page_readonly();
 .tt-toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 13px; z-index: 99; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .tt-toast.on { opacity: 1; }
 </style>
+<?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
 <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('tiptours', '커스텀 편집팁'); ?>
