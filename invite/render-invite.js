@@ -753,7 +753,7 @@ const templates = {
         // 자동 정렬(accCols): 이름 | 계좌 두 열 (에디터와 같음). 마스킹이면 계좌 칸만 나중에 채움(data-reveal="value")
         const cols = !!f.accCols, vw = Math.max(6, Math.min(30, Number(f.accVw) || 14));
         // 이름 칸 폭(accLw em)도 자동 정렬이 실제 이름 글자에 맞춰 잼 - 신랑측·신부측만 있으면 좁게 (없으면 예전처럼 6.4em)
-        const lw = Number(f.accLw) > 0 ? Math.max(2, Math.min(10, Number(f.accLw))) : 0, colsCss = lw ? `grid-template-columns:${lw}em ${vw}em;` : '';
+        const lw = Number(f.accLw) > 0 ? Math.max(2, Math.min(10, Number(f.accLw))) : (activeExtras.length ? 0 : 2.9), colsCss = lw ? `grid-template-columns:${lw}em ${vw}em;` : '';
         const line = (k, label) => cols
             ? `<span class="drag-part on-light acc-row" style="${s(k)}--acc-vw:${vw}em;${colsCss}"><b class="acc-l">${label}</b><span class="acc-v"${f._masked ? ` data-masked="1" data-reveal="value" data-part="${k}"` : ''}>${val(k)}</span></span>`
             : `<span class="drag-part on-light" ${maskAttr(k)} style="${s(k)}">${label} · ${val(k)}</span>`;

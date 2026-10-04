@@ -6799,6 +6799,15 @@ function accAutoArrange() {
     const G = ['groomBank', 'groomFatherBank', 'groomMotherBank'].filter(k => f[k]); // 비운 줄은 미리보기에도 없으니 자리도 안 잡음
     const B = ['brideBank', 'brideFatherBank', 'brideMotherBank'].filter(k => f[k]);
     const keys = G.concat(B), keySig = keys.join(','), sig = keySig + '|' + keys.map(k => accTxt(f[k]).length).join(',');
+    if (f.accFree && f.accCols && !f.accLw) { // 손으로 옮긴 예전 청첩장: 자리는 그대로 두고 이름 칸 폭만 실제 글자에 맞춤 (고정 6.4em이라 오른쪽으로 쏠려 보였음)
+        const cv0 = document.querySelector('#previewRoot .col[data-block-id="account"] .free-canvas');
+        if (cv0 && cv0.clientWidth) {
+            const ctx = (accAutoArrange._c = accAutoArrange._c || document.createElement('canvas')).getContext('2d');
+            let labPx = 0, fpx = 13;
+            cv0.querySelectorAll('.acc-row').forEach(r => { const l = r.querySelector('.acc-l'); if (!l) return; fpx = parseFloat(getComputedStyle(r).fontSize) || fpx; ctx.font = getComputedStyle(l).font; labPx = Math.max(labPx, ctx.measureText(l.textContent.trim()).width); });
+            if (labPx) { f.accLw = Math.round((labPx / fpx + .2) * 10) / 10; accArranging = true; try { renderPreview(); } finally { accArranging = false; } }
+        }
+    }
     if (f.accFree) { if (f._accKeys == null) { f._accKeys = keySig; return; } if (f._accKeys === keySig) return; } // 손으로 옮긴 뒤 줄 구성이 그대로면 손대지 않음
     if (!f.accFree && f._accSig === sig && f.accLw) return; // 이미 맞춰 둔 상태 (이름 칸 폭이 없던 예전 정렬은 한 번 다시)
     const canvas = document.querySelector('#previewRoot .col[data-block-id="account"] .free-canvas');
