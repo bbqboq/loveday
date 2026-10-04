@@ -1093,6 +1093,16 @@
             <div class="ib-cr-win" style="top:${top}%;height:${hh}%;"><div class="ib-cr-roll" style="animation-duration:${sec}s;">${rows.length ? `<div class="ib-cr-list">${list}</div><div class="ib-cr-list" aria-hidden="true">${list}</div>` : ''}</div></div>
         </div>`;
     }
+    // 안내 말씀 모양 + 바로 넣는 예시 (간편 만들기 "눌러서 칸 추가" · 전문가 모드 예시 버튼)
+    const NOTICE_STYLES = [['card', '카드형 (사진 포함)'], ['box', '박스형 (글만)'], ['slide', '슬라이드 (옆으로 넘기기)'], ['tabs', '탭 (눌러서 보기)']];
+    const NOTICE_TPL = {
+        '포토부스': '예식장 로비에 포토부스가 준비되어 있어요.\n두 사람과 함께한 오늘을 사진으로 남겨 주세요.',
+        '주차 안내': '건물 지하 주차장을 이용해 주세요.\n예식 하객은 2시간 무료로 주차할 수 있어요.',
+        '답례품': '와 주신 마음에 감사드리며\n작은 답례품을 준비했어요. 식사 후 안내 데스크에서 받아 주세요.',
+        '식사 안내': '예식 후 2층 연회장에서\n식사가 준비되어 있습니다.',
+        '화환 안내': '마음만 감사히 받겠습니다.\n화환은 정중히 사양합니다.',
+        '셔틀버스': '예식장 앞에서 셔틀버스가 운행돼요.\n출발 시간은 아래 버튼에서 확인해 주세요.'
+    };
     const BLOCKS = {
         // ---------- 연락하기 (신랑신부 + 혼주) ----------
         contact: {
@@ -1270,10 +1280,10 @@
             ] },
             editor: [
                 { key: 'title', label: '제목', type: 'text' },
-                { key: 'style', label: '모양', type: 'choice', options: [['card', '카드형 (사진 포함)'], ['box', '박스형 (글만)']] },
+                { key: 'style', label: '모양', type: 'choice', options: NOTICE_STYLES },
                 { key: 'items', label: '안내문', type: 'items', addLabel: '안내문 추가', item: { title: '', image: '', text: '', linkLabel: '', linkUrl: '' }, fields: [
                     { key: 'title', label: '제목', type: 'text' },
-                    { key: 'image', label: '사진 (카드형에서만 보임)', type: 'image' },
+                    { key: 'image', label: '사진 (카드형·슬라이드·탭에서 보임)', type: 'image' },
                     { key: 'text', label: '내용', type: 'textarea' },
                     { key: 'linkLabel', label: '외부링크 버튼 이름 (선택)', type: 'text', placeholder: '예: 셔틀버스 시간표 보기' },
                     { key: 'linkUrl', label: '외부링크 주소', type: 'url', placeholder: 'https://' }
@@ -1284,6 +1294,12 @@
                 const items = (f.items || []).filter(it => it.title || it.text || it.image);
                 const link = it => { const u = linkHref(it.linkUrl); return u
                     ? `<a class="ib-link-btn" href="${esc(u)}" target="_blank" rel="noopener">${esc(it.linkLabel || '자세히 보기')}</a>` : ''; };
+                const pic = it => it.image ? `<img loading="lazy" decoding="async" src="${esc(imgUrl(it.image))}" alt="">` : '';
+                const body = it => `<div class="ib-notice-body">${it.title ? `<strong>${esc(it.title)}</strong>` : ''}<p>${nl2br(it.text)}</p>${link(it)}</div>`;
+                if (items.length && f.style === 'slide') // 슬라이드: 옆으로 넘기는 카드 + 진행 막대 (갤러리 슬라이드와 같은 방식)
+                    return `<div class="ib-block ib-notice ib-notice-slide">${sectionTitle(f.title, f)}<div class="ib-nt-track" data-ib-slide>${items.map(it => `<div class="ib-nt-card">${pic(it)}${body(it)}</div>`).join('')}</div>${items.length > 1 ? '<div class="ib-g-progress"><span></span></div>' : ''}</div>`;
+                if (items.length && f.style === 'tabs') // 탭: 위에 제목 탭, 누르면 그 안내만
+                    return `<div class="ib-block ib-notice ib-notice-tabs" data-ib-tabs>${sectionTitle(f.title, f)}<div class="ib-nt-tabs" role="tablist">${items.map((it, i) => `<button type="button" role="tab" class="${i ? '' : 'on'}" data-ib-tab="${i}" aria-selected="${!i}">${esc(it.title || `안내 ${i + 1}`)}</button>`).join('')}</div>${items.map((it, i) => `<div class="ib-nt-panel" data-ib-panel="${i}"${i ? ' hidden' : ''}>${pic(it)}<div class="ib-notice-body"><p>${nl2br(it.text)}</p>${link(it)}</div></div>`).join('')}</div>`;
                 return `<div class="ib-block ib-notice ib-notice-${box ? 'box' : 'card'}">${sectionTitle(f.title, f)}
                     ${items.length ? items.map(it => `<div class="ib-notice-item">
                         ${!box && it.image ? `<img loading="lazy" decoding="async" src="${esc(imgUrl(it.image))}" alt="">` : ''}
@@ -2255,6 +2271,12 @@
             const copyNow = num => { if (!num) { toast('계좌번호가 없어요.'); return; }
                 if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(num).then(okMsg, () => (legacyCopy(num) ? okMsg() : failMsg()));
                 else (legacyCopy(num) ? okMsg() : failMsg()); };
+            document.addEventListener('click', e => { // 안내 말씀 탭
+                const tab = e.target.closest && e.target.closest('[data-ib-tab]'); if (!tab) return;
+                const box = tab.closest('[data-ib-tabs]'); if (!box) return;
+                box.querySelectorAll('[data-ib-tab]').forEach(t => { const on = t === tab; t.classList.toggle('on', on); t.setAttribute('aria-selected', on); });
+                box.querySelectorAll('[data-ib-panel]').forEach(p => { p.hidden = p.dataset.ibPanel !== tab.dataset.ibTab; });
+            });
             document.addEventListener('click', e => {
                 const hit = e.target.closest && e.target.closest('[data-ib-copy], [data-ib-copyrow]');
                 if (!hit) return;
@@ -3001,5 +3023,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, HL_ANIMS, armHeroAnims, playHeroAnims, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, HL_ANIMS, armHeroAnims, playHeroAnims, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

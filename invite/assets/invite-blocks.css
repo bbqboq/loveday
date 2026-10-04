@@ -1163,4 +1163,16 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .hero-boxed .hb-fr-shadow { box-shadow: 0 12px 30px rgba(0,0,0,.18); }
 .hero-boxed .hb-fr-polaroid { background: #fff; padding: 5% 5% 0; box-sizing: border-box; box-shadow: 0 8px 24px rgba(0,0,0,.14); overflow: visible; }
 .hero-boxed .hb-fr-polaroid .hero-photo { height: 74%; }
+/* 안내 말씀: 슬라이드 · 탭 */
+.ib-notice-slide .ib-nt-track { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 12px -24px 0; padding: 4px 24px 10px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.ib-notice-slide .ib-nt-track::-webkit-scrollbar { display: none; }
+.ib-nt-card { flex: 0 0 82%; scroll-snap-align: center; border-radius: 14px; background: #fff; border: 1px solid var(--p-line); box-shadow: 0 6px 18px rgba(0,0,0,.06); overflow: hidden; text-align: left; }
+.ib-nt-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.ib-nt-card:only-child { flex-basis: 100%; }
+.ib-nt-tabs { display: flex; margin: 12px 0 14px; border-bottom: 1px solid var(--p-line); }
+.ib-nt-tabs button { flex: 1; min-width: 0; border: 0; background: none; padding: 10px 4px; font: inherit; font-size: 13px; color: var(--p-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ib-nt-tabs button.on { color: var(--p-ink); font-weight: 600; border-bottom-color: var(--p-accent); }
+.ib-nt-panel img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; }
+.ib-nt-panel .ib-notice-body { padding: 14px 4px 0; text-align: center; }
+.ib-nt-panel[hidden] { display: none; }
 

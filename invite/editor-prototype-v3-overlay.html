@@ -642,6 +642,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-item-h .wz-inp { flex: 1; height: 42px; font-size: 14px; }
 .sp-item-h button { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: #F1ECE5; color: var(--wz-sub); cursor: pointer; font-size: 11px; }
 .sp-item textarea.wz-inp { min-height: 64px; font-size: 13.5px; resize: vertical; }
+.sp-item-pic { display: flex; align-items: center; gap: 8px; margin-top: 8px; } .sp-item-pic img { width: 56px; height: 42px; object-fit: cover; border-radius: 8px; } .sp-item-pic .wz-btn2 { height: 34px; padding: 0 12px; font-size: 12.5px; } .sp-item-pic .sp-link { margin: 0; }
 .sp-tracks { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; max-height: 340px; overflow: auto; }
 .sp-trk { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--wz-line); border-radius: 12px; padding: 6px 10px 6px 6px; }
 .sp-trk.on { border-color: var(--wz-ink); }
@@ -4047,13 +4048,13 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017c">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017c">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017d">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017d">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
-<script src="assets/invite-blocks.js?v=1017c"></script>
-<script src="assets/tip-demos.js?v=1017c"></script>
-<script src="assets/ld-dialog.js?v=1017c"></script>
+<script src="assets/invite-blocks.js?v=1017d"></script>
+<script src="assets/tip-demos.js?v=1017d"></script>
+<script src="assets/ld-dialog.js?v=1017d"></script>
 </head>
 <body>
 
@@ -14374,13 +14375,25 @@ function spItemsStep(box, id, head, lead, opt) {
         (opt.styles && spOpt(id, 'style') ? spChoiceRow('모양', 'style', opt.styles, f.style || opt.styles[0][0]) : '') +
         (opt.quick && spOpt(id, 'quick') ? `<div class="wz-field"><div class="wz-lab">눌러서 칸 추가</div><div class="sp-chips">${opt.quick.map(q => `<button type="button" data-sp-q="${esc(q)}">＋ ${esc(q)}</button>`).join('')}</div></div>` : '') +
         f.items.map((it, i) => `<div class="sp-item"><div class="sp-item-h"><input class="wz-inp" data-sp-it="${i}" data-k="${tk}" value="${wzEsc(it[tk] || '')}" placeholder="${esc(opt.titlePh)}"><button type="button" data-sp-itdel="${i}" aria-label="빼기">✕</button></div>
-            <textarea class="wz-inp" data-sp-it="${i}" data-k="text" rows="2" placeholder="${esc(opt.textPh)}">${wzEsc(it.text || '')}</textarea></div>`).join('') +
+            <textarea class="wz-inp" data-sp-it="${i}" data-k="text" rows="2" placeholder="${esc(opt.textPh)}">${wzEsc(it.text || '')}</textarea>${opt.image ? `<div class="sp-item-pic">${it.image ? `<img src="${esc(InviteBlocks.imgUrl(it.image))}" alt="">` : ''}<button type="button" class="wz-btn2" data-sp-itpic="${i}">${it.image ? '사진 바꾸기' : '+ 사진 넣기'}</button>${it.image ? `<button type="button" class="sp-link" data-sp-itpicdel="${i}">사진 빼기</button>` : ''}</div>` : ''}</div>`).join('') +
         `<button type="button" class="wz-addacc" id="spItAdd">+ ${esc(opt.addLabel)}</button>`;
-    const add = t => { f.items.push(Object.assign({ id: id.slice(0, 2) + Date.now().toString(36) }, opt.blank, { [tk]: t || '' })); spChanged([id]); scheduleSnapshot(); spRender(); setTimeout(() => { const all = box.querySelectorAll(`[data-k="text"]`); all[all.length - 1]?.focus(); }, 30); };
+    const add = t => { f.items.push(Object.assign({ id: id.slice(0, 2) + Date.now().toString(36) }, opt.blank, { [tk]: t || '' }, t && opt.quickText && opt.quickText[t] ? { text: opt.quickText[t] } : {})); spChanged([id]); scheduleSnapshot(); spRender(); setTimeout(() => { const all = box.querySelectorAll(`[data-k="text"]`); all[all.length - 1]?.focus(); }, 30); };
     box.querySelectorAll('[data-sp-q]').forEach(q => q.addEventListener('click', () => add(q.dataset.spQ)));
     box.querySelector('#spItAdd').addEventListener('click', () => add(''));
     box.querySelectorAll('[data-sp-it]').forEach(inp => inp.addEventListener('input', () => { f.items[+inp.dataset.spIt][inp.dataset.k] = inp.value; spChanged([id]); }));
     box.querySelectorAll('[data-sp-itdel]').forEach(x => x.addEventListener('click', () => { f.items.splice(+x.dataset.spItdel, 1); spChanged([id]); scheduleSnapshot(); spRender(); }));
+    box.querySelectorAll('[data-sp-itpic]').forEach(btn => btn.addEventListener('click', () => {
+        const input = makeFileInput();
+        input.addEventListener('change', async () => {
+            const file = input.files && input.files[0]; if (!file) return;
+            btn.disabled = true; btn.textContent = '올리는 중…';
+            const url = await uploadPhotoToServer(file);
+            if (url) f.items[+btn.dataset.spItpic].image = url;
+            spChanged([id]); scheduleSnapshot(); spRender();
+        });
+        input.click();
+    }));
+    box.querySelectorAll('[data-sp-itpicdel]').forEach(x => x.addEventListener('click', () => { f.items[+x.dataset.spItpicdel].image = ''; spChanged([id]); scheduleSnapshot(); spRender(); }));
     box.querySelectorAll('[data-sp-f]').forEach(inp => inp.addEventListener('input', () => { f[inp.dataset.spF] = inp.value; spChanged([id]); }));
     spBindChoice(box, f, id);
 }
@@ -14390,7 +14403,7 @@ function spTransport(box) {
 }
 function spNotice(box) {
     spItemsStep(box, 'notice', '하객분들께 안내 말씀', '식사·주차·화환처럼 미리 알려드릴 내용을 적어요.',
-        { titleKey: 'title', titlePh: '제목 (예: 식사 안내)', textPh: '예: 예식 후 2층 연회장에서 식사가 준비되어 있습니다.', addLabel: '안내 추가', titleDef: '안내 말씀', styles: [['card', '카드형 (사진 포함)'], ['box', '박스형 (글만)']], quick: ['식사 안내', '주차 안내', '화환 안내'], blank: { title: '', image: '', text: '', linkLabel: '', linkUrl: '' } });
+        { titleKey: 'title', titlePh: '제목 (예: 식사 안내)', textPh: '예: 예식 후 2층 연회장에서 식사가 준비되어 있습니다.', addLabel: '안내 추가', titleDef: '안내 말씀', styles: InviteBlocks.NOTICE_STYLES, quick: Object.keys(InviteBlocks.NOTICE_TPL), quickText: InviteBlocks.NOTICE_TPL, image: true, blank: { title: '', image: '', text: '', linkLabel: '', linkUrl: '' } });
 }
 // 켜고 끄기 + 짧은 글 몇 칸만 있는 단계
 function spSw(key, title, desc, on) { return `<label class="sp-sw"><span><b>${title}</b><small>${desc}</small></span><input type="checkbox" data-sp-sw="${key}"${on ? ' checked' : ''}><i></i></label>`; }
