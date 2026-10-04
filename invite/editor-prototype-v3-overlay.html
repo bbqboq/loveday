@@ -465,6 +465,25 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-ud button svg { width: 16px; height: 16px; fill: none; stroke: var(--wz-ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .sp-ud button:disabled { opacity: .35; cursor: default; }
 .sp-ud button:not(:disabled):hover { border-color: var(--wz-ink); }
+.sp-view { align-self: flex-start; margin: -4px 24px 8px; border: 0; background: none; padding: 0; font: inherit; font-size: 12px; font-weight: 700; color: var(--wz-acc); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.sp-stepn { font-size: 11.5px; font-weight: 600; opacity: .6; margin-left: 4px; letter-spacing: .02em; }
+.sp-list { display: flex; flex-direction: column; gap: 8px; padding: 6px 20px 8px; }
+.sp-li { background: #fff; border: 1px solid var(--wz-line); border-radius: 14px; }
+.sp-li.open { border-color: var(--wz-line2); box-shadow: 0 6px 18px rgba(40,30,20,.05); }
+.sp-li-h { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; }
+.sp-li-t { flex: 1; min-width: 0; text-align: left; border: 0; background: none; padding: 12px 10px; font: inherit; font-size: 14.5px; font-weight: 700; color: var(--wz-ink); cursor: pointer; }
+.sp-li.off .sp-li-t { color: var(--wz-mute); }
+.sp-li-c { flex: none; width: 34px; height: 34px; border: 0; background: none; cursor: pointer; position: relative; }
+.sp-li-c::before { content: ''; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--wz-sub); border-bottom: 2px solid var(--wz-sub); transform: translate(-50%, -70%) rotate(45deg); transition: transform .2s; }
+.sp-li.open .sp-li-c::before { transform: translate(-50%, -30%) rotate(-135deg); }
+.sp-li-sw { flex: none; position: relative; width: 42px; height: 24px; cursor: pointer; }
+.sp-li-sw input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.sp-li-sw i { position: absolute; inset: 0; border-radius: 99px; background: #DDD6CC; transition: background .2s; }
+.sp-li-sw i::after { content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s; }
+.sp-li-sw input:checked + i { background: #C9A86A; } .sp-li-sw input:checked + i::after { transform: translateX(18px); }
+.sp-li-b { padding: 4px 16px 16px; border-top: 1px solid var(--wz-line); }
+.sp-li-b > .wz-field:first-child, .sp-li-b > :first-child { margin-top: 12px; }
+.sp-list-end { padding: 10px 20px 24px; } .sp-list-end .wz-next { width: 100%; height: 52px; } .sp-list-end .wz-hint { margin-top: 10px; }
 .sp-steps { flex: none; display: flex; gap: 4px; padding: 0 20px 6px; overflow-x: auto; scrollbar-width: none; }
 .sp-head, .sp-nav { flex: none; }
 .simple-mode .simple-pane { order: -1; }
@@ -13218,6 +13237,7 @@ async function startWithPreset(presetId) {
     delete state.simpleSnap; delete state.fullSnap;
     if (startTrack === 'simple') { // 간편 만들기: 기본 정보 단계 없이 바로 칸 채우기 화면 (이름·날짜부터)
         applyWizardDataToBlocks(); // 주문 때 받은 이름·장소가 있으면 미리 채움
+        state.spView = 'quick'; // 빠른 시작 4단계 → 미리보기 → 옵션 창
         spRenderAll();
         onboardingActive = false;
         openSimpleEditor(0);
@@ -13287,15 +13307,18 @@ document.getElementById('tbToSimple').addEventListener('click', fullToSimple);
     rz.addEventListener('dblclick', () => { set(0); try { localStorage.removeItem('ldPaneW'); } catch (x) {} window.dispatchEvent(new Event('resize')); });
 })();
 // 간편 만들기 아래 버튼 줄 [저장 | 미리보기] + 미리보기 화면 (아래 띠: 안내 + [돌아가기], 마무리에서 저장하면 [발행하기]도)
-function spOpenPreview(final) {
+let spPvMode = null;
+function spOpenPreview(final) { // final: true = 완성본(발행하기) / 'quick' = 빠른 시작 끝 (닫으면 옵션 창) / 그 외 = 그냥 미리보기
+    spPvMode = final;
+    const quick = final === 'quick'; final = final === true;
     document.documentElement.classList.add('sp-pv');
-    document.getElementById('spPvMsg').textContent = final ? '완성본이에요! 저장해 뒀어요. 발행하면 주소가 생겨요.' : '미리보기 입니다. 제작 후 꼭 저장해주세요.';
+    document.getElementById('spPvMsg').textContent = final ? '완성본이에요! 저장해 뒀어요. 발행하면 주소가 생겨요.' : quick ? '이렇게 만들어졌어요! 닫으면 나머지를 하나씩 고칠 수 있어요.' : '미리보기 입니다. 제작 후 꼭 저장해주세요.';
     document.getElementById('spPvPub').hidden = !final;
-    document.getElementById('spPvBack').textContent = final ? '수정하기' : '돌아가기';
+    document.getElementById('spPvBack').textContent = final ? '수정하기' : quick ? '닫기' : '돌아가기';
     try { renderPreview(); } catch (e) {}
     const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0;
 }
-function spClosePreview() { document.documentElement.classList.remove('sp-pv'); try { renderPreview(); } catch (e) {} }
+function spClosePreview() { document.documentElement.classList.remove('sp-pv'); try { renderPreview(); } catch (e) {} if (spPvMode === 'quick') { spPvMode = null; spRender(); window.scrollTo(0, 0); } }
 document.getElementById('spFootPv').addEventListener('click', () => spOpenPreview(false));
 document.getElementById('spPvBack').addEventListener('click', spClosePreview);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('sp-pv')) spClosePreview(); });
@@ -13695,7 +13718,7 @@ function openSimpleEditor(step, inPlace) {
     spInPlace = !!inPlace;
     { const pn = document.getElementById('simplePane'); if (pn) pn._spKey = null; }
     if (!spInPlace) state.mode = 'simple';
-    spAccCache = {};
+    spAccCache = {}; spCurSt = null;
     spSetMode(true);
     spStep = step || 0;
     showScreen('editor');
@@ -13728,33 +13751,52 @@ const SP_DRAG_STEPS = null; // null = 모든 단계 (특정 단계만 열려면 
 function spLiveSync(root) {
     root = root || document.getElementById('previewRoot');
     if (!root || !document.documentElement.classList.contains('simple-mode')) return;
-    const st = spSteps()[spStep]; if (!st) return;
+    const st = spCurSt || spSteps()[spStep]; if (!st) return;
     root.querySelectorAll('.col.sp-live').forEach(c => c.classList.remove('sp-live'));
     if (!SP_DRAG_STEPS || SP_DRAG_STEPS.includes(st.k)) (st.s || []).forEach(id => { const c = root.querySelector(`.col[data-block-id="${id}"]`); if (c) c.classList.add('sp-live'); });
 }
+let spCurSt = null;
 function spSelectStep(st) { // 눈금자는 고른 섹션(selectedId)에 뜸 → 지금 단계의 켜진 섹션을 고른 것으로
+    spCurSt = st;
     const id = (st.s || []).find(x => { const b = spBlock(x); return b && b.enabled && !padHidden(b); }) || null;
     if (selectedId !== id) { selectedId = id; try { updateSectionRuler(); } catch (e) {} }
     spLiveSync();
 }
 
+// 간편 만들기 보기 방식 (state.spView): 'steps' 한 단계씩 / 'quick' 빠른 시작 4단계(이름 → 예식 일시 → 예식장 → 메인 사진) → 미리보기 → 'list' 옵션 창(한 번에 보기)
+const spViewNow = () => (state.spView === 'list' || state.spView === 'quick') ? state.spView : 'steps';
+const SP_QUICK = [['names', '두 분의 성함', 'name'], ['names', '예식 일시', 'date'], ['venue', '예식장'], ['hero', '메인 사진']];
+function spQuickSteps() {
+    return SP_QUICK.filter(([k]) => { const d = SP_STEP_DEFS[k]; return d && (!d.show || d.show()); }).map(([k, t, part]) => Object.assign({ k }, SP_STEP_DEFS[k], { t, part }));
+}
+function spCutPart(body, st) { // 빠른 시작: 두 사람 칸을 이름 / 날짜·시간 두 단계로 나눠 보여줌
+    if (!st.part) return;
+    const fields = [...body.querySelectorAll(':scope > .wz-field')];
+    if (st.part === 'name') fields.slice(1).forEach(x => x.remove()); else if (st.part === 'date') fields.slice(0, 1).forEach(x => x.remove());
+    const h = body.querySelector('.wz-h'); if (h) h.textContent = st.part === 'name' ? '두 분의 성함을 알려주세요' : '예식 날짜와 시간을 알려주세요';
+}
 function spRender() {
     const pane = document.getElementById('simplePane'); if (!pane) return;
-    const steps = spSteps(); spStep = Math.max(0, Math.min(spStep, steps.length - 1));
+    if (spViewNow() === 'list') return spRenderList();
+    const quick = spViewNow() === 'quick';
+    const steps = quick ? spQuickSteps() : spSteps(); spStep = Math.max(0, Math.min(spStep, steps.length - 1));
     const st = steps[spStep];
     // 같은 단계 안에서 버튼을 눌러 다시 그릴 때는 보던 자리 그대로 (맨 위로 튀지 않게) - 단계가 바뀔 때만 맨 위로
-    const spKey = st.k + ':' + (st.k === 'hero' ? spHeroPhase : '');
+    const spKey = (quick ? 'q' + spStep + ':' : '') + st.k + ':' + (st.k === 'hero' ? spHeroPhase : '');
     const same = pane._spKey === spKey, keepPane = pane.scrollTop, keepWin = window.scrollY;
     if (same) pane.style.minHeight = pane.offsetHeight + 'px';
     const tpl = (allDesigns().find(p => p.id === (state.sampleId || state.presetId)) || {}).label || '';
     try { stopBgmPreview(); } catch (e) {}
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>${spStep + 1} / ${steps.length} · ${esc(st.t)}</b></div><div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button></div>
-        <nav class="sp-steps">${steps.map((x, i) => `<button type="button" class="${i === spStep ? 'on' : i < spStep ? 'done' : ''}" data-sp-go="${i}"><i>${i < spStep ? '✓' : i + 1}</i><span>${esc(x.t)}</span></button>`).join('')}</nav>
+        ${quick ? '' : `<button type="button" class="sp-view" id="spViewBtn">한 번에 보기 (옵션 창)</button>`}
+        <nav class="sp-steps"${quick ? ' hidden' : ''}>${steps.map((x, i) => `<button type="button" class="${i === spStep ? 'on' : i < spStep ? 'done' : ''}" data-sp-go="${i}"><i>${i < spStep ? '✓' : i + 1}</i><span>${esc(x.t)}</span></button>`).join('')}</nav>
         <div class="sp-body" id="spBody"></div>
-        <div class="sp-nav"><button type="button" class="wz-back" id="spPrev"${spStep === 0 ? ' style="visibility:hidden"' : ''}>이전</button><button type="button" class="wz-next" id="spNext">다음</button></div>`;
+        <div class="sp-nav"><button type="button" class="wz-back" id="spPrev"${spStep === 0 ? ' style="visibility:hidden"' : ''}>이전</button><button type="button" class="wz-next" id="spNext">다음${quick ? ` <small class="sp-stepn">STEP ${spStep + 1}/${steps.length}</small>` : ''}</button></div>`;
     pane.querySelectorAll('[data-sp-go]').forEach(b => b.addEventListener('click', () => { spStep = +b.dataset.spGo; spHeroPhase = 'pick'; spRender(); }));
     pane.querySelector('#spPrev').addEventListener('click', () => { if (st.k === 'hero' && spHeroPhase === 'scroll') { spHeroPhase = 'pick'; spRender(); return; } spStep--; spHeroPhase = steps[spStep] && steps[spStep].k === 'hero' && spHeroScrollOk() ? 'scroll' : 'pick'; spRender(); });
+    pane.querySelector('#spViewBtn')?.addEventListener('click', () => { state.spView = 'list'; spOpenSet = new Set([st.k]); scheduleSnapshot(); spRender(); });
     pane.querySelector('#spNext').addEventListener('click', () => {
+        if (quick && spStep === steps.length - 1) { state.spView = 'list'; spOpenSet = new Set(['names', 'hero', 'venue']); scheduleSnapshot(); if (EDIT_TOKEN) saveToServer(false, true); spOpenPreview('quick'); return; } // 빠른 시작 끝 → 미리보기 먼저, 닫으면 옵션 창
         if (spStep === steps.length - 1) { const b = pane.querySelector('#spNext'); b.disabled = true; b.textContent = '저장 중…'; saveToServer(false, true).then(ok => { b.disabled = false; b.textContent = '다음'; if (ok) spOpenPreview(true); else showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }); return; } // 조용히 저장하고 완성본 보여주기
         if (st.k === 'hero' && spHeroPhase !== 'scroll' && spHeroScrollOk()) { spHeroToScroll(pane.querySelector('#spBody')); return; } // 스크롤 버튼까지 고르고 넘어가기
         spStep++; spRender();
@@ -13767,6 +13809,7 @@ function spRender() {
     if (topR) { topR.innerHTML = ''; if (window.innerWidth > 860) topR.append(...pane.querySelectorAll('.sp-head .sp-ud, .sp-head #spToFull')); }
     const body = pane.querySelector('#spBody');
     st.fn(body);
+    spCutPart(body, st);
     spBindIncl(body);
     spSelectStep(st);
     if (same) {
@@ -13781,6 +13824,57 @@ function spRender() {
         setTimeout(() => (st.k === 'hero' && spHeroPhase === 'scroll') ? spScrollToNextBtn() : spScrollPreview(st.s), 80);
     }
     pane._spKey = spKey;
+}
+// 옵션 창: 모든 단계를 펼침 목록으로 (머리줄 = 이름 + 켜기/끄기 스위치, 누르면 그 단계 칸이 펼쳐짐). 칸 내용은 단계 화면과 같은 것을 씀
+let spOpenSet = new Set(['names', 'hero', 'venue']);
+const SP_LIST_NOSW = ['names', 'hero', 'theme', 'family', 'music', 'finish'];
+function spRenderList() {
+    const pane = document.getElementById('simplePane'); if (!pane) return;
+    const keepPane = pane.scrollTop, keepWin = window.scrollY, again = pane._spKey === 'list';
+    if (again) pane.style.minHeight = pane.offsetHeight + 'px';
+    const tpl = (allDesigns().find(p => p.id === (state.sampleId || state.presetId)) || {}).label || '';
+    try { stopBgmPreview(); } catch (e) {}
+    const steps = spSteps();
+    const swOf = st => { if (SP_LIST_NOSW.includes(st.k)) return null; const ids = (st.s || []).filter(id => spHas(id)); return ids.length === 1 ? ids[0] : null; };
+    const item = st => { const sw = swOf(st), on = sw ? spBlock(sw).enabled : true, open = spOpenSet.has(st.k);
+        return `<section class="sp-li${open ? ' open' : ''}${on ? '' : ' off'}" data-li="${st.k}"><div class="sp-li-h"><button type="button" class="sp-li-t" data-li-tog="${st.k}" aria-expanded="${open}">${esc(st.k === 'finish' ? '인트로' : st.t)}</button>${sw ? `<label class="sp-li-sw" title="${on ? '끄면 청첩장에서 빠져요' : '켜면 청첩장에 들어가요'}"><input type="checkbox" data-li-sw="${sw}" ${on ? 'checked' : ''}><i></i></label>` : ''}<button type="button" class="sp-li-c" data-li-tog="${st.k}" aria-label="펼치기"></button></div>${open ? `<div class="sp-li-b" data-li-body="${st.k}"></div>` : ''}</section>`; };
+    pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 꾸미기</b></div><div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button></div>
+        <button type="button" class="sp-view" id="spViewBtn">단계별로 보기</button>
+        <div class="sp-list">${steps.map(item).join('')}</div>
+        <div class="sp-list-end"><button type="button" class="wz-next" id="spListDone">완성본 보기</button><p class="wz-hint">저장하고 다 된 모습을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.</p></div>`;
+    pane.querySelector('#spToFull').addEventListener('click', () => spInPlace ? spExitInPlace() : simpleToFull());
+    pane.querySelector('#spUndo').addEventListener('click', () => { scheduleSnapshot(); undoHistory(); });
+    pane.querySelector('#spRedo').addEventListener('click', () => redoHistory());
+    pane.querySelector('#spViewBtn').addEventListener('click', () => { state.spView = 'steps'; const i = spSteps().findIndex(x => spOpenSet.has(x.k)); spStep = i >= 0 ? i : 0; scheduleSnapshot(); spRender(); });
+    pane.querySelector('#spListDone').addEventListener('click', e => { const b = e.currentTarget; b.disabled = true; b.textContent = '저장 중…'; saveToServer(false, true).then(ok => { b.disabled = false; b.textContent = '완성본 보기'; if (ok) spOpenPreview(true); else showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }); });
+    const topR = document.getElementById('spTopRight');
+    if (topR) { topR.innerHTML = ''; if (window.innerWidth > 860) topR.append(...pane.querySelectorAll('.sp-head .sp-ud, .sp-head #spToFull')); }
+    pane.querySelectorAll('[data-li-tog]').forEach(b => b.addEventListener('click', () => {
+        const k = b.dataset.liTog, st = steps.find(x => x.k === k);
+        if (spOpenSet.has(k)) spOpenSet.delete(k); else { spOpenSet.add(k); if (st) { spSelectStep(st); setTimeout(() => spScrollPreview(st.s || []), 80); } }
+        spRender();
+    }));
+    pane.querySelectorAll('[data-li-sw]').forEach(c => c.addEventListener('change', () => {
+        const blk = spBlock(c.dataset.liSw); if (!blk) return;
+        blk.enabled = c.checked; try { renderBlockList(); } catch (e) {}
+        const k = c.closest('[data-li]').dataset.li; if (c.checked) spOpenSet.add(k);
+        spChanged([blk.id]); scheduleSnapshot(); spRender();
+    }));
+    let last = null;
+    steps.forEach(st => {
+        const body = pane.querySelector(`[data-li-body="${st.k}"]`); if (!body) return;
+        try { st.fn(body); } catch (e) { console.warn(e); }
+        spBindIncl(body);
+        body.querySelectorAll(':scope > .wz-h, :scope > .wz-lead').forEach(x => x.remove()); // 이름은 머리줄에 있음
+        const sw = swOf(st); if (sw) body.querySelectorAll(`[data-sp-incl="${sw}"]`).forEach(x => (x.closest('.sp-incl') || x).remove()); // 켜기/끄기는 머리줄 스위치로
+        if (st.k === 'finish') body.querySelectorAll('.wz-hint').forEach(x => x.remove());
+        body.querySelectorAll('.sp-in').forEach(x => { x.style.animation = 'none'; });
+        last = st;
+    });
+    if (last && (!spCurSt || !spOpenSet.has(spCurSt.k))) spSelectStep(last); else if (spCurSt) spSelectStep(steps.find(x => x.k === spCurSt.k) || spCurSt);
+    if (again) { pane.scrollTop = keepPane; window.scrollTo(0, keepWin); requestAnimationFrame(() => { pane.style.minHeight = ''; pane.scrollTop = keepPane; window.scrollTo(0, keepWin); }); }
+    else { pane.style.minHeight = ''; pane.scrollTop = 0; }
+    pane._spKey = 'list';
 }
 const spH = (h, lead) => `<h2 class="wz-h">${h}</h2><p class="wz-lead">${lead}</p>`;
 // 1. 두 사람
