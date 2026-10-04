@@ -1,0 +1,42 @@
+{
+  "id": "p-romantic",
+  "no": 5,
+  "group": "mood",
+  "label": "로맨틱 핑크",
+  "desc": "블러쉬 핑크에 하트가 살랑. 따뜻하고 사랑스럽게",
+  "tags": [
+    "핑크",
+    "하트"
+  ],
+  "palette": {
+    "bg": "#FFF6F7",
+    "ink": "#4A2E35",
+    "accent": "#D9667F",
+    "line": "#F5D5DC",
+    "muted": "#A07F87",
+    "radius": "16px"
+  },
+  "font": "gowun-batang",
+  "hero": "photo",
+  "heroFrame": "arch",
+  "ambient": "hearts",
+  "sections": [
+    "hero",
+    "greeting",
+    "dday",
+    "location",
+    "gallery",
+    "account"
+  ],
+  "fx": {
+    "default": "bounce"
+  },
+  "intro": {
+    "enabled": true,
+    "text": "우리 결혼합니다",
+    "font": "nanum-pen",
+    "bg": "#FDE7EC",
+    "color": "#C4506B",
+    "fontSize": 34
+  }
+}

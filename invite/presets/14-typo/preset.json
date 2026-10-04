@@ -1,0 +1,38 @@
+{
+  "id": "p-typo",
+  "no": 14,
+  "group": "layout",
+  "label": "사진 없이 시작하기",
+  "desc": "사진이 없어도 글씨와 여백만으로 단정하게",
+  "tags": [
+    "사진없음",
+    "타이포"
+  ],
+  "palette": {
+    "bg": "#F7F4EE",
+    "ink": "#222222",
+    "accent": "#9C7B52",
+    "line": "#E3DDD2",
+    "muted": "#8A8378",
+    "radius": "2px"
+  },
+  "font": "nanum-myeongjo",
+  "hero": "text",
+  "sections": [
+    "hero",
+    "greeting",
+    "dday",
+    "location",
+    "account"
+  ],
+  "fx": {
+    "default": "fade"
+  },
+  "intro": {
+    "enabled": true,
+    "text": "저희 결혼합니다",
+    "bg": "#F7F4EE",
+    "color": "#222222",
+    "fontSize": 26
+  }
+}

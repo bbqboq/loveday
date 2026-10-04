@@ -1,0 +1,39 @@
+{
+  "id": "p-film",
+  "no": 10,
+  "group": "mood",
+  "label": "빈티지 필름",
+  "desc": "세피아 톤과 카드형 사진. 필름 카메라 감성",
+  "tags": [
+    "빈티지",
+    "필름"
+  ],
+  "palette": {
+    "bg": "#F3EDE2",
+    "ink": "#3B342B",
+    "accent": "#8A6A45",
+    "line": "#DDD2BF",
+    "muted": "#8C8172",
+    "radius": "0px"
+  },
+  "font": "nanum-myeongjo",
+  "hero": "photo",
+  "heroFrame": "none",
+  "sideBg": "#DDD2BF",
+  "sections": [
+    "hero",
+    "greeting",
+    "gallery",
+    "location",
+    "account"
+  ],
+  "fx": {
+    "default": "fade"
+  },
+  "blockFields": {
+    "gallery": {
+      "cardStyle": true,
+      "colLayout": "2"
+    }
+  }
+}

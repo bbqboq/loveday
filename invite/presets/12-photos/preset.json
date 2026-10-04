@@ -1,0 +1,40 @@
+{
+  "id": "p-photos",
+  "no": 12,
+  "group": "layout",
+  "label": "사진 많이 활용하기",
+  "desc": "큰 갤러리를 중심으로 사진을 풍성하게",
+  "tags": [
+    "갤러리",
+    "사진"
+  ],
+  "palette": {
+    "bg": "#FFFFFF",
+    "ink": "#2B2B2B",
+    "accent": "#A0785A",
+    "line": "#ECE6DF",
+    "muted": "#8E857B",
+    "radius": "4px"
+  },
+  "font": "pretendard",
+  "hero": "photo",
+  "heroFrame": "none",
+  "sections": [
+    "hero",
+    "gallery",
+    "greeting",
+    "location",
+    "account"
+  ],
+  "fx": {
+    "default": "zoom",
+    "gallery": "up"
+  },
+  "blockFields": {
+    "gallery": {
+      "colLayout": "2",
+      "edgeToEdge": true,
+      "images": 8
+    }
+  }
+}

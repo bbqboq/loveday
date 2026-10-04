@@ -1,0 +1,39 @@
+{
+  "id": "p-mono",
+  "no": 4,
+  "group": "mood",
+  "label": "블랙 & 화이트",
+  "desc": "흑백 미니멀. 넓은 여백과 명조 타이포로 담백하게",
+  "tags": [
+    "미니멀",
+    "흑백"
+  ],
+  "palette": {
+    "bg": "#FFFFFF",
+    "ink": "#111111",
+    "accent": "#111111",
+    "line": "#E6E6E6",
+    "muted": "#8A8A8A",
+    "radius": "0px"
+  },
+  "font": "nanum-myeongjo",
+  "hero": "photo",
+  "heroFrame": "none",
+  "sideBg": "#EDEDED",
+  "sections": [
+    "hero",
+    "greeting",
+    "dday",
+    "location",
+    "gallery",
+    "account"
+  ],
+  "fx": {
+    "default": "fade"
+  },
+  "blockFields": {
+    "gallery": {
+      "edgeToEdge": true
+    }
+  }
+}

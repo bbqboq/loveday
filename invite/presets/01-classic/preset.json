@@ -1,0 +1,31 @@
+{
+  "id": "classic",
+  "no": 1,
+  "group": "mood",
+  "label": "클래식 아이보리",
+  "desc": "아이보리 + 와인, 명조체. 정갈하고 단정한 기본",
+  "tags": [
+    "정갈",
+    "기본"
+  ],
+  "palette": {
+    "bg": "#FAF7F0",
+    "ink": "#2B2320",
+    "accent": "#7A3B41",
+    "line": "#E1D6C6",
+    "muted": "#8A7F72",
+    "radius": "2px"
+  },
+  "font": null,
+  "hero": "video",
+  "sections": [
+    "heroVideo",
+    "greeting",
+    "location",
+    "gallery",
+    "account"
+  ],
+  "fx": {
+    "default": "bounce"
+  }
+}

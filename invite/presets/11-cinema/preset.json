@@ -1,0 +1,42 @@
+{
+  "id": "p-cinema",
+  "no": 11,
+  "group": "layout",
+  "label": "시네마 다크",
+  "desc": "전체화면 영상으로 여는 어두운 영화 같은 구성",
+  "tags": [
+    "영상",
+    "다크"
+  ],
+  "palette": {
+    "bg": "#17171C",
+    "ink": "#F2EFE9",
+    "accent": "#D4B98C",
+    "line": "#34343C",
+    "muted": "#A09CA6",
+    "radius": "4px"
+  },
+  "font": "noto-serif-kr",
+  "hero": "video",
+  "heroHeight": "full",
+  "sideBg": "#0C0C10",
+  "ambient": "sparkles",
+  "sections": [
+    "heroVideo",
+    "greeting",
+    "dday",
+    "location",
+    "gallery",
+    "account"
+  ],
+  "fx": {
+    "default": "fade"
+  },
+  "intro": {
+    "enabled": true,
+    "text": "Our Wedding Day",
+    "bg": "#0C0C10",
+    "color": "#D4B98C",
+    "fontSize": 28
+  }
+}

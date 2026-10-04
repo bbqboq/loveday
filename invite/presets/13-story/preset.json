@@ -1,0 +1,35 @@
+{
+  "id": "p-story",
+  "no": 13,
+  "group": "layout",
+  "label": "우리 이야기 중심",
+  "desc": "타임라인과 인터뷰로 두 사람의 이야기를 더 길게",
+  "tags": [
+    "타임라인",
+    "인터뷰"
+  ],
+  "palette": {
+    "bg": "#FDF9F3",
+    "ink": "#3A3029",
+    "accent": "#C0785A",
+    "line": "#EADFD2",
+    "muted": "#8F8174",
+    "radius": "12px"
+  },
+  "font": "gowun-batang",
+  "hero": "photo",
+  "heroFrame": "rounded",
+  "sections": [
+    "hero",
+    "greeting",
+    "timeline",
+    "interview",
+    "gallery",
+    "location",
+    "account"
+  ],
+  "fx": {
+    "default": "up",
+    "timeline": "left"
+  }
+}

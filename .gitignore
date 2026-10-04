@@ -1,0 +1,17 @@
+# 비밀값·서버 전용 (절대 커밋 금지)
+invite/config.php
+invite/config.php.bak
+invite/config*.php
+
+# 사용자 업로드·캐시 (서버에만)
+invite/uploads/
+invite/music/*.mp3
+invite/music/*.m4a
+
+# 작업 찌꺼기
+*.zip
+*.bak
+*.tmp
+node_modules/
+.DS_Store
+Thumbs.db

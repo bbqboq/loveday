@@ -1,0 +1,35 @@
+{
+  "id": "modern",
+  "no": 2,
+  "group": "mood",
+  "label": "모던 화이트",
+  "desc": "화이트 + 인디고, 굵은 고딕. 매거진 같은 느낌",
+  "tags": [
+    "깔끔",
+    "고딕"
+  ],
+  "palette": {
+    "bg": "#FFFFFF",
+    "ink": "#15151A",
+    "accent": "#24339B",
+    "line": "#E7E7E9",
+    "muted": "#7A7A82",
+    "headFont": "\"Pretendard Variable\", Pretendard, sans-serif",
+    "headWeight": "800",
+    "radius": "0px"
+  },
+  "font": null,
+  "hero": "photo",
+  "heroFrame": "none",
+  "sections": [
+    "hero",
+    "greeting",
+    "dday",
+    "location",
+    "gallery",
+    "account"
+  ],
+  "fx": {
+    "default": "up"
+  }
+}

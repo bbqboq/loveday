@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>기본 정보 입력 · 시안 (P1)</title>
+<!--
+  P1 정보 입력폼 리디자인 시안 - 실제로 눌러 볼 수 있는 단독 페이지 (서버 저장 없음, 이 브라우저에만 임시 보관)
+  · 간편 만들기 / 직접 만들기 / 에디터 "예식 정보" 카드가 같이 쓸 부품: 이름 · 날짜(자체 달력) · 시간(칩) · 예식장(주소 찾기) · 인사말(예시 카드) · 계좌(은행 칩)
+  · PC: 왼쪽 입력 + 오른쪽 휴대폰 미리보기 / 휴대폰: 한 칸씩 크게 + 아래 고정 버튼 + [미리보기] 시트
+-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+:root {
+    --bg: #F6F4F1; --card: #fff; --ink: #1B1A18; --sub: #6F6A63; --mute: #A39D95;
+    --line: #EAE6E0; --line2: #DED8CF; --soft: #F1EDE7;
+    --accent: #8A4B55; --accent-soft: #F5EDEC;
+    --sun: #B5545F; --sat: #4E6A8C;
+    --r: 14px; --serif: "Gowun Batang", serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif; font-size: 15px; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; cursor: pointer; }
+input, textarea { font: inherit; color: inherit; }
+
+/* ---------- 위쪽 줄 ---------- */
+.top { position: sticky; top: 0; z-index: 20; background: rgba(246,244,241,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 1120px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 24px; }
+.logo { font-size: 13px; font-weight: 700; letter-spacing: .32em; }
+.steps { flex: 1; display: flex; justify-content: center; gap: 6px; }
+.step { display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 6px 10px; border-radius: 99px; color: var(--mute); font-size: 13px; font-weight: 600; }
+.step i { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; border: 1px solid var(--line2); background: var(--card); }
+.step.on { color: var(--ink); }
+.step.on i { background: var(--ink); border-color: var(--ink); color: #fff; }
+.step.done { color: var(--sub); }
+.step.done i { background: var(--soft); border-color: var(--soft); color: var(--sub); }
+.step + .step::before { content: ''; width: 18px; height: 1px; background: var(--line2); margin-right: 6px; }
+.saved { font-size: 12px; color: var(--mute); display: flex; align-items: center; gap: 6px; min-width: 90px; justify-content: flex-end; transition: color .3s; }
+.saved b { width: 6px; height: 6px; border-radius: 50%; background: #8DB596; }
+.saved.ing b { background: #D9B46A; }
+
+/* ---------- 본문 ---------- */
+.wrap { max-width: 1120px; margin: 0 auto; padding: 40px 24px 120px; display: grid; grid-template-columns: minmax(0, 460px) 1fr; gap: 64px; align-items: start; }
+.pane { display: none; animation: paneIn .35s cubic-bezier(.2,.8,.2,1); }
+.pane.on { display: block; }
+@keyframes paneIn { from { opacity: 0; transform: translateY(8px); } }
+.eyebrow { font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: .06em; margin: 0 0 10px; }
+h1 { font-size: 26px; line-height: 1.35; font-weight: 700; letter-spacing: -.02em; margin: 0 0 8px; word-break: keep-all; }
+.lead { margin: 0 0 32px; color: var(--sub); font-size: 14.5px; line-height: 1.6; word-break: keep-all; }
+.field { margin: 0 0 26px; }
+.lab { display: flex; align-items: baseline; justify-content: space-between; font-size: 13px; font-weight: 700; margin: 0 0 9px; }
+.lab small { font-weight: 500; color: var(--mute); font-size: 12px; }
+.inp { width: 100%; height: 52px; border: 1px solid var(--line2); border-radius: var(--r); background: var(--card); padding: 0 16px; font-size: 16px; outline: 0; transition: border-color .15s, box-shadow .15s; }
+.inp::placeholder { color: #C2BCB4; }
+.inp:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgba(27,26,24,.06); }
+.inp.err { border-color: var(--sun); box-shadow: 0 0 0 4px rgba(181,84,95,.08); }
+.msg { font-size: 12.5px; color: var(--sun); margin: 8px 2px 0; display: none; }
+.msg.on { display: block; }
+.hint { font-size: 12.5px; color: var(--mute); margin: 8px 2px 0; line-height: 1.55; word-break: keep-all; }
+
+/* 이름 */
+.names { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: end; }
+.names .heart { color: var(--accent); font-size: 14px; padding-bottom: 17px; }
+.names .lab { margin-bottom: 7px; font-size: 12px; color: var(--sub); }
+.name-pv { margin: 14px 0 0; text-align: center; font-family: var(--serif); font-size: 21px; color: var(--ink); min-height: 30px; letter-spacing: .02em; }
+.name-pv .h { color: var(--accent); font-size: .7em; margin: 0 .5em; vertical-align: .12em; }
+.name-pv .ph { color: #CFC8BF; }
+
+/* 날짜 버튼 + 달력 */
+.pick { width: 100%; min-height: 52px; border: 1px solid var(--line2); border-radius: var(--r); background: var(--card); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; font-size: 16px; transition: border-color .15s; }
+.pick:hover { border-color: #C9C1B6; }
+.pick .ph { color: #C2BCB4; }
+.pick .dd { font-size: 12px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 99px; padding: 4px 9px; white-space: nowrap; }
+.pick svg { width: 18px; height: 18px; color: var(--mute); flex: none; }
+.pick.open { border-color: var(--ink); }
+.cal { display: none; margin-top: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 16px 12px; box-shadow: 0 12px 32px rgba(40,30,20,.07); }
+.cal.on { display: block; animation: paneIn .25s; }
+.cal-h { display: flex; align-items: center; justify-content: space-between; margin: 0 4px 12px; }
+.cal-h b { font-size: 15px; }
+.cal-h button { width: 34px; height: 34px; border: 0; background: none; border-radius: 50%; color: var(--sub); }
+.cal-h button:hover { background: var(--soft); }
+.cal-h button:disabled { opacity: .25; cursor: default; background: none; }
+.cal-g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-g .w { font-size: 11.5px; color: var(--mute); padding: 6px 0 8px; font-weight: 600; }
+.cal-g .w:first-child { color: var(--sun); } .cal-g .w:last-child { color: var(--sat); }
+.cal-g .d { height: 44px; width: 44px; margin: 0 auto; border: 0; background: none; border-radius: 50%; font-size: 14px; display: grid; place-items: center; position: relative; }
+.cal-g .d:hover:not(:disabled) { background: var(--soft); }
+.cal-g .d.sun { color: var(--sun); } .cal-g .d.sat { color: var(--sat); }
+.cal-g .d:disabled { color: #D8D2CA; cursor: default; }
+.cal-g .d.today::after { content: ''; position: absolute; bottom: 6px; width: 3px; height: 3px; border-radius: 50%; background: var(--mute); }
+.cal-g .d.sel { background: var(--ink); color: #fff; font-weight: 700; }
+.cal-f { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding: 10px 4px 0; border-top: 1px solid var(--line); font-size: 12px; color: var(--mute); }
+.cal-f button { border: 0; background: none; color: var(--sub); font-size: 12.5px; font-weight: 600; padding: 4px 6px; }
+
+/* 시간 */
+.seg { display: inline-flex; background: var(--soft); border-radius: 12px; padding: 3px; margin-bottom: 12px; }
+.seg button { border: 0; background: none; padding: 8px 18px; border-radius: 9px; font-size: 13.5px; font-weight: 600; color: var(--sub); }
+.seg button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.chip { height: 42px; border: 1px solid var(--line2); background: var(--card); border-radius: 12px; font-size: 14px; font-variant-numeric: tabular-nums; transition: .12s; }
+.chip:hover { border-color: #C9C1B6; }
+.chip.on { background: var(--ink); border-color: var(--ink); color: #fff; font-weight: 600; }
+.chip.more { color: var(--sub); font-size: 13px; }
+.custom-t { display: none; gap: 8px; margin-top: 10px; align-items: center; }
+.custom-t.on { display: flex; }
+.custom-t select { height: 44px; border: 1px solid var(--line2); border-radius: 12px; background: var(--card); padding: 0 12px; font: inherit; font-size: 15px; }
+.when { margin: 18px 0 0; padding: 14px 16px; border-radius: var(--r); background: var(--card); border: 1px dashed var(--line2); font-size: 14px; color: var(--sub); display: flex; gap: 10px; align-items: center; }
+.when b { color: var(--ink); font-weight: 600; }
+
+/* 예식장 */
+.addr { display: flex; gap: 8px; }
+.addr .inp { flex: 1; }
+.btn2 { height: 52px; padding: 0 18px; border-radius: var(--r); border: 1px solid var(--ink); background: var(--card); font-weight: 600; font-size: 14px; white-space: nowrap; }
+.btn2:hover { background: var(--ink); color: #fff; }
+.pc-layer { display: none; margin-top: 10px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; height: 420px; background: var(--card); position: relative; }
+.pc-layer.on { display: block; }
+.pc-layer .x { position: absolute; right: 8px; top: 8px; z-index: 2; border: 0; background: var(--card); border-radius: 50%; width: 30px; height: 30px; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+.mapcard { margin-top: 12px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: var(--card); display: none; }
+.mapcard.on { display: block; }
+.mapcard .m { height: 92px; background: linear-gradient(135deg, #EEF0EA 25%, #E8EBE3 25%, #E8EBE3 50%, #EEF0EA 50%, #EEF0EA 75%, #E8EBE3 75%) 0 0 / 28px 28px; display: grid; place-items: center; color: var(--accent); }
+.mapcard .m svg { width: 26px; height: 26px; }
+.mapcard p { margin: 0; padding: 12px 14px; font-size: 13px; color: var(--sub); }
+
+/* 인사말 */
+.tones { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.tone { border: 1px solid var(--line2); background: var(--card); border-radius: 99px; padding: 7px 14px; font-size: 13px; font-weight: 600; color: var(--sub); }
+.tone.on { border-color: var(--ink); color: var(--ink); }
+.samples { display: grid; gap: 8px; margin-bottom: 14px; }
+.sample { text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: var(--r); padding: 14px 16px; font-family: var(--serif); font-size: 14px; line-height: 1.75; color: var(--sub); white-space: pre-line; transition: .15s; position: relative; }
+.sample:hover { border-color: #C9C1B6; color: var(--ink); }
+.sample.on { border-color: var(--ink); color: var(--ink); }
+.sample.on::after { content: '고름'; position: absolute; right: 12px; top: 10px; font-family: Pretendard, sans-serif; font-size: 11px; font-weight: 700; color: #fff; background: var(--ink); border-radius: 99px; padding: 2px 8px; }
+textarea.inp { height: auto; min-height: 150px; padding: 14px 16px; line-height: 1.7; resize: vertical; font-family: var(--serif); font-size: 15px; }
+.count { text-align: right; font-size: 12px; color: var(--mute); margin-top: 6px; }
+
+/* 계좌 */
+.acc { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin-bottom: 12px; }
+.acc-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.acc-h b { font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.acc-h b i { width: 8px; height: 8px; border-radius: 50%; background: #2E4372; }
+.acc.bride .acc-h b i { background: var(--accent); }
+.acc-h button { border: 0; background: none; color: var(--mute); font-size: 12.5px; }
+.acc-g { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.acc-g .full { grid-column: 1 / -1; }
+.acc .inp { height: 46px; font-size: 15px; border-radius: 12px; }
+.bankbtn { height: 46px; border: 1px solid var(--line2); border-radius: 12px; background: var(--card); padding: 0 14px; text-align: left; font-size: 15px; display: flex; align-items: center; justify-content: space-between; }
+.bankbtn .ph { color: #C2BCB4; }
+.bankbtn svg { width: 14px; height: 14px; color: var(--mute); }
+.banks { display: none; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; grid-column: 1 / -1; }
+.banks.on { display: grid; }
+.banks button { height: 38px; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; font-size: 13px; }
+.banks button:hover { border-color: var(--ink); background: var(--card); }
+.banks button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.addacc { width: 100%; height: 48px; border: 1px dashed var(--line2); border-radius: 14px; background: none; color: var(--sub); font-size: 14px; font-weight: 600; }
+.addacc:hover { border-color: var(--ink); color: var(--ink); }
+.parents { display: none; }
+.parents.on { display: block; }
+.acc.mini { padding: 12px 14px; }
+.acc.mini .acc-h { margin-bottom: 10px; }
+.acc.mini .acc-h b { font-size: 13px; font-weight: 600; }
+
+/* 아래 버튼 */
+.nav { display: flex; gap: 10px; margin-top: 40px; }
+.nav .back { height: 54px; padding: 0 22px; border: 1px solid var(--line2); background: var(--card); border-radius: 16px; font-weight: 600; color: var(--sub); }
+.nav .next { flex: 1; height: 54px; border: 0; background: var(--ink); color: #fff; border-radius: 16px; font-size: 16px; font-weight: 700; letter-spacing: -.01em; transition: transform .1s; }
+.nav .next:active { transform: scale(.985); }
+.skip { display: block; margin: 14px auto 0; border: 0; background: none; color: var(--mute); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- 미리보기 ---------- */
+.pv { position: sticky; top: 92px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.pv-cap { font-size: 12px; color: var(--mute); }
+.phone { width: 340px; height: min(690px, calc(100vh - 150px)); border-radius: 42px; background: #fff; border: 10px solid #1F1D1B; box-shadow: 0 30px 60px rgba(40,30,20,.16); overflow: hidden; position: relative; }
+.phone::before { content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 84px; height: 22px; border-radius: 99px; background: #1F1D1B; z-index: 3; }
+.scr { height: 100%; overflow-y: auto; scrollbar-width: none; background: #FBF9F6; font-family: var(--serif); color: #3B3530; scroll-behavior: smooth; }
+.scr::-webkit-scrollbar { display: none; }
+.sec { padding: 44px 26px; text-align: center; transition: background .4s; }
+.sec.hl { background: #F5EFE9; }
+.hero { padding: 0 0 36px; }
+.hero .photo { height: 330px; background: linear-gradient(180deg, #E9E3DC, #D9D0C6); display: grid; place-items: center; color: #A89E92; font-family: Pretendard, sans-serif; font-size: 12px; }
+.hero .nm { font-size: 24px; margin: 30px 0 10px; letter-spacing: .04em; }
+.hero .nm .h { color: var(--accent); font-size: .62em; margin: 0 .55em; vertical-align: .14em; }
+.hero .dt { font-size: 13.5px; color: #7D7368; line-height: 1.8; }
+.st { font-size: 11px; letter-spacing: .3em; color: var(--accent); margin: 0 0 18px; font-family: Pretendard, sans-serif; font-weight: 600; }
+.greet { font-size: 14px; line-height: 2; white-space: pre-line; color: #4A433C; }
+.empty { color: #C9C1B6; }
+.loc b { display: block; font-size: 16px; margin-bottom: 6px; }
+.loc span { font-size: 12.5px; color: #8A8075; line-height: 1.7; }
+.pv-acc { text-align: left; font-family: Pretendard, sans-serif; }
+.pv-acc .row { display: flex; justify-content: space-between; align-items: center; padding: 13px 14px; background: #fff; border: 1px solid #EEE8E1; border-radius: 12px; margin-bottom: 8px; font-size: 12.5px; }
+.pv-acc .row small { display: block; color: #A0978C; font-size: 11px; margin-bottom: 3px; }
+.pv-acc .row em { font-style: normal; font-size: 11px; border: 1px solid #E5DED3; border-radius: 6px; padding: 4px 7px; color: #7D7368; }
+.pvbtn { display: none; }
+
+/* ---------- 끝 화면 ---------- */
+.done { text-align: center; padding: 30px 0; }
+.done .ok { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; margin: 0 auto 18px; }
+.done .ok svg { width: 26px; height: 26px; }
+
+/* ---------- 휴대폰 ---------- */
+@media (max-width: 900px) {
+    .top-in { padding: 12px 16px; gap: 10px; }
+    .logo { display: none; }
+    .steps { justify-content: flex-start; gap: 2px; }
+    .step { padding: 6px 4px; font-size: 12px; }
+    .step span { display: none; }
+    .step.on span { display: inline; white-space: nowrap; }
+    .saved { min-width: 0; }
+    .step + .step::before { width: 10px; margin-right: 2px; }
+    .wrap { grid-template-columns: 1fr; padding: 28px 16px 140px; gap: 0; }
+    h1 { font-size: 23px; }
+    .pv { display: none; position: fixed; inset: 0; z-index: 50; top: 0; background: rgba(27,26,24,.55); justify-content: flex-end; padding: 0; gap: 0; }
+    .pv.on { display: flex; animation: paneIn .25s; }
+    .pv-cap { color: #fff; padding: 0 0 10px; }
+    .phone { width: min(340px, 88vw); height: 74vh; border-radius: 34px 34px 0 0; border-bottom: 0; }
+    .nav { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(rgba(246,244,241,0), var(--bg) 30%); z-index: 30; }
+    .saved span { display: none; }
+    .top-in { padding-right: 112px; }
+    .pvbtn { display: flex; position: fixed; right: 12px; top: 9px; z-index: 31; align-items: center; gap: 5px; height: 32px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--line2); background: var(--card); font-size: 13px; font-weight: 600; box-shadow: 0 6px 16px rgba(40,30,20,.12); }
+    .pvbtn svg { width: 16px; height: 16px; }
+    .chips { grid-template-columns: repeat(4, 1fr); }
+    .skip { margin-bottom: 30px; }
+}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="top-in">
+    <div class="logo">LOVE·DAY</div>
+    <nav class="steps" id="steps"></nav>
+    <div class="saved" id="saved"><b></b><span>자동 저장</span></div>
+</div></header>
+
+<main class="wrap">
+<section class="form">
+
+    <!-- 1. 두 사람 -->
+    <div class="pane" data-pane="0">
+        <p class="eyebrow">STEP 1</p>
+        <h1>두 분의 이름과<br>예식 날짜를 알려주세요</h1>
+        <p class="lead">청첩장 맨 앞에 이렇게 들어가요. 나중에 언제든 고칠 수 있어요.</p>
+
+        <div class="field">
+            <div class="names">
+                <label><div class="lab">신랑</div><input class="inp" id="groom" placeholder="이름" autocomplete="off" maxlength="20" enterkeyhint="next"></label>
+                <span class="heart">♥</span>
+                <label><div class="lab">신부</div><input class="inp" id="bride" placeholder="이름" autocomplete="off" maxlength="20" enterkeyhint="next"></label>
+            </div>
+            <p class="msg" id="nameMsg">두 분의 이름을 적어주세요</p>
+            <div class="name-pv" id="namePv"></div>
+        </div>
+
+        <div class="field">
+            <div class="lab">예식 날짜</div>
+            <button type="button" class="pick" id="dateBtn">
+                <span id="dateTxt"><span class="ph">날짜를 골라주세요</span></span>
+                <span style="display:flex;align-items:center;gap:10px"><span class="dd" id="ddBadge" hidden></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
+            </button>
+            <div class="cal" id="cal">
+                <div class="cal-h"><button type="button" id="calPrev" aria-label="이전 달">‹</button><b id="calTitle"></b><button type="button" id="calNext" aria-label="다음 달">›</button></div>
+                <div class="cal-g" id="calGrid"></div>
+                <div class="cal-f"><span>지난 날짜는 고를 수 없어요</span><button type="button" id="calToday">이번 달로</button></div>
+            </div>
+            <p class="msg" id="dateMsg">예식 날짜를 골라주세요</p>
+        </div>
+
+        <div class="field">
+            <div class="lab">예식 시간</div>
+            <div class="seg" id="ampm"><button type="button" data-ap="am">오전</button><button type="button" data-ap="pm" class="on">오후</button></div>
+            <div class="chips" id="chips"></div>
+            <div class="custom-t" id="customT">
+                <select id="cH"></select><span>시</span>
+                <select id="cM"><option value="0">00</option><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="40">40</option><option value="50">50</option></select><span>분</span>
+            </div>
+            <div class="when" id="when" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6 9 17l-5-5"/></svg><span id="whenTxt"></span></div>
+        </div>
+    </div>
+
+    <!-- 2. 예식장 -->
+    <div class="pane" data-pane="1">
+        <p class="eyebrow">STEP 2</p>
+        <h1>어디에서 예식을 올리나요?</h1>
+        <p class="lead">주소를 넣으면 지도와 길찾기 버튼(카카오맵·네이버지도·티맵)이 자동으로 만들어져요.</p>
+        <div class="field">
+            <div class="lab">예식장 이름</div>
+            <input class="inp" id="venue" placeholder="예: 라움아트센터" autocomplete="off" enterkeyhint="next">
+        </div>
+        <div class="field">
+            <div class="lab">홀 이름 <small>선택</small></div>
+            <input class="inp" id="hall" placeholder="예: 5층 그랜드홀" autocomplete="off" enterkeyhint="next">
+        </div>
+        <div class="field">
+            <div class="lab">주소</div>
+            <div class="addr"><input class="inp" id="addr" placeholder="주소 찾기를 눌러주세요" autocomplete="off"><button type="button" class="btn2" id="addrBtn">주소 찾기</button></div>
+            <div class="pc-layer" id="pcLayer"><button type="button" class="x" id="pcX" aria-label="닫기">✕</button></div>
+            <div class="mapcard" id="mapcard"><div class="m"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></div><p id="mapTxt"></p></div>
+        </div>
+    </div>
+
+    <!-- 3. 인사말 -->
+    <div class="pane" data-pane="2">
+        <p class="eyebrow">STEP 3</p>
+        <h1>하객분들께 전할 인사말</h1>
+        <p class="lead">마음에 드는 예시를 고르고 조금만 고쳐도 충분해요.</p>
+        <div class="tones" id="tones"></div>
+        <div class="samples" id="samples"></div>
+        <textarea class="inp" id="greet" maxlength="300" placeholder="직접 적어도 좋아요"></textarea>
+        <div class="count"><span id="gCount">0</span> / 300</div>
+    </div>
+
+    <!-- 4. 계좌 -->
+    <div class="pane" data-pane="3">
+        <p class="eyebrow">STEP 4</p>
+        <h1>마음 전하실 곳</h1>
+        <p class="lead">계좌번호는 하객이 [복사] 버튼을 눌러야만 보이고, 서버에는 암호화해서 저장돼요.</p>
+        <div id="accMain"></div>
+        <button type="button" class="addacc" id="addParents">+ 혼주(부모님) 계좌 추가</button>
+        <div class="parents" id="parents"></div>
+    </div>
+
+    <!-- 끝 -->
+    <div class="pane" data-pane="4">
+        <div class="done">
+            <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <h1>기본 정보를 다 적었어요</h1>
+            <p class="lead">이제 사진을 올리고 꾸미러 가요.<br>적은 내용은 에디터의 ‘예식 정보’에서 언제든 고칠 수 있어요.</p>
+        </div>
+    </div>
+
+    <div class="nav" id="nav">
+        <button type="button" class="back" id="back">이전</button>
+        <button type="button" class="next" id="next">다음</button>
+    </div>
+    <button type="button" class="skip" id="skip">이 단계는 나중에 할게요</button>
+</section>
+
+<aside class="pv" id="pv">
+    <div class="pv-cap" id="pvCap">하객에게 이렇게 보여요</div>
+    <div class="phone"><div class="scr" id="scr">
+        <div class="sec hero" data-s="0">
+            <div class="photo">대표 사진</div>
+            <div class="nm" id="pvNames"></div>
+            <div class="dt" id="pvDate"></div>
+        </div>
+        <div class="sec" data-s="2"><p class="st">INVITATION</p><div class="greet" id="pvGreet"></div></div>
+        <div class="sec loc" data-s="1"><p class="st">LOCATION</p><b id="pvVenue"></b><span id="pvAddr"></span></div>
+        <div class="sec" data-s="3"><p class="st">ACCOUNT</p><div class="pv-acc" id="pvAcc"></div></div>
+    </div></div>
+</aside>
+<button type="button" class="pvbtn" id="pvBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg>미리보기</button>
+</main>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const STEPS = ['두 사람', '예식장', '인사말', '마음 전할 곳'];
+const BANKS = ['국민', '신한', '우리', '하나', '농협', '기업', '카카오뱅크', '토스뱅크', '케이뱅크', '우체국', '새마을금고', '신협', 'SC제일', '씨티', '부산', '대구', '광주', '경남'];
+const ROLES = [['groom', '신랑'], ['bride', '신부']];
+const PARENTS = [['groomFather', '신랑 아버지'], ['groomMother', '신랑 어머니'], ['brideFather', '신부 아버지'], ['brideMother', '신부 어머니']];
+const TONES = {
+    '격식 있게': ['서로가 마주보며 다져온 사랑을\n이제 함께 한곳을 바라보며\n걸어가고자 합니다.\n\n저희 두 사람의 첫걸음에\n귀한 걸음으로 함께해 주시면\n더없는 기쁨이겠습니다.',
+              '평생을 같이하고 싶은 사람을 만났습니다.\n서로 아껴주고 이해하며\n사랑하며 살겠습니다.\n\n오셔서 축복해 주시면 감사하겠습니다.'],
+    '다정하게': ['봄날처럼 따뜻한 사람을 만나\n같은 계절을 함께 걷기로 했어요.\n\n저희의 시작을\n곁에서 함께 웃어 주세요.',
+              '오래 보아도 좋은 사람과\n오래오래 함께하려 합니다.\n\n그 첫날, 와서 축하해 주세요.'],
+    '짧게': ['저희 결혼합니다.\n함께해 주시면 큰 기쁨이겠습니다.', '두 사람이 하나 되는 날,\n자리를 빛내 주세요.']
+};
+const KEY = 'ldInfoProto';
+const S = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } })();
+S.acc = S.acc || {};
+let step = Math.min(Number(S.step) || 0, 4), tone = Object.keys(TONES)[0], view = new Date();
+if (S.date) { const [y, m] = S.date.split('-').map(Number); view = new Date(y, m - 1, 1); } else view.setDate(1);
+
+let saveT;
+function save() {
+    const sv = $('saved'); sv.classList.add('ing'); sv.querySelector('span').textContent = '저장 중';
+    clearTimeout(saveT);
+    saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify({ ...S, step })); } catch (e) {} sv.classList.remove('ing'); sv.querySelector('span').textContent = '자동 저장됨'; }, 450);
+}
+
+// ---------- 날짜·시간 글자 ----------
+const W = ['일', '월', '화', '수', '목', '금', '토'];
+const parseD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const today = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; };
+const dateText = s => { const d = parseD(s); return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${W[d.getDay()]}요일`; };
+const ddays = s => Math.round((parseD(s) - today()) / 864e5);
+const timeText = t => { if (!t) return ''; let [h, m] = t.split(':').map(Number); const ap = h < 12 ? '오전' : '오후'; h = h % 12 || 12; return `${ap} ${h}시${m ? ' ' + m + '분' : ''}`; };
+
+// ---------- 단계 표시 ----------
+function renderSteps() {
+    $('steps').innerHTML = STEPS.map((n, i) => `<button type="button" class="step ${i === step ? 'on' : i < step ? 'done' : ''}" data-go="${i}"><i>${i < step ? '✓' : i + 1}</i><span>${n}</span></button>`).join('');
+    $('steps').querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(+b.dataset.go));
+}
+function go(i) {
+    step = i; save();
+    document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', +p.dataset.pane === i));
+    $('back').style.visibility = i === 0 ? 'hidden' : 'visible';
+    $('next').textContent = i === 3 ? '다 적었어요' : i === 4 ? '사진 올리고 꾸미러 가기' : '다음';
+    $('skip').style.display = (i === 1 || i === 2 || i === 3) ? 'block' : 'none';
+    renderSteps(); focusPreview(i);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function focusPreview(i) {
+    document.querySelectorAll('.sec').forEach(s => s.classList.toggle('hl', +s.dataset.s === i));
+    const t = document.querySelector(`.sec[data-s="${i}"]`);
+    if (t && i < 4) $('scr').scrollTo({ top: i === 0 ? 0 : t.offsetTop - 40, behavior: 'smooth' });
+}
+
+// ---------- 이름 ----------
+function names() {
+    const g = S.groom || '', b = S.bride || '';
+    const nm = (v, ph) => v ? esc(v) : `<span class="ph">${ph}</span>`;
+    $('namePv').innerHTML = (g || b) ? `${nm(g, '신랑')}<span class="h">♥</span>${nm(b, '신부')}` : '';
+    $('pvNames').innerHTML = `${g ? esc(g) : '<span class="empty">신랑</span>'}<span class="h">♥</span>${b ? esc(b) : '<span class="empty">신부</span>'}`;
+    renderAcc(); preview();
+}
+['groom', 'bride'].forEach(k => {
+    const el = $(k); el.value = S[k] || '';
+    el.addEventListener('input', () => { S[k] = el.value.trim(); el.classList.remove('err'); $('nameMsg').classList.remove('on'); names(); save(); });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); k === 'groom' ? $('bride').focus() : openCal(true); } });
+});
+
+// ---------- 달력 ----------
+function openCal(on) { $('cal').classList.toggle('on', on); $('dateBtn').classList.toggle('open', on); if (on) drawCal(); }
+$('dateBtn').onclick = () => openCal(!$('cal').classList.contains('on'));
+function drawCal() {
+    const y = view.getFullYear(), m = view.getMonth(), first = new Date(y, m, 1).getDay(), n = new Date(y, m + 1, 0).getDate(), t0 = today();
+    $('calTitle').textContent = `${y}년 ${m + 1}월`;
+    $('calPrev').disabled = y === t0.getFullYear() && m <= t0.getMonth();
+    let h = W.map(w => `<span class="w">${w}</span>`).join('') + '<span></span>'.repeat(first);
+    for (let d = 1; d <= n; d++) {
+        const dt = new Date(y, m, d), wd = dt.getDay(), key = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        h += `<button type="button" class="d ${wd === 0 ? 'sun' : wd === 6 ? 'sat' : ''} ${+dt === +t0 ? 'today' : ''} ${S.date === key ? 'sel' : ''}" data-d="${key}" ${dt < t0 ? 'disabled' : ''}>${d}</button>`;
+    }
+    $('calGrid').innerHTML = h;
+    $('calGrid').querySelectorAll('[data-d]').forEach(b => b.onclick = () => { S.date = b.dataset.d; $('dateMsg').classList.remove('on'); dateUI(); save(); setTimeout(() => openCal(false), 160); drawCal(); });
+}
+$('calPrev').onclick = () => { view.setMonth(view.getMonth() - 1); drawCal(); };
+$('calNext').onclick = () => { view.setMonth(view.getMonth() + 1); drawCal(); };
+$('calToday').onclick = () => { view = new Date(); view.setDate(1); drawCal(); };
+function dateUI() {
+    $('dateTxt').innerHTML = S.date ? esc(dateText(S.date)) : '<span class="ph">날짜를 골라주세요</span>';
+    const dd = S.date ? ddays(S.date) : null;
+    $('ddBadge').hidden = dd == null; if (dd != null) $('ddBadge').textContent = dd === 0 ? 'D-DAY' : 'D-' + dd;
+    whenUI(); preview();
+}
+
+// ---------- 시간 ----------
+let ap = S.time && +S.time.split(':')[0] < 12 ? 'am' : 'pm';
+const SLOTS = { am: ['10:00', '10:30', '11:00', '11:30'], pm: ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30'] };
+function chipLabel(t) { let [h, m] = t.split(':').map(Number); h = h % 12 || 12; return `${h}:${String(m).padStart(2, '0')}`; }
+function drawChips() {
+    $('ampm').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.ap === ap));
+    const list = SLOTS[ap], isCustom = S.time && !SLOTS.am.concat(SLOTS.pm).includes(S.time);
+    $('chips').innerHTML = list.map(t => `<button type="button" class="chip ${S.time === t ? 'on' : ''}" data-t="${t}">${chipLabel(t)}</button>`).join('')
+        + `<button type="button" class="chip more ${isCustom ? 'on' : ''}" data-t="custom">다른 시간</button>`;
+    $('chips').querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
+        if (b.dataset.t === 'custom') { $('customT').classList.add('on'); fillCustom(); applyCustom(); return; }
+        $('customT').classList.remove('on'); S.time = b.dataset.t; drawChips(); whenUI(); preview(); save();
+    });
+    if (isCustom) { $('customT').classList.add('on'); fillCustom(); }
+}
+function fillCustom() {
+    const hs = ap === 'am' ? [7, 8, 9, 10, 11] : [12, 13, 14, 15, 16, 17, 18, 19, 20];
+    const [h, m] = (S.time || (ap === 'am' ? '11:00' : '13:00')).split(':').map(Number);
+    $('cH').innerHTML = hs.map(x => `<option value="${x}" ${x === h ? 'selected' : ''}>${x % 12 || 12}</option>`).join('');
+    $('cM').value = String(m - m % 10);
+}
+function applyCustom() { S.time = `${String($('cH').value).padStart(2, '0')}:${String($('cM').value).padStart(2, '0')}`; drawChips(); whenUI(); preview(); save(); }
+$('cH').onchange = applyCustom; $('cM').onchange = applyCustom;
+$('ampm').querySelectorAll('button').forEach(b => b.onclick = () => { ap = b.dataset.ap; if (S.time && (+S.time.split(':')[0] < 12) !== (ap === 'am')) { S.time = ''; $('customT').classList.remove('on'); } drawChips(); whenUI(); preview(); });
+function whenUI() {
+    const ok = S.date || S.time;
+    $('when').hidden = !ok;
+    $('whenTxt').innerHTML = [S.date ? `<b>${esc(dateText(S.date))}</b>` : '날짜 미정', S.time ? `<b>${esc(timeText(S.time))}</b>` : '시간 미정'].join(' · ');
+}
+
+// ---------- 예식장 ----------
+['venue', 'hall', 'addr'].forEach(k => { const el = $(k); el.value = S[k] || ''; el.addEventListener('input', () => { S[k] = el.value.trim(); preview(); save(); mapUI(); }); });
+$('venue').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('hall').focus(); } });
+$('hall').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('addrBtn').click(); } });
+function mapUI() { $('mapcard').classList.toggle('on', !!S.addr); $('mapTxt').textContent = S.addr ? `${S.addr} · 지도와 길찾기 버튼이 이 주소로 만들어져요` : ''; }
+$('addrBtn').onclick = () => {
+    const layer = $('pcLayer');
+    const run = () => {
+        layer.classList.add('on');
+        new daum.Postcode({ oncomplete: d => { S.addr = d.roadAddress || d.address; $('addr').value = S.addr; if (!S.venue && d.buildingName) { S.venue = d.buildingName; $('venue').value = S.venue; } layer.classList.remove('on'); mapUI(); preview(); save(); }, width: '100%', height: '100%' }).embed(layer);
+    };
+    if (window.daum && daum.Postcode) return run();
+    const s = document.createElement('script'); s.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    s.onload = run; s.onerror = () => { $('addr').focus(); $('addr').placeholder = '주소를 직접 적어주세요'; };
+    document.head.appendChild(s);
+};
+$('pcX').onclick = () => $('pcLayer').classList.remove('on');
+
+// ---------- 인사말 ----------
+function drawTones() {
+    $('tones').innerHTML = Object.keys(TONES).map(t => `<button type="button" class="tone ${t === tone ? 'on' : ''}" data-tone="${t}">${t}</button>`).join('');
+    $('tones').querySelectorAll('[data-tone]').forEach(b => b.onclick = () => { tone = b.dataset.tone; drawTones(); });
+    $('samples').innerHTML = TONES[tone].map((t, i) => `<button type="button" class="sample ${S.greet === t ? 'on' : ''}" data-i="${i}">${esc(t)}</button>`).join('');
+    $('samples').querySelectorAll('[data-i]').forEach(b => b.onclick = () => { S.greet = TONES[tone][+b.dataset.i]; $('greet').value = S.greet; gUI(); drawTones(); preview(); save(); });
+}
+$('greet').value = S.greet || '';
+$('greet').addEventListener('input', () => { S.greet = $('greet').value; gUI(); preview(); save(); $('samples').querySelectorAll('.sample').forEach(s => s.classList.remove('on')); });
+function gUI() { $('gCount').textContent = ($('greet').value || '').length; }
+
+// ---------- 계좌 ----------
+function accCard(k, label, mini) {
+    const a = S.acc[k] || {}, holderPh = k === 'groom' ? (S.groom || '예금주') : k === 'bride' ? (S.bride || '예금주') : '예금주';
+    return `<div class="acc ${k === 'bride' || k.startsWith('bride') ? 'bride' : ''} ${mini ? 'mini' : ''}" data-k="${k}">
+        <div class="acc-h"><b><i></i>${label}</b>${mini ? `<button type="button" data-clear="${k}">비우기</button>` : ''}</div>
+        <div class="acc-g">
+            <button type="button" class="bankbtn" data-bank="${k}">${a.bank ? esc(a.bank) : '<span class="ph">은행</span>'}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+            <input class="inp" data-f="holder" placeholder="${esc(holderPh)}" value="${esc(a.holder || '')}" autocomplete="off">
+            <input class="inp full" data-f="number" inputmode="numeric" placeholder="계좌번호 (- 없이 숫자만)" value="${esc(a.number || '')}" autocomplete="off">
+            <div class="banks" data-banks="${k}">${BANKS.map(b => `<button type="button" class="${a.bank === b ? 'on' : ''}" data-pick="${b}">${b}</button>`).join('')}</div>
+        </div></div>`;
+}
+function renderAcc() {
+    const focus = document.activeElement && document.activeElement.closest('.acc') ? null : true;
+    if (!focus) return; // 입력 중엔 다시 그리지 않음
+    $('accMain').innerHTML = ROLES.map(([k, l]) => accCard(k, l)).join('');
+    $('parents').innerHTML = PARENTS.map(([k, l]) => accCard(k, l, true)).join('');
+    bindAcc();
+}
+function bindAcc() {
+    document.querySelectorAll('.acc').forEach(card => {
+        const k = card.dataset.k, a = () => (S.acc[k] = S.acc[k] || {});
+        card.querySelector('[data-bank]').onclick = () => { const g = card.querySelector('[data-banks]'); const on = !g.classList.contains('on'); document.querySelectorAll('.banks.on').forEach(x => x.classList.remove('on')); g.classList.toggle('on', on); };
+        card.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => {
+            a().bank = b.dataset.pick;
+            card.querySelector('[data-bank]').innerHTML = `${esc(b.dataset.pick)}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>`;
+            card.querySelectorAll('[data-pick]').forEach(x => x.classList.toggle('on', x === b));
+            card.querySelector('[data-banks]').classList.remove('on');
+            card.querySelector('[data-f="number"]').focus(); preview(); save();
+        });
+        card.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => {
+            if (inp.dataset.f === 'number') inp.value = inp.value.replace(/[^\d-]/g, '');
+            a()[inp.dataset.f] = inp.value.trim(); preview(); save();
+        }));
+        const c = card.querySelector('[data-clear]'); if (c) c.onclick = () => { delete S.acc[k]; card.outerHTML = accCard(k, PARENTS.find(p => p[0] === k)[1], true); bindAcc(); preview(); save(); };
+    });
+}
+$('addParents').onclick = () => { const on = !$('parents').classList.contains('on'); $('parents').classList.toggle('on', on); $('addParents').textContent = on ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'; };
+if (PARENTS.some(([k]) => S.acc[k] && (S.acc[k].number || S.acc[k].bank))) $('addParents').click();
+
+// ---------- 미리보기 ----------
+function preview() {
+    $('pvDate').innerHTML = S.date ? `${esc(dateText(S.date))}${S.time ? '<br>' + esc(timeText(S.time)) : ''}${S.venue ? '<br>' + esc(S.venue) + (S.hall ? ' ' + esc(S.hall) : '') : ''}` : '<span class="empty">예식 날짜와 시간</span>';
+    $('pvGreet').innerHTML = S.greet ? esc(S.greet) : '<span class="empty">인사말이 여기에 들어가요</span>';
+    $('pvVenue').innerHTML = S.venue ? esc(S.venue) + (S.hall ? ` <small style="font-size:.8em;color:#8A8075">${esc(S.hall)}</small>` : '') : '<span class="empty">예식장 이름</span>';
+    $('pvAddr').innerHTML = S.addr ? esc(S.addr) : '<span class="empty">주소</span>';
+    const rows = ROLES.concat(PARENTS).filter(([k]) => S.acc[k] && (S.acc[k].bank || S.acc[k].number));
+    $('pvAcc').innerHTML = rows.length ? rows.map(([k, l]) => { const a = S.acc[k]; return `<div class="row"><span><small>${l}</small>${esc(a.holder || (k === 'groom' ? S.groom : k === 'bride' ? S.bride : '') || '')} · ${esc(a.bank || '')}</span><em>복사</em></div>`; }).join('')
+        : '<p class="empty" style="text-align:center;font-family:var(--serif);font-size:13px">계좌를 적으면 여기에 보여요</p>';
+}
+$('pvBtn').onclick = () => { $('pv').classList.add('on'); setTimeout(() => focusPreview(step), 60); };
+$('pv').addEventListener('click', e => { if (e.target === $('pv') || e.target === $('pvCap')) $('pv').classList.remove('on'); });
+
+// ---------- 이동 ----------
+function check() {
+    if (step !== 0) return true;
+    let ok = true;
+    ['groom', 'bride'].forEach(k => { if (!S[k]) { $(k).classList.add('err'); ok = false; } });
+    if (!ok) { $('nameMsg').classList.add('on'); (S.groom ? $('bride') : $('groom')).focus(); return false; }
+    if (!S.date) { $('dateMsg').classList.add('on'); openCal(true); return false; }
+    return true;
+}
+$('next').onclick = () => { if (step === 4) { alert('시안: 여기서 간편 만들기는 "사진" 단계로, 직접 만들기는 에디터로 넘어가요.'); return; } if (check()) go(step + 1); };
+$('back').onclick = () => go(Math.max(0, step - 1));
+$('skip').onclick = () => go(step + 1);
+$('pvCap').textContent = window.innerWidth <= 900 ? '바깥을 누르면 닫혀요' : '하객에게 이렇게 보여요';
+
+// ---------- 시작 ----------
+names(); dateUI(); drawChips(); drawTones(); gUI(); mapUI(); renderAcc(); preview(); go(step);
+$('saved').querySelector('span').textContent = '자동 저장됨';
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "id": "pastel",
+  "no": 3,
+  "group": "mood",
+  "label": "파스텔 세이지",
+  "desc": "세이지 + 블러쉬, 부드러운 세리프",
+  "tags": [
+    "부드러움"
+  ],
+  "palette": {
+    "bg": "#FBF8F2",
+    "ink": "#4A443C",
+    "accent": "#C97A82",
+    "line": "#EEF1E7",
+    "muted": "#93897A",
+    "headFont": "\"Gowun Batang\", serif",
+    "headWeight": "700",
+    "radius": "16px"
+  },
+  "font": null,
+  "hero": "photo",
+  "heroFrame": "rounded",
+  "sections": [
+    "hero",
+    "greeting",
+    "location",
+    "gallery",
+    "account"
+  ],
+  "fx": {
+    "default": "bounce"
+  }
+}

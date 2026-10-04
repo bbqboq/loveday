@@ -1,0 +1,398 @@
+/* render-invite.css
+   editor-prototype-v3-overlay.html의 미리보기(previewRoot) 스타일 중
+   "보기 전용"에 필요한 부분만 추린 공용 CSS. 에디터 쪽 사이드바/팝업/
+   드래그 핸들 등 편집 전용 UI는 전부 제외했습니다.
+   에디터 쪽 CSS가 나중에 바뀌면 이 파일도 같이 맞춰줘야 드리프트가 안 생깁니다. */
+
+* { box-sizing: border-box; }
+
+/* scrollbar-gutter:stable - 인트로 애니메이션이 재생되는 동안 body에 overflow:hidden을 걸었다가
+   끝나면 다시 풀어주는데(아래 자바스크립트), 그 순간 스크롤바가 "짠" 하고 생기면서 폭이 줄어들어
+   본문 전체가 살짝 움찔(틱)하며 옆으로 밀리는 게 눈에 띄었다. 스크롤바가 있든 없든 그 자리를
+   항상 미리 비워두면(gutter) 생겼다 없어졌다 해도 폭이 안 바뀌어서 이 움찔거림이 없어진다. */
+html { scrollbar-gutter: stable; }
+/* [드리프트 수정] 위 stable은 PC에서 내용이 늘어나 스크롤바가 생겼다 없어졌다 할 때 레이아웃이
+   덜컹거리지 않게 하려는 용도다. PC 스크롤바는 실제 공간을 차지하지만, 휴대폰 브라우저의
+   스크롤바는 내용 위에 겹쳐 보이는 것뿐이라 공간을 차지하지 않는다 - 그래서 진짜 휴대폰에서는
+   안 보이던 이 여백이, PC 창을 모바일 폭으로 줄였을 때만 스크롤바 폭만큼 빈 공간으로 .invite-frame
+   오른쪽에 눈에 띄었다(.invite-frame의 max-width:min(460px,100vw) 계산에 이 예약된 gutter가
+   반영이 안 되기 때문). 모바일 폭에서는 꺼서 화면을 꽉 채운다 - 에디터(editor-prototype-v3-overlay.html)
+   쪽 .preview-pane에는 이미 있던 처리인데 이 파일에는 그동안 안 옮겨져 있었다. */
+@media (max-width: 860px) {
+    html { scrollbar-gutter: auto; }
+}
+
+/* 가로 스크롤 방지 안전망 - 실기기에서 뭔가 잠깐이라도 화면 밖으로 삐져나오면 모바일 브라우저가
+   전체 페이지를 축소했다가 다시 맞추면서 화면이 "틱"하고 스냅되는 현상이 있었다. 가로 스크롤
+   자체를 원천 차단해서 그 여지를 없앤다. */
+html, body { overflow-x: hidden; overflow-x: clip; }
+/* [스크롤 틱 수정] overflow-x:hidden은 세로(overflow-y)까지 auto로 바꿔서 body와 .invite-frame을 각각
+   "숨은 스크롤 영역"으로 만들어버렸다. 아직 등장 전인 섹션이 translateY(56px)만큼 아래로 밀려 있으면
+   그 56px만큼 카드 안쪽에 작은 스크롤이 따로 생겨서, 페이지 스크롤과 카드 안쪽 스크롤이 번갈아 먹히며
+   화면이 "틱" 하고 걸렸다. clip은 잘라내기만 하고 스크롤 영역을 만들지 않는다(지원 안 하는 옛 브라우저는
+   앞의 hidden이 그대로 적용됨). */
+
+body {
+    margin: 0;
+    background: #F1EFE9;
+    transition: background-color .35s ease; /* PC 옆 배경색이 켜지고 꺼질 때 색이 부드럽게 바뀌게 */
+}
+
+.invite-frame {
+    position: relative;
+    /* 방문자 실제 화면 폭에 맞춰 늘었다 줄었다 하는 완전 반응형 - 스티커/커스텀 텍스트는 이제
+       각자가 속한 섹션(.col)의 실제 자식으로 렌더링되고 위치도 그 섹션 기준 %(CSS)로 잡으므로,
+       페이지 폭이 방문자마다 달라져도(그로 인해 섹션 높이가 조금씩 달라져도) 위치가 항상 정확하다
+       - renderStickersHtml/renderCustomTextsHtml, repositionStickerInSection 참고. */
+    /* [원복+스크롤바 버그 수정] PC에서는 카드 폭을 무한정 넓히지 않고 460px에서 멈추고, 그
+       바깥은 desktopSideBg/desktopShadow(에디터의 "PC로 볼 때 좌우 여백 색상/그림자" 설정)로
+       채우는 게 원래 의도된 디자인이다 - 에디터의 .phone-frame.fill-width도 PC에서는 동일하게
+       460px가 상한이라 그 값과 맞췄다.
+       예전엔 여기 min(460px, 100vw)처럼 100vw를 같이 썼는데, 개발자도구 반응형 모드(가상
+       뷰포트라 실제 스크롤바가 폭을 차지하지 않음)와 달리 진짜 브라우저 창은 세로 스크롤바가
+       실제로 폭을 차지한다. CSS의 100vw는 이 스크롤바가 차지하는 공간까지 포함한 "진짜 창 폭"
+       기준으로 계산되는데, 실제 눈에 보이는(스크롤바 뺀) 영역은 그보다 좁아서, 진짜 창에서만
+       카드 양옆에 몇~수십px의 어중간한 여백이 남았었다(스크롤바가 오른쪽에만 있어서 좌우
+       비대칭으로도 보였다). width를 따로 안 정하고(auto) max-width만 걸면 브라우저가 알아서
+       "부모의 실제 가용 폭(스크롤바 제외하고 진짜 보이는 만큼)과 460px 중 작은 쪽"으로 계산해
+       주므로, 100vw 없이 max-width:460px만 남겨서 이 스크롤바 오차 자체가 생길 여지를 없앴다. */
+    max-width: 460px;
+    margin: 0 auto;
+    background: var(--p-bg);
+    background-image: var(--p-paper, none); /* 종이 질감 (에디터 화면 설정 > 색상) - 요철·섬유를 바탕색에 곱해서 */
+    background-size: 300px;
+    background-blend-mode: multiply;
+    color: var(--p-ink);
+    min-height: 100vh;
+    font-family: var(--p-body-font, "Pretendard Variable", Pretendard, sans-serif);
+    container-type: inline-size;
+    container-name: invite;
+    /* [진짜 원인] 아직 화면에 안 들어와서 opacity:0 상태로 대기 중인 .reveal-left/.reveal-right
+       섹션은 등장 전에 transform:translateX(±60px)로 미리 옆으로 밀려나 있다(등장할 때 그 자리로
+       스르륵 들어오는 연출) - 안 보일 뿐 실제로는 카드 폭보다 60px 더 넓게 "그려져" 있는 상태라서,
+       이 카드(.invite-frame) 자신이 잘라주지 않으면 그 초과분이 body까지 새어나가 페이지 전체의
+       가로 스크롤 폭(scrollWidth)을 부풀렸다. body에는 overflow-x:hidden이 있어 스크롤은 안
+       생기지만, 그 "실제로는 더 넓은 페이지"라는 상태 자체가 100vw 계산 기준에 영향을 줘서
+       카드가 화면 중앙에 딱 안 맞고 옆에 여백처럼 보이는 원인이었다 - 새어나가기 전에 카드
+       자신의 경계에서 미리 잘라내면 해결된다. (position:fixed인 장식 효과/라이트박스는 여기
+       영향을 안 받는다 - .invite-frame에 transform이 없어서 새 containing block이 안 생기므로.) */
+    overflow: hidden; /* clip 미지원 브라우저용 - hidden은 마우스휠로는 안 굴러가서 틱이 없다 */
+    overflow: clip;   /* 가로(좌우로 밀려난 등장효과)와 세로(아래로 밀려난 등장효과) 둘 다 카드 경계에서 잘라낸다 -
+                         세로까지 잘라야 맨 아래 섹션이 등장하기 전후로 페이지 전체 길이가 56px 늘었다 줄었다 하지 않는다 */
+}
+/* [PC 창을 모바일 크기로 줄였을 때 전체화면 전환] 460px 상한은 넓은 PC 화면용이다. 창을
+   500~520px 근처까지 줄였는데도 460px 카드 + 양옆 20~30px 배경(스크롤바 때문에 좌우 비대칭으로
+   15px/25px처럼 보임)이 남으면 어중간해 보인다. 창폭이 505px 이하면 "모바일 크기"로 보고
+   상한을 풀어 카드가 가로 100%를 채우게 한다 (옆 배경색도 render-invite.js의
+   applyDesktopSideBg가 같은 505px 기준으로 끈다). */
+@media (max-width: 505px) {
+    .invite-frame { max-width: none; }
+}
+/* 전환 애니메이션 - 실제 폭 규칙(위의 460px / none)은 그대로 두고, 505px 경계를 넘는 "그 순간"에만
+   render-invite.js가 아래 클래스를 0.4초 붙였다 뗀다. 애니메이션이 끝나면 원래 규칙 값으로 돌아가므로
+   애니메이션이 폭 계산 자체를 바꿀 일이 없다(페이지를 처음 열 때는 재생 안 됨). */
+.invite-frame.bp-expand { animation: inviteExpand .35s ease; }
+.invite-frame.bp-shrink { animation: inviteShrink .35s ease; }
+@keyframes inviteExpand { from { max-width: 460px; } to { max-width: 100%; } }
+@keyframes inviteShrink { from { max-width: 100%; } to { max-width: 460px; } }
+.invite-frame.has-desktop-shadow { box-shadow: 0 0 50px rgba(0,0,0,.22); }
+.global-sticker-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 200; }
+.global-sticker-layer .sticker-el { pointer-events: auto; }
+
+.row-flex { display: grid; gap: 16px; padding: 0 24px; border-top: 1px solid transparent; align-items: start; }
+/* 섹션 구분선 - 기본은 안 보임, 화면 설정 → 부가기능 "섹션 사이 구분선"을 켜면 보임 (선 두께만큼 자리는 그대로라 켜고 꺼도 배치가 안 흔들림) */
+.dividers-on .row-flex { border-top-color: var(--p-line); }
+.row-flex:first-child { border-top: none; }
+.col { min-width: 0; padding-top: 22px; padding-bottom: 22px; position: relative; }
+
+.blk-hero-video, .blk-hero, .blk-greeting, .blk-location, .blk-account { line-height: 0; }
+.blk-location { line-height: normal; }
+.loc-eyebrow { text-align: center; font-size: 11px; letter-spacing: .25em; color: var(--p-muted); margin: 0; padding-top: 26px; }
+.loc-phone-wrap { text-align: center; padding: 0 24px 14px; }
+.loc-phone-btn {
+    display: inline-block; border: 1px solid var(--p-ink); color: var(--p-ink); padding: 10px 28px;
+    border-radius: 999px; text-decoration: none; font-size: 13px;
+}
+.location-map { width: 100%; height: 200px; border-radius: 10px; overflow: hidden; background: #eee; }
+.location-map.full-width { border-radius: 0; margin-left: -24px; margin-right: -24px; width: calc(100% + 48px); }
+.loc-applinks { display: flex; gap: 8px; padding: 14px 24px 0; }
+.loc-applink {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+    border: 1px solid var(--p-line); border-radius: 10px; padding: 11px 4px;
+    text-decoration: none; color: var(--p-ink); font-size: 12px; font-weight: 600;
+    white-space: nowrap;
+}
+.loc-applink:hover { background: #F5F2EA; }
+.loc-app-badge {
+    display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px;
+    border-radius: 50%; color: #fff; font-size: 10px; font-weight: 800; flex: none; line-height: 1;
+}
+.loc-app-badge.loc-app-naver { background: #03C75A; }
+.loc-app-badge.loc-app-kakao { background: #FEE500; color: #3C1E1E; }
+.loc-app-badge.loc-app-tmap { background: #1C2FA0; }
+
+.hero-photo-wrap { padding: 0 32px; margin-bottom: 8px; }
+.hero-photo { display: block; width: 100%; object-fit: cover; }
+.hero-photo.hero-frame-none   { aspect-ratio: 4/5; border-radius: 0; }
+.hero-photo.hero-frame-rounded{ aspect-ratio: 4/5; border-radius: 20px; }
+.hero-photo.hero-frame-circle { aspect-ratio: 1; border-radius: 50%; }
+.hero-photo.hero-frame-pill   { aspect-ratio: 3/5; border-radius: 999px; }
+.hero-photo.hero-frame-arch   { aspect-ratio: 3/4; border-radius: 50% 50% 0 0 / 30% 30% 0 0; }
+
+.blk-dday { padding: 30px 24px; text-align: center; }
+.dday-label { font-size: 11.5px; letter-spacing: .2em; color: var(--p-muted); margin-bottom: 10px; }
+.dday-date { font-size: 17px; margin-bottom: 20px; }
+.dday-calendar { max-width: 320px; margin: 0 auto 24px; }
+.dday-cal-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.dday-cal-head { font-size: 11px; color: var(--p-muted); margin-bottom: 8px; }
+.dday-cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.dday-cal-cell.wedding-day { color: var(--p-accent); font-weight: 700; }
+.dday-countdown {
+    display: flex; justify-content: center; gap: 2.05cqw; padding: 6.15cqw 2.56cqw; border-radius: 14px;
+    background: var(--p-accent, #7A3B41); background-size: cover; background-position: center;
+}
+.dday-unit { background: rgba(0,0,0,.35); border-radius: 10px; padding: 2.56cqw 1.54cqw; min-width: 14.87cqw; color: #fff; }
+.dday-num { display: block; font-size: 6.15cqw; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dday-unit-label { display: block; font-size: 2.56cqw; opacity: .85; margin-top: 2px; }
+
+.blk-timeline { padding: 30px 24px; }
+.blk-timeline h4 { text-align: center; font-family: var(--p-head-font); font-weight: var(--p-head-weight); font-size: 18px; margin: 0 0 30px; }
+.tl-line { position: relative; }
+.tl-line::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--p-line); transform: translateX(-50%); }
+/* minmax(0,1fr)로 고정 - 에디터에서 제목 폭을 넓게 끌어도 가운데 점선(중심축)이 절대 안 밀리도록,
+   두 트랙을 항상 정확히 절반씩 고정한다. 폭을 넓힌 제목은 자기 칸 밖(바깥쪽)으로만 넘쳐 보인다. */
+.tl-item { display: grid; grid-template-columns: minmax(0,1fr) 1px minmax(0,1fr); align-items: center; gap: 16px; margin-bottom: 34px; position: relative; }
+.tl-item:last-child { margin-bottom: 0; }
+.tl-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--p-ink); justify-self: center; z-index: 1; }
+.tl-photo img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; display: block; }
+/* flex-direction:column - 날짜/제목/설명 각각 align-self로 오른쪽에 붙이면서 폭을 넓게 끌었을
+   때도 바깥쪽으로 자연스럽게 넘쳐 보이게 한다 (에디터의 .tl-text와 동일한 이유, 그쪽 주석 참고) */
+.tl-text { font-size: 13px; display: flex; flex-direction: column; }
+/* 에디터에서 더블클릭+Enter로 직접 넣은 줄바꿈이 발행 페이지에도 그대로 보이도록.
+   overflow-wrap:anywhere - 띄어쓰기 없이 이어진 긴 글자도 박스 밖으로 안 삐져나가게 강제 줄바꿈. */
+.tl-date, .tl-title, .tl-desc { white-space: pre-line; overflow-wrap: anywhere; }
+.tl-date { color: var(--p-muted); font-size: 12px; margin: 0 0 4px; }
+.tl-title { margin: 0 0 6px; font-size: 15px; }
+.tl-desc { margin: 0; color: var(--p-ink); opacity: .85; line-height: 1.5; }
+/* 에디터에서 포토샵처럼 끌어서 정한 줄바꿈 폭도 발행 페이지에 그대로 반영 */
+.tl-item.tl-right .tl-date, .tl-item.tl-right .tl-title, .tl-item.tl-right .tl-desc { align-self: flex-end; }
+.tl-item.tl-left .tl-photo { grid-column: 1; } .tl-item.tl-left .tl-text { grid-column: 3; }
+.tl-item.tl-right .tl-photo { grid-column: 3; } .tl-item.tl-right .tl-text { grid-column: 1; text-align: right; }
+.tl-item .tl-dot { grid-column: 2; }
+/* 화면폭에 따라 레이아웃 구조 자체(사진 숨김, 1단 전환)가 바뀌지 않도록 좁은화면 전용 규칙 제거 -
+   화면폭이 얼마든 항상 같은 레이아웃(사진+점+글 3단)을 유지한다. */
+
+.blk-interview { padding: 30px 24px; }
+.blk-interview h4 { text-align: center; font-family: var(--p-head-font); font-weight: var(--p-head-weight); font-size: 18px; margin: 0 0 20px; }
+.iv-photo img { width: 100%; border-radius: 14px; display: block; margin-bottom: 24px; }
+.iv-qa { margin-bottom: 22px; }
+.iv-q { font-weight: 700; font-size: 14.5px; margin: 0 0 12px; }
+.iv-a { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+.iv-a p { margin: 0; font-size: 13.5px; line-height: 1.5; flex: 1; }
+.iv-tag { flex: none; font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.iv-tag.iv-groom { background: #E7EEFB; color: #3A5BA8; }
+.iv-tag.iv-bride { background: #FBE7EC; color: #B84A65; }
+
+.free-canvas { position: relative; width: 100%; overflow: visible; }
+.drag-canvas { position: relative; }
+.drag-part {
+    position: absolute; z-index: 5; text-align: center; line-height: 1.5; white-space: pre-line;
+    padding: 4px 6px; border-radius: 6px;
+}
+.drag-part.on-light { color: var(--p-ink); }
+.drag-part.on-dark { color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.55); }
+.drag-part.op-datetime { font-size: 12px; letter-spacing: .04em; opacity: .85; }
+.drag-part.op-name, .drag-part.op-heart { font-family: var(--p-head-font); font-weight: var(--p-head-weight); }
+.drag-part.op-heart { color: var(--p-accent); }
+.drag-part.on-dark.op-heart { color: #fff; }
+.drag-part.op-title { font-weight: 600; letter-spacing: .02em; color: var(--p-muted); }
+
+.sticker-el { position: absolute; transform: translate(-50%,-50%); line-height: 1; z-index: 7; user-select: none; }
+.sticker-el.sticker-icon { color: var(--p-accent, #7A3B41); }
+.sticker-el.sticker-icon svg { display: block; width: 100%; height: 100%; }
+.sticker-el.sticker-image { object-fit: contain; display: block; }
+.custom-text-el { position: absolute; white-space: nowrap; line-height: 1.3; z-index: 30; }
+.gallery-text-layer { position: absolute; inset: 0; pointer-events: none; }
+.gallery-text-layer .drag-part, .gallery-text-layer .custom-text-el { pointer-events: auto; }
+
+.intro-overlay {
+    position: fixed; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 460px; z-index: 5000; overflow: hidden; /* .invite-frame과 동일한 상한(스크롤바 오차 없는 순수 max-width) - 인트로도 본문 카드와 폭이 똑같아야 자연스럽다 */
+    background: var(--p-bg, #FAF7F0);
+    animation: introFadeOut .6s ease forwards;
+    animation-delay: var(--intro-duration, 2.5s);
+    container-type: inline-size; container-name: invite;
+}
+.intro-bg-video-wrap { position: absolute; inset: 0; overflow: hidden; }
+.intro-bg-video-wrap iframe {
+    position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; min-width: 177.78vh; min-height: 100%;
+    transform: translate(-50%,-50%); border: 0; pointer-events: none;
+}
+.intro-bg-video-wrap:has(iframe)::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.28); }
+.intro-overlay .intro-text {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    font-size: 26px; text-align: center; padding: 0 30px; color: var(--p-ink, #2B2320);
+    white-space: pre-wrap; word-break: keep-all; max-width: 90%;
+}
+@media (max-width: 505px) {
+    .intro-overlay { max-width: none; }
+}
+.intro-overlay .intro-cursor { animation: introCursorBlink .8s steps(1) infinite; }
+@keyframes introCursorBlink { 50% { opacity: 0; } }
+@keyframes introFadeOut { from { opacity: 1; visibility: visible; } to { opacity: 0; visibility: hidden; pointer-events: none; } }
+
+/* 계좌정보 마스킹 - 클릭해서 보기 전까지는 이렇게 표시됨 */
+.drag-part[data-masked="1"] { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+
+/* 유튜브 영상 히어로 */
+.row-flex:has(.blk-hero-video) { padding: 0; border-top: none; }
+.row-flex:has(.blk-hero-video) .col { padding: 0; }
+.video-cover-wrap { position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; background: #000; }
+.video-cover-wrap iframe { position: absolute; border: 0; display: block; pointer-events: none; }
+.video-fullscreen-btn { position: absolute; top: 12px; right: 12px; z-index: 6; width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(0,0,0,.45); color: #fff; font-size: 16px; cursor: pointer; }
+.video-fullscreen-btn:hover { background: rgba(0,0,0,.65); }
+.video-cover-wrap:fullscreen { aspect-ratio: auto !important; height: 100vh; width: 100vw; }
+.video-cover-wrap:-webkit-full-screen { aspect-ratio: auto !important; height: 100vh; width: 100vw; }
+.video-overlay-gradient { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.78) 100%); pointer-events: none; }
+
+/* 갤러리 */
+.blk-gallery { position: relative; }
+.blk-gallery.edge-to-edge .grid { margin: 0 -24px; }
+.blk-gallery .grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; }
+.blk-gallery .grid.card-style { gap: 14px; padding: 0 4px; }
+.blk-gallery .grid.card-style img { border-radius: 14px; }
+.blk-gallery .grid.g1 { grid-template-columns: 1fr; }
+.blk-gallery .grid.g2 { grid-template-columns: 1fr 1fr; }
+.blk-gallery .grid.g4 { grid-template-columns: repeat(4,1fr); }
+.blk-gallery .grid.g5 { grid-template-columns: repeat(5,1fr); }
+.blk-gallery .grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--p-radius); display: block; }
+.blk-gallery .grid img { cursor: zoom-in; }
+.blk-gallery .grid img.g-large { grid-column: span 2; grid-row: span 2; }
+.blk-gallery .grid.no-lightbox img { cursor: default; }
+
+/* 사진 크게 보기 (render-invite.js openLightbox) - fancybox 스타일: 좌우 스와이프, 두 번 탭 확대, 아래로 쓸어 닫기 */
+html.lbx-lock, html.lbx-lock body { overflow: hidden !important; overscroll-behavior: none; }
+.lbx { position: fixed; inset: 0; z-index: 10000; color: #fff; touch-action: none; user-select: none; -webkit-user-select: none; overscroll-behavior: contain;
+    opacity: 0; transition: opacity .22s ease; --lbx-dim: 1; font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif; }
+.lbx.show { opacity: 1; }
+.lbx-bg { position: absolute; inset: 0; background: rgba(12,10,9,.95); opacity: var(--lbx-dim); }
+.lbx-stage { position: absolute; inset: 0; overflow: hidden; cursor: grab; }
+.lbx.zoomed .lbx-stage { cursor: move; }
+.lbx-track { display: flex; height: 100%; will-change: transform; }
+.lbx-slide { flex: 0 0 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 64px 14px 96px; box-sizing: border-box; }
+.lbx-slide img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 3px; box-shadow: 0 20px 60px rgba(0,0,0,.35); pointer-events: none; will-change: transform; }
+.lbx-top { position: absolute; top: 0; left: 0; right: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: max(12px, env(safe-area-inset-top)) 14px 12px 18px; pointer-events: none; }
+.lbx-count { font-size: 13.5px; letter-spacing: .04em; opacity: .85; }
+.lbx-count b { font-weight: 700; }
+.lbx button { appearance: none; border: 0; cursor: pointer; color: #fff; -webkit-tap-highlight-color: transparent; }
+.lbx button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.lbx-close { pointer-events: auto; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; transition: background .15s; }
+.lbx-close:hover { background: rgba(255,255,255,.24); }
+.lbx-nav { position: absolute; top: 50%; z-index: 2; width: 46px; height: 46px; margin-top: -40px; border-radius: 50%; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; transition: background .15s, opacity .2s; }
+.lbx-nav:hover { background: rgba(255,255,255,.26); }
+.lbx-prev { left: 16px; } .lbx-next { right: 16px; }
+.lbx-thumbs { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; gap: 6px; justify-content: safe center; overflow-x: auto; padding: 12px 14px max(14px, env(safe-area-inset-bottom)); scrollbar-width: none; }
+.lbx-thumbs::-webkit-scrollbar { display: none; }
+.lbx-thumbs button { flex: none; width: 46px; height: 46px; padding: 0; border-radius: 6px; overflow: hidden; background: #222; opacity: .45; outline: 2px solid transparent; outline-offset: -2px; transition: opacity .2s, outline-color .2s; }
+.lbx-thumbs button.on { opacity: 1; outline-color: #fff; }
+.lbx-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lbx.zoomed .lbx-thumbs, .lbx.zoomed .lbx-nav { opacity: 0; pointer-events: none; }
+@media (hover: none) { .lbx-nav { display: none; } } /* 휴대폰은 스와이프로 */
+@media (prefers-reduced-motion: reduce) { .lbx, .lbx-track, .lbx-slide img { transition: none !important; } }
+
+/* 좁은 화면에서는 몇 단이든 자동으로 1단 세로 스택 - 모바일 안전장치 */
+@container invite (max-width: 340px) {
+    .row-flex { grid-template-columns: 1fr !important; }
+    .col:not(:first-child) { padding-top: 14px; margin-top: 2px; }
+    .dividers-on .col:not(:first-child) { border-top: 1px dashed var(--p-line); }
+}
+
+/* 마스킹된 계좌 문구("계좌번호 보기")는 한 줄로 유지 - 줄바꿈되면 위아래 줄끼리 겹쳐 깨져 보인다 */
+.drag-part[data-nowrap="1"] { white-space: nowrap; }
+
+/* ============ 스크롤 등장 효과 (섹션/스티커) - editor-prototype-v3-overlay.html과 동일 ============ */
+/* 화면에 들어올 때마다 부드럽게 나타나고, 화면 밖으로 나가면 숨김으로 되돌아가 다시 스크롤해 들어오면 재생됨.
+   스티커는 위치/회전용 인라인 transform을 이미 갖고 있어서 여기서 transform을 직접 주면 덮여 무시되므로,
+   커스텀 프로퍼티(--rv-*)만 정의하고 실제 transform 합성은 .col류/스티커 인라인에서 각각 처리한다. */
+.reveal-up,.reveal-zoom,.reveal-pop,.reveal-left,.reveal-right,.reveal-fade,.reveal-bounce{
+    opacity:0; --rv-tx:0px; --rv-ty:0px; --rv-rot:0deg; --rv-scale:1;
+    transition:opacity .25s ease, transform .25s ease;
+}
+.reveal-up{ --rv-ty:56px; }
+.reveal-zoom{ --rv-scale:.86; }
+.reveal-pop{ --rv-scale:.35; --rv-rot:-8deg; }
+.reveal-left{ --rv-tx:-60px; }
+.reveal-right{ --rv-tx:60px; }
+.reveal-bounce{ --rv-ty:26px; --rv-scale:.94; }
+.reveal-up.in-view,.reveal-zoom.in-view,.reveal-pop.in-view,.reveal-left.in-view,.reveal-right.in-view,.reveal-fade.in-view,.reveal-bounce.in-view{
+    opacity:1; --rv-tx:0px; --rv-ty:0px; --rv-rot:0deg; --rv-scale:1;
+}
+.reveal-up.in-view{ transition:opacity .85s cubic-bezier(.22,.9,.32,1), transform .85s cubic-bezier(.22,.9,.32,1); }
+.reveal-zoom.in-view{ transition:opacity .9s ease, transform .9s cubic-bezier(.22,.9,.32,1); }
+.reveal-pop.in-view{ transition:opacity .6s ease, transform .6s cubic-bezier(.34,1.56,.64,1); }
+.reveal-left.in-view{ transition:opacity .8s ease, transform .8s cubic-bezier(.22,.9,.32,1); }
+.reveal-right.in-view{ transition:opacity .8s ease, transform .8s cubic-bezier(.22,.9,.32,1); }
+.reveal-fade.in-view{ transition:opacity .85s ease; }
+.reveal-bounce.in-view{ transition:opacity .7s ease, transform .7s cubic-bezier(.16,1.36,.42,1); }
+/* 스티커 등장 딜레이 - 화면에 들어온 뒤 --rv-delay만큼 기다렸다가 등장 (숨겨질 때는 바로) */
+.reveal-up.in-view,.reveal-zoom.in-view,.reveal-pop.in-view,.reveal-left.in-view,.reveal-right.in-view,.reveal-fade.in-view,.reveal-bounce.in-view{ transition-delay:var(--rv-delay,0s); }
+/* 나타난 뒤 몇 초 뒤 다시 뿅 사라지기 (스티커 ⏱ 팝업의 "사라지기").
+   등장(딜레이 + 약 0.7초) → --rv-hide만큼 보였다가 → 작아지며 사라짐. transform은 위치 계산에 쓰고 있어서 별도의 scale 속성을 움직인다 */
+.rv-vanish.in-view{ animation: rvVanish .45s cubic-bezier(.5,0,.75,0) forwards; animation-delay: calc(var(--rv-delay,0s) + .7s + var(--rv-hide,2s)); }
+/* 뿅 작아지기: --vx/--vy(-1·0·1) 쪽 가장자리를 향해 작아짐 (에디터와 같은 식) */
+@keyframes rvVanish { from { opacity:1; scale:1; translate:0 0; } 40% { scale:1.12; translate:calc(-.06 * (var(--vx,0) - 1) * 100%) calc(-.06 * (var(--vy,0) - 1) * 100%); } to { opacity:0; scale:.3; translate:calc(.35 * (var(--vx,0) - 1) * 100%) calc(.35 * (var(--vy,0) - 1) * 100%); } }
+@media (prefers-reduced-motion: reduce){ .rv-vanish.in-view{ animation: none; } }
+.col.reveal-up,.col.reveal-zoom,.col.reveal-pop,.col.reveal-left,.col.reveal-right,.col.reveal-bounce{
+    transform: translate(var(--rv-tx),var(--rv-ty)) rotate(var(--rv-rot)) scale(var(--rv-scale));
+}
+@media (prefers-reduced-motion: reduce){
+    .reveal-up,.reveal-zoom,.reveal-pop,.reveal-left,.reveal-right,.reveal-fade,.reveal-bounce{ opacity:1 !important; --rv-tx:0px !important; --rv-ty:0px !important; --rv-rot:0deg !important; --rv-scale:1 !important; }
+    .col.reveal-up,.col.reveal-zoom,.col.reveal-pop,.col.reveal-left,.col.reveal-right,.col.reveal-bounce{ transform:none !important; }
+}
+
+/* ============ 화면(뷰포트)에 계속 떠다니는 장식 효과 (하트/꽃잎/반짝임) - editor-prototype-v3-overlay.html과 동일 ============ */
+/* 카드 전체 높이 기준으로 절대위치를 주면 맨 위에서 한참 스크롤해야만 맨 아래서 출발한 하트가
+   화면까지 올라와 보이는 문제가 있었다. JS로 스크롤마다 따라오게 해봤지만 그 "따라오는" 움직임
+   자체가 어색해서, 순수 CSS position:fixed로 바꿨다 - 뷰포트에 그대로 고정되어 브라우저가
+   알아서 항상 같은 화면 자리에 그려주므로 JS 계산 없이 매끄럽다. .invite-frame이 max-width로
+   가운데 정렬되는 것과 똑같이 left:50%+translateX(-50%)로 카드 폭에 맞춰 가운데 정렬한다. */
+.ambient-field{ position:fixed; top:0; left:50%; transform:translateX(-50%); width:100%; max-width:460px; height:100vh; overflow:hidden; pointer-events:none; z-index:150; } /* .invite-frame과 동일한 상한 - 장식 효과도 카드 폭을 벗어나지 않게 */
+@media (max-width: 505px) {
+    .ambient-field{ max-width: none; }
+}
+/* [가벼워지게] 예전엔 bottom 값을 애니메이션해서 22개 글자가 매 프레임마다 레이아웃 재계산을
+   일으켰다. transform(translateY)은 GPU 합성만 하므로 훨씬 가볍다. 이동거리는 동일:
+   bottom -5% -> 105% = 필드 높이(100vh)의 110% 위로. */
+.ambient-field span{ position:absolute; bottom:-5%; opacity:0; animation-name:ambientFloat; animation-timing-function:linear; animation-iteration-count:infinite; will-change:transform, opacity; }
+.ambient-hearts span{ color:#E28FA0; }
+@keyframes ambientFloat{
+    0%{ transform:translateY(0); opacity:0; }
+    10%{ opacity:.55; }
+    90%{ opacity:.4; }
+    100%{ transform:translateY(-110vh); opacity:0; }
+}
+
+/* ============ 커스텀 스크롤바 ============
+   OS 기본 스크롤바 대신 가늘고 반투명한 스크롤바. 공개 페이지는 스킨(색상 테마)이 여러 개라
+   특정 색을 하드코딩하면 스킨과 부딪힐 수 있어 중립 회색을 쓴다. 트랙은 투명 처리해서
+   손잡이만 떠 있는 느낌을 준다. 모바일 브라우저는 대부분 자체적으로 스크롤바를 숨기므로
+   이 스타일은 주로 PC 브라우저로 청첩장을 볼 때 보인다. */
+html, body {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: rgba(0,0,0,.18) transparent; /* Firefox: thumb track */
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar { width: 7px; height: 7px; }
+html::-webkit-scrollbar-track, body::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,.18);
+    border-radius: 999px;
+}
+html::-webkit-scrollbar-thumb:hover, body::-webkit-scrollbar-thumb:hover { background-color: rgba(0,0,0,.32); }
+@media (prefers-reduced-motion: reduce){ .ambient-field{ display:none; } body{ transition:none; } .invite-frame.bp-expand, .invite-frame.bp-shrink{ animation:none; } }
+
+/* 섹션 자석 스크롤 (에디터 → 화면 설정 → 섹션 자석 스크롤). 섹션 줄(.row-flex)의 시작에 붙는다.
+   화면보다 긴 섹션은 그 안에서는 자유롭게 스크롤된다 (브라우저 기본 동작) */
+html.ld-snap-soft { scroll-snap-type: y proximity; }
+html.ld-snap-hard { scroll-snap-type: y mandatory; }
+html.ld-snap-soft .row-flex, html.ld-snap-hard .row-flex { scroll-snap-align: start; }
+@media (prefers-reduced-motion: reduce) { html.ld-snap-soft, html.ld-snap-hard { scroll-snap-type: none; } }

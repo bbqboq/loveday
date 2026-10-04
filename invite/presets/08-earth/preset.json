@@ -1,0 +1,32 @@
+{
+  "id": "p-earth",
+  "no": 8,
+  "group": "mood",
+  "label": "어스톤 테라코타",
+  "desc": "테라코타와 모래빛. 가을 웨딩의 따뜻한 온도",
+  "tags": [
+    "가을",
+    "따뜻함"
+  ],
+  "palette": {
+    "bg": "#FBF4EE",
+    "ink": "#4A2F24",
+    "accent": "#B5603C",
+    "line": "#EAD7C9",
+    "muted": "#9A7B6B",
+    "radius": "8px"
+  },
+  "font": "song-myung",
+  "hero": "photo",
+  "heroFrame": "pill",
+  "sections": [
+    "hero",
+    "greeting",
+    "location",
+    "gallery",
+    "account"
+  ],
+  "fx": {
+    "default": "up"
+  }
+}

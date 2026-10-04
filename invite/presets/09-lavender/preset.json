@@ -1,0 +1,41 @@
+{
+  "id": "p-lavender",
+  "no": 9,
+  "group": "mood",
+  "label": "라벤더 드림",
+  "desc": "라벤더 파스텔에 반짝임. 몽글몽글한 꿈같은 분위기",
+  "tags": [
+    "보라",
+    "반짝임"
+  ],
+  "palette": {
+    "bg": "#F8F5FC",
+    "ink": "#3E3552",
+    "accent": "#8C73C4",
+    "line": "#E4DDF2",
+    "muted": "#8F86A3",
+    "radius": "18px"
+  },
+  "font": "gowun-batang",
+  "hero": "photo",
+  "heroFrame": "circle",
+  "ambient": "sparkles",
+  "sections": [
+    "hero",
+    "greeting",
+    "dday",
+    "location",
+    "gallery",
+    "account"
+  ],
+  "fx": {
+    "default": "pop"
+  },
+  "intro": {
+    "enabled": true,
+    "text": "두 사람의 이야기가 시작됩니다",
+    "bg": "#EFE8FA",
+    "color": "#6E57A8",
+    "fontSize": 24
+  }
+}

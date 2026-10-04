@@ -1,0 +1,36 @@
+{
+  "id": "p-navy",
+  "no": 7,
+  "group": "mood",
+  "label": "네이비 골드",
+  "desc": "격식 있는 네이비와 골드. 호텔 예식에 어울리게",
+  "tags": [
+    "포멀",
+    "호텔"
+  ],
+  "palette": {
+    "bg": "#F9F7F2",
+    "ink": "#1E2A44",
+    "accent": "#B08D4B",
+    "line": "#E4DCCB",
+    "muted": "#7D7766",
+    "radius": "2px"
+  },
+  "font": "noto-serif-kr",
+  "hero": "photo",
+  "heroFrame": "none",
+  "sideBg": "#1E2A44",
+  "shadow": true,
+  "ambient": "sparkles",
+  "sections": [
+    "hero",
+    "greeting",
+    "dday",
+    "location",
+    "account",
+    "gallery"
+  ],
+  "fx": {
+    "default": "zoom"
+  }
+}

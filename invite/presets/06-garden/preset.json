@@ -1,0 +1,34 @@
+{
+  "id": "p-garden",
+  "no": 6,
+  "group": "mood",
+  "label": "가든 그린",
+  "desc": "보태니컬 그린에 꽃잎이 흩날리는 야외 웨딩 무드",
+  "tags": [
+    "야외",
+    "꽃잎"
+  ],
+  "palette": {
+    "bg": "#F6F8F1",
+    "ink": "#2F3A2C",
+    "accent": "#5E7D4F",
+    "line": "#DCE5D2",
+    "muted": "#7E8B76",
+    "radius": "12px"
+  },
+  "font": "gowun-batang",
+  "hero": "photo",
+  "heroFrame": "rounded",
+  "ambient": "petals",
+  "sections": [
+    "hero",
+    "greeting",
+    "location",
+    "gallery",
+    "dday",
+    "account"
+  ],
+  "fx": {
+    "default": "up"
+  }
+}
