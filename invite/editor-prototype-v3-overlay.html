@@ -552,8 +552,17 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-seg button:hover { border-color: var(--wz-line2); }
 .sp-seg button.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink) inset; }
 /* 전문가 모드 문구 칸: 다른 칸(섹션 폭·스크롤 효과)처럼 제목 위 · 버튼 줄 아래 */
-.hl-ex .hl-xl { margin: 14px 0 4px; font-weight: 700; color: var(--text, #333); } .hl-ex .hl-xk { margin: 8px 0 4px; } .hl-ex .hl-xr { margin: 0; }
-.hl-ex .hl-xplay { display: block; width: 100%; margin: 12px 0 0; padding: 8px; border: 1px solid var(--ui-line, #DED8CF); border-radius: 8px; background: #fff; color: #555; font: inherit; font-size: 12px; cursor: pointer; } .hl-ex .hl-xplay:hover { border-color: #bbb; color: #222; }
+.hl-ex .hl-xl { margin: 14px 0 6px; font-weight: 700; color: var(--text, #333); } .hl-ex .hl-xr { margin: 0; } .hl-ex textarea + textarea { margin-top: 6px; }
+.hl-ex .hl-xh { display: flex; align-items: center; justify-content: space-between; } .hl-ex .hl-xh .hl-xl { margin-bottom: 6px; }
+/* 나타나는 효과 [▶ 다시 보기] · 줄마다 따로 꾸미기 (접어 둠, 효과·방향·휘기를 고르기 칸으로 한 줄에) - 간편·전문가 같이 씀 */
+.hl-play { border: 1px solid var(--ui-line, #DED8CF); background: #fff; border-radius: 99px; padding: 4px 10px; font: inherit; font-size: 11.5px; font-weight: 600; color: #555; cursor: pointer; white-space: nowrap; } .hl-play:hover { border-color: #bbb; color: #222; }
+.wz-lab .hl-play { margin-left: auto; align-self: center; } .hl-ex .hl-xh .hl-play { margin-top: 8px; }
+.hl-more { margin-top: 12px; border-top: 1px solid var(--ui-line, #EAE6E0); padding-top: 8px; }
+.hl-more summary { cursor: pointer; font-size: 12px; font-weight: 600; color: #777; list-style: none; display: flex; align-items: center; gap: 6px; } .hl-more summary::-webkit-details-marker { display: none; }
+.hl-more summary::before { content: ''; width: 0; height: 0; border-style: solid; border-width: 4px 0 4px 6px; border-color: transparent transparent transparent currentColor; transition: transform .15s; } .hl-more[open] summary::before { transform: rotate(90deg); }
+.hl-mg { display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 5px 6px; align-items: center; margin-top: 8px; }
+.hl-mg small { font-size: 10.5px; color: #999; padding-left: 2px; } .hl-mg b { font-size: 11.5px; font-weight: 600; color: #666; white-space: nowrap; padding-right: 2px; }
+.hl-mg select { width: 100%; min-width: 0; padding: 6px 4px; border: 1px solid var(--ui-line, #DED8CF); border-radius: 8px; background: #fff; font: inherit; font-size: 12px; color: #333; }
 .hl-ex textarea { resize: none; overflow: hidden; line-height: 1.45; }
 .hl-ex { --wz-ink: #1B1A18; --wz-sub: #6F6A63; --wz-mute: #A39D95; --wz-line: var(--ui-line, #EAE6E0); --wz-line2: var(--ui-line, #DED8CF); --wz-card: #fff; --wz-acc: #8A4B55; }
 .hl-ex .wz-lab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700; margin-bottom: 8px; } .hl-ex .wz-lab small { font-weight: 400; font-size: 11.5px; color: var(--wz-mute); }
@@ -572,17 +581,11 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .hl-m { position: relative; display: block; aspect-ratio: 9 / 19.5; border-radius: 8px; overflow: hidden; background: #3A342F center / cover no-repeat; container-type: inline-size; }
 .hl-m .hl-sh { position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.28), rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,.32)); }
 .hl-m span { position: absolute; white-space: nowrap; line-height: 1.02; text-align: center; text-shadow: 0 1px 6px rgba(0,0,0,.2); }
-.hl-ins { display: grid; gap: 8px; margin-top: 12px; }
-.hl-in { border: 1px solid var(--wz-line); border-radius: 12px; background: #fff; padding: 10px 12px; display: grid; gap: 6px; }
-.hl-in:focus-within { border-color: var(--wz-line2); box-shadow: 0 0 0 3px rgba(27,26,24,.04); }
-.hl-in-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.hl-in-h b { font-size: 11.5px; font-weight: 700; color: var(--wz-mute); letter-spacing: .02em; }
-.hl-tx { width: 100%; border: 0; padding: 2px 0; resize: none; overflow: hidden; background: transparent; font: inherit; font-size: 15px; line-height: 1.45; color: var(--wz-ink); outline: 0; box-sizing: border-box; }
-.hl-in-o { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 6px; border-top: 1px dashed var(--wz-line); }
+.hl-ins { display: grid; gap: 6px; }
+.hl-ins textarea.wz-inp.hl-tx { height: auto; min-height: 0; padding: 10px 14px; border-radius: 12px; resize: none; overflow: hidden; font-size: 14.5px; line-height: 1.45; }
 .hl-chips { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 2px; border-radius: 99px; background: var(--ui-soft, #F3EEE6); }
 .hl-chips button { border: 0; background: none; border-radius: 99px; padding: 4px 9px; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--wz-sub); cursor: pointer; white-space: nowrap; }
 .hl-chips button.on { background: #fff; color: var(--wz-ink); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-.hl-replay { justify-self: start; border: 1px solid var(--wz-line2); background: #fff; border-radius: 99px; padding: 6px 12px; font: inherit; font-size: 12px; font-weight: 700; color: var(--wz-ink); cursor: pointer; }
 .hl-m-box .hl-mb { position: absolute; overflow: hidden; display: block; } .hl-m-box .hl-mb em { position: absolute; inset: 0; background: center / cover no-repeat; }
 .hl-m-box .hb-fr-rounded { border-radius: 5px; } .hl-m-box .hb-fr-arch { border-radius: 999px 999px 0 0; } .hl-m-box .hb-fr-shadow { box-shadow: 0 4px 10px rgba(0,0,0,.2); }
 .hl-m-box .hb-fr-polaroid { background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.15); } .hl-m-box .hb-fr-polaroid em { inset: 5% 5% 26% 5%; }
@@ -4056,14 +4059,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017g">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017g">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017h">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017h">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017g"></script>
-<script src="assets/tip-demos.js?v=1017g"></script>
-<script src="assets/ld-dialog.js?v=1017g"></script>
+<script src="assets/invite-blocks.js?v=1017h"></script>
+<script src="assets/tip-demos.js?v=1017h"></script>
+<script src="assets/ld-dialog.js?v=1017h"></script>
 </head>
 <body>
 
@@ -14156,31 +14159,29 @@ function spHeroLayoutHtml(hb, kind) {
     const cur = f.heroLayout || '';
     const cards = list.map(l => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${spHeroLayoutMini(l, hb, kind)}<b>${esc(l.label)}</b></button>`).join('');
     const keys = (f.heroLayers || []).filter(k => f.layout && f.layout[k]);
-    // 문구 칸: 칸마다 작은 카드 (머리줄 = 문구 번호 + 효과 칩) · 글은 줄 수만큼 높이 · 전문가 모드는 모양(가로·세로·곡선)도
-    const chips = (k, key, opts, cur) => `<span class="hl-chips">${opts.map(([v, l]) => `<button type="button" class="${String(cur ?? '') === String(v) ? 'on' : ''}" data-hl-k="${esc(k)}" data-hl-p="${key}" data-v="${esc(String(v))}">${esc(l)}</button>`).join('')}</span>`;
-    const FX = InviteBlocks.HL_ANIMS.map(([v, l]) => [v, { '': '효과 없음', write: '써지듯', fade: '나타나기', up: '위로', zoom: '커지며' }[v] || l]);
-    const SHAPE = [['', '가로'], ['up', '세로'], ['side', '세로 눕힘']], CURVE = [[0, '곧게'], [30, '위로 둥글게'], [-30, '아래로 둥글게']];
-    const anyAnim = keys.some(k => f.layout[k].anim);
+    // 문구 칸 (쉽게): ① 글자 바꾸기 = 글 칸만 · ② 나타나는 효과 = 한 줄로 모든 문구에 · ③ 줄마다 따로 꾸미기 = 접어 둠 (효과·방향·휘기를 고르기 칸으로 한 줄에)
+    const FX = InviteBlocks.HL_ANIMS.map(([v, l]) => [v, { '': '없음', write: '써지듯', fade: '나타나기', up: '위로', zoom: '커지며' }[v] || l]);
+    const SHAPE = [['', '가로'], ['up', '세로'], ['side', '세로 눕힘']], CURVE = [[0, '곧게'], [30, '위로 휘게'], [-30, '아래로 휘게']];
+    const curveOf = L => [0, 30, -30].includes(Number(L.arc) || 0) ? Number(L.arc) || 0 : (Number(L.arc) > 0 ? 30 : -30);
+    const anims = keys.map(k => f.layout[k].anim || ''), allFx = anims.every(v => v === anims[0]) ? anims[0] : null, anyAnim = anims.some(Boolean);
     const rowsOf = t => Math.min(4, Math.max(1, String(t || '').split('\n').length));
-    const inputs = keys.length ? `<div class="hl-ins">${keys.map((k, i) => { const L = f.layout[k];
-        return `<div class="hl-in"><div class="hl-in-h"><b>문구 ${i + 1}</b>${chips(k, 'anim', FX, L.anim || '')}</div>
-            <textarea class="hl-tx" rows="${rowsOf(f[k])}" data-hl="${esc(k)}" spellcheck="false">${wzEsc(f[k] || '')}</textarea>
-            ${adv ? `<div class="hl-in-o">${chips(k, 'vertical', SHAPE, L.vertical || '')}${chips(k, 'arc', CURVE, [0, 30, -30].includes(Number(L.arc) || 0) ? Number(L.arc) || 0 : (Number(L.arc) > 0 ? 30 : -30))}</div>` : ''}</div>`; }).join('')}
-        ${anyAnim ? '<button type="button" class="hl-replay" data-hl-replay>▶ 효과 다시 보기</button>' : ''}
-        <p class="wz-hint">{신랑} {신부} {날짜:영문} {날짜:점} 처럼 적으면 적어 둔 이름·날짜로 바뀌어요. 줄을 바꾸려면 Enter.</p></div>` : '';
+    const sel = (k, key, opts, cur) => `<select data-hl-k="${esc(k)}" data-hl-p="${key}">${opts.map(([v, l]) => `<option value="${esc(String(v))}"${String(cur ?? '') === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+    const more = keys.length ? `<details class="hl-more"${hlMoreOpen ? ' open' : ''}><summary>줄마다 따로 꾸미기</summary><div class="hl-mg"><span></span><small>효과</small><small>방향</small><small>휘기</small>
+        ${keys.map((k, i) => { const L = f.layout[k]; return `<b>문구 ${i + 1}</b>${sel(k, 'anim', FX, L.anim || '')}${sel(k, 'vertical', SHAPE, L.vertical || '')}${sel(k, 'arc', CURVE, curveOf(L))}`; }).join('')}</div></details>` : '';
+    const tip = '{신랑} {신부} {날짜:영문} 처럼 적으면 이름·날짜로 바뀌어요.';
+    const replay = anyAnim ? '<button type="button" class="hl-play" data-hl-replay>▶ 다시 보기</button>' : '';
     if (adv) { // 전문가 모드: 편집창의 다른 칸과 같은 모양 (label · mini-label · width-btn)
-        const wb = (k, key, opts, cur) => opts.map(([v, l]) => `<button type="button" class="width-btn ${String(cur ?? '') === String(v) ? 'active' : ''}" data-hl-k="${esc(k)}" data-hl-p="${key}" data-v="${esc(String(v))}">${esc(l)}</button>`).join('');
-        const curveOf = L => [0, 30, -30].includes(Number(L.arc) || 0) ? Number(L.arc) || 0 : (Number(L.arc) > 0 ? 30 : -30);
+        const wb = (opts, cur) => opts.map(([v, l]) => `<button type="button" class="width-btn ${cur === v ? 'active' : ''}" data-hl-all="${esc(v)}">${esc(l)}</button>`).join('');
         return `<label>메인 레이아웃 <small style="font-weight:400;opacity:.7">(글자 모양·자리를 한 번에)</small></label><div class="hl-row">${cards}</div>
-            ${keys.map((k, i) => { const L = f.layout[k];
-                return `<div class="mini-label hl-xl">문구 ${i + 1}</div><textarea rows="${rowsOf(f[k])}" data-hl="${esc(k)}" spellcheck="false">${wzEsc(f[k] || '')}</textarea>
-                <div class="mini-label hl-xk">효과</div><div class="width-row hl-xr">${wb(k, 'anim', FX, L.anim || '')}</div>
-                <div class="mini-label hl-xk">모양</div><div class="width-row hl-xr">${wb(k, 'vertical', SHAPE, L.vertical || '')}</div>
-                <div class="mini-label hl-xk">곡선</div><div class="width-row hl-xr">${wb(k, 'arc', CURVE, curveOf(L))}</div>`; }).join('')}
-            ${keys.length ? `${anyAnim ? '<button type="button" class="hl-xplay" data-hl-replay>▶ 효과 다시 보기</button>' : ''}<p class="field-hint" style="margin-top:8px">{신랑} {신부} {날짜:영문} {날짜:점} 처럼 적으면 적어 둔 이름·날짜로 바뀌어요. 줄을 바꾸려면 Enter.</p>` : ''}`;
+            ${keys.length ? `<div class="mini-label hl-xl">글자 바꾸기</div>${keys.map(k => `<textarea rows="${rowsOf(f[k])}" data-hl="${esc(k)}" spellcheck="false">${wzEsc(f[k] || '')}</textarea>`).join('')}<p class="field-hint" style="margin-top:4px">${tip}</p>
+            <div class="hl-xh"><div class="mini-label hl-xl">나타나는 효과</div>${replay}</div><div class="width-row hl-xr">${wb(FX, allFx)}</div>${more}` : ''}`;
     }
-    return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div><div class="hl-row">${cards}</div>${inputs}</div>`;
+    const chips = FX.map(([v, l]) => `<button type="button" class="${allFx === v ? 'on' : ''}" data-hl-all="${esc(v)}">${esc(l)}</button>`).join('');
+    return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div><div class="hl-row">${cards}</div></div>
+        ${keys.length ? `<div class="wz-field"><div class="wz-lab"><span>글자 바꾸기</span></div><div class="hl-ins">${keys.map(k => `<textarea class="wz-inp hl-tx" rows="${rowsOf(f[k])}" data-hl="${esc(k)}" spellcheck="false">${wzEsc(f[k] || '')}</textarea>`).join('')}<p class="wz-hint">${tip}</p></div></div>
+        <div class="wz-field"><div class="wz-lab"><span>나타나는 효과</span>${replay}</div><div class="hl-chips">${chips}</div>${more}</div>` : ''}`;
 }
+let hlMoreOpen = false; // "줄마다 따로 꾸미기"를 펼쳐 뒀는지 (다시 그려도 그대로)
 let hlRowLeft = 0; // 레이아웃 줄의 옆 스크롤 자리 - 고르면 칸을 다시 그려서 맨 앞으로 돌아가던 것 (고른 자리 그대로)
 function spBindHeroLayout(box, hb, after) {
     after = after || (() => spRender());
@@ -14198,13 +14199,22 @@ function spBindHeroLayout(box, hb, after) {
         if ((lay.layers || []).some(L => L.anim)) setTimeout(() => InviteBlocks.playHeroAnimsTwice(document.getElementById('previewRoot')), 300); // 레이아웃 효과 미리 보기 (한 번 → 1.3초 뒤 한 번 더)
     }));
     const playTwice = () => { spScrollPreview([hb.id]); setTimeout(() => InviteBlocks.playHeroAnimsTwice(document.getElementById('previewRoot')), 250); };
-    box.querySelectorAll('[data-hl-p]').forEach(c => c.addEventListener('click', () => {
+    const lays = () => (hb.fields.heroLayers || []).map(k => hb.fields.layout[k]).filter(Boolean);
+    box.querySelectorAll('[data-hl-all]').forEach(c => c.addEventListener('click', () => { // 효과를 모든 문구에 한 번에
+        const v = c.dataset.hlAll, Ls = lays(); if (!Ls.length) return;
+        const sameDelay = Ls.every(L => Math.abs((Number(L.animDelay) || 0) - (Number(Ls[0].animDelay) || 0)) < .05);
+        Ls.forEach((L, i) => { L.anim = v; if (v && sameDelay && Ls.length > 1) L.animDelay = +(i * Math.min(.6, 2 / (Ls.length - 1))).toFixed(1); }); // 다 같이 시작하던 거면 줄마다 차례로 (0.6초씩, 많으면 다 합쳐 2초 안에)
+        renderPreview(); scheduleSnapshot(); after();
+        if (v) playTwice();
+    }));
+    box.querySelectorAll('select[data-hl-p]').forEach(c => c.addEventListener('change', () => {
         const L = hb.fields.layout[c.dataset.hlK]; if (!L) return; const p = c.dataset.hlP;
-        L[p] = p === 'arc' ? Number(c.dataset.v) || 0 : c.dataset.v;
+        L[p] = p === 'arc' ? Number(c.value) || 0 : c.value;
         if (p === 'arc' && L.arc && !L.arcW) L.arcW = 70;
         renderPreview(); scheduleSnapshot(); after();
         if (p === 'anim' && L.anim) playTwice();
     }));
+    box.querySelector('.hl-more')?.addEventListener('toggle', e => { hlMoreOpen = e.target.open; });
     box.querySelector('[data-hl-replay]')?.addEventListener('click', playTwice);
     box.querySelectorAll('[data-hl]').forEach(t => {
         t.addEventListener('input', () => { hb.fields[t.dataset.hl] = t.value; t.rows = Math.min(4, Math.max(1, t.value.split('\n').length)); renderPreview(); });

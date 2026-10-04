@@ -965,7 +965,27 @@
         const W = 1000, wpx = Math.max(10, Math.min(100, Number(L.arcW) || 70)) / 100 * FONT_BASE, k = W / wpx, fs = (Number(L.fontSize) || 16) * k;
         const bend = Math.max(-100, Math.min(100, Number(L.arc) || 0)), c = W - fs * 0.6, h = Math.max(1, Math.abs(bend) / 200 * c), r = (c * c / 4 + h * h) / (2 * h);
         const up = bend >= 0, H = h + fs * 1.5, y0 = up ? H - fs * 0.35 : fs * 1.1, x0 = (W - c) / 2, id = 'hlarc' + (++hlArcN);
-        return `<svg class="hl-arc" viewBox="0 0 ${W} ${H.toFixed(0)}" width="100%" role="img" aria-label="${esc(text)}"><path id="${id}" d="M${x0.toFixed(1)},${y0.toFixed(1)} A${r.toFixed(1)},${r.toFixed(1)} 0 0 ${up ? 1 : 0} ${(x0 + c).toFixed(1)},${y0.toFixed(1)}" fill="none"/><text font-size="${fs.toFixed(1)}" text-anchor="middle" fill="currentColor"><textPath href="#${id}" startOffset="50%">${esc(String(text).replace(/\n+/g, ' '))}</textPath></text></svg>`;
+        // 곡선 길이보다 글이 길면 양끝이 잘림 → 글자 크기를 곡선 길이에 맞게 줄임 (여기선 어림값, 화면에 그려진 뒤 fitHeroArcs가 실제 폭으로 다시 맞춤)
+        const line = String(text).replace(/\n+/g, ' '), arcLen = 2 * r * Math.asin(Math.min(1, c / 2 / r)), fs0 = Math.min(fs, arcLen * 0.94 / Math.max(1, line.length * 0.5));
+        return `<svg class="hl-arc" viewBox="0 0 ${W} ${H.toFixed(0)}" width="100%" role="img" aria-label="${esc(text)}"><path id="${id}" d="M${x0.toFixed(1)},${y0.toFixed(1)} A${r.toFixed(1)},${r.toFixed(1)} 0 0 ${up ? 1 : 0} ${(x0 + c).toFixed(1)},${y0.toFixed(1)}" fill="none"/><text font-size="${fs0.toFixed(1)}" data-fs="${fs.toFixed(1)}" text-anchor="middle" fill="currentColor"><textPath href="#${id}" startOffset="50%">${esc(line)}</textPath></text></svg>`;
+    }
+    // 곡선 글씨 크기 맞추기: 정한 크기로 재 보고, 곡선보다 길면 그만큼 줄임 (글꼴이 늦게 받아져도 다시 맞춤)
+    function fitHeroArcs(root) {
+        if (typeof document === 'undefined') return;
+        (root || document).querySelectorAll('svg.hl-arc').forEach(svg => {
+            const t = svg.querySelector('text'), p = svg.querySelector('path'); if (!t || !p || !svg.isConnected) return;
+            const want = parseFloat(t.dataset.fs) || parseFloat(t.getAttribute('font-size')); if (!want) return;
+            let len, pl; try { t.setAttribute('font-size', want); len = t.getComputedTextLength(); pl = p.getTotalLength(); } catch (e) { return; }
+            if (!len || !pl) { t.setAttribute('font-size', t.dataset.fs0 || want); return; } // 숨겨진 칸은 못 잼
+            const fit = len > pl * 0.96 ? want * pl * 0.96 / len : want;
+            t.dataset.fs0 = fit.toFixed(1); t.setAttribute('font-size', fit.toFixed(1));
+        });
+    }
+    if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') { // 에디터 미리보기·레이아웃 카드·공개 페이지 어디서 그려도 저절로
+        let fitRaf = 0; const fitSoon = () => { if (!fitRaf) fitRaf = requestAnimationFrame(() => { fitRaf = 0; fitHeroArcs(document); }); };
+        const startFit = () => { new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && (n.matches('svg.hl-arc') || n.querySelector('svg.hl-arc'))))) fitSoon(); }).observe(document.documentElement, { childList: true, subtree: true }); fitSoon(); };
+        document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', startFit) : startFit();
+        if (document.fonts) { document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', fitSoon); document.fonts.ready && document.fonts.ready.then(fitSoon); }
     }
     function heroLayerInner(text, L) { return L && Number(L.arc) ? heroArcSvg(text, L) : nl2br(text); }
     function heroLayerCls(L) { return (L.vertical ? ' hl-vert' + (L.vertical === 'side' ? ' hl-vert-side' : '') : '') + (L.anim && HL_ANIMS.some(x => x[0] === L.anim) ? ` hl-anim hl-a-${L.anim}` : '') + (Number(L.arc) ? ' hl-curve' : ''); }
@@ -3033,5 +3053,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);
