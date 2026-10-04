@@ -13592,15 +13592,15 @@ function spScrollToNextBtn() {
     pane.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 }
 function spChanged(ids) { renderPreview(); if (ids) setTimeout(() => spScrollPreview(ids), 60); }
-// 간편 만들기 미리보기는 보기만인데, 지금 단계 섹션은 높이(위·아래 여백 눈금자)를 끌어 바꿀 수 있고
-// 마음 전하실 곳은 계좌 줄도 끌어 옮길 수 있게 (전문가 모드와 같은 값)
-const SP_DRAG_STEPS = ['account'];
+// 간편 만들기 미리보기는 보기만인데, 지금 단계 섹션은 높이(위·아래 여백 눈금자)를 끌어 바꾸고
+// 그 섹션의 글자·계좌 줄도 끌어 옮길 수 있게 (전문가 모드와 같은 값). 다른 섹션은 그대로 보기만
+const SP_DRAG_STEPS = null; // null = 모든 단계 (특정 단계만 열려면 ['account', ...])
 function spLiveSync(root) {
     root = root || document.getElementById('previewRoot');
     if (!root || !document.documentElement.classList.contains('simple-mode')) return;
     const st = spSteps()[spStep]; if (!st) return;
     root.querySelectorAll('.col.sp-live').forEach(c => c.classList.remove('sp-live'));
-    if (SP_DRAG_STEPS.includes(st.k)) (st.s || []).forEach(id => { const c = root.querySelector(`.col[data-block-id="${id}"]`); if (c) c.classList.add('sp-live'); });
+    if (!SP_DRAG_STEPS || SP_DRAG_STEPS.includes(st.k)) (st.s || []).forEach(id => { const c = root.querySelector(`.col[data-block-id="${id}"]`); if (c) c.classList.add('sp-live'); });
 }
 function spSelectStep(st) { // 눈금자는 고른 섹션(selectedId)에 뜸 → 지금 단계의 켜진 섹션을 고른 것으로
     const id = (st.s || []).find(x => { const b = spBlock(x); return b && b.enabled && !padHidden(b); }) || null;
