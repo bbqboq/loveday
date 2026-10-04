@@ -13933,33 +13933,6 @@ function spGallery(box) {
     const ce = box.querySelector('#spClearEx'); if (ce) ce.addEventListener('click', () => { gal.fields.images = gal.fields.images.filter(spIsReal); spChanged(['gallery']); spRender(); });
 }
 // 칩 한 줄 고르기 (모양·마감·스타일 등) - data-sp-ch="키" data-v="값" (값은 JSON이면 그대로: true/false/숫자)
-// 간편 만들기: 하나 고르면 다음에 고를 칸이 보이게 아래로 부드럽게 스크롤 (아래로만 · 다음 칸이 이미 화면 위쪽 절반에 있으면 그대로)
-//  고른 칸 = #spBody 바로 아래 칸 중 누른 버튼이 든 칸 → 다시 그린 뒤 그다음 칸으로. 단계가 바뀌면(메인 화면 → 스크롤 버튼 화면 등) 안 함
-const SP_CHOICE_SEL = '.sp-chips, .sp-seg, .sp-ths, .sp-fonts, .sp-cols, .sp-papers, .sp-nbp, .width-row, .wz-tones, .wz-samples, .sp-tracks';
-document.addEventListener('click', e => {
-    const btn = e.target.closest && e.target.closest('#spBody button');
-    if (!btn || !btn.closest(SP_CHOICE_SEL)) return;
-    const body = document.getElementById('spBody'), pane = document.getElementById('simplePane');
-    const kids = [...body.children], top = kids.find(c => c.contains(btn)); if (!top) return;
-    const idx = kids.indexOf(top), key = pane._spKey;
-    setTimeout(() => spAutoNext(idx, key), 260); // 다시 그리기·보던 자리 되돌리기가 끝난 뒤
-}, true);
-function spAutoNext(idx, key) {
-    const pane = document.getElementById('simplePane'), body = document.getElementById('spBody');
-    if (!pane || !body || pane._spKey !== key) return;
-    const next = [...body.children].slice(idx + 1).find(c => c.offsetHeight && !c.matches('.wz-hint, .wz-lead, h2'));
-    if (!next) return;
-    const inPane = getComputedStyle(pane).overflowY !== 'visible' && pane.scrollHeight > pane.clientHeight + 2;
-    let vTop = inPane ? pane.getBoundingClientRect().top : 0, vBot = inPane ? pane.getBoundingClientRect().bottom : window.innerHeight;
-    [document.querySelector('#screenEditor .topbar'), pane.querySelector('.sp-head')].forEach(h => { // 위에 붙어 있는 머리줄 아래부터
-        if (!h) return; const p = getComputedStyle(h).position; if (p === 'fixed' || p === 'sticky') { const r = h.getBoundingClientRect(); if (r.bottom > vTop && r.top <= vTop + 4) vTop = r.bottom; }
-    });
-    const nav = pane.querySelector('.sp-nav'); if (nav) vBot = Math.min(vBot, nav.getBoundingClientRect().top); // 아래 [이전·다음] 줄 위까지
-    const r = next.getBoundingClientRect();
-    if (r.top < vTop + (vBot - vTop) * .5 && r.bottom <= vBot) return; // 이미 잘 보임
-    const dy = r.top - (vTop + 14); if (dy <= 0) return;
-    if (inPane) pane.scrollBy({ top: dy, behavior: 'smooth' }); else window.scrollBy({ top: dy, behavior: 'smooth' });
-}
 function spChoiceRow(label, key, list, cur) {
     return `<div class="wz-field"><div class="wz-lab">${label}</div><div class="sp-chips">${list.map(([v, l]) => `<button type="button" class="${String(cur) === String(v) ? 'on' : ''}" data-sp-ch="${key}" data-v="${esc(String(v))}">${esc(l)}</button>`).join('')}</div></div>`;
 }
