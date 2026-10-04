@@ -14157,10 +14157,14 @@ function spHeroLayoutHtml(hb, kind) {
         <p class="wz-hint">{신랑} {신부} {날짜:영문} {날짜:점} 처럼 적으면 적어 둔 이름·날짜로 바뀌어요. 줄을 바꾸려면 Enter.</p></div>` : '';
     return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div><div class="hl-row">${cards}</div>${inputs}</div>`;
 }
+let hlRowLeft = 0; // 레이아웃 줄의 옆 스크롤 자리 - 고르면 칸을 다시 그려서 맨 앞으로 돌아가던 것 (고른 자리 그대로)
 function spBindHeroLayout(box, hb, after) {
     after = after || (() => spRender());
+    const row = box.querySelector('.hl-row');
+    if (row) { row.scrollLeft = hlRowLeft; requestAnimationFrame(() => { row.scrollLeft = hlRowLeft; }); row.addEventListener('scroll', () => { hlRowLeft = row.scrollLeft; }, { passive: true }); }
     box.querySelectorAll('[data-hl-pick]').forEach(b => b.addEventListener('click', () => {
         const lay = spHeroLayouts().find(l => l.id === b.dataset.hlPick); if (!lay) return;
+        if (row) hlRowLeft = row.scrollLeft;
         scheduleSnapshot();
         const was = InviteBlocks.heroFull(hb.fields, hb.id === 'heroVideo' ? 'video' : 'hero');
         InviteBlocks.applyHeroLayout(hb, lay);
