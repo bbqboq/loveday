@@ -32,6 +32,8 @@
 | `invite/admin_designs.php`, `featured_presets.php` | 추천 디자인 |
 | `invite/weather.php` | 예식장 날씨(장식 효과 실시간 날씨) |
 | `invite/gdrive*.php` | 게스트스냅 구글 드라이브 연동 |
+| `invite/hero_layouts.php` | 메인 레이아웃 (관리자 저장분 `uploads/site/hero_layouts.json`, 기본 3개는 `invite-blocks.js` `HERO_LAYOUTS`) |
+| `invite/sample_api.php` | 디자인 샘플 (관리자가 에디터로 꾸며 저장한 완성 디자인) |
 
 ## 4. 최근 작업 (2026-10-04 기준 완료)
 
@@ -44,6 +46,17 @@
 - 메인 화면: 사진/유튜브 → 업로드/주소 → 화면 크기(프레임 안에·가로 꽉·세로(높이 조절)·전체화면) → 보일 부분·확대 → 글자 잘 보이게. 전체화면이면 목록이 접히고 **↓ 스크롤 버튼** 화면(모양·직접 꾸미기·크기·진하기·움직임·등장 효과).
 - 되돌리기/다시하기 버튼, 같은 단계 안에서 다시 그려도 스크롤 위치 유지.
 - 계좌: 디자인 예시 계좌는 지우지 않고 안내만, 은행·이름만 적어도 미리보기 반영.
+
+### 2026-10-04 오후 추가 (브랜치 `claude/easy-account-fix`)
+- 간편 만들기 흐름: 디자인 고르기(카드마다 [샘플 확인하기]=화면 가득 미리보기 / [이 샘플로 선택]) → **빠른 시작 4단계**(성함 → 예식 일시 → 예식장 → 메인 사진) → 미리보기 → [닫기] → **옵션 창**(모든 단계를 펼침 목록 + 켜기/끄기, `state.spView`='list'). 위쪽 링크로 한 단계씩 화면과 오감.
+- 아래 버튼 줄은 간편 만들기에서 **[저장 | 미리보기]** (원래 action-bar 숨김). 미리보기 화면 = 에디터 미리보기를 화면 가득 + 아래 띠. 마무리/옵션 창 끝 → 저장 + 완성본(띠에 [발행하기][수정하기]).
+- 3단계 "테마" → **"색·글꼴"**: 카드 이름은 색 이름(`spHexName`), 맨 위 [디자인 바꾸기](`spChangeDesign`, 내용은 `spExtract/spPour`로 옮김).
+- PC 간편 만들기: 왼쪽 아래 떠 있는 되돌리기 탭 + 머리줄 오른쪽 끝(`#spTopRight`)에 되돌리기·전문가 모드. 지금 단계 섹션은 여백 눈금자·글자 끌기 가능(`spLiveSync`).
+- **메인 레이아웃**: 메인 사진·영상 문구 칸 `heroLayers`(글 `f[키]`, 자리·글꼴 `f.layout[키]`, `{신랑}{신부}{날짜:영문}{날짜:점}{요일:영문}{시간}{예식장}`), 이름·날짜 숨기기 `hideParts`. 기본 3개 + 관리자 저장(전문가 모드 메인 편집창 맨 아래, 관리자만). 간편 만들기 메인 화면 단계 맨 위 레이아웃 고르기.
+- 영문 글꼴 6개(`en:true`, 전체 글꼴 목록에선 숨김). 글꼴 목록은 **4곳**을 같이 고칠 것: 에디터 `fontOptions`, `render-invite.js` `fontOptions`, `invite_view.php` `$fontCssUrls`, `invite-blocks.js` `FONT_CSS`.
+- 엔딩 섹션 "엔딩 크레딧(스탭롤)" 모양(`creditsHtml`). 계좌 복사: 첫 누름에 받아온 뒤 복사, 자유 배치 줄 누르면 복사(`data-ib-copyrow`).
+- 마음 전하실 곳 자유 배치: 이름 칸 폭 `accLw`(신랑·신부만이면 좁게 → 가운데 정렬), 빈 줄 숨김.
+- zip으로 줄 때 루트 `invite/render-invite.js`는 빼고 `invite/assets/render-invite.js`만 (서버는 assets만 씀).
 
 ### 기타
 - 공유하기 섹션은 항상 맨 아래(기타 묶음 끝), 새 공유하기는 "섹션 자리 공유버튼" 기본 OFF.
@@ -63,4 +76,6 @@
 - PHP 8.x 내장 서버 + MariaDB. `invite/testbed_setup.sql`, `snap_setup.sql`, `stage4_setup.sql`, `stage5_setup.sql`로 테이블 생성.
 - `config.php`는 테스트용으로 따로 만든다 (실서버 값 사용 금지). 테스트 전용 define: `GDRIVE_*_BASE`, `WEATHER_API_BASE`, `TRIP_GEOCODE_BASE`, `NAVER_COMMERCE_API_BASE`로 외부 API를 목업 서버로 돌릴 수 있음.
 - 에디터 확인은 Playwright(Chromium)로 `editor-prototype-v3-overlay.html?t=<편집토큰>` 열어서 스크린샷. 외부 CDN(Sortable 등)은 로컬 파일로 라우팅.
+- 저장소에 기본 테이블(invitation_orders 등) 만드는 SQL이 없음 → 코드 보고 추정해서 만듦. `client_ip()`는 실서버 config.php에 있음(테스트 config에도 넣을 것). `admin_login_attempts`(ip PK, attempts, locked_until, updated_at).
+- 테스트 환경은 바깥 주소가 막혀서 Sortable·구글 글꼴은 npm(`sortablejs`, `@fontsource/*`)에서 받아 로컬로 라우팅.
 - 디자인 JSON을 DB에서 다룰 때 `mysql -N` 출력으로 JSON을 옮기지 말 것 (이스케이프 깨짐) – PDO로 읽고 쓰기.

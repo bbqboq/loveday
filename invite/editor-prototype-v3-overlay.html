@@ -551,6 +551,12 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-seg button b { font-size: 14px; } .sp-seg button small { font-size: 11.5px; color: var(--wz-mute); line-height: 1.35; }
 .sp-seg button:hover { border-color: var(--wz-line2); }
 .sp-seg button.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink) inset; }
+.hl-admin { border-top: 1px dashed var(--line); padding-top: 14px; margin-top: 14px; }
+.hl-admin input[type=text] { width: 100%; margin-top: 6px; }
+.hl-admin-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+.hl-admin-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.hl-admin-list span { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border: 1px solid var(--line); border-radius: 99px; font-size: 12px; }
+.hl-admin-list button { border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 11px; }
 .hl-row { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: thin; }
 .hl-c { flex: none; width: 104px; border: 1.5px solid var(--wz-line); border-radius: 12px; background: #fff; padding: 4px 4px 6px; cursor: pointer; font: inherit; color: var(--wz-ink); text-align: center; }
 .hl-c:hover { border-color: var(--wz-line2); } .hl-c.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink); }
@@ -7478,6 +7484,7 @@ function renderFieldEditor() {
     }));
     if (block.id === 'heroVideo') { appendVideoVerticalToggle(wrap, block); appendVideoTextControls(wrap, block); appendVideoFocusControls(wrap, block); }
     if (block.id === 'hero' || block.id === 'heroVideo') appendNextBtnControls(wrap, block);
+    if ((block.id === 'hero' || block.id === 'heroVideo') && HL_ADMIN) appendHeroLayoutAdmin(wrap, block);
     appendSectionSpacingControls(wrap, block);
 }
 // 전체화면(히어로: 가로 100% + 전체화면 / 유튜브 히어로: 화면 높이 전체화면)이면 섹션 위쪽 여백을 0으로,
@@ -13131,6 +13138,63 @@ function applySampleDesign(d) {
     state.customTexts = Array.isArray(d.customTexts) ? JSON.parse(JSON.stringify(d.customTexts)) : [];
     state.info = d.info && typeof d.info === 'object' ? Object.assign({}, d.info) : null;
     if (state.customFont) loadFontCss(state.customFont);
+}
+// 메인 레이아웃: 관리자가 저장한 것 받아오기 (간편 만들기 메인 화면 단계에 기본 레이아웃 뒤로 붙음) + 관리자면 저장 칸
+let HL_ADMIN = false;
+function hlRefreshEasy() { try { if (document.documentElement.classList.contains('simple-mode')) spRender(); } catch (e) {} }
+fetch('hero_layouts.php?a=list', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { if (j && Array.isArray(j.items)) { HERO_LAYOUTS_ADMIN = j.items; hlRefreshEasy(); } }).catch(() => {});
+fetch('hero_layouts.php?a=me', { cache: 'no-store', credentials: 'same-origin' }).then(r => r.ok ? r.json() : null).then(j => { HL_ADMIN = !!(j && j.ok && j.admin); }).catch(() => {});
+const HL_ST = ['x', 'y', 'fontSize', 'scaleX', 'widthAuto', 'width', 'rotation', 'ls', 'font', 'color', 'align', 'outline', 'shadow', 'glow'];
+function heroLayoutFromBlock(b) { // 지금 메인 화면 → 레이아웃 (글자 칸 자리·모양 + 화면 크기만, 사진·이름은 안 담음)
+    const f = b.fields, isV = b.id === 'heroVideo', L = f.layout || {};
+    const pick = (o, ks) => { const r = {}; ks.forEach(k => { if (o && o[k] !== undefined && o[k] !== null) r[k] = o[k]; }); return r; };
+    const photo = isV ? { heroWidth: 'full', heroRatio: f.heightMode === 'full' ? 'screen' : 'auto', heroTextOver: true, heroShade: f.heroShade, heroShadeLv: f.heroShadeLv } : pick(f, ['heroWidth', 'heroRatio', 'heroHeightPx', 'heroFrame', 'heroTextOver', 'heroTextSpace', 'heroShade', 'heroShadeLv']);
+    const video = isV ? pick(f, ['heightMode', 'videoTextOver', 'heroShade', 'heroShadeLv']) : { heightMode: f.heroRatio === 'screen' ? 'full' : '3/4', videoTextOver: true, heroShade: f.heroShade, heroShadeLv: f.heroShadeLv };
+    const parts = {}; ['groomName', 'heart', 'brideName', 'datetime'].forEach(k => { if (L[k]) parts[k] = pick(L[k], HL_ST); });
+    const hide = (f.hideParts || []).slice(); if (f.hideHeart) hide.push('heart');
+    const layers = (f.heroLayers || []).filter(k => L[k]).map(k => Object.assign({ text: f[k] || '' }, pick(L[k], HL_ST)));
+    return { photo, video, parts, hide, layers };
+}
+async function hlPost(a, body) {
+    const r = await fetch('hero_layouts.php?a=' + a, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const j = await r.json().catch(() => null);
+    if (!j || !j.ok) throw new Error((j && (j.expired ? '관리자 로그인이 끊겼어요. 다시 로그인해 주세요.' : j.error)) || '저장하지 못했어요.');
+    if (Array.isArray(j.items)) HERO_LAYOUTS_ADMIN = j.items;
+    return j;
+}
+// 관리자 전용: 전문가 모드 메인 사진·영상 편집창 맨 아래 [레이아웃으로 저장] (+ 메인 문구 칸 추가, 저장한 레이아웃 지우기)
+function appendHeroLayoutAdmin(wrap, block) {
+    const f = block.fields, cur = HERO_LAYOUTS_ADMIN.find(l => l.id === f.heroLayout);
+    const box = document.createElement('div');
+    box.className = 'field hl-admin';
+    box.innerHTML = `<label>메인 레이아웃 <small style="font-weight:400;opacity:.7">(관리자만 보여요)</small></label>
+        <p class="field-hint">글자 칸을 끌어 놓고 글꼴·색을 고른 뒤 저장하면, 고객 간편 만들기 → 메인 화면 → 레이아웃에 나와요. 사진·이름은 담지 않아요.</p>
+        <div class="hl-admin-row"><button type="button" class="pill" data-hl-add>+ 문구 칸 추가</button>${(f.heroLayers || []).length ? `<span class="field-hint">문구 칸 ${(f.heroLayers || []).length}개 · 미리보기에서 두 번 눌러 고쳐요</span>` : ''}</div>
+        <input type="text" class="hl-admin-name" placeholder="레이아웃 이름 (예: 포스터 · 손글씨)" value="${esc(cur ? cur.label : '')}" maxlength="40">
+        <input type="text" class="hl-admin-desc" placeholder="한 줄 설명 (선택)" value="${esc(cur ? cur.desc || '' : '')}" maxlength="80">
+        <div class="hl-admin-row">${cur ? `<button type="button" class="pill-primary" data-hl-save="${esc(cur.id)}">'${esc(cur.label)}' 고쳐 저장</button><button type="button" class="pill" data-hl-save="">새로 저장</button>` : '<button type="button" class="pill-primary" data-hl-save="">레이아웃으로 저장</button>'}</div>
+        ${HERO_LAYOUTS_ADMIN.length ? `<div class="hl-admin-list">${HERO_LAYOUTS_ADMIN.map(l => `<span>${esc(l.label)}<button type="button" data-hl-del="${esc(l.id)}" title="지우기">✕</button></span>`).join('')}</div>` : ''}`;
+    wrap.appendChild(box);
+    box.querySelector('[data-hl-add]').addEventListener('click', () => {
+        f.layout = f.layout || {}; f.heroLayers = f.heroLayers || [];
+        const k = 'hl_' + Date.now().toString(36).slice(-5);
+        f[k] = 'our wedding day'; f.layout[k] = { x: 50, y: 30, fontSize: 36, scaleX: 100, widthAuto: true, width: 80, rotation: 0, font: 'great-vibes', color: '#FFFFFF' };
+        f.heroLayers.push(k); renderPreview(); renderFieldEditor(); scheduleSnapshot();
+    });
+    box.querySelectorAll('[data-hl-save]').forEach(b => b.addEventListener('click', async () => {
+        const label = box.querySelector('.hl-admin-name').value.trim();
+        if (!label) { LD.alert('레이아웃 이름을 적어 주세요'); return; }
+        const lay = Object.assign(heroLayoutFromBlock(block), { label, desc: box.querySelector('.hl-admin-desc').value.trim() }, b.dataset.hlSave ? { id: b.dataset.hlSave } : {});
+        b.disabled = true;
+        try { const j = await hlPost('save', { layout: lay }); f.heroLayout = j.id; showServerNotice(`'${label}' 레이아웃을 저장했어요.`); renderFieldEditor(); }
+        catch (e) { LD.alert('저장하지 못했어요', { message: e.message }); }
+        finally { b.disabled = false; }
+    }));
+    box.querySelectorAll('[data-hl-del]').forEach(b => b.addEventListener('click', async () => {
+        const l = HERO_LAYOUTS_ADMIN.find(x => x.id === b.dataset.hlDel); if (!l) return;
+        if (!(await LD.confirm(`'${l.label}' 레이아웃을 지울까요?`, { message: '이미 이 레이아웃을 고른 청첩장은 그대로예요.', ok: '지우기', cancel: '그대로 두기' }))) return;
+        try { await hlPost('delete', { id: l.id }); renderFieldEditor(); } catch (e) { LD.alert('지우지 못했어요', { message: e.message }); }
+    }));
 }
 fetch('featured_presets.php', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
     if (!j || !Array.isArray(j.ids)) return;
