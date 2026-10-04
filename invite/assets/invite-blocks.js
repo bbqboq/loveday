@@ -2088,16 +2088,29 @@
         if (root && !global.INVITE_SLUG && !global.INVITE_OFFLINE) fillTripSample(root); // 에디터 미리보기: 신혼여행 라이브 예시
         if (!interactionsBound) {
             interactionsBound = true;
+            // 계좌 복사: 카드형 [복사] 버튼(data-ib-copy) · 공개 페이지 자유 배치 줄(data-ib-copyrow)을 누르면 계좌번호만 복사
+            //  계좌번호는 하객이 화면을 만져야 받아오므로(봇 방지, render-invite.js bindGuestSecure) 아직이면 받아온 뒤 복사
+            //  (Safari는 누른 순간에 복사를 시작해야 해서 ClipboardItem에 "나중에 채울 값"을 넘김). 막힌 브라우저면 길게 눌러 복사 안내
+            const accVal = el => { const row = el.closest('[data-ib-copy]') ? el.closest('[data-ib-copy]').parentElement : el.closest('[data-ib-copyrow]'); return row && (row.querySelector('.ib-acc-val, .acc-v') || row); };
+            const accNum = v => { let t = (v && v.textContent || '').trim(); if (t.includes('·')) t = t.split('·').slice(1).join('·').trim(); const m = t.match(/[0-9][0-9-]{5,}[0-9]/); return m ? m[0] : ''; };
+            const masked = v => !!(v && (v.dataset.masked === '1' || v.querySelector('[data-masked="1"]')));
+            const legacyCopy = txt => { const ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;'; document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, txt.length); let ok = false; try { ok = document.execCommand('copy'); } catch (err) {} ta.remove(); return ok; };
+            const okMsg = () => toast('계좌번호가 복사되었습니다'), failMsg = () => toast('이 브라우저는 복사가 막혀 있어요. 계좌번호를 길게 눌러 복사해 주세요.');
+            const copyNow = num => { if (!num) { toast('계좌번호가 없어요.'); return; }
+                if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(num).then(okMsg, () => (legacyCopy(num) ? okMsg() : failMsg()));
+                else (legacyCopy(num) ? okMsg() : failMsg()); };
             document.addEventListener('click', e => {
-                const btn = e.target.closest && e.target.closest('[data-ib-copy]');
-                if (!btn) return;
-                const val = btn.parentElement.querySelector('.ib-acc-val');
-                const text = val ? val.textContent.trim() : '';
-                if (!text || val.dataset.masked === '1') { toast('계좌번호를 불러오는 중이에요. 잠시 후 다시 눌러주세요.'); return; }
-                const num = (text.match(/[0-9][0-9-]{5,}[0-9]/) || [text])[0]; // "국민 000-00-000 (홍길동)" → 계좌번호만
-                const done = () => toast('계좌번호가 복사되었습니다');
-                if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(num).then(done, done);
-                else { const ta = document.createElement('textarea'); ta.value = num; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (err) {} ta.remove(); done(); }
+                const hit = e.target.closest && e.target.closest('[data-ib-copy], [data-ib-copyrow]');
+                if (!hit) return;
+                const v = accVal(hit);
+                if (!masked(v)) { copyNow(accNum(v)); return; }
+                const load = global.__ldSecureLoad;
+                if (!load) { toast('계좌번호를 불러오는 중이에요. 잠시 후 다시 눌러주세요.'); return; }
+                const got = Promise.resolve(load()).then(() => (masked(v) ? '' : accNum(v)));
+                if (global.ClipboardItem && navigator.clipboard && navigator.clipboard.write) { // 누른 순간에 시작 (Safari)
+                    navigator.clipboard.write([new ClipboardItem({ 'text/plain': got.then(n => { if (!n) throw 0; return new Blob([n], { type: 'text/plain' }); }) })])
+                        .then(okMsg, () => got.then(n => n ? copyNow(n) : toast('계좌번호를 불러오지 못했어요. 잠시 후 다시 눌러주세요.')));
+                } else got.then(n => n ? copyNow(n) : toast('계좌번호를 불러오지 못했어요. 잠시 후 다시 눌러주세요.'));
             });
         }
         (root || document).querySelectorAll('[data-ib-slide]').forEach(track => {

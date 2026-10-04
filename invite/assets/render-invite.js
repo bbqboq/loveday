@@ -755,8 +755,8 @@ const templates = {
         // 이름 칸 폭(accLw em)도 자동 정렬이 실제 이름 글자에 맞춰 잼 - 신랑측·신부측만 있으면 좁게 (없으면 예전처럼 6.4em)
         const lw = Number(f.accLw) > 0 ? Math.max(2, Math.min(10, Number(f.accLw))) : (activeExtras.length ? 0 : 2.9), colsCss = lw ? `grid-template-columns:${lw}em ${vw}em;` : '';
         const line = (k, label) => cols
-            ? `<span class="drag-part on-light acc-row" style="${s(k)}--acc-vw:${vw}em;${colsCss}"><b class="acc-l">${label}</b><span class="acc-v"${f._masked ? ` data-masked="1" data-reveal="value" data-part="${k}"` : ''}>${val(k)}</span></span>`
-            : `<span class="drag-part on-light" ${maskAttr(k)} style="${s(k)}">${label} · ${val(k)}</span>`;
+            ? `<span class="drag-part on-light acc-row" data-ib-copyrow title="누르면 계좌번호 복사" style="${s(k)}--acc-vw:${vw}em;${colsCss}"><b class="acc-l">${label}</b><span class="acc-v"${f._masked ? ` data-masked="1" data-reveal="value" data-part="${k}"` : ''}>${val(k)}</span></span>`
+            : `<span class="drag-part on-light" data-ib-copyrow title="누르면 계좌번호 복사" ${maskAttr(k)} style="${s(k)}">${label} · ${val(k)}</span>`;
         const extraSpans = activeExtras.map(k => line(k, extraLabels[k])).join('');
         const main = (k, label) => f[k] ? line(k, label) : ''; // 비워 둔 신랑·신부 줄은 "신부측" 글자만 남지 않게 뺌
         return `<div class="blk-account"><div class="free-canvas drag-canvas" style="height:${canvasHeight}px;">
@@ -1230,6 +1230,7 @@ function bindGuestSecure(rootEl, opts) {
     const EVTS = ['touchstart', 'wheel', 'mousemove', 'pointerdown', 'keydown'];
     const onHuman = e => { if (e.isTrusted) load(); };
     function disarm() { EVTS.forEach(t => window.removeEventListener(t, onHuman, { capture: true })); }
+    window.__ldSecureLoad = load; // 계좌 복사(invite-blocks.js)가 아직 못 받았으면 받아온 뒤 복사
     EVTS.forEach(t => window.addEventListener(t, onHuman, { capture: true, passive: true }));
     // 연락처 버튼을 번호가 오기 전에 누른 경우: 받아온 뒤 바로 연결
     rootEl.addEventListener('click', e => {

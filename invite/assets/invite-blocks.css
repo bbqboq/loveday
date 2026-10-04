@@ -1138,3 +1138,6 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .drag-part.acc-row { display: grid !important; grid-template-columns: 6.4em var(--acc-vw, 14em); column-gap: .7em; justify-content: center; align-items: baseline; text-align: left; }
 .drag-part.acc-row .acc-l { font-weight: 500; font-size: .92em; text-align: right; opacity: .72; white-space: nowrap; }
 .drag-part.acc-row .acc-v { white-space: nowrap; text-align: left; }
+/* 공개 페이지 자유 배치 계좌 줄: 누르면 계좌번호 복사 (invite-blocks.js) */
+[data-ib-copyrow] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+[data-ib-copyrow]:active { opacity: .6; }
