@@ -13229,8 +13229,9 @@ document.getElementById('tbToSimple').addEventListener('click', fullToSimple);
 // 간편 만들기 아래 버튼 줄 [저장 | 미리보기] + 미리보기 화면 (아래 띠: 안내 + [돌아가기], 마무리에서 저장하면 [발행하기]도)
 function spOpenPreview(final) {
     document.documentElement.classList.add('sp-pv');
-    document.getElementById('spPvMsg').textContent = final ? '저장했어요! 발행하면 하객에게 보낼 주소가 생겨요.' : '미리보기 입니다. 제작 후 꼭 저장해주세요.';
+    document.getElementById('spPvMsg').textContent = final ? '완성본이에요! 저장해 뒀어요. 발행하면 주소가 생겨요.' : '미리보기 입니다. 제작 후 꼭 저장해주세요.';
     document.getElementById('spPvPub').hidden = !final;
+    document.getElementById('spPvBack').textContent = final ? '수정하기' : '돌아가기';
     try { renderPreview(); } catch (e) {}
     const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0;
 }
@@ -13690,11 +13691,11 @@ function spRender() {
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>${spStep + 1} / ${steps.length} · ${esc(st.t)}</b></div><div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button></div>
         <nav class="sp-steps">${steps.map((x, i) => `<button type="button" class="${i === spStep ? 'on' : i < spStep ? 'done' : ''}" data-sp-go="${i}"><i>${i < spStep ? '✓' : i + 1}</i><span>${esc(x.t)}</span></button>`).join('')}</nav>
         <div class="sp-body" id="spBody"></div>
-        <div class="sp-nav"><button type="button" class="wz-back" id="spPrev"${spStep === 0 ? ' style="visibility:hidden"' : ''}>이전</button><button type="button" class="wz-next" id="spNext">${spStep === steps.length - 1 ? '저장하기' : '다음'}</button></div>`;
+        <div class="sp-nav"><button type="button" class="wz-back" id="spPrev"${spStep === 0 ? ' style="visibility:hidden"' : ''}>이전</button><button type="button" class="wz-next" id="spNext">다음</button></div>`;
     pane.querySelectorAll('[data-sp-go]').forEach(b => b.addEventListener('click', () => { spStep = +b.dataset.spGo; spHeroPhase = 'pick'; spRender(); }));
     pane.querySelector('#spPrev').addEventListener('click', () => { if (st.k === 'hero' && spHeroPhase === 'scroll') { spHeroPhase = 'pick'; spRender(); return; } spStep--; spHeroPhase = steps[spStep] && steps[spStep].k === 'hero' && spHeroScrollOk() ? 'scroll' : 'pick'; spRender(); });
     pane.querySelector('#spNext').addEventListener('click', () => {
-        if (spStep === steps.length - 1) { const b = pane.querySelector('#spNext'); b.disabled = true; b.textContent = '저장 중…'; saveToServer(false).then(ok => { b.disabled = false; b.textContent = '저장하기'; if (ok) spOpenPreview(true); }); return; } // 저장하고 다 된 모습 보여주기
+        if (spStep === steps.length - 1) { const b = pane.querySelector('#spNext'); b.disabled = true; b.textContent = '저장 중…'; saveToServer(false, true).then(ok => { b.disabled = false; b.textContent = '다음'; if (ok) spOpenPreview(true); else showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }); return; } // 조용히 저장하고 완성본 보여주기
         if (st.k === 'hero' && spHeroPhase !== 'scroll' && spHeroScrollOk()) { spHeroToScroll(pane.querySelector('#spBody')); return; } // 스크롤 버튼까지 고르고 넘어가기
         spStep++; spRender();
     });
@@ -14256,7 +14257,7 @@ function spAccount(box) {
 // 7. 마무리
 function spFinish(box) {
     ensureExtraState();
-    box.innerHTML = spH('거의 다 됐어요', '마지막으로 켜고 끌 것만 고르고 [저장하기]를 누르세요. 다 된 모습을 보여드리고, 거기서 하객에게 보낼 주소를 만들 수 있어요(발행하기).') + `
+    box.innerHTML = spH('거의 다 됐어요', '인트로까지 정했으면 [다음]을 누르세요. 저장하고 완성본을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.') + `
         ${spOpt('finish', 'intro') ? `<label class="sp-sw"><span><b>인트로</b><small>청첩장을 열 때 "${wzEsc(state.intro.text || '우리 결혼합니다')}" 짧은 애니메이션</small></span><input type="checkbox" id="spIntro" ${state.intro.enabled ? 'checked' : ''}><i></i></label>` : ''}
         <p class="wz-hint">글자 위치·스티커·섹션 순서까지 바꾸고 싶으면 위의 <b>전문가 모드</b>를 누르세요. 언제든 간편 만들기로 돌아올 수 있어요.</p>`;
     box.querySelector('#spIntro')?.addEventListener('change', e => { state.intro.enabled = e.target.checked; spChanged(); });
