@@ -331,12 +331,12 @@
                 io.disconnect();
                 const t0 = Date.now();
                 const busy = () => document.querySelector('.intro-overlay, .ib-modal') && Date.now() - t0 < 30000;
-                (function wait() { // 인트로·첫 안내 팝업(참석 여부 등)이 다 끝나고 화면이 조용해진 뒤에 재생
-                    if (busy()) return setTimeout(wait, 400);
+                (function wait() { // 인트로·첫 안내 팝업(참석 여부 등)이 다 끝나면 바로 재생 (예전엔 끝난 뒤 1.3초를 더 기다려서 너무 늦게 나왔음)
+                    if (busy()) return setTimeout(wait, 150);
                     if (Date.now() - t0 >= 30000) b.classList.remove('ib-fx-wait');
-                    setTimeout(() => { if (busy()) return wait(); b.classList.remove('ib-fx-wait'); if (b.isConnected) playNextFx(b, b.dataset.fx, 'invite'); }, 1300);
+                    setTimeout(() => { if (busy()) return wait(); b.classList.remove('ib-fx-wait'); if (b.isConnected) playNextFx(b, b.dataset.fx, 'invite'); }, 250);
                 })();
-            }, { threshold: .6 });
+            }, { threshold: .3 });
             io.observe(b);
         });
     }
