@@ -979,11 +979,14 @@
     function armHeroAnims(root) {
         if (!root || typeof IntersectionObserver === 'undefined' || hlReduced()) return;
         const els = [...root.querySelectorAll('.op-layer.hl-anim:not(.hl-armed)')]; if (!els.length) return;
-        els.forEach(e => e.classList.add('hl-arm', 'hl-armed'));
-        let n = 0;
-        const go = () => { const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { requestAnimationFrame(() => en.target.classList.add('hl-run')); io.unobserve(en.target); } }), { threshold: .15 }); els.forEach(e => io.observe(e)); };
-        const wait = () => { if (document.querySelector('.intro-overlay') && n++ < 80) return setTimeout(wait, 250); go(); };
-        wait();
+        els.forEach(e => e.classList.add('hl-arm', 'hl-armed')); // 재생 전까지 숨겨 둠 (인트로 뒤에서 미리 보이지 않게)
+        // 인트로·첫 안내 팝업이 있는지는 화면에 보인 뒤에 확인 (예전엔 그리자마자 확인해서, 인트로가 아직 안 붙은 순간이라 인트로 뒤에서 재생돼 버렸음)
+        const t0 = Date.now(), busy = () => document.querySelector('.intro-overlay, .ib-modal') && Date.now() - t0 < 30000;
+        const io = new IntersectionObserver(es => es.forEach(en => {
+            if (!en.isIntersecting) return; io.unobserve(en.target); const e = en.target;
+            (function wait() { if (busy()) return setTimeout(wait, 150); setTimeout(() => { if (busy()) return wait(); requestAnimationFrame(() => e.classList.add('hl-run')); }, 250); })();
+        }), { threshold: .15 });
+        els.forEach(e => io.observe(e));
     }
     function playHeroAnims(root) {
         if (!root) return; const els = [...root.querySelectorAll('.op-layer.hl-anim')]; if (!els.length) return;
