@@ -551,6 +551,17 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-seg button b { font-size: 14px; } .sp-seg button small { font-size: 11.5px; color: var(--wz-mute); line-height: 1.35; }
 .sp-seg button:hover { border-color: var(--wz-line2); }
 .sp-seg button.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink) inset; }
+.hl-row { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: thin; }
+.hl-c { flex: none; width: 104px; border: 1.5px solid var(--wz-line); border-radius: 12px; background: #fff; padding: 4px 4px 6px; cursor: pointer; font: inherit; color: var(--wz-ink); text-align: center; }
+.hl-c:hover { border-color: var(--wz-line2); } .hl-c.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink); }
+.hl-c b { display: block; margin-top: 5px; font-size: 11px; font-weight: 700; line-height: 1.3; word-break: keep-all; }
+.hl-m { position: relative; display: block; aspect-ratio: 9 / 19.5; border-radius: 8px; overflow: hidden; background: #3A342F center / cover no-repeat; container-type: inline-size; }
+.hl-m .hl-sh { position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.28), rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,.32)); }
+.hl-m span { position: absolute; white-space: nowrap; line-height: 1.02; text-align: center; text-shadow: 0 1px 6px rgba(0,0,0,.2); }
+.hl-ins { display: grid; gap: 8px; margin-top: 10px; }
+.hl-ins label { display: grid; grid-template-columns: 54px 1fr; gap: 8px; align-items: center; font-size: 12px; font-weight: 700; color: var(--wz-sub); }
+.hl-ins textarea { resize: none; min-height: 44px; font-size: 14px; line-height: 1.4; padding-top: 11px; }
+.hl-ins .wz-hint { grid-column: 1 / -1; margin: 0; }
 .sp-dsg { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid var(--wz-line); border-radius: 14px; background: #fff; }
 .sp-dsg small { display: block; font-size: 11px; color: var(--wz-mute); font-weight: 600; } .sp-dsg b { font-size: 14px; }
 .sp-dsg-btn { flex: none; border: 1px solid var(--wz-line2); background: #fff; border-radius: 99px; padding: 7px 13px; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--wz-ink); cursor: pointer; }
@@ -4016,13 +4027,13 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017a">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017a">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017b">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017b">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
-<script src="assets/invite-blocks.js?v=1017a"></script>
-<script src="assets/tip-demos.js?v=1017a"></script>
-<script src="assets/ld-dialog.js?v=1017a"></script>
+<script src="assets/invite-blocks.js?v=1017b"></script>
+<script src="assets/tip-demos.js?v=1017b"></script>
+<script src="assets/ld-dialog.js?v=1017b"></script>
 </head>
 <body>
 
@@ -4928,6 +4939,13 @@ const fontOptions = [
     { id:'gaegu',          label:'개구체 (귀여운 손글씨)', family:'"Gaegu", cursive', weight:'700', cssUrl:'https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap' },
     { id:'hi-melody',      label:'하이멜로디 (손글씨)', family:'"Hi Melody", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Hi+Melody&display=swap' },
     { id:'gamja-flower',   label:'감자꽃 (손글씨)', family:'"Gamja Flower", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap' },
+    // 영문 글꼴 (en: 한글이 없어서 청첩장 전체 글꼴로는 안 보여주고, 문구 하나하나·인트로에서만 고름)
+    { id:'great-vibes', label:'Great Vibes (영문 필기체)', family:'"Great Vibes", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap', en:true },
+    { id:'pinyon', label:'Pinyon Script (영문 필기체)', family:'"Pinyon Script", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap', en:true },
+    { id:'parisienne', label:'Parisienne (영문 필기체)', family:'"Parisienne", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Parisienne&display=swap', en:true },
+    { id:'alex-brush', label:'Alex Brush (영문 필기체)', family:'"Alex Brush", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap', en:true },
+    { id:'cormorant', label:'Cormorant (영문 세리프)', family:'"Cormorant Garamond", serif', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap', en:true },
+    { id:'playfair', label:'Playfair (영문 세리프)', family:'"Playfair Display", serif', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap', en:true },
 ];
 function loadFontCss(fontId) {
     const f = fontOptions.find(x => x.id === fontId);
@@ -5740,10 +5758,10 @@ const templates = {
         const wrapStyle = f.heightMode === 'full' ? 'height:100vh; height:100svh; aspect-ratio:auto;' : `aspect-ratio:${f.heightMode};`; // svh = 휴대폰 주소창·도구막대를 뺀 실제 보이는 높이
         const over = InviteBlocks.heroTextOn(f, 'video'); // 끄면 이름·날짜가 영상 아래 글자 칸으로 (켜면 아래 칸 없음 = 자동 0)
         const ink = over ? 'on-dark' : 'on-light';
-        const parts = `<span class="drag-part ${ink} op-datetime" data-part="datetime" data-drag-el style="${s('datetime')}" title="${DRAG_HINT}">${esc(f.datetime)}</span>
-        <span class="drag-part ${ink} op-name" data-part="groomName" data-drag-el style="${s('groomName')}" title="${DRAG_HINT}">${esc(f.groomName)}</span>
+        const parts = `${(f.hideParts || []).includes('datetime') ? '' : `<span class="drag-part ${ink} op-datetime" data-part="datetime" data-drag-el style="${s('datetime')}" title="${DRAG_HINT}">${esc(f.datetime)}</span>`}
+        ${(f.hideParts || []).includes('groomName') ? '' : `<span class="drag-part ${ink} op-name" data-part="groomName" data-drag-el style="${s('groomName')}" title="${DRAG_HINT}">${esc(f.groomName)}</span>`}
         ${f.hideHeart ? '' : `<span class="drag-part ${ink} op-heart" data-part="heart" data-drag-el style="${s('heart')}" title="${DRAG_HINT}">♥</span>`}
-        <span class="drag-part ${ink} op-name" data-part="brideName" data-drag-el style="${s('brideName')}" title="${DRAG_HINT}">${esc(f.brideName)}</span>`;
+        ${(f.hideParts || []).includes('brideName') ? '' : `<span class="drag-part ${ink} op-name" data-part="brideName" data-drag-el style="${s('brideName')}" title="${DRAG_HINT}">${esc(f.brideName)}</span>`}${InviteBlocks.heroLayersHtml(f, ink, s, true)}`;
         const band = InviteBlocks.videoBandSpace ? InviteBlocks.videoBandSpace(f) : 0; // 영상 아래 글자 칸 (글자는 영상+칸 어디든)
         return `<div class="blk-hero-video${over ? '' : ' vt-under'}${band ? ' vt-overband' : ''}"><div class="video-cover-wrap${over && !band ? ' drag-canvas' : ''}" style="${wrapStyle}">
         <iframe src="${ytEmbedSrc(f.youtubeId)}" data-cover data-video-position="${f.videoPosition}" data-video-focus="${esc(f.videoFocus || '')}"${f.videoVertical ? ' data-vertical="1"' : ''}${+f.videoLb > 100 ? ` data-video-zoom="${+f.videoLb}"` : ''} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen playsinline title="배경 영상"></iframe>
@@ -5760,10 +5778,10 @@ const templates = {
         if (nbPos === 'below' && to.over && !to.space) nbPos = 'photo'; // 사진 아래 칸이 없으면 "글자 칸 아래" = 사진 아래쪽
         const photoHtml = nbPos === 'photo' ? heroImgHtml.replace(/<\/div>$/, nb + '</div>') : heroImgHtml;
         return `<div class="blk-hero${nb ? ' has-next' : ''}${to.cls}">${photoHtml}${to.spacer}<div class="free-canvas drag-canvas${to.canvasCls}" style="${to.canvasStyle}">
-        <span class="drag-part on-light op-datetime" data-part="datetime" data-drag-el style="${s('datetime')}" title="${DRAG_HINT}">${esc(f.datetime)}</span>
-        <span class="drag-part on-light op-name" data-part="groomName" data-drag-el style="${s('groomName')}" title="${DRAG_HINT}">${esc(f.groomName)}</span>
+        ${(f.hideParts || []).includes('datetime') ? '' : `<span class="drag-part on-light op-datetime" data-part="datetime" data-drag-el style="${s('datetime')}" title="${DRAG_HINT}">${esc(f.datetime)}</span>`}
+        ${(f.hideParts || []).includes('groomName') ? '' : `<span class="drag-part on-light op-name" data-part="groomName" data-drag-el style="${s('groomName')}" title="${DRAG_HINT}">${esc(f.groomName)}</span>`}
         ${f.hideHeart ? '' : `<span class="drag-part on-light op-heart" data-part="heart" data-drag-el style="${s('heart')}" title="${DRAG_HINT}">♥</span>`}
-        <span class="drag-part on-light op-name" data-part="brideName" data-drag-el style="${s('brideName')}" title="${DRAG_HINT}">${esc(f.brideName)}</span>
+        ${(f.hideParts || []).includes('brideName') ? '' : `<span class="drag-part on-light op-name" data-part="brideName" data-drag-el style="${s('brideName')}" title="${DRAG_HINT}">${esc(f.brideName)}</span>`}${InviteBlocks.heroLayersHtml(f, 'on-light', s, true)}
         </div>${nbPos === 'below' ? `<div class="ib-next-row">${nb}</div>` : nbPos === 'free' ? nb : ''}</div>`;
     },
     greeting: f => {
@@ -5961,7 +5979,7 @@ function renderMainFontPicker() {
     // (글꼴 이름에 큰따옴표가 있어서 style="..." 안에 그대로 넣으면 속성이 끊겨 글꼴이 안 먹었다 → 작은따옴표로)
     const q = v => String(v || '').replace(/"/g, "'");
     const famOf = f => q(f.family || sk.headFont), wOf = f => f.weight || sk.headWeight || '500';
-    grid.innerHTML = fontOptions.map(f => `<button type="button" class="ft-row${f.id === cur ? ' on' : ''}" data-font-id="${f.id}" style="font-family:${famOf(f)};font-weight:${f.id ? 400 : 500}">
+    grid.innerHTML = fontOptions.filter(f => !f.en).map(f => `<button type="button" class="ft-row${f.id === cur ? ' on' : ''}" data-font-id="${f.id}" style="font-family:${famOf(f)};font-weight:${f.id ? 400 : 500}">
         <span class="ft-tx">[${esc(fontShort(f))}] ${esc(g)}<i>♥</i>${esc(b)} 결혼합니다</span><em>${FONT_KIND[f.id] || ''}</em></button>`).join('');
     const cf = fontOptions.find(f => f.id === cur) || fontOptions[0];
     const greet = stPlain((state.blocks.find(x => x.id === 'greeting') || {}).fields?.text).slice(0, 2).join(' ');
@@ -11784,6 +11802,7 @@ window.addEventListener('resize', () => msPlace());
 
 // 미리보기 위에서 더블클릭하면 그 자리에서 바로 타이핑할 수 있게 함
 function startInlineEdit(el, block, part) {
+    if ((block.fields.heroLayers || []).includes(part)) el.innerText = block.fields[part] || ''; // 메인 문구 칸: {신랑} 같은 원래 글로 고침
     el.setAttribute('contenteditable', 'true');
     el.style.cursor = 'text';
     el.focus();
@@ -14017,6 +14036,45 @@ function spPhotoCrop(holder, blk) {
     // 미리보기 사진 모양이 나중에 잡히면(처음 그릴 때) 칸 비율을 다시 맞춤
     if (!pv) setTimeout(() => { const p = pvImg(); if (p && p.clientHeight && holder.isConnected) st.style.aspectRatio = Math.max(.5, Math.min(2.2, p.clientWidth / p.clientHeight)).toFixed(3); }, 300);
 }
+// 메인 레이아웃 고르기 (간편 만들기 메인 화면 단계): 내 사진·이름으로 그린 작은 화면 + 고른 레이아웃의 문구 칸 고치기
+let HERO_LAYOUTS_ADMIN = []; // 관리자가 저장한 레이아웃 (hero_layouts.php)
+const spHeroLayouts = () => ((window.InviteBlocks && InviteBlocks.HERO_LAYOUTS) || []).concat(HERO_LAYOUTS_ADMIN);
+function spHeroLayoutMini(lay, hb, kind) {
+    const f = hb.fields, sk = skins[state.skin] || skins.classic;
+    const bg = kind === 'photo' ? (f.heroImage ? `url('${esc(InviteBlocks.imgUrl(f.heroImage))}')` : '') : (f.youtubeId ? `url('https://i.ytimg.com/vi/${encodeURIComponent(f.youtubeId)}/hqdefault.jpg')` : '');
+    const txt = (L, t) => { if (!L) return ''; if (L.font) loadFontCss(L.font);
+        const fam = partFontFamily(L.font) || String(L.font === undefined ? '' : sk.headFont).replace(/"/g, "'");
+        return `<span style="left:${L.x}%;top:${L.y}%;font-size:${(L.fontSize / 390 * 100).toFixed(2)}cqw;${fam ? `font-family:${fam};` : ''}color:${L.color || '#fff'};${L.ls ? `letter-spacing:${L.ls / 1000}em;` : ''}transform:translate(-50%,-50%) rotate(${L.rotation || 0}deg);${L.align ? `text-align:${L.align};` : ''}">${esc(t).replace(/\n/g, '<br>')}</span>`; };
+    const hide = lay.hide || [], P = lay.parts || {};
+    const parts = [['groomName', f.groomName], ['heart', '♥'], ['brideName', f.brideName], ['datetime', f.datetime]].filter(([k]) => !hide.includes(k) && P[k]).map(([k, t]) => txt(P[k], t || '')).join('');
+    const layers = (lay.layers || []).map(L => txt(L, InviteBlocks.heroFill(L.text, f))).join('');
+    return `<span class="hl-m" style="${bg ? `background-image:${bg};` : `background:linear-gradient(160deg, ${sk.accent}, ${sk.ink});`}"><i class="hl-sh"></i>${parts}${layers}</span>`;
+}
+function spHeroLayoutHtml(hb, kind) {
+    const f = hb.fields, list = spHeroLayouts();
+    if (!list.length) return '';
+    const cur = f.heroLayout || '';
+    const cards = list.map(l => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${spHeroLayoutMini(l, hb, kind)}<b>${esc(l.label)}</b></button>`).join('');
+    const keys = (f.heroLayers || []).filter(k => f.layout && f.layout[k]);
+    const inputs = keys.length ? `<div class="hl-ins">${keys.map((k, i) => `<label><span>문구 ${i + 1}</span><textarea class="wz-inp" rows="${String(f[k] || '').includes('\n') ? 2 : 1}" data-hl="${esc(k)}">${wzEsc(f[k] || '')}</textarea></label>`).join('')}
+        <p class="wz-hint">{신랑} {신부} {날짜:영문} {날짜:점} 처럼 적으면 적어 둔 이름·날짜로 바뀌어요. 줄을 바꾸려면 Enter.</p></div>` : '';
+    return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div><div class="hl-row">${cards}</div>${inputs}</div>`;
+}
+function spBindHeroLayout(box, hb) {
+    box.querySelectorAll('[data-hl-pick]').forEach(b => b.addEventListener('click', () => {
+        const lay = spHeroLayouts().find(l => l.id === b.dataset.hlPick); if (!lay) return;
+        scheduleSnapshot();
+        const was = InviteBlocks.heroFull(hb.fields, hb.id === 'heroVideo' ? 'video' : 'hero');
+        InviteBlocks.applyHeroLayout(hb, lay);
+        try { syncFullscreenPad(hb); } catch (e) {}
+        if (!was) spHeroPhase = 'pick'; // 레이아웃은 바로 전체화면이 되니 스크롤 버튼 화면으로 접지 않음
+        spChanged([hb.id]); scheduleSnapshot(); spRender();
+    }));
+    box.querySelectorAll('[data-hl]').forEach(t => {
+        t.addEventListener('input', () => { hb.fields[t.dataset.hl] = t.value; t.rows = t.value.includes('\n') ? 2 : 1; renderPreview(); });
+        t.addEventListener('change', () => scheduleSnapshot());
+    });
+}
 function spHero(box) {
     if (spHeroPhase === 'scroll' && spHeroScrollOk()) return spHeroScroll(box);
     spHeroPhase = 'pick';
@@ -14026,6 +14084,8 @@ function spHero(box) {
     const HO = k => spOpt('hero', k);
     if (hp && hv && HO('kind')) html += `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">1</span>무엇을 보여줄까요?</span></div>${seg([['photo', '사진', '대표 사진 한 장'], ['video', '유튜브 영상', '영상 주소를 붙여 넣어요']], kind, 'data-sp-kind')}</div>`;
     const n0 = hp && hv && HO('kind') ? 1 : 0;
+    const hb = kind === 'photo' ? hp : hv;
+    if (hb && HO('layout')) html += spHeroLayoutHtml(hb, kind);
     if (kind === 'photo' && hp) {
         const f = hp.fields;
         const cur = f.heroWidth !== 'full' ? 'frame' : f.heroRatio === 'screen' ? 'screen' : f.heroRatio === 'px' ? 'tall' : 'wide';
@@ -14046,6 +14106,7 @@ function spHero(box) {
     }
     html += '<p class="wz-hint">글자 위치·그림자 같은 세부 모양은 <b>전문가 모드</b>에서 바꿀 수 있어요.</p>';
     box.innerHTML = html;
+    if (hb) spBindHeroLayout(box, hb);
     const cropBox = box.querySelector('#spCropBox'); if (cropBox) spPhotoCrop(cropBox, hp);
     box.querySelectorAll('.sp-shade').forEach(sh => { const blk = spBlock(sh.dataset.blk); bindShadeField(sh, blk); sh.addEventListener('click', e => { if (e.target.closest('[data-shade], [data-shade-lv]')) setTimeout(() => spRender(), 0); }); });
     const vfpBox = box.querySelector('#spVfpBox'); if (vfpBox) { try { appendVideoFocusControls(vfpBox, hv); const lb = vfpBox.querySelector('[data-vfp-lb]'); if (lb) lb.textContent = '확대 (꽉 채우기)'; } catch (e) { console.warn(e); } }
@@ -14121,7 +14182,7 @@ function spTheme(box) {
         (O('design') && !spInPlace ? `<div class="sp-dsg"><span><small>지금 디자인</small><b>${esc(dCur.label || '기본')}</b></span><button type="button" class="sp-dsg-btn" id="spDsgBtn">${spDesignOpen ? '접기' : '디자인 바꾸기'}</button></div>
             ${spDesignOpen ? `<div class="sp-dcs"><p class="sp-dcs-n">디자인을 바꾸면 섹션 구성·메인 화면·장식까지 새 디자인 모양이 돼요. 적어 둔 이름·사진·글·계좌는 그대로 옮겨요.</p>${allDesigns().map(dCard).join('')}</div>` : ''}` : '') +
         (O('skin') ? `<div class="sp-ths">${Object.entries(skins).filter(([k, sk]) => sk && sk.label && sk.bg).map(card).join('')}</div>` : '') +
-        (O('font') ? `<div class="wz-field"><div class="wz-lab">글꼴</div><div class="sp-fonts">${fontOptions.map(fo => `<button type="button" class="${(state.customFont || '') === fo.id ? 'on' : ''}" data-sp-font="${esc(fo.id)}" style="font-family:${String(fo.family || 'inherit').replace(/"/g, "'")}">${esc(fo.id ? fo.label.replace(/\s*\(.*\)\s*$/, '') : '테마 기본')}</button>`).join('')}</div></div>` : '') +
+        (O('font') ? `<div class="wz-field"><div class="wz-lab">글꼴</div><div class="sp-fonts">${fontOptions.filter(fo => !fo.en).map(fo => `<button type="button" class="${(state.customFont || '') === fo.id ? 'on' : ''}" data-sp-font="${esc(fo.id)}" style="font-family:${String(fo.family || 'inherit').replace(/"/g, "'")}">${esc(fo.id ? fo.label.replace(/\s*\(.*\)\s*$/, '') : '테마 기본')}</button>`).join('')}</div></div>` : '') +
         (O('accent') ? `<div class="wz-field"><div class="wz-lab">포인트 색 <small>하트·버튼·강조 글자</small></div><div class="sp-cols"><button type="button" class="${!state.customAccent ? 'on' : ''}" data-sp-acc="" style="--c:${sk0.accent}" title="테마 기본"></button>${ACCENT_SWATCHES.map(([h, n]) => `<button type="button" class="${String(state.customAccent || '').toUpperCase() === h.toUpperCase() ? 'on' : ''}" data-sp-acc="${h}" style="--c:${h}" title="${n}"></button>`).join('')}<label class="sp-colpick" title="직접 고르기"><input type="color" value="${esc(state.customAccent || sk0.accent)}" data-sp-accpick></label></div></div>` : '') +
         (O('paper') && Object.keys(P).length ? `<div class="wz-field"><div class="wz-lab">종이 질감</div><div class="sp-papers"><button type="button" class="${!state.paper ? 'on' : ''}" data-sp-paper=""><span style="background:${state.customBg && !state.paper ? state.customBg : sk0.bg}"></span>없음</button>${Object.entries(P).map(([k, v]) => `<button type="button" class="${state.paper === k ? 'on' : ''}" data-sp-paper="${k}"><span style="background-color:${v.bg};background-image:${v.img}"></span>${esc(v.label)}</button>`).join('')}</div></div>` : '') +
         (O('reset') && (state.customBg || state.customAccent || state.customFont || state.paper) ? `<button type="button" class="sp-link" id="spThReset">따로 바꾼 바탕색·포인트색·글꼴·종이를 테마 기본으로 되돌리기</button>` : '') +

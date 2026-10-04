@@ -147,6 +147,12 @@ $fontCssUrls = [
     'gaegu'          => 'https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap',
     'hi-melody'      => 'https://fonts.googleapis.com/css2?family=Hi+Melody&display=swap',
     'gamja-flower'   => 'https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap',
+    'great-vibes' => 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap',
+    'pinyon' => 'https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap',
+    'parisienne' => 'https://fonts.googleapis.com/css2?family=Parisienne&display=swap',
+    'alex-brush' => 'https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap',
+    'cormorant' => 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap',
+    'playfair' => 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap',
 ];
 $neededFontIds = array_filter([$design['customFont'] ?? '', ($design['intro'] ?? [])['font'] ?? '']);
 // 섹션 문구·자유 텍스트마다 고른 글꼴(layout/layers/customTexts의 "font")도 미리 불러옴

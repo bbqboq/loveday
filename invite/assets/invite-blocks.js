@@ -507,7 +507,13 @@
         'noto-serif-kr':  { family: '"Noto Serif KR", serif', url: 'https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap', label: '노토 명조' },
         'nanum-myeongjo': { family: '"Nanum Myeongjo", serif', url: 'https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap', label: '나눔명조' },
         'gothic-a1':      { family: '"Gothic A1", sans-serif', url: 'https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;700&display=swap', label: '고딕 A1' },
-        'song-myung':     { family: '"Song Myung", serif', url: 'https://fonts.googleapis.com/css2?family=Song+Myung&display=swap', label: '송명체' }
+        'song-myung':     { family: '"Song Myung", serif', url: 'https://fonts.googleapis.com/css2?family=Song+Myung&display=swap', label: '송명체' },
+        'great-vibes': { family: '"Great Vibes", cursive', url: 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap', label: 'Great Vibes' },
+        'pinyon': { family: '"Pinyon Script", cursive', url: 'https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap', label: 'Pinyon Script' },
+        'parisienne': { family: '"Parisienne", cursive', url: 'https://fonts.googleapis.com/css2?family=Parisienne&display=swap', label: 'Parisienne' },
+        'alex-brush': { family: '"Alex Brush", cursive', url: 'https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap', label: 'Alex Brush' },
+        'cormorant': { family: '"Cormorant Garamond", serif', url: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap', label: 'Cormorant' },
+        'playfair': { family: '"Playfair Display", serif', url: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap', label: 'Playfair' }
     };
     function ensureFont(id) {
         const f = FONT_CSS[id];
@@ -924,6 +930,62 @@
         const hr = Number(d.hour), mi = Number(d.minute) || 0;
         const time = d.hour != null && d.hour !== '' ? `${((hr + 11) % 12) + 1}:${String(mi).padStart(2, '0')} ${hr < 12 ? 'AM' : 'PM'}` : '';
         return { '신랑': h.groomName || '', '신부': h.brideName || '', '날짜': d.year ? `${d.year}.${d.month}.${d.day}` : '', '시간': time, '예식장': loc.venue || '' };
+    }
+    // ---------- 메인 화면 문구 칸 (메인 레이아웃) ----------
+    //  메인 사진·영상 위에 이름·날짜 말고도 문구 칸을 더 얹음. 칸 이름(키)은 f.heroLayers, 글은 f[키], 자리·글꼴·색은 f.layout[키]
+    //  (이름·날짜 칸과 같은 방식이라 끌기·글꼴·색·크기 조절이 그대로 됨). 글에 {신랑} {신부} {날짜} {날짜:영문} {날짜:점} {요일:영문} {시간} {예식장}
+    const EN_MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const EN_DAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    function heroVars(f) {
+        const v = creditVars(); f = f || {};
+        const bl = (CUR_DESIGN && CUR_DESIGN.blocks) || [], d = ((bl.find(b => b.id === 'dday') || {}).fields) || {};
+        const dt = d.year ? new Date(+d.year, +d.month - 1, +d.day) : null;
+        const ord = n => n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th');
+        return Object.assign(v, { '신랑': f.groomName || v['신랑'], '신부': f.brideName || v['신부'], '날짜': f.datetime || v['날짜'],
+            '날짜:영문': dt ? `${EN_DAY[dt.getDay()].slice(0, 3)}, ${EN_MON[dt.getMonth()].slice(0, 3)} ${ord(dt.getDate())}, ${dt.getFullYear()}` : '',
+            '날짜:점': dt ? `${dt.getFullYear()}.${String(dt.getMonth() + 1).padStart(2, '0')}.${String(dt.getDate()).padStart(2, '0')}` : '',
+            '요일:영문': dt ? EN_DAY[dt.getDay()].toUpperCase() : '' });
+    }
+    function heroFill(text, f) { const v = heroVars(f); return String(text || '').replace(/\{(신랑|신부|날짜:영문|날짜:점|날짜|요일:영문|시간|예식장)\}/g, (m, k) => v[k] || ''); }
+    function heroLayersHtml(f, ink, styleOf, editor) {
+        return ((f && f.heroLayers) || []).filter(k => f.layout && f.layout[k]).map(k =>
+            `<span class="drag-part ${ink || 'on-light'} op-layer" data-part="${esc(k)}"${editor ? ' data-drag-el' : ''} style="${styleOf(k)}">${nl2br(heroFill(f[k], f))}</span>`).join('');
+    }
+    // 메인 레이아웃 (기본 제공). 고르면 메인 사진·영상의 화면 크기·글자 자리·글꼴·색과 문구 칸을 이 모양으로 바꾸고, 사진·이름 같은 내용은 그대로 둠
+    //  parts: 이름·날짜·하트 칸 / layers: 더 얹는 문구 칸 / hide: 안 보이게 할 칸 (layers로 대신 쓸 때) - 좌표는 화면(사진) 기준 %, 글자 크기는 폭 390 기준 px
+    const HERO_LAYOUTS = [
+        { id: 'poster-script', label: '포스터 · 영문 필기체', desc: '사진 가득, 위에 큰 필기체 · 아래 이름과 날짜',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'both', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'both', heroShadeLv: '1' },
+          parts: { groomName: { x: 38, y: 86, fontSize: 19, color: '#FFFFFF', ls: 60 }, heart: { x: 50, y: 86, fontSize: 12, color: '#FFFFFF' }, brideName: { x: 62, y: 86, fontSize: 19, color: '#FFFFFF', ls: 60 },
+                   datetime: { x: 50, y: 92, fontSize: 11.5, color: '#FFFFFF', ls: 80 } },
+          layers: [{ text: 'our wedding day', x: 50, y: 16, fontSize: 58, font: 'great-vibes', color: '#FFF0D0', rotation: -4 }] },
+        { id: 'poster-serif', label: '포스터 · 영문 세리프', desc: '세 줄로 크게 · 아래 영문 날짜',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'top', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'top', heroShadeLv: '1' },
+          parts: { groomName: { x: 41, y: 88, fontSize: 15, color: '#FFFFFF', ls: 40 }, heart: { x: 50, y: 88, fontSize: 10, color: '#FFFFFF' }, brideName: { x: 59, y: 88, fontSize: 15, color: '#FFFFFF', ls: 40 } },
+          hide: ['datetime'],
+          layers: [{ text: 'our\nwedding\nday', x: 50, y: 21, fontSize: 64, font: 'cormorant', color: '#FFF0D0', ls: -20 },
+                   { text: '{날짜:영문}', x: 50, y: 93, fontSize: 12, font: 'cormorant', color: '#FFFFFF', ls: 60 }] },
+        { id: 'center-script', label: '가운데 필기체', desc: '사진 가운데 필기체 한 줄 · 위에 이름',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'full', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'full', heroShadeLv: '1' },
+          parts: { groomName: { x: 12, y: 6, fontSize: 15, color: '#FFFFFF', align: 'left', ls: 20 }, brideName: { x: 88, y: 6, fontSize: 15, color: '#FFFFFF', align: 'right', ls: 20 },
+                   datetime: { x: 50, y: 93, fontSize: 11.5, color: '#FFFFFF', ls: 60 } },
+          hide: ['heart'],
+          layers: [{ text: "We're getting\nMarried!", x: 50, y: 64, fontSize: 46, font: 'pinyon', color: '#F7D6DC', rotation: -3 }] }
+    ];
+    const HL_RESET = { font: '', color: '', ls: 0, rotation: 0, align: '', outline: false, shadow: false, glow: '', scaleX: 100, widthAuto: true, width: 80 };
+    function applyHeroLayout(block, lay) {
+        if (!block || !lay) return;
+        const f = block.fields = block.fields || {}, isV = block.id === 'heroVideo';
+        Object.assign(f, JSON.parse(JSON.stringify((isV ? lay.video : lay.photo) || {})));
+        f.layout = f.layout || {};
+        (f.heroLayers || []).forEach(k => { delete f[k]; delete f.layout[k]; });
+        f.heroLayers = [];
+        Object.entries(lay.parts || {}).forEach(([k, v]) => { f.layout[k] = Object.assign({}, f.layout[k] || {}, HL_RESET, v); });
+        f.hideParts = (lay.hide || []).filter(k => k !== 'heart');
+        f.hideHeart = (lay.hide || []).includes('heart');
+        const stamp = Date.now().toString(36).slice(-4);
+        (lay.layers || []).forEach((L, i) => { const k = `hl_${stamp}${i}`, o = Object.assign({}, HL_RESET, L); f[k] = o.text || ''; delete o.text; f.layout[k] = o; f.heroLayers.push(k); });
+        f.heroLayout = lay.id;
     }
     function creditsHtml(f) {
         const v = creditVars(), fill = t => String(t || '').replace(/\{(신랑|신부|날짜|시간|예식장)\}/g, (m, k) => v[k] || '');
@@ -2845,5 +2907,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { heroFill, heroLayersHtml, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

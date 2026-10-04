@@ -104,6 +104,12 @@ const fontOptions = [
     { id:'gaegu',          family:'"Gaegu", cursive', weight:'700' },
     { id:'hi-melody',      family:'"Hi Melody", cursive', weight:'400' },
     { id:'gamja-flower',   family:'"Gamja Flower", cursive', weight:'400' },
+    { id:'great-vibes', family:'"Great Vibes", cursive', weight:'400' },
+    { id:'pinyon', family:'"Pinyon Script", cursive', weight:'400' },
+    { id:'parisienne', family:'"Parisienne", cursive', weight:'400' },
+    { id:'alex-brush', family:'"Alex Brush", cursive', weight:'400' },
+    { id:'cormorant', family:'"Cormorant Garamond", serif', weight:'400' },
+    { id:'playfair', family:'"Playfair Display", serif', weight:'400' },
 ];
 
 // 오시는 길 지도(카카오맵) - config.php와 동일한 JavaScript 키를 써야 한다
@@ -665,10 +671,10 @@ const templates = {
         const wrapStyle = f.heightMode === 'full' ? 'height:100vh; height:100svh; aspect-ratio:auto;' : `aspect-ratio:${f.heightMode};`; // svh = 휴대폰 주소창·도구막대를 뺀 실제 보이는 높이
         const over = InviteBlocks.heroTextOn(f, 'video'); // 끄면 이름·날짜가 영상 아래 글자 칸으로 (켜면 아래 칸 없음)
         const ink = over ? 'on-dark' : 'on-light';
-        const parts = `<span class="drag-part ${ink} op-datetime" style="${s('datetime')}">${esc(f.datetime)}</span>
-        <span class="drag-part ${ink} op-name" style="${s('groomName')}">${esc(f.groomName)}</span>
+        const parts = `${(f.hideParts || []).includes('datetime') ? '' : `<span class="drag-part ${ink} op-datetime" style="${s('datetime')}">${esc(f.datetime)}</span>`}
+        ${(f.hideParts || []).includes('groomName') ? '' : `<span class="drag-part ${ink} op-name" style="${s('groomName')}">${esc(f.groomName)}</span>`}
         ${f.hideHeart ? '' : `<span class="drag-part ${ink} op-heart" style="${s('heart')}">♥</span>`}
-        <span class="drag-part ${ink} op-name" style="${s('brideName')}">${esc(f.brideName)}</span>`;
+        ${(f.hideParts || []).includes('brideName') ? '' : `<span class="drag-part ${ink} op-name" style="${s('brideName')}">${esc(f.brideName)}</span>`}${InviteBlocks.heroLayersHtml(f, ink, s)}`;
         const band = InviteBlocks.videoBandSpace ? InviteBlocks.videoBandSpace(f) : 0; // 영상 아래 글자 칸 (글자는 영상+칸 어디든)
         return `<div class="blk-hero-video${over ? '' : ' vt-under'}${band ? ' vt-overband' : ''}"><div class="video-cover-wrap${over && !band ? ' drag-canvas' : ''}" style="${wrapStyle}">
         <iframe src="${ytEmbedSrc(f.youtubeId)}" data-cover data-video-position="${f.videoPosition}" data-video-focus="${esc(f.videoFocus || '')}"${f.videoVertical ? ' data-vertical="1"' : ''}${+f.videoLb > 100 ? ` data-video-zoom="${+f.videoLb}"` : ''} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen playsinline title="배경 영상"></iframe>
@@ -685,10 +691,10 @@ const templates = {
         if (nbPos === 'below' && to.over && !to.space) nbPos = 'photo'; // 사진 아래 칸이 없으면 "글자 칸 아래" = 사진 아래쪽
         const photoHtml = nbPos === 'photo' ? heroImgHtml.replace(/<\/div>$/, nb + '</div>') : heroImgHtml;
         return `<div class="blk-hero${nb ? ' has-next' : ''}${to.cls}">${photoHtml}${to.spacer}<div class="free-canvas drag-canvas${to.canvasCls}" style="${to.canvasStyle}">
-        <span class="drag-part on-light op-datetime" style="${s('datetime')}">${esc(f.datetime)}</span>
-        <span class="drag-part on-light op-name" style="${s('groomName')}">${esc(f.groomName)}</span>
+        ${(f.hideParts || []).includes('datetime') ? '' : `<span class="drag-part on-light op-datetime" style="${s('datetime')}">${esc(f.datetime)}</span>`}
+        ${(f.hideParts || []).includes('groomName') ? '' : `<span class="drag-part on-light op-name" style="${s('groomName')}">${esc(f.groomName)}</span>`}
         ${f.hideHeart ? '' : `<span class="drag-part on-light op-heart" style="${s('heart')}">♥</span>`}
-        <span class="drag-part on-light op-name" style="${s('brideName')}">${esc(f.brideName)}</span>
+        ${(f.hideParts || []).includes('brideName') ? '' : `<span class="drag-part on-light op-name" style="${s('brideName')}">${esc(f.brideName)}</span>`}${InviteBlocks.heroLayersHtml(f, 'on-light', s)}
         </div>${nbPos === 'below' ? `<div class="ib-next-row">${nb}</div>` : nbPos === 'free' ? nb : ''}</div>`;
     },
     greeting: f => {

@@ -1141,3 +1141,5 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 /* 공개 페이지 자유 배치 계좌 줄: 누르면 계좌번호 복사 (invite-blocks.js) */
 [data-ib-copyrow] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 [data-ib-copyrow]:active { opacity: .6; }
+/* 메인 레이아웃 문구 칸 (heroLayersHtml) - 여러 줄 큰 글씨가 너무 벌어지지 않게 */
+.drag-part.op-layer { line-height: 1.02; }
