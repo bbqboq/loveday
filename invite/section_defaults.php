@@ -190,7 +190,7 @@ function section_defaults_panel_style(): string
 
 /** 손쉬운 제작(간편 만들기) 단계 - id => 기본 이름 (에디터 spSteps와 같은 id) */
 const SECTION_EASY_STEPS = [
-    'names' => '두 사람', 'hero' => '메인 화면', 'theme' => '테마', 'gallery' => '갤러리', 'venue' => '예식장', 'transport' => '교통 안내',
+    'names' => '두 사람', 'hero' => '메인 화면', 'theme' => '색·글꼴', 'gallery' => '갤러리', 'venue' => '예식장', 'transport' => '교통 안내',
     'greet' => '인사말', 'family' => '혼주·연락처', 'account' => '마음 전할 곳', 'dday' => '디데이·달력', 'notice' => '안내 말씀',
     'rsvp' => '참석 여부', 'guestbook' => '방명록', 'video' => '영상', 'music' => '배경음악', 'finish' => '마무리',
 ];
@@ -222,7 +222,7 @@ const SECTION_EASY_OPTS = [
     'names' => ['time' => '예식 시간'],
     'hero' => ['kind' => '사진 / 유튜브 고르기', 'size' => '화면 크기', 'frame' => '프레임 모양', 'height' => '세로 높이 조절', 'crop' => '보일 부분 · 확대', 'shade' => '글자 잘 보이게 (그라데이션)',
                'scroll' => '↓ 스크롤 버튼', 'scrollSize' => '스크롤 버튼 크기', 'scrollCustom' => '스크롤 버튼 직접 꾸미기', 'scrollMotion' => '스크롤 버튼 움직임', 'scrollFx' => '스크롤 버튼 등장 효과', 'scrollOpacity' => '스크롤 버튼 진하기'],
-    'theme' => ['skin' => '테마 (색 묶음)', 'font' => '글꼴', 'accent' => '포인트 색', 'paper' => '종이 질감', 'reset' => '따로 바꾼 값 되돌리기'],
+    'theme' => ['design' => '디자인 바꾸기', 'skin' => '색 묶음', 'font' => '글꼴', 'accent' => '포인트 색', 'paper' => '종이 질감', 'reset' => '따로 바꾼 값 되돌리기'],
     'gallery' => ['type' => '갤러리 모양', 'clearEx' => '예시 사진 모두 빼기'],
     'venue' => ['detail' => '층 · 홀 이름', 'phone' => '예식장 전화', 'map' => '지도 보여주기', 'mapWide' => '지도 가로 꽉 채우기', 'mapHeight' => '지도 높이'],
     'transport' => ['title' => '제목', 'quick' => '버튼으로 칸 추가'],
@@ -235,7 +235,7 @@ const SECTION_EASY_OPTS = [
     'guestbook' => ['desc' => '안내 문구', 'allowWrite' => '하객 글쓰기 켜고 끄기', 'style' => '모양 (카드 / 줄글)'],
     'video' => ['title' => '영상 제목', 'fullWidth' => '가로 꽉 채우기'],
     'music' => ['library' => '기본 음악 고르기', 'upload' => '내 음악 올리기', 'autoplay' => '자동 재생', 'volume' => '음량'],
-    'finish' => ['intro' => '인트로', 'preview' => '미리보기 버튼 (아래 줄)'],
+    'finish' => ['intro' => '인트로'],
 ];
 /** 끈 세부 옵션 정리 {step: [key, ...]} */
 function section_easy_off_clean($in): array

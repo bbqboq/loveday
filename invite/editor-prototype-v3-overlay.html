@@ -420,7 +420,25 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .preset-card.pc-base { border-style: dashed; }
 /* ===== 간편 만들기 (simple-mode): 왼쪽 = 간편 칸, 오른쪽 = 실제 미리보기 ===== */
 .simple-pane { display: none; }
-.sp-pvbtn { display: none; }
+/* 간편 만들기: 아래 버튼 줄은 [저장 | 미리보기] 두 칸 (원래 미리보기·임시저장·발행하기 줄은 숨김) */
+.sp-ebar, .sp-pvbar { display: none; }
+.simple-mode .action-bar { display: none !important; }
+.simple-mode .sp-ebar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 700; height: 56px; box-shadow: 0 -6px 18px rgba(0,0,0,.06); }
+.sp-ebar button { flex: 1; border: 0; font: inherit; font-size: 15px; font-weight: 700; letter-spacing: .02em; cursor: pointer; }
+.sp-ebar-save { background: #44403C; color: #fff; } .sp-ebar-save:hover { background: #2E2A27; } .sp-ebar-save:disabled { opacity: .7; cursor: default; }
+.sp-ebar-pv { background: #F6EEEC; color: #7C4650; } .sp-ebar-pv:hover { background: #F0E3E0; }
+/* 미리보기 화면: 청첩장만 화면 가득 + 아래 띠 (안내 · 돌아가기) */
+.simple-mode.sp-pv .sp-ebar { display: none; }
+.simple-mode.sp-pv .preview-pane { display: flex !important; position: fixed; inset: 0 0 56px; z-index: 750; background: #EDE9E3; }
+.simple-mode.sp-pv .sp-pvbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 760; height: 56px; align-items: center; justify-content: space-between; gap: 10px; padding-left: 18px; background: rgba(62,58,55,.96); color: #fff; font-size: 13px; font-weight: 600; }
+.sp-pvbar span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-pvbar-b { display: flex; flex: none; height: 100%; }
+.sp-pvbar button { height: 100%; border: 0; padding: 0 clamp(18px, 6vw, 40px); background: #2A2725; color: #fff; font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+.sp-pvbar button:hover { background: #1B1917; } #spPvPub { background: #7C4650; } #spPvPub:hover { background: #6A3A44; }
+.simple-mode.sp-pv #previewRoot .section-ruler, .simple-mode.sp-pv #previewRoot .hb-area, .simple-mode.sp-pv #previewRoot .hb-handle, .simple-mode.sp-pv #previewRoot .hb-ok, .simple-mode.sp-pv #previewRoot .hh-group, .simple-mode.sp-pv.sp-pv body:not(.sp-x) #undoTab { display: none !important; }
+.simple-mode.sp-pv #previewRoot .col.sp-live { pointer-events: none; }
+.simple-mode.sp-pv #previewRoot .col.selected { outline: none !important; box-shadow: none !important; }
+@media (max-width: 860px) { .sp-pvbar { font-size: 12px; padding-left: 14px; } .sp-pvbar span:first-child { white-space: normal; line-height: 1.35; } .sp-pvbar button { padding: 0 16px; font-size: 14px; } }
 .simple-mode .simple-pane { --wz-ink: #1B1A18; --wz-sub: #6F6A63; --wz-mute: #A39D95; --wz-line: #EAE6E0; --wz-line2: #DED8CF; --wz-soft: #F1EDE7; --wz-card: #fff; --wz-acc: #8A4B55; --wz-acc-soft: #F5EDEC; --wz-sun: #B5545F;
     display: flex; flex-direction: column; width: 440px; flex: none; background: #F6F4F1; border-right: 1px solid var(--line); overflow-y: auto; color: var(--wz-ink); }
 .simple-mode .editor-pane, .simple-mode #pcSettingsBtn, .simple-mode #pcWidthIcons, .simple-mode .topbar-icons, .simple-mode #backToInfo, .simple-mode #addTextTopBtn,
@@ -514,6 +532,17 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-seg button b { font-size: 14px; } .sp-seg button small { font-size: 11.5px; color: var(--wz-mute); line-height: 1.35; }
 .sp-seg button:hover { border-color: var(--wz-line2); }
 .sp-seg button.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink) inset; }
+.sp-dsg { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid var(--wz-line); border-radius: 14px; background: #fff; }
+.sp-dsg small { display: block; font-size: 11px; color: var(--wz-mute); font-weight: 600; } .sp-dsg b { font-size: 14px; }
+.sp-dsg-btn { flex: none; border: 1px solid var(--wz-line2); background: #fff; border-radius: 99px; padding: 7px 13px; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--wz-ink); cursor: pointer; }
+.sp-dsg-btn:hover { border-color: var(--wz-ink); }
+.sp-dcs { display: grid; gap: 6px; margin: -6px 0 16px; }
+.sp-dcs-n { margin: 0 0 4px; font-size: 12px; color: var(--wz-sub); line-height: 1.55; word-break: keep-all; }
+.sp-dc { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--wz-line); border-radius: 12px; background: #fff; font: inherit; text-align: left; cursor: pointer; color: var(--wz-ink); }
+.sp-dc:hover:not(:disabled) { border-color: var(--wz-ink); } .sp-dc.on { border-color: var(--wz-ink); cursor: default; }
+.sp-dc i { flex: none; width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--b) 0 55%, var(--a) 55% 80%, var(--k) 80%); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.sp-dc span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; } .sp-dc b { font-size: 13px; } .sp-dc small { font-size: 11px; color: var(--wz-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-dc em { flex: none; font-style: normal; font-size: 11px; font-weight: 700; color: var(--wz-acc); }
 .sp-ths { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
 .sp-th { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 6px 8px; border: 1px solid var(--wz-line); border-radius: 14px; background: #fff; font: inherit; cursor: pointer; color: var(--wz-ink); }
 .sp-th.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink) inset; }
@@ -576,9 +605,6 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 @media (max-width: 860px) {
     .simple-mode .simple-pane { width: 100%; border-right: 0; min-height: calc(100vh - 120px); }
     .simple-mode .preview-pane { display: none; }
-    .simple-mode.sp-pv .preview-pane { display: flex; position: fixed; inset: 56px 0 64px; z-index: 650; background: #EDE9E3; }
-    .simple-mode .sp-pvbtn { display: inline-flex; margin-left: auto; height: 32px; align-items: center; padding: 0 12px; border-radius: 99px; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 12.5px; font-weight: 700; }
-    .simple-mode.sp-pv .sp-pvbtn { background: #1B1A18; color: #fff; border-color: #1B1A18; }
     .sp-head { padding: 14px 16px 10px; } .sp-steps { padding: 0 12px 6px; } .sp-body { padding: 14px 16px 40px; } .sp-nav { padding: 10px 16px 14px; bottom: 60px; }
     .simple-mode .simple-pane { overflow: visible; } /* 휴대폰은 화면 전체가 스크롤 - 왼쪽 칸이 스크롤 상자면 아래 [이전·다음]이 붙어 있지 못하고 아래 버튼 줄에 가려졌음 */
     .sp-row { grid-template-columns: 56px 1fr 1fr; }
@@ -4068,7 +4094,6 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
     <button type="button" class="pill topbar-home-btn" id="backToInfo" title="정보 다시 입력" aria-label="정보 다시 입력"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg><span class="tb-l">정보</span></button>
     <span class="title"><b>청첩장 에디터</b><small id="tbNames"></small></span>
     <button type="button" class="pill tb-to-simple" id="tbToSimple" title="고른 디자인 모양으로 칸만 채우는 간편 만들기로" hidden style="display:none">간편 만들기</button><!-- 머리줄이 좁아져서 숨김 - 도구 메뉴 "간편 만들기로"가 이 버튼을 대신 누름 -->
-    <button type="button" class="sp-pvbtn" id="spPvBtn">미리보기</button>
     <button type="button" class="pc-settings-btn" id="pcSettingsBtn" title="화면 설정"><span class="pc-settings-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span class="pc-settings-label">화면 설정</span></button>
     <div class="pc-width-icons" id="pcWidthIcons">
         <span class="tb-seg" role="group" aria-label="화면 폭">
@@ -4261,6 +4286,8 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
     <button type="button" class="pill" id="saveDraftBtn">임시저장</button>
     <button type="button" class="pill-primary" id="publishBtn">발행하기</button>
 </div>
+<div class="sp-ebar" id="spFoot"><button type="button" class="sp-ebar-save" id="spFootSave">저장</button><button type="button" class="sp-ebar-pv" id="spFootPv">미리보기</button></div><!-- 간편 만들기 아래 버튼 줄 -->
+<div class="sp-pvbar" id="spPvBar"><span id="spPvMsg">미리보기 입니다. 제작 후 꼭 저장해주세요.</span><span class="sp-pvbar-b"><button type="button" id="spPvPub" hidden>발행하기</button><button type="button" id="spPvBack">돌아가기</button></span></div>
 <div class="width-fab-row" id="widthFabRow">
     <button type="button" id="mWidthNormal" class="width-fab-btn active" title="표준 화면(실제 기기 폭)">표준</button>
     <button type="button" id="mWidthNarrow" class="width-fab-btn" title="좁은 화면(테스트용 320px)">좁게</button>
@@ -13199,7 +13226,29 @@ document.getElementById('tbToSimple').addEventListener('click', fullToSimple);
     });
     rz.addEventListener('dblclick', () => { set(0); try { localStorage.removeItem('ldPaneW'); } catch (x) {} window.dispatchEvent(new Event('resize')); });
 })();
-document.getElementById('spPvBtn').addEventListener('click', () => document.documentElement.classList.toggle('sp-pv'));
+// 간편 만들기 아래 버튼 줄 [저장 | 미리보기] + 미리보기 화면 (아래 띠: 안내 + [돌아가기], 마무리에서 저장하면 [발행하기]도)
+function spOpenPreview(final) {
+    document.documentElement.classList.add('sp-pv');
+    document.getElementById('spPvMsg').textContent = final ? '저장했어요! 발행하면 하객에게 보낼 주소가 생겨요.' : '미리보기 입니다. 제작 후 꼭 저장해주세요.';
+    document.getElementById('spPvPub').hidden = !final;
+    try { renderPreview(); } catch (e) {}
+    const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0;
+}
+function spClosePreview() { document.documentElement.classList.remove('sp-pv'); try { renderPreview(); } catch (e) {} }
+document.getElementById('spFootPv').addEventListener('click', () => spOpenPreview(false));
+document.getElementById('spPvBack').addEventListener('click', spClosePreview);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('sp-pv')) spClosePreview(); });
+document.getElementById('spFootSave').addEventListener('click', async e => {
+    const b = e.currentTarget; if (b.disabled) return;
+    b.disabled = true; b.textContent = '저장 중…';
+    try { await saveToServer(false); } finally { b.disabled = false; b.textContent = '저장'; }
+});
+document.getElementById('spPvPub').addEventListener('click', async e => {
+    const b = e.currentTarget; if (b.disabled) return;
+    b.disabled = true; b.textContent = '발행 중…';
+    let ok = false; try { ok = await saveToServer(true); } finally { b.disabled = false; b.textContent = '발행하기'; }
+    if (ok) spClosePreview();
+});
 // "간편 만들기" 버튼: 디자인(템플릿)을 골라 만든 청첩장의 전문가 모드 화면에서만
 function syncSimpleBtn() { const b = document.getElementById('tbToSimple'); if (b) b.hidden = !!SAMPLE_ID || state.mode === 'simple' || !(state.presetId || state.sampleId); }
 document.getElementById('fpMore').addEventListener('click', () => { fpAllOpen = !fpAllOpen; renderDesignScreen(); if (fpAllOpen) document.getElementById('fpAll').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
@@ -13515,7 +13564,7 @@ const spHas = id => !!spBlock(id) && !SECTION_HIDDEN.has(id); // 디자인에 �
 const SP_STEP_DEFS = {
     names: { t: '두 사람', s: ['hero', 'heroVideo'], fn: spNames },
     hero: { t: '메인 화면', s: ['hero', 'heroVideo'], fn: spHero, show: () => spHas('hero') || spHas('heroVideo') },
-    theme: { t: '테마', s: ['hero', 'heroVideo', 'greeting'], fn: spTheme },
+    theme: { t: '색·글꼴', s: ['hero', 'heroVideo', 'greeting'], fn: spTheme },
     gallery: { t: '갤러리', s: ['gallery'], fn: spGallery, show: () => spHas('gallery') },
     venue: { t: '예식장', s: ['location'], fn: spVenue, show: () => spHas('location') },
     transport: { t: '교통 안내', s: ['transport'], fn: spTransport, show: () => spHas('transport') },
@@ -13641,15 +13690,14 @@ function spRender() {
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>${spStep + 1} / ${steps.length} · ${esc(st.t)}</b></div><div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button></div>
         <nav class="sp-steps">${steps.map((x, i) => `<button type="button" class="${i === spStep ? 'on' : i < spStep ? 'done' : ''}" data-sp-go="${i}"><i>${i < spStep ? '✓' : i + 1}</i><span>${esc(x.t)}</span></button>`).join('')}</nav>
         <div class="sp-body" id="spBody"></div>
-        <div class="sp-nav"><button type="button" class="wz-back" id="spPrev"${spStep === 0 ? ' style="visibility:hidden"' : ''}>이전</button>${spStep === steps.length - 1 && spOpt('finish', 'preview') ? '<button type="button" class="wz-back" id="spNavPv">미리보기</button>' : ''}<button type="button" class="wz-next" id="spNext">${spStep === steps.length - 1 ? '저장하기' : '다음'}</button></div>`;
+        <div class="sp-nav"><button type="button" class="wz-back" id="spPrev"${spStep === 0 ? ' style="visibility:hidden"' : ''}>이전</button><button type="button" class="wz-next" id="spNext">${spStep === steps.length - 1 ? '저장하기' : '다음'}</button></div>`;
     pane.querySelectorAll('[data-sp-go]').forEach(b => b.addEventListener('click', () => { spStep = +b.dataset.spGo; spHeroPhase = 'pick'; spRender(); }));
     pane.querySelector('#spPrev').addEventListener('click', () => { if (st.k === 'hero' && spHeroPhase === 'scroll') { spHeroPhase = 'pick'; spRender(); return; } spStep--; spHeroPhase = steps[spStep] && steps[spStep].k === 'hero' && spHeroScrollOk() ? 'scroll' : 'pick'; spRender(); });
     pane.querySelector('#spNext').addEventListener('click', () => {
-        if (spStep === steps.length - 1) { saveToServer(false); return; }
+        if (spStep === steps.length - 1) { const b = pane.querySelector('#spNext'); b.disabled = true; b.textContent = '저장 중…'; saveToServer(false).then(ok => { b.disabled = false; b.textContent = '저장하기'; if (ok) spOpenPreview(true); }); return; } // 저장하고 다 된 모습 보여주기
         if (st.k === 'hero' && spHeroPhase !== 'scroll' && spHeroScrollOk()) { spHeroToScroll(pane.querySelector('#spBody')); return; } // 스크롤 버튼까지 고르고 넘어가기
         spStep++; spRender();
     });
-    pane.querySelector('#spNavPv')?.addEventListener('click', spPreviewAll);
     pane.querySelector('#spToFull').addEventListener('click', () => spInPlace ? spExitInPlace() : simpleToFull());
     pane.querySelector('#spUndo').addEventListener('click', () => { scheduleSnapshot(); undoHistory(); });
     pane.querySelector('#spRedo').addEventListener('click', () => redoHistory());
@@ -13884,13 +13932,39 @@ function spHero(box) {
         input.click();
     });
 }
-// 테마: 디자인의 색·글꼴 묶음 (화면 설정 → 테마와 같은 값)
+// 색 이름 (테마 카드용) - 디자인 이름("모던 화이트")을 그대로 쓰면 첫 화면 디자인 고르기와 같은 메뉴처럼 보여서, 바탕·포인트 색 이름으로
+function spHexName(hex, role) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim()); if (!m) return '';
+    const n = parseInt(m[1], 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn, sat = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
+    let h = 0; if (d) { h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; }
+    if (role === 'bg') { // 바탕: 밝기·따뜻함으로
+        if (l < .2) return '블랙'; if (l < .45) return '차콜';
+        if (sat < .12 || l > .985) return l > .97 ? '화이트' : '그레이';
+        if (h >= 20 && h < 60) return l > .95 ? '아이보리' : '베이지';
+        if (h >= 60 && h < 170) return '세이지'; if (h >= 170 && h < 260) return '스카이'; if (h >= 260 && h < 320) return '라벤더'; return '블러쉬';
+    }
+    if (sat < .15) return l < .25 ? '블랙' : '그레이';
+    if (h < 12 || h >= 320) return l < .4 ? '와인' : l >= .55 ? '핑크' : '레드';
+    if (h < 28) return sat < .4 ? '브라운' : l < .5 ? '테라코타' : '코랄';
+    if (h < 50) return sat > .35 && l > .45 ? '골드' : '브라운';
+    if (h < 70) return '골드'; if (h < 165) return sat < .2 ? '세이지' : '그린';
+    if (h < 200) return '민트'; if (h < 225) return l < .4 ? '네이비' : '블루'; if (h < 255) return '인디고'; return l < .5 ? '퍼플' : '라벤더';
+}
+const spSkinName = sk => { const a = spHexName(sk.bg, 'bg'), b = spHexName(sk.accent); return a && b ? (a === b ? a : `${a} · ${b}`) : (sk.label || ''); };
+// 색·글꼴: 디자인의 색·글꼴 묶음만 (화면 설정 → 테마와 같은 값). 디자인 자체(섹션 구성·메인·효과)를 바꾸려면 위의 [디자인 바꾸기]
+let spDesignOpen = false;
 function spTheme(box) {
     const cur = state.skin, O = k => spOpt('theme', k), sk0 = skins[state.skin] || skins.classic;
-    const card = ([k, sk]) => `<button type="button" class="sp-th${cur === k ? ' on' : ''}" data-sp-skin="${k}" style="--b:${sk.bg};--i:${sk.ink};--a:${sk.accent};--l:${sk.line};--f:${String(sk.headFont || 'inherit').replace(/"/g, "'")};--w:${sk.headWeight || 600};--r:${sk.radius || '8px'}">
-        <span class="sp-th-pv"><i>민준 <em>♥</em> 서연</i><u></u><s></s></span><b>${esc(sk.label || k)}</b>${cur === k ? '<small>지금 테마</small>' : ''}</button>`;
+    const card = ([k, sk]) => `<button type="button" class="sp-th${cur === k ? ' on' : ''}" data-sp-skin="${k}" title="${esc(sk.label || '')} 디자인의 색" style="--b:${sk.bg};--i:${sk.ink};--a:${sk.accent};--l:${sk.line};--f:${String(sk.headFont || 'inherit').replace(/"/g, "'")};--w:${sk.headWeight || 600};--r:${sk.radius || '8px'}">
+        <span class="sp-th-pv"><i>민준 <em>♥</em> 서연</i><u></u><s></s></span><b>${esc(spSkinName(sk))}</b>${cur === k ? '<small>지금 색</small>' : ''}</button>`;
     const P = (window.InviteBlocks && InviteBlocks.BG_PAPERS) || {};
-    box.innerHTML = spH('테마 고르기', '청첩장 전체의 색과 제목 글꼴이 한 번에 바뀌어요. 눌러 보고 마음에 드는 걸로 고르세요.') +
+    const dCur = allDesigns().find(p => p.id === (state.sampleId || state.presetId)) || {};
+    const dCard = p => { const pal = skins[p.__base || p.id] || skins.classic, on = p.id === dCur.id;
+        return `<button type="button" class="sp-dc${on ? ' on' : ''}" data-sp-design="${esc(p.id)}"${on ? ' disabled' : ''}><i style="--b:${pal.bg};--a:${pal.accent};--k:${pal.ink}"></i><span><b>${esc(p.label)}</b><small>${esc(p.desc || '')}</small></span>${on ? '<em>지금</em>' : ''}</button>`; };
+    box.innerHTML = spH('색·글꼴 고르기', '청첩장 전체의 색과 글꼴만 바뀌어요. 섹션 구성·사진·글은 그대로예요.') +
+        (O('design') && !spInPlace ? `<div class="sp-dsg"><span><small>지금 디자인</small><b>${esc(dCur.label || '기본')}</b></span><button type="button" class="sp-dsg-btn" id="spDsgBtn">${spDesignOpen ? '접기' : '디자인 바꾸기'}</button></div>
+            ${spDesignOpen ? `<div class="sp-dcs"><p class="sp-dcs-n">디자인을 바꾸면 섹션 구성·메인 화면·장식까지 새 디자인 모양이 돼요. 적어 둔 이름·사진·글·계좌는 그대로 옮겨요.</p>${allDesigns().map(dCard).join('')}</div>` : ''}` : '') +
         (O('skin') ? `<div class="sp-ths">${Object.entries(skins).filter(([k, sk]) => sk && sk.label && sk.bg).map(card).join('')}</div>` : '') +
         (O('font') ? `<div class="wz-field"><div class="wz-lab">글꼴</div><div class="sp-fonts">${fontOptions.map(fo => `<button type="button" class="${(state.customFont || '') === fo.id ? 'on' : ''}" data-sp-font="${esc(fo.id)}" style="font-family:${String(fo.family || 'inherit').replace(/"/g, "'")}">${esc(fo.id ? fo.label.replace(/\s*\(.*\)\s*$/, '') : '테마 기본')}</button>`).join('')}</div></div>` : '') +
         (O('accent') ? `<div class="wz-field"><div class="wz-lab">포인트 색 <small>하트·버튼·강조 글자</small></div><div class="sp-cols"><button type="button" class="${!state.customAccent ? 'on' : ''}" data-sp-acc="" style="--c:${sk0.accent}" title="테마 기본"></button>${ACCENT_SWATCHES.map(([h, n]) => `<button type="button" class="${String(state.customAccent || '').toUpperCase() === h.toUpperCase() ? 'on' : ''}" data-sp-acc="${h}" style="--c:${h}" title="${n}"></button>`).join('')}<label class="sp-colpick" title="직접 고르기"><input type="color" value="${esc(state.customAccent || sk0.accent)}" data-sp-accpick></label></div></div>` : '') +
@@ -13900,12 +13974,37 @@ function spTheme(box) {
     if (O('font')) try { loadAllFontCss(); } catch (e) {}
     const after = () => { try { renderSkinPicker(); renderFontBgPickers(); } catch (e) {} spChanged(); scheduleSnapshot(); spRender(); };
     box.querySelectorAll('[data-sp-skin]').forEach(b => b.addEventListener('click', () => { state.skin = b.dataset.spSkin; after(); }));
+    box.querySelector('#spDsgBtn')?.addEventListener('click', () => { spDesignOpen = !spDesignOpen; spRender(); });
+    box.querySelectorAll('[data-sp-design]').forEach(b => b.addEventListener('click', () => spChangeDesign(b.dataset.spDesign)));
     box.querySelectorAll('[data-sp-font]').forEach(b => b.addEventListener('click', () => { state.customFont = b.dataset.spFont || null; if (state.customFont) loadFontCss(state.customFont); after(); }));
     box.querySelectorAll('[data-sp-acc]').forEach(b => b.addEventListener('click', () => { state.customAccent = b.dataset.spAcc || null; after(); }));
     const ap = box.querySelector('[data-sp-accpick]'); if (ap) { ap.addEventListener('input', () => { state.customAccent = ap.value; renderPreview(); }); ap.addEventListener('change', after); }
     box.querySelectorAll('[data-sp-paper]').forEach(b => b.addEventListener('click', () => { const k = b.dataset.spPaper; if (k && P[k]) { state.paper = k; state.customBg = P[k].bg; } else { state.paper = null; } after(); }));
     const rs = box.querySelector('#spThReset');
     if (rs) rs.addEventListener('click', () => { state.customBg = null; state.customAccent = null; state.customFont = null; state.paper = null; after(); });
+}
+// 간편 만들기 중 디자인 바꾸기: 적은 내용(이름·날짜·사진·글·계좌·음악)은 옮기고 디자인은 새로 (첫 화면에서 고르는 것과 같은 값)
+async function spChangeDesign(id) {
+    const p = allDesigns().find(x => x.id === id); if (!p) return;
+    const ok = await LD.confirm(`'${p.label}' 디자인으로 바꿀까요?`, { message: '적어 둔 이름·날짜·사진·글·계좌는 그대로 옮겨요.\n섹션 구성·메인 화면·색·장식은 새 디자인 모양으로 바뀌어요.\n(되돌리기로 다시 돌아올 수 있어요)', ok: '바꾸기', cancel: '그대로 두기', icon: 'info' });
+    if (!ok) return;
+    scheduleSnapshot(); // 바꾸기 전 모습을 되돌리기 기록에
+    const content = spExtract(), sm = SAMPLE_LIST[id];
+    applyPreset(sm && sm.custom ? sm.base : id);
+    if (sm) {
+        try { const j = await fetch(`sample_api.php?a=get&id=${encodeURIComponent(id)}`, { cache: 'no-store' }).then(r => r.json()); if (j && j.ok) applySampleDesign(j.design); } catch (e) {}
+        state.presetId = sm.custom ? sm.base : id;
+    }
+    state.sampleId = id;
+    delete state.simpleSnap; delete state.fullSnap;
+    spPour(content);
+    spAccCache = {}; spDesignOpen = false;
+    spApplyEasyOrder();
+    spRenderAll();
+    const ti = spSteps().findIndex(x => x.k === 'theme'); if (ti >= 0) spStep = ti;
+    spRender();
+    scheduleSnapshot();
+    showServerNotice(`'${p.label}' 디자인으로 바꿨어요.`);
 }
 // 3. 갤러리
 function spGallery(box) {
@@ -14155,11 +14254,9 @@ function spAccount(box) {
     box.querySelector('#spPar')?.addEventListener('click', e => { const p = box.querySelector('#spParents'), on = !p.classList.contains('on'); p.classList.toggle('on', on); e.currentTarget.textContent = on ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'; });
 }
 // 7. 마무리
-// 마무리 단계 아래 줄 [미리보기]: 처음부터 실제 청첩장처럼 (발행하기는 맨 아래 버튼 줄에만 - 저장하기와 헷갈리지 않게)
-function spPreviewAll() { const pb = document.getElementById('previewBtn'); if (pb && pb.getAttribute('href') && pb.getAttribute('href') !== '#') window.open(pb.href, '_blank'); else document.querySelector('.preview-pane').scrollTo({ top: 0, behavior: 'smooth' }); }
 function spFinish(box) {
     ensureExtraState();
-    box.innerHTML = spH('거의 다 됐어요', '마지막으로 켜고 끌 것만 고르고 아래 [저장하기]를 누르세요. 하객에게 보낼 주소는 맨 아래 [발행하기]로 만들어요.') + `
+    box.innerHTML = spH('거의 다 됐어요', '마지막으로 켜고 끌 것만 고르고 [저장하기]를 누르세요. 다 된 모습을 보여드리고, 거기서 하객에게 보낼 주소를 만들 수 있어요(발행하기).') + `
         ${spOpt('finish', 'intro') ? `<label class="sp-sw"><span><b>인트로</b><small>청첩장을 열 때 "${wzEsc(state.intro.text || '우리 결혼합니다')}" 짧은 애니메이션</small></span><input type="checkbox" id="spIntro" ${state.intro.enabled ? 'checked' : ''}><i></i></label>` : ''}
         <p class="wz-hint">글자 위치·스티커·섹션 순서까지 바꾸고 싶으면 위의 <b>전문가 모드</b>를 누르세요. 언제든 간편 만들기로 돌아올 수 있어요.</p>`;
     box.querySelector('#spIntro')?.addEventListener('change', e => { state.intro.enabled = e.target.checked; spChanged(); });
