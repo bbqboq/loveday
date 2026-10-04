@@ -715,6 +715,23 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .fp-card .fp-tx { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 3px; flex: 1; }
 .fp-card .fp-tx b { font-size: 15.5px; letter-spacing: -.01em; }
 .fp-card .fp-tx small { font-size: 12.5px; color: #8A847B; line-height: 1.5; word-break: keep-all; }
+.fp-acts { display: flex; gap: 6px; margin-top: 12px; }
+.fp-acts > * { flex: 1; min-width: 0; height: 36px; border-radius: 10px; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; display: grid; place-items: center; white-space: nowrap; }
+.fp-pv { border: 1px solid #DED8CF; background: #fff; color: #1B1A18; } .fp-pv:hover { border-color: #1B1A18; }
+.fp-sel { background: #2E2A27; color: #fff; }
+.preset-card .fp-acts > * { height: 32px; font-size: 12px; border-radius: 9px; }
+/* 샘플 미리보기: 디자인 고르기 화면 위에 에디터 미리보기만 화면 가득 + 아래 띠 */
+html.pv-sample #screenEditor { display: block !important; visibility: hidden; position: fixed; inset: 0; overflow: hidden; z-index: 900; }
+html.pv-sample #screenEditor .preview-pane { visibility: visible; display: flex !important; position: fixed; inset: 0 0 56px; z-index: 901; background: #EDE9E3; overflow-y: auto; }
+html.pv-sample #previewRoot { pointer-events: none; }
+html.pv-sample #previewRoot .section-ruler, html.pv-sample #previewRoot .hb-area, html.pv-sample #previewRoot .hb-handle, html.pv-sample #previewRoot .hb-ok, html.pv-sample #previewRoot .hh-group { display: none !important; }
+html.pv-sample body { overflow: hidden; }
+.spv-bar { display: none; }
+html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 902; height: 56px; align-items: center; justify-content: space-between; gap: 10px; padding-left: 18px; background: rgba(62,58,55,.96); color: #fff; }
+.spv-t { min-width: 0; display: flex; flex-direction: column; } .spv-t small { font-size: 11px; opacity: .7; } .spv-t b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spv-b { display: flex; height: 100%; flex: none; }
+.spv-b button { height: 100%; border: 0; padding: 0 clamp(16px, 5vw, 36px); background: #2A2725; color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.spv-b #spvPick { background: #7C4650; } .spv-b button:hover { filter: brightness(.92); }
 .fp-card .fp-go { margin-top: 10px; font-size: 13px; font-weight: 700; color: #1B1A18; opacity: .0; transform: translateY(3px); transition: opacity .18s, transform .18s; }
 .fp-card:hover .fp-go, .fp-card:focus-visible .fp-go { opacity: 1; transform: none; }
 .fp-card.fp-base .fp-th { display: grid; place-items: center; background: #FBF9F6; height: 277px; color: #8A847B; }
@@ -13120,14 +13137,14 @@ function renderDesignScreen() {
     const baseId = PRESETS[0] ? PRESETS[0].id : 'classic';
     const cards = (custom ? [`<button type="button" class="fp-card fp-base" data-design="${baseId}"><div class="fp-th"><span>＋</span></div>
             <div class="fp-tx"><b>기본 구성으로 시작</b><small>꾸밈 없는 기본 섹션에서 하나씩 채워요</small><span class="fp-go">이걸로 시작 →</span></div></button>`] : [])
-        .concat(feat.map(p => `<button type="button" class="fp-card" data-design="${p.id}"><div class="fp-th">${presetThumbHtml(p)}</div>
-            <div class="fp-tx"><b>${esc(p.label)}</b><small>${esc(p.desc || '')}</small><span class="fp-go">이 디자인으로 시작 →</span></div></button>`));
+        .concat(feat.map(p => `<div class="fp-card" role="button" tabindex="0" data-design="${p.id}"><div class="fp-th">${presetThumbHtml(p)}</div>
+            <div class="fp-tx"><b>${esc(p.label)}</b><small>${esc(p.desc || '')}</small><span class="fp-acts"><button type="button" class="fp-pv" data-pv-design="${p.id}">샘플 확인하기</button><span class="fp-sel">이 샘플로 선택</span></span></div></div>`));
     const useFeat = feat.length > 0;
     fg.hidden = !useFeat;
     fg.style.setProperty('--fp-n', String(cards.length === 6 ? 3 : Math.min(5, Math.max(2, cards.length))));
     fg.classList.toggle('fp-five', cards.length === 5);
     fg.innerHTML = useFeat ? cards.join('') : '';
-    fg.querySelectorAll('[data-design]').forEach(card => card.addEventListener('click', () => startWithPreset(card.dataset.design)));
+    bindDesignCards(fg);
     const rest = ALL.length - feat.length;
     more.hidden = !useFeat || rest <= 0;
     more.innerHTML = fpAllOpen ? '다른 디자인 접기 <span aria-hidden="true">⌃</span>' : `다른 디자인 ${rest}개 더 보기 <span aria-hidden="true">⌄</span>`;
@@ -13137,17 +13154,59 @@ function renderDesignScreen() {
             <div class="pt" style="--pb:#FBF9F6;--pi:#6F6A63"><span style="font-size:28px;line-height:1">＋</span></div>
             <div class="info"><span class="no">기본</span><h4>기본 구성으로 시작</h4><p>꾸밈 없는 기본 섹션에서 하나씩 채워요</p></div>
         </button>` : '') + ALL.filter(p => !useFeat || !feat.includes(p)).map(p => `
-        <button type="button" class="preset-card" data-design="${p.id}" ${presetFilter !== 'all' && p.group !== presetFilter ? 'hidden' : ''}>
+        <div class="preset-card" role="button" tabindex="0" data-design="${p.id}" ${presetFilter !== 'all' && p.group !== presetFilter ? 'hidden' : ''}>
             ${presetThumbHtml(p)}
             <div class="info">
                 <span class="no">${String(p.no).padStart(2, '0')}</span>
                 <h4>${esc(p.label)}</h4><p>${esc(p.desc || '')}</p>
                 <div class="tags">${(p.tags || []).map(t => `<span class="${t === 'BETA' ? 'beta' : ''}">${t === 'BETA' ? '베타' : '#' + esc(t)}</span>`).join('')}</div>
+                <span class="fp-acts"><button type="button" class="fp-pv" data-pv-design="${p.id}">샘플 확인하기</button><span class="fp-sel">이 샘플로 선택</span></span>
             </div>
-        </button>
+        </div>
     `).join('');
-    grid.querySelectorAll('[data-design]').forEach(card => card.addEventListener('click', () => startWithPreset(card.dataset.design)));
+    bindDesignCards(grid);
 }
+// 디자인 카드: 카드를 누르면 그 디자인으로 시작, [샘플 확인하기]는 고르기 전에 화면 가득 미리보기
+function bindDesignCards(box) {
+    box.querySelectorAll('[data-design]').forEach(card => {
+        card.addEventListener('click', e => { if (e.target.closest('[data-pv-design]')) return; startWithPreset(card.dataset.design); });
+        card.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === card) { e.preventDefault(); card.click(); } });
+    });
+    box.querySelectorAll('[data-pv-design]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openSamplePreview(b.dataset.pvDesign); }));
+}
+// 샘플 미리보기: 그 디자인(관리자 샘플이 있으면 샘플 모습)을 잠깐 입혀서 에디터 미리보기를 화면 가득 보여줌
+//  [돌아가기] = 보기 전 상태 그대로 되돌림 / [이 샘플로 선택] = 그 디자인으로 시작 (startWithPreset)
+let spvSnap = null, spvId = null;
+async function openSamplePreview(id) {
+    const p = allDesigns().find(x => x.id === id); if (!p) return;
+    if (spvSnap == null) spvSnap = JSON.stringify(state);
+    spvId = id;
+    const sm = SAMPLE_LIST[id];
+    applyPreset(sm && sm.custom ? sm.base : id);
+    if (sm) { try { const j = await fetch(`sample_api.php?a=get&id=${encodeURIComponent(id)}`, { cache: 'no-store' }).then(r => r.json()); if (j && j.ok) applySampleDesign(j.design); } catch (e) {} }
+    try { applyWizardDataToBlocks(); } catch (e) {} // 주문 때 받은 이름이 있으면 그 이름으로
+    selectedId = null;
+    let bar = document.getElementById('spvBar');
+    if (!bar) {
+        bar = document.createElement('div'); bar.className = 'spv-bar'; bar.id = 'spvBar';
+        bar.innerHTML = '<span class="spv-t"><small>샘플 미리보기</small><b id="spvName"></b></span><span class="spv-b"><button type="button" id="spvBack">돌아가기</button><button type="button" id="spvPick">이 샘플로 선택</button></span>';
+        document.body.appendChild(bar);
+        bar.querySelector('#spvBack').addEventListener('click', () => closeSamplePreview(false));
+        bar.querySelector('#spvPick').addEventListener('click', () => closeSamplePreview(true));
+    }
+    bar.querySelector('#spvName').textContent = p.label;
+    document.documentElement.classList.add('pv-sample');
+    renderPreview(); try { updateSectionRuler(); } catch (e) {}
+    const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0;
+}
+function closeSamplePreview(pick) {
+    const id = spvId;
+    document.documentElement.classList.remove('pv-sample');
+    if (spvSnap != null) { state = JSON.parse(spvSnap); spvSnap = null; }
+    spvId = null;
+    if (pick && id) startWithPreset(id); else { try { renderPreview(); } catch (e) {} }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('pv-sample')) closeSamplePreview(false); });
 async function startWithPreset(presetId) {
     const sm = SAMPLE_LIST[presetId];
     applyPreset(sm && sm.custom ? sm.base : presetId);
