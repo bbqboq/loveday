@@ -526,6 +526,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-mapdemo .pin { position: absolute; z-index: 2; left: 57%; top: 44%; width: 22px; height: 22px; border-radius: 50% 50% 50% 0; background: #C9584F; transform: translate(-50%, -100%) rotate(-45deg); box-shadow: 0 2px 4px rgba(0,0,0,.25); }
 .sp-mapdemo .pin::after { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: #fff; }
 .sp-mapdemo span { position: absolute; z-index: 2; left: 8px; bottom: 8px; font-size: 10.5px; padding: 3px 8px; border-radius: 99px; background: rgba(255,255,255,.92); color: #555; }
+@media (min-width: 861px) { .sp-mapdemo { display: none; } } /* PC는 왼쪽 미리보기에 실제 지도가 보여서 예시 지도는 휴대폰에서만 */
 @media (max-width: 860px) { .sp-body { --sp-px: 16px; } .sp-now-wrap { padding: 10px 16px 0; } .sp-ask-top { padding: 0 16px 4px; } .sp-ask-head { padding-left: 6px !important; } }
 
 .sp-ask-top { display: flex; align-items: center; gap: 12px; padding: 0 24px 4px; }
@@ -14334,8 +14335,7 @@ function spNames(box) {
         <div class="wz-field"><button type="button" class="sp-tbd${wi.undecided ? ' on' : ''}" id="spTbd" aria-pressed="${!!wi.undecided}"><i></i><span><b>아직 일정을 잡지 않았어요</b><small>정해지면 언제든 바꿀 수 있어요</small></span></button></div>`;
     const set = (k, v) => { const w = weddingInfo(); w[k] = v; if ((k === 'date' || k === 'time') && v && w.undecided) spSetDateTbd(false); applyWeddingInfo(k === 'groom' || k === 'bride' ? 'names' : 'date'); spChanged(['hero', 'heroVideo']); };
     box.querySelector('#spTbd').addEventListener('click', () => {
-        const on = !weddingInfo().undecided; spSetDateTbd(on); spChanged(['hero', 'heroVideo']); scheduleSnapshot(); spRender();
-        if (on && spViewNow() === 'quick') setTimeout(() => document.getElementById('spNext')?.click(), 320); // 고르면 바로 다음 질문
+        const on = !weddingInfo().undecided; spSetDateTbd(on); spChanged(['hero', 'heroVideo']); scheduleSnapshot(); spRender(); // 넘어가기는 [다음]으로
     });
     box.querySelectorAll('[data-wi]').forEach(inp => inp.addEventListener('input', () => set(inp.dataset.wi, inp.value)));
     const dTxt = () => { const d = weddingInfo().date; box.querySelector('#spDateTxt').innerHTML = d ? wzEsc(dtDateText(d)) : '<span class="ph">날짜를 골라주세요</span>'; };
