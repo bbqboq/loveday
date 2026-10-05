@@ -1051,6 +1051,12 @@ body:has(#screenInfo.active) #undoTab, body:has(#screenDesign.active) #undoTab {
 .wz-btn2 { height: 52px; padding: 0 18px; border-radius: 14px; border: 1px solid var(--wz-ink); background: var(--wz-card); font: inherit; font-weight: 600; font-size: 14px; white-space: nowrap; cursor: pointer; color: var(--wz-ink); }
 .wz-btn2:hover { background: var(--wz-ink); color: #fff; }
 .wz-tones { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+/* 전문가 모드 인사말 예시 문구 */
+.gp { margin-top: 8px; } .gp-tog { width: 100%; height: 40px; border: 1px dashed var(--ui-line, #DED8CF); border-radius: 10px; background: var(--ui-tint, #FBF9F6); font: inherit; font-size: 13px; font-weight: 600; color: var(--ink, #2B2320); cursor: pointer; }
+.gp-tog small { font-weight: 400; color: var(--muted); margin-left: 4px; }
+.gp-list { display: grid; gap: 6px; margin-top: 8px; }
+.gp-s { text-align: left; white-space: pre-line; border: 1px solid var(--ui-line, #E5DED3); border-radius: 10px; background: #fff; padding: 10px 12px; font: inherit; font-family: "Gowun Batang", serif; font-size: 12.5px; line-height: 1.6; color: #555; cursor: pointer; }
+.gp-s:hover { border-color: #B9B1A6; color: #222; } .gp-s.on { border-color: var(--ink, #2B2320); color: var(--ink, #2B2320); box-shadow: inset 0 0 0 1px var(--ink, #2B2320); }
 .wz-tone { border: 1px solid var(--wz-line2); background: var(--wz-card); border-radius: 99px; padding: 7px 14px; font: inherit; font-size: 13px; font-weight: 600; color: var(--wz-sub); cursor: pointer; }
 .wz-tone.on { border-color: var(--wz-ink); color: var(--wz-ink); }
 .wz-samples { display: grid; gap: 8px; margin-bottom: 14px; }
@@ -7666,6 +7672,7 @@ function renderFieldEditor() {
         if (hlBox.innerHTML) { const first = wrap.querySelector(':scope > h3, :scope > .field-editor-title-row'); first ? first.after(hlBox) : wrap.prepend(hlBox); spBindHeroLayout(hlBox, block, () => renderFieldEditor()); }
     }
     if ((block.id === 'hero' || block.id === 'heroVideo') && HL_ADMIN) appendHeroLayoutAdmin(wrap, block);
+    if (block.id === 'greeting') appendGreetPresets(wrap, block);
     appendSectionSpacingControls(wrap, block);
 }
 // 전체화면(히어로: 가로 100% + 전체화면 / 유튜브 히어로: 화면 높이 전체화면)이면 섹션 위쪽 여백을 0으로,
@@ -13683,13 +13690,39 @@ function dtTimePicker(box, cur, onPick) {
 
 // ===== 기본 정보 입력 (두 사람 / 예식장 / 인사말 / 마음 전할 곳) - 왼쪽 입력, 오른쪽 지금 디자인 색으로 미리보기 =====
 const WZ_STEP_NAMES = ['두 사람', '예식장', '인사말', '마음 전할 곳'];
+// 인사말 예시 문구 - 간편 만들기(인사말 칸)와 전문가 모드(인사말 편집창 [예시 문구])가 같이 씀
 const WZ_TONES = {
     '격식 있게': ['서로가 마주보며 다져온 사랑을\n이제 함께 한곳을 바라보며\n걸어가고자 합니다.\n\n저희 두 사람의 첫걸음에\n귀한 걸음으로 함께해 주시면\n더없는 기쁨이겠습니다.',
-              '평생을 같이하고 싶은 사람을 만났습니다.\n서로 아껴주고 이해하며\n사랑하며 살겠습니다.\n\n오셔서 축복해 주시면 감사하겠습니다.'],
+              '평생을 같이하고 싶은 사람을 만났습니다.\n서로 아껴주고 이해하며\n사랑하며 살겠습니다.\n\n오셔서 축복해 주시면 감사하겠습니다.',
+              '저희 두 사람이 사랑의 결실을 맺어\n부부의 연을 맺게 되었습니다.\n\n바쁘시더라도 오셔서\n앞날을 축복해 주시면\n더없는 영광으로 알겠습니다.'],
     '다정하게': ['봄날처럼 따뜻한 사람을 만나\n같은 계절을 함께 걷기로 했어요.\n\n저희의 시작을\n곁에서 함께 웃어 주세요.',
-              '오래 보아도 좋은 사람과\n오래오래 함께하려 합니다.\n\n그 첫날, 와서 축하해 주세요.'],
-    '짧게': ['저희 결혼합니다.\n함께해 주시면 큰 기쁨이겠습니다.', '두 사람이 하나 되는 날,\n자리를 빛내 주세요.']
+              '오래 보아도 좋은 사람과\n오래오래 함께하려 합니다.\n\n그 첫날, 와서 축하해 주세요.',
+              '서로의 하루가 되어 주던 두 사람이\n이제 평생의 하루를 함께하려 합니다.\n\n소중한 분들과 그 시작을 나누고 싶어요.\n오셔서 따뜻하게 축하해 주세요.'],
+    '감성적으로': ['계절이 몇 번 바뀌는 동안\n같은 곳을 바라보던 두 사람이\n이제 같은 길을 걸어가려 합니다.\n\n그 길의 첫걸음에\n함께해 주시면 감사하겠습니다.',
+              '우연처럼 만나 인연이 되었고\n이제 서로의 내일이 되려 합니다.\n\n저희가 나누는 약속을\n가까이에서 지켜봐 주세요.'],
+    '짧게': ['저희 결혼합니다.\n함께해 주시면 큰 기쁨이겠습니다.', '두 사람이 하나 되는 날,\n자리를 빛내 주세요.'],
+    '혼주 인사': ['저희 아들과 딸이\n사랑으로 하나 되는 날입니다.\n\n귀한 걸음 하시어\n두 사람의 앞날을 축복해 주시면\n큰 기쁨으로 간직하겠습니다.']
 };
+// 전문가 모드 인사말 편집창: [예시 문구] 분위기 고르기 → 문구를 누르면 인사말 칸에 들어감 (간편 만들기와 같은 문구)
+let gpTone = '격식 있게', gpOpen = false;
+function appendGreetPresets(wrap, block) {
+    const f = block.fields, ta = wrap.querySelector('textarea[data-field="text"]'), host = ta ? ta.closest('.field') : null;
+    const box = document.createElement('div'); box.className = 'gp'; // 인사말 칸 안에 (편집창 정리 때 따로 떨어져 작은 창으로 숨지 않게)
+    const draw = () => {
+        box.innerHTML = `<button type="button" class="gp-tog" aria-expanded="${gpOpen}">${gpOpen ? '예시 문구 닫기' : '예시 문구에서 고르기'} <small>${Object.values(WZ_TONES).flat().length}개</small></button>
+            ${gpOpen ? `<div class="width-row gp-tones" style="margin:8px 0 0;">${Object.keys(WZ_TONES).map(t => `<button type="button" class="width-btn ${t === gpTone ? 'active' : ''}" data-gp-tone="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+            <div class="gp-list">${WZ_TONES[gpTone].map((t, i) => `<button type="button" class="gp-s${f.text === t ? ' on' : ''}" data-gp="${i}">${esc(t)}</button>`).join('')}</div>
+            <p class="field-hint" style="margin-top:6px;">누르면 위 인사말 칸이 이 문구로 바뀌어요. 바꾼 뒤 조금 고쳐 써도 돼요.</p>` : ''}`;
+        box.querySelector('.gp-tog').addEventListener('click', () => { gpOpen = !gpOpen; draw(); });
+        box.querySelectorAll('[data-gp-tone]').forEach(b => b.addEventListener('click', () => { gpTone = b.dataset.gpTone; draw(); }));
+        box.querySelectorAll('[data-gp]').forEach(b => b.addEventListener('click', () => {
+            f.text = WZ_TONES[gpTone][+b.dataset.gp]; if (ta) ta.value = f.text;
+            renderPreview(); scheduleSnapshot(); draw();
+        }));
+    };
+    draw();
+    host ? host.appendChild(box) : wrap.appendChild(box);
+}
 const WZ_PARENTS = ['groomFather', 'groomMother', 'brideFather', 'brideMother'];
 let wzTone = '격식 있게', wzSkipCheck = false;
 const wzEsc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -14169,8 +14202,10 @@ function spRenderAsk(pane) {
     const steps = spAskSteps(); if (!steps.length) { state.spView = 'list'; return spRenderList(); }
     const N = steps.length; spStep = Math.max(0, Math.min(spStep, N));
     const done = spStep === N, st = done ? null : steps[spStep], ask = state.spAsk || (state.spAsk = {});
-    if (st && st.k === 'hero') spHeroPhase = 'pick'; // 질문에서는 스크롤 버튼 화면까지 가지 않음 (목록에서 바꿈)
-    const spKey = 'ask' + spStep, same = pane._spKey === spKey, keepPane = pane.scrollTop, keepWin = window.scrollY;
+    // 첫 화면 꾸미기 질문: [다음] → 같은 질문 안에서 스크롤 버튼(↓) 꾸미기 → [다음] → 다음 질문 (사진 고르기 질문은 늘 처음 화면)
+    const scrollPh = !!(st && st.k === 'hero' && st.part === 'look' && spHeroPhase === 'scroll' && spHeroScrollOk());
+    if (st && st.k === 'hero' && !scrollPh) spHeroPhase = 'pick';
+    const spKey = 'ask' + spStep + (scrollPh ? 's' : ''), same = pane._spKey === spKey, keepPane = pane.scrollTop, keepWin = window.scrollY;
     if (same) pane.style.minHeight = pane.offsetHeight + 'px';
     try { same ? stopBgmPreview() : stopAllBgm(); } catch (e) {}
     const pick = st ? ask[st.k] || '' : '', opt = st && st.opts ? st.opts.find(o => o[0] === pick) : null;
@@ -14184,7 +14219,7 @@ function spRenderAsk(pane) {
     } else if (st.opts) {
         body = spH(esc(st.q), esc(st.sub)) + `<div class="sp-ask-opts">${st.opts.map(([v, t, d]) => `<button type="button" class="sp-ask-o${pick === v ? ' on' : ''}" data-ask="${v}" aria-pressed="${pick === v}"><span><b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ''}</span><i></i></button>`).join('')}</div>${opt && opt[3] ? '<div class="sp-ask-more" id="spAskMore"></div>' : ''}`;
     }
-    pane.innerHTML = `<div class="sp-head sp-ask-head"><button type="button" class="sp-ask-back" id="spBack" aria-label="이전 질문"${spStep === 0 ? ' disabled' : ''}>${backSvg}</button><b>${done ? '다 됐어요' : `질문 ${spStep + 1} / ${N}`}</b>${spUdHtml()}</div>
+    pane.innerHTML = `<div class="sp-head sp-ask-head"><button type="button" class="sp-ask-back" id="spBack" aria-label="이전"${spStep === 0 && !scrollPh ? ' disabled' : ''}>${backSvg}</button><b>${done ? '다 됐어요' : `질문 ${spStep + 1} / ${N}`}</b>${spUdHtml()}</div>
         <div class="sp-ask-top"><div class="sp-ask-bar" aria-hidden="true"><i style="width:${pct(same || spAskLast < 0 ? spStep : spAskLast)}"></i></div>${done ? '' : `<button type="button" class="sp-ask-skip" id="spSkip">나중에 할게요</button>`}</div>
         <div class="sp-now-wrap">${spNowCardHtml()}</div>
         <div class="sp-body sp-ask" id="spBody">${body}</div>
@@ -14192,12 +14227,15 @@ function spRenderAsk(pane) {
             ? `<button type="button" class="wz-back" id="spRestart">처음부터</button><button type="button" class="wz-next" id="spFinish">완성본 보기</button>`
             : `<button type="button" class="wz-back" id="spPrev" tabindex="${navFirst ? -1 : 0}">이전</button><button type="button" class="wz-next" id="spNext">${spStep === N - 1 ? '다 했어요' : '다음'}</button>`}</div>`;
     spBindHeadTools(pane);
-    const go = n => { spAskLast = spStep; spStep = Math.max(0, Math.min(N, n)); spRender(); };
-    pane.querySelector('#spBack').addEventListener('click', () => go(spStep - 1));
+    const go = n => { spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n)); spRender(); };
+    const lookToScroll = () => st && st.k === 'hero' && st.part === 'look' && !scrollPh && spHeroScrollOk();
+    const next = () => lookToScroll() ? spHeroToScroll(pane.querySelector('#spBody')) : go(spStep + 1);
+    const prev = () => scrollPh ? (spHeroPhase = 'pick', spRender()) : go(spStep - 1);
+    pane.querySelector('#spBack').addEventListener('click', prev);
     pane.querySelector('#spNow').addEventListener('click', () => spOpenPreview(false));
-    pane.querySelector('#spPrev')?.addEventListener('click', () => go(spStep - 1));
-    pane.querySelector('#spNext')?.addEventListener('click', () => go(spStep + 1));
-    pane.querySelector('#spSkip')?.addEventListener('click', () => go(spStep + 1));
+    pane.querySelector('#spPrev')?.addEventListener('click', prev);
+    pane.querySelector('#spNext')?.addEventListener('click', next);
+    pane.querySelector('#spSkip')?.addEventListener('click', next);
     pane.querySelector('#spRestart')?.addEventListener('click', () => go(0));
     pane.querySelector('#spFinish')?.addEventListener('click', e => spAskFinish(e.currentTarget));
     pane.querySelector('#spAskList')?.addEventListener('click', () => { state.spView = 'list'; spOpenSet = new Set(); scheduleSnapshot(); if (EDIT_TOKEN) saveToServer(false, true); spRender(); });
@@ -14207,7 +14245,7 @@ function spRenderAsk(pane) {
         spHeroPart = st.k === 'hero' ? st.part || '' : ''; try { st.fn(bodyEl); } finally { spHeroPart = ''; }
         if (st.k === 'names') spCutPart(bodyEl, st); spBindIncl(bodyEl);
         const h = bodyEl.querySelector('.wz-h'), l = bodyEl.querySelector('.wz-lead');
-        if (h) h.textContent = st.q; if (l) l.textContent = st.sub;
+        if (!scrollPh) { if (h) h.textContent = st.q; if (l) l.textContent = st.sub; } // 스크롤 버튼 화면은 그 화면 제목 그대로
     } else if (st) {
         const more = bodyEl.querySelector('#spAskMore');
         if (more) { try { st.fn(more); } catch (e) { console.warn(e); } spBindIncl(more); spTrimBody(more, st.blk); }
@@ -14225,7 +14263,7 @@ function spRenderAsk(pane) {
     else {
         pane.style.minHeight = ''; pane.scrollTop = 0;
         if (pane._spKey && window.innerWidth <= 860) window.scrollTo(0, 0);
-        if (st) setTimeout(() => spScrollPreview(st.s || []), 80);
+        if (st) setTimeout(() => scrollPh ? spScrollToNextBtn() : spScrollPreview(st.s || []), 80);
         // 진행 막대 · [이전] 버튼: 전 질문 모양에서 지금 모양으로 부드럽게
         const bar = pane.querySelector('.sp-ask-bar i'), nav = pane.querySelector('.sp-ask-nav');
         requestAnimationFrame(() => requestAnimationFrame(() => { if (bar) bar.style.width = pct(spStep); if (nav) nav.classList.toggle('first', navFirst); }));
