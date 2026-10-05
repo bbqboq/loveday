@@ -15281,6 +15281,7 @@ function spFinish(box) {
 function spExitInPlace() {
     spInPlace = false;
     try { stopBgmPreview(); } catch (e) {}
+    bsS10Adopt();
     spSetMode(false);
     spRenderAll();
     syncSimpleBtn();
@@ -15298,6 +15299,7 @@ async function simpleToFull() {
     if (restore) { spRestoreDesign(state.fullSnap); spPour(content); }
     state.fullSnap = null;
     delete state.mode;
+    if (!restore) bsS10Adopt(); // (S10 묶음 정렬로 간편 만들기 순서가 섞이지 않게)
     spSetMode(false);
     spRenderAll();
     syncSimpleBtn();
@@ -17303,6 +17305,24 @@ function bsS10Normalize() {
     if (sorted.every((b, i) => b === state.blocks[i])) return false;
     state.blocks.splice(0, state.blocks.length, ...sorted);
     return true;
+}
+// 간편 만들기 → 전문가 모드(S10 그룹 섹션): 간편 만들기에서 정한 섹션 순서를 그대로 두려고, 앞 묶음보다 앞에 놓인 섹션은
+//  묶음을 바꿔(b.grp) 그 자리 묶음에 넣음 → bsS10Normalize가 다시 줄 세워도 켜진 섹션 순서는 안 바뀜
+function bsS10Adopt() {
+    let st; try { st = uip('sheetStyle'); } catch (e) { return; } if (st !== 'S10') return;
+    const L = bsGroupList(), gi = b => { const i = L.findIndex(g => g.k === bsGroupOfB(b)); return i < 0 ? L.length - 1 : i; };
+    const seq = state.blocks.filter(b => b.enabled && !BS_HERO_IDS.includes(b.id) && b.id !== 'share'), g = seq.map(gi);
+    // 묶음 순서가 맞는 가장 긴 줄(오름차순 부분열)은 그대로 두고, 나머지 섹션만 바로 앞(없으면 뒤) 섹션의 묶음으로 옮김 → 묶음이 바뀌는 섹션이 가장 적음
+    const len = g.map(() => 1), prev = g.map(() => -1);
+    g.forEach((x, i) => { for (let j = 0; j < i; j++) if (g[j] <= x && len[j] + 1 > len[i]) { len[i] = len[j] + 1; prev[i] = j; } });
+    const keep = new Set(); let k = len.indexOf(Math.max(0, ...len)); while (k >= 0) { keep.add(k); k = prev[k]; }
+    seq.forEach((b, i) => {
+        if (keep.has(i)) return;
+        let j = i - 1; while (j >= 0 && !keep.has(j)) j--;
+        if (j < 0) { j = i + 1; while (j < seq.length && !keep.has(j)) j++; }
+        const to = L[g[j]] ? L[g[j]].k : 'etc';
+        if (bsDefGroup(b.id) === to) delete b.grp; else b.grp = to;
+    });
 }
 // S10: 섹션을 묶음 g에 넣기 (refId가 그 묶음 안이면 그 앞/뒤, 아니면 묶음 맨 끝). 대기 중이던 섹션은 켜짐
 function bsMoveInto(id, g, refId, after) {
