@@ -539,6 +539,23 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-ask-o.on { background: var(--wz-ink, #1B1A18); border-color: var(--wz-ink, #1B1A18); color: #fff; } .sp-ask-o.on small { color: rgba(255,255,255,.72); }
 .sp-ask-o.on i { border-color: #fff; } .sp-ask-o.on i::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: #fff; }
 .sp-ask-more { margin-top: 20px; padding-top: 18px; border-top: 1px dashed var(--wz-line2, #DED8CF); }
+/* 섹션 순서 바꾸기 */
+.spb-order { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border: 1px dashed var(--wz-line2, #DED8CF); border-radius: 16px; background: #fff; font: inherit; color: var(--wz-ink); text-align: left; cursor: pointer; }
+.spb-order > span:first-child { width: 32px; height: 32px; flex: none; border-radius: 10px; background: var(--wz-soft); display: grid; place-items: center; font-size: 16px; }
+.spb-order > span:last-child { display: flex; flex-direction: column; gap: 2px; } .spb-order b { font-size: 14px; font-weight: 700; } .spb-order small { font-size: 12px; color: var(--wz-sub); }
+.spo { padding: 6px 20px 8px; display: flex; flex-direction: column; gap: 6px; }
+.spo-hint { margin: 0 0 6px; font-size: 12.5px; line-height: 1.5; color: var(--wz-sub); }
+.spo-fix { padding: 11px 14px; border-radius: 12px; background: var(--wz-soft); font-size: 13px; font-weight: 600; color: var(--wz-sub); }
+.spo-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.spo-li { display: flex; align-items: center; gap: 6px; min-height: 52px; padding: 0 6px 0 4px; border: 1px solid var(--wz-line); border-radius: 12px; background: #fff; }
+.spo-h { width: 34px; align-self: stretch; display: grid; place-items: center; font-size: 16px; color: #A39D95; cursor: grab; touch-action: none; user-select: none; }
+.spo-li > b { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 700; cursor: grab; touch-action: none; user-select: none; }
+.spo-b { width: 40px; height: 40px; flex: none; border: 0; border-radius: 10px; background: none; color: var(--wz-ink); display: grid; place-items: center; cursor: pointer; }
+.spo-b:hover:not(:disabled) { background: var(--wz-soft); } .spo-b:disabled { opacity: .22; cursor: default; }
+.spo-b svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.spo-ghost { opacity: .35; } .spo-li.sortable-chosen { box-shadow: 0 8px 20px rgba(0,0,0,.12); }
+.spo-flash { animation: spoFlash .6s ease; } @keyframes spoFlash { 0% { background: var(--wz-soft); } 100% { background: #fff; } }
+@media (max-width: 860px) { .spo { padding: 6px 16px 8px; } }
 /* 목록 한 장 (다 만든 뒤 · 고칠 때) */
 .spb { display: flex; flex-direction: column; gap: 20px; padding: 6px 20px 8px; }
 .spb-prog { background: #fff; border: 1px solid var(--wz-line); border-radius: 16px; padding: 14px 16px; display: grid; gap: 9px; }
@@ -4945,7 +4962,7 @@ function applyPreset(presetId) {
     state.customFont = p.font || null;
     if (state.customFont) loadFontCss(state.customFont);
     state.customBg = null;
-    state.paper = null; state.customAccent = null; // 종이 질감·강조색은 디자인을 바꾸면 처음으로
+    state.paper = null; state.customAccent = null; delete state.bgBeforePaper; // 종이 질감·강조색은 디자인을 바꾸면 처음으로
     state.desktopSideBg = p.sideBg || null;
     state.desktopShadow = !!p.shadow;
     state.effects = Object.assign({ ambient: 'none', pinchZoom: true }, state.effects, { ambient: p.ambient || 'none' });
@@ -6273,10 +6290,15 @@ function renderPaperAccent() {
         pk.addEventListener('change', () => { renderPaperAccent(); scheduleSnapshot(); });
     }
 }
+// 종이 질감: 고르면 바탕색을 그 종이 색으로, "없음"이면 종이를 고르기 전 바탕색으로 되돌림 (간편 만들기·전문가 모드 같이)
+function setPaper(k) {
+    const P = (window.InviteBlocks && InviteBlocks.BG_PAPERS) || {};
+    if (k && P[k]) { if (!state.paper) state.bgBeforePaper = state.customBg || null; state.paper = k; state.customBg = P[k].bg; }
+    else { if (state.paper) state.customBg = state.bgBeforePaper ?? null; state.paper = null; delete state.bgBeforePaper; }
+}
 document.getElementById('paperTiles')?.addEventListener('click', e => {
     const b = e.target.closest('[data-paper]'); if (!b) return;
-    const k = b.dataset.paper, P = (window.InviteBlocks && InviteBlocks.BG_PAPERS) || {};
-    if (k && P[k]) { state.paper = k; state.customBg = P[k].bg; } else state.paper = null;
+    setPaper(b.dataset.paper);
     renderPaperAccent(); renderColorSwatches(); renderPreview(); scheduleSnapshot();
 });
 document.getElementById('accentTiles')?.addEventListener('click', e => {
@@ -6405,11 +6427,11 @@ document.getElementById('pinchZoomToggle').addEventListener('change', e => {
 });
 document.getElementById('bgColorPicker').addEventListener('input', e => {
     state.customBg = e.target.value;
-    if (state.paper) { state.paper = null; renderPaperAccent(); } // 색을 직접 고르면 종이 질감은 빠짐
+    if (state.paper) { state.paper = null; delete state.bgBeforePaper; renderPaperAccent(); } // 색을 직접 고르면 종이 질감은 빠짐
     renderPreview();
 });
 document.getElementById('bgColorReset').addEventListener('click', () => {
-    state.customBg = null; state.paper = null;
+    state.customBg = null; state.paper = null; delete state.bgBeforePaper;
     renderFontBgPickers();
     renderPreview();
 });
@@ -6994,6 +7016,8 @@ function stopBgmPreview() {
 })();
 // ===== 배경음악 버튼: 실제 청첩장처럼 미리보기 오른쪽 위에도 (누르면 지금 고른 음악 재생/멈춤) =====
 let edBgmAudio = null, edBgmBtn = null;
+// 간편 만들기에서 다른 질문·칸·화면으로 옮기면 음악을 멈춤 (곡 미리 듣기 + 미리보기의 음악 버튼 둘 다)
+function stopAllBgm() { stopBgmPreview(); if (edBgmAudio && !edBgmAudio.paused) { try { edBgmAudio.pause(); } catch (e) {} } }
 function edBgmSync() {
     const pane = document.querySelector('.preview-pane'), root = document.getElementById('previewRoot');
     if (!pane || !root) return;
@@ -13561,6 +13585,7 @@ document.getElementById('tbToSimple').addEventListener('click', fullToSimple);
 // 간편 만들기 아래 버튼 줄 [저장 | 미리보기] + 미리보기 화면 (아래 띠: 안내 + [돌아가기], 마무리에서 저장하면 [발행하기]도)
 let spPvMode = null;
 function spOpenPreview(final) { // final: true = 완성본(발행하기) / 'quick' = 빠른 시작 끝 (닫으면 옵션 창) / 그 외 = 그냥 미리보기
+    stopBgmPreview(); // 곡 미리 듣기는 멈춤 (미리보기에서는 오른쪽 위 음악 버튼으로 들어요)
     spPvMode = final;
     const quick = final === 'quick'; final = final === true;
     document.documentElement.classList.add('sp-pv');
@@ -13570,7 +13595,7 @@ function spOpenPreview(final) { // final: true = 완성본(발행하기) / 'quic
     try { renderPreview(); } catch (e) {}
     const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0;
 }
-function spClosePreview() { document.documentElement.classList.remove('sp-pv'); try { renderPreview(); } catch (e) {} if (spPvMode === 'quick') { spPvMode = null; spRender(); window.scrollTo(0, 0); } }
+function spClosePreview() { stopAllBgm(); document.documentElement.classList.remove('sp-pv'); try { renderPreview(); } catch (e) {} if (spPvMode === 'quick') { spPvMode = null; spRender(); window.scrollTo(0, 0); } }
 document.getElementById('spFootPv').addEventListener('click', () => spOpenPreview(false));
 document.getElementById('spPvBack').addEventListener('click', spClosePreview);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('sp-pv')) spClosePreview(); });
@@ -13938,6 +13963,7 @@ function spSteps() {
 //  메인 사진·영상은 늘 맨 위, 단계에 없는 섹션(타임라인·엔딩 등)은 그 뒤에 원래 순서대로, 공유하기는 늘 맨 아래
 const SP_STEP_BLOCKS = { hero: ['heroVideo', 'hero'], gallery: ['gallery'], venue: ['location'], transport: ['transport'], greet: ['greeting'], family: ['family', 'contact'], account: ['account'], dday: ['dday'], notice: ['notice'], rsvp: ['rsvp'], guestbook: ['guestbook'], video: ['video'] };
 function spApplyEasyOrder() {
+    if (state.spOrderCustom) return false; // 간편 만들기에서 순서를 직접 바꿨으면 그대로
     const list = spEasyList();
     const want = ['heroVideo', 'hero'];
     list.filter(x => x && x.on).forEach(x => (SP_STEP_BLOCKS[x.id] || []).forEach(id => { if (!want.includes(id)) want.push(id); }));
@@ -14027,7 +14053,45 @@ function spCutPart(body, st) { // 빠른 시작: 두 사람 칸을 이름 / 날�
 function spRender() {
     const pane = document.getElementById('simplePane'); if (!pane) return;
     if (spViewNow() === 'quick') return spRenderAsk(pane);
+    if (spOrderMode) return spRenderOrder(pane);
     return spRenderList();
+}
+// ===== 목록 화면 → [섹션 순서 바꾸기]: 끌어서 옮기거나 ↑↓ (첫 화면은 늘 맨 위, 공유하기는 늘 맨 아래) =====
+//  한 번 바꾸면 state.spOrderCustom - 간편 만들기를 다시 열어도 "손쉬운 제작" 단계 순서로 되돌리지 않음
+let spOrderMode = false;
+const SP_ORDER_FIXED = ['hero', 'heroVideo', 'share'];
+function spOrderIds() { return state.blocks.filter(b => b.enabled && !SP_ORDER_FIXED.includes(b.id)).map(b => b.id); }
+function spOrderApply(ids) { // 보이는 섹션들을 ids 순서로 (꺼진 섹션은 원래 자리 그대로, 첫 화면 맨 위 · 공유하기 맨 아래)
+    const set = new Set(ids), q = ids.map(id => state.blocks.find(b => b.id === id)).filter(Boolean);
+    const out = state.blocks.map(b => set.has(b.id) ? q.shift() : b);
+    const top = out.filter(b => b.id === 'hero' || b.id === 'heroVideo'), share = out.filter(b => b.id === 'share');
+    state.blocks.splice(0, state.blocks.length, ...top, ...out.filter(b => !top.includes(b) && !share.includes(b)), ...share);
+    state.spOrderCustom = true;
+    try { renderBlockList(); } catch (e) {}
+    renderPreview(); scheduleSnapshot();
+}
+function spRenderOrder(pane) {
+    const ids = spOrderIds(), lab = id => blockLabels[id] || (sharedBlockDef(id) || {}).label || id;
+    const up = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>', dn = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+    pane.innerHTML = `<div class="sp-head"><div><small>간편 만들기</small><b>섹션 순서 바꾸기</b></div>${spUdHtml()}</div>
+        <div class="spo"><p class="spo-hint">왼쪽 손잡이(⠿)를 끌어서 옮기거나 ↑ ↓ 를 눌러요. 첫 화면은 늘 맨 위, 공유하기는 늘 맨 아래예요.</p>
+        <div class="spo-fix">첫 화면 (메인 사진·영상)</div>
+        <ol class="spo-list" id="spoList">${ids.map((id, i) => `<li class="spo-li" data-id="${esc(id)}"><span class="spo-h" title="끌어서 옮기기" aria-hidden="true">⠿</span><b>${esc(lab(id))}</b><button type="button" class="spo-b" data-mv="-1" aria-label="${esc(lab(id))} 위로"${i === 0 ? ' disabled' : ''}>${up}</button><button type="button" class="spo-b" data-mv="1" aria-label="${esc(lab(id))} 아래로"${i === ids.length - 1 ? ' disabled' : ''}>${dn}</button></li>`).join('')}</ol>
+        ${spHas('share') && spBlock('share').enabled ? '<div class="spo-fix">공유하기</div>' : ''}</div>
+        <div class="sp-list-end"><button type="button" class="wz-next" id="spOrderDone">다 옮겼어요</button></div>`;
+    spBindHeadTools(pane);
+    pane.querySelector('#spOrderDone').addEventListener('click', () => { spOrderMode = false; pane._spKey = null; spRender(); });
+    const list = pane.querySelector('#spoList');
+    const moved = id => { setTimeout(() => spScrollPreview([id]), 60); };
+    list.querySelectorAll('[data-mv]').forEach(b => b.addEventListener('click', () => {
+        const li = b.closest('li'), id = li.dataset.id, cur = spOrderIds(), i = cur.indexOf(id), j = i + Number(b.dataset.mv);
+        if (i < 0 || j < 0 || j >= cur.length) return;
+        cur.splice(j, 0, cur.splice(i, 1)[0]); spOrderApply(cur); spRender(); moved(id);
+        const nb = document.querySelector(`#spoList li[data-id="${CSS.escape(id)}"]`); if (nb) { nb.classList.add('spo-flash'); nb.scrollIntoView({ block: 'nearest' }); }
+    }));
+    if (typeof Sortable !== 'undefined') Sortable.create(list, { handle: '.spo-h, b', animation: 160, forceFallback: true, fallbackTolerance: 4, ghostClass: 'spo-ghost',
+        onEnd: ev => { if (ev.oldIndex === ev.newIndex) return; const id = ev.item.dataset.id; spOrderApply([...list.children].map(li => li.dataset.id)); spRender(); moved(id); } });
+    pane._spKey = 'order';
 }
 // 머리줄 오른쪽 (되돌리기 · 다시하기 · 전문가 모드) - PC는 화면 맨 위 머리줄 오른쪽 끝으로 옮김
 const spUdHtml = () => `<div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button>`;
@@ -14107,7 +14171,7 @@ function spRenderAsk(pane) {
     if (st && st.k === 'hero') spHeroPhase = 'pick'; // 질문에서는 스크롤 버튼 화면까지 가지 않음 (목록에서 바꿈)
     const spKey = 'ask' + spStep, same = pane._spKey === spKey, keepPane = pane.scrollTop, keepWin = window.scrollY;
     if (same) pane.style.minHeight = pane.offsetHeight + 'px';
-    try { stopBgmPreview(); } catch (e) {}
+    try { same ? stopBgmPreview() : stopAllBgm(); } catch (e) {}
     const pick = st ? ask[st.k] || '' : '', opt = st && st.opts ? st.opts.find(o => o[0] === pick) : null;
     const backSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>';
     const pct = n => Math.round(n / N * 100) + '%';
@@ -14224,12 +14288,14 @@ function spRenderList() {
         <div class="spb">
             <div class="spb-prog"><div><b>꼭 필요한 것</b><span>${nDone} / ${must.length}</span></div><div class="spb-dots">${must.map(m => `<i class="${m[1] ? 'on' : ''}"></i>`).join('')}</div><p>${left.length ? esc(left.join(' · ')) + (left.length === 1 ? '만 넣으면 보낼 수 있어요.' : '을(를) 넣으면 보낼 수 있어요.') : '꼭 필요한 건 다 채웠어요. 나머지는 원할 때만 채우면 돼요.'}</p></div>
             ${groups}
+            <button type="button" class="spb-order" id="spOrderBtn"><span aria-hidden="true">⇅</span><span><b>섹션 순서 바꾸기</b><small>청첩장에 나오는 순서를 끌어서 바꿔요</small></span></button>
         </div>
         <div class="sp-list-end"><button type="button" class="wz-next" id="spListDone">완성본 보기</button><p class="wz-hint">저장하고 다 된 모습을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.</p></div>`;
     spBindHeadTools(pane);
+    pane.querySelector('#spOrderBtn').addEventListener('click', () => { stopAllBgm(); spOrderMode = true; spRender(); });
     pane.querySelector('#spListDone').addEventListener('click', e => { const b = e.currentTarget; b.disabled = true; b.textContent = '저장 중…'; saveToServer(false, true).then(ok => { b.disabled = false; b.textContent = '완성본 보기'; if (ok) spOpenPreview(true); else showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }); });
     pane.querySelectorAll('[data-li-tog]').forEach(b => b.addEventListener('click', () => {
-        const k = b.dataset.liTog, st = steps.find(x => x.k === k), sw = st && swOf(st);
+        const k = b.dataset.liTog, st = steps.find(x => x.k === k), sw = st && swOf(st); stopAllBgm();
         if (sw && !spBlock(sw).enabled) { spBlock(sw).enabled = true; try { renderBlockList(); } catch (e) {} spChanged([sw]); scheduleSnapshot(); } // 꺼진 칸을 누르면 켜고 펼침
         if (spOpenSet.has(k)) spOpenSet = new Set(); else { spOpenSet = new Set([k]); if (st) { spHeroPhase = 'pick'; spSelectStep(st); setTimeout(() => spScrollPreview(st.s || []), 80); } }
         spRender();
@@ -14634,7 +14700,7 @@ function spTheme(box) {
         (O('skin') ? `<div class="sp-ths">${Object.entries(skins).filter(([k, sk]) => sk && sk.label && sk.bg).map(card).join('')}</div>` : '') +
         (O('font') ? `<div class="wz-field"><div class="wz-lab">글꼴</div><div class="sp-fonts">${fontOptions.filter(fo => !fo.en).map(fo => `<button type="button" class="${(state.customFont || '') === fo.id ? 'on' : ''}" data-sp-font="${esc(fo.id)}" style="font-family:${String(fo.family || 'inherit').replace(/"/g, "'")}">${esc(fo.id ? fo.label.replace(/\s*\(.*\)\s*$/, '') : '테마 기본')}</button>`).join('')}</div></div>` : '') +
         (O('accent') ? `<div class="wz-field"><div class="wz-lab">포인트 색 <small>하트·버튼·강조 글자</small></div><div class="sp-cols"><button type="button" class="${!state.customAccent ? 'on' : ''}" data-sp-acc="" style="--c:${sk0.accent}" title="테마 기본"></button>${ACCENT_SWATCHES.map(([h, n]) => `<button type="button" class="${String(state.customAccent || '').toUpperCase() === h.toUpperCase() ? 'on' : ''}" data-sp-acc="${h}" style="--c:${h}" title="${n}"></button>`).join('')}<label class="sp-colpick" title="직접 고르기"><input type="color" value="${esc(state.customAccent || sk0.accent)}" data-sp-accpick></label></div></div>` : '') +
-        (O('paper') && Object.keys(P).length ? `<div class="wz-field"><div class="wz-lab">종이 질감</div><div class="sp-papers"><button type="button" class="${!state.paper ? 'on' : ''}" data-sp-paper=""><span style="background:${state.customBg && !state.paper ? state.customBg : sk0.bg}"></span>없음</button>${Object.entries(P).map(([k, v]) => `<button type="button" class="${state.paper === k ? 'on' : ''}" data-sp-paper="${k}"><span style="background-color:${v.bg};background-image:${v.img}"></span>${esc(v.label)}</button>`).join('')}</div></div>` : '') +
+        (O('paper') && Object.keys(P).length ? `<div class="wz-field"><div class="wz-lab">종이 질감</div><div class="sp-papers"><button type="button" class="${!state.paper ? 'on' : ''}" data-sp-paper=""><span style="background:${(state.paper ? state.bgBeforePaper : state.customBg) || sk0.bg}"></span>없음</button>${Object.entries(P).map(([k, v]) => `<button type="button" class="${state.paper === k ? 'on' : ''}" data-sp-paper="${k}"><span style="background-color:${v.bg};background-image:${v.img}"></span>${esc(v.label)}</button>`).join('')}</div></div>` : '') +
         (O('reset') && (state.customBg || state.customAccent || state.customFont || state.paper) ? `<button type="button" class="sp-link" id="spThReset">따로 바꾼 바탕색·포인트색·글꼴·종이를 테마 기본으로 되돌리기</button>` : '') +
         '<p class="wz-hint">더 자세한 색 조정은 <b>전문가 모드</b>의 화면 설정에서 할 수 있어요.</p>';
     if (O('font')) try { loadAllFontCss(); } catch (e) {}
@@ -14645,9 +14711,9 @@ function spTheme(box) {
     box.querySelectorAll('[data-sp-font]').forEach(b => b.addEventListener('click', () => { state.customFont = b.dataset.spFont || null; if (state.customFont) loadFontCss(state.customFont); after(); }));
     box.querySelectorAll('[data-sp-acc]').forEach(b => b.addEventListener('click', () => { state.customAccent = b.dataset.spAcc || null; after(); }));
     const ap = box.querySelector('[data-sp-accpick]'); if (ap) { ap.addEventListener('input', () => { state.customAccent = ap.value; renderPreview(); }); ap.addEventListener('change', after); }
-    box.querySelectorAll('[data-sp-paper]').forEach(b => b.addEventListener('click', () => { const k = b.dataset.spPaper; if (k && P[k]) { state.paper = k; state.customBg = P[k].bg; } else { state.paper = null; } after(); }));
+    box.querySelectorAll('[data-sp-paper]').forEach(b => b.addEventListener('click', () => { setPaper(b.dataset.spPaper); after(); }));
     const rs = box.querySelector('#spThReset');
-    if (rs) rs.addEventListener('click', () => { state.customBg = null; state.customAccent = null; state.customFont = null; state.paper = null; after(); });
+    if (rs) rs.addEventListener('click', () => { state.customBg = null; state.customAccent = null; state.customFont = null; state.paper = null; delete state.bgBeforePaper; after(); });
 }
 // 간편 만들기 중 디자인 바꾸기: 적은 내용(이름·날짜·사진·글·계좌·음악)은 옮기고 디자인은 새로 (첫 화면에서 고르는 것과 같은 값)
 async function spChangeDesign(id) {
@@ -14956,6 +15022,7 @@ function spExitInPlace() {
 }
 // ----- 간편 ↔ 직접 만들기 -----
 async function simpleToFull() {
+    stopAllBgm(); // 전문가 모드로 가면 간편 만들기에서 듣던 음악은 멈춤
     let restore = false;
     if (state.fullSnap) {
         restore = await LD.confirm('전문가 모드로 갈게요', { message: '전에 전문가 모드에서 꾸며 둔 모습이 있어요.\n그 모습에 지금 적은 이름·사진·글을 넣어서 열까요?', ok: '전에 꾸민 모습으로', cancel: '지금 모습 그대로', icon: 'info' });
