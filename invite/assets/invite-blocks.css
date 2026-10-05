@@ -1194,21 +1194,29 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 [class*="ibx-a-"] .intro-cursor, [class*="ibx-a-"] .rt-cursor { display: none !important; }
 [class*="ibx-a-"] .ibx-w { display: inline-block; white-space: nowrap; }
 [class*="ibx-a-"] .ibx-ch { display: inline-block; }
-.ibx-a-fade .intro-typed, .ibx-a-zoom .intro-typed, .ibx-a-draw .intro-typed { display: inline-block; }
+.ibx-a-fade .intro-typed, .ibx-a-zoom .intro-typed { display: inline-block; }
 .ibx-a-fade .intro-typed { animation: ibxFade var(--ibx-total, 1500ms) ease both; }
 .ibx-a-zoom .intro-typed { animation: ibxZoom var(--ibx-total, 1500ms) cubic-bezier(.2,.7,.2,1) both; }
-.ibx-a-draw .intro-typed { animation: ibxDraw var(--ibx-total, 1500ms) cubic-bezier(.45,.05,.35,1) both; }
+/* 손글씨처럼: 글자마다 윤곽선(SVG text 선)이 한 획씩 그려진 뒤 속이 채워지고 선은 옅어짐 */
+.ibx-a-draw .ibx-fill { opacity: 0; animation: ibxFillIn .45s ease forwards; animation-delay: calc(var(--i) * var(--ibx-dstep, 60ms) + var(--ibx-draw, 1000ms) * .92); }
+.ibx-a-draw .ibx-stroke { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.ibx-a-draw .ibx-stroke text { font: inherit; fill: none; stroke: currentColor; stroke-width: var(--sw, 1px); stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: var(--L, 400) var(--L, 400); stroke-dashoffset: var(--L, 400);
+    animation: ibxStroke var(--ibx-draw, 1000ms) cubic-bezier(.4,.15,.5,1) forwards, ibxStrokeOut .5s ease forwards;
+    animation-delay: calc(var(--i) * var(--ibx-dstep, 60ms)), calc(var(--i) * var(--ibx-dstep, 60ms) + var(--ibx-draw, 1000ms) + .3s); }
+@keyframes ibxStroke { to { stroke-dashoffset: 0; } }
+@keyframes ibxStrokeOut { to { stroke-opacity: 0; } }
+@keyframes ibxFillIn { to { opacity: 1; } }
 .ibx-a-rise .ibx-ch { animation: ibxRise .75s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i) * var(--ibx-step, 60ms)); }
 .ibx-a-blur .ibx-ch { animation: ibxBlur .95s ease both; animation-delay: calc(var(--i) * var(--ibx-step, 60ms)); }
 .ibx-a-pop .ibx-ch { animation: ibxPop .55s cubic-bezier(.3,1.5,.5,1) both; animation-delay: calc(var(--i) * var(--ibx-step, 60ms)); }
 .ibx-a-line .ibx-ch { animation: ibxLine .85s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--l) * var(--ibx-step, 300ms)); }
 @keyframes ibxFade { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @keyframes ibxZoom { from { opacity: 0; transform: scale(1.35); filter: blur(5px); } to { opacity: 1; transform: none; filter: none; } }
-@keyframes ibxDraw { from { clip-path: inset(-20% 100% -20% 0); opacity: .3; } to { clip-path: inset(-20% 0 -20% 0); opacity: 1; } }
 @keyframes ibxRise { from { opacity: 0; transform: translateY(.55em); } to { opacity: 1; transform: none; } }
 @keyframes ibxBlur { from { opacity: 0; filter: blur(9px); transform: scale(1.12); } to { opacity: 1; filter: none; transform: none; } }
 @keyframes ibxPop { 0% { opacity: 0; transform: scale(.3); } 70% { opacity: 1; transform: scale(1.14); } 100% { opacity: 1; transform: none; } }
 @keyframes ibxLine { from { opacity: 0; transform: translateY(.9em); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { [class*="ibx-a-"] .ibx-ch, [class*="ibx-a-"] .intro-typed { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { [class*="ibx-a-"] .ibx-ch, [class*="ibx-a-"] .intro-typed, .ibx-a-draw .ibx-fill, .ibx-a-draw .ibx-stroke text { animation: none !important; } .ibx-a-draw .ibx-fill { opacity: 1; } .ibx-a-draw .ibx-stroke { display: none; } }
 /* 인트로 '메인 화면 위' (투명 배경): 청첩장 메인 화면이 비치고 글자만 움직임 */
 .intro-overlay.intro-clear { background: rgba(0,0,0,var(--intro-dim, .3)) !important; }

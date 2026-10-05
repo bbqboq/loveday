@@ -825,6 +825,26 @@
         };
         split(el);
         const total = (Number(duration) || 2.5) * 1000 * 0.6; // 재생 길이의 60% 동안 나타나고, 나머지는 다 나온 채로
+        if (anim === 'draw' && document.createElementNS) { // 손글씨처럼: 글자마다 윤곽선을 한 획씩 따라 그린 뒤(SVG 글자 선) 속을 채움
+            const NS = 'http://www.w3.org/2000/svg';
+            el.querySelectorAll('.ibx-ch').forEach(sp => {
+                const c = sp.textContent; sp.textContent = ''; sp.style.position = 'relative'; sp.style.display = 'inline-block';
+                const fill = document.createElement('span'); fill.className = 'ibx-fill'; fill.textContent = c;
+                const bl = document.createElement('i'); bl.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline;';
+                sp.append(fill, bl);
+                const y = bl.offsetTop, fs = parseFloat(getComputedStyle(sp).fontSize) || 20; bl.remove(); // (글자 기준선 높이)
+                const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'ibx-stroke'); svg.setAttribute('aria-hidden', 'true');
+                const t = document.createElementNS(NS, 'text'); t.setAttribute('x', '0'); t.setAttribute('y', String(y)); t.textContent = c;
+                svg.appendChild(t); sp.appendChild(svg);
+                sp.style.setProperty('--L', String(Math.round(fs * 14))); // 윤곽선 길이(넉넉히) - 이만큼을 점선 한 칸으로 두고 밀어서 그려지게
+                sp.style.setProperty('--sw', Math.max(0.8, fs * 0.035).toFixed(2) + 'px');
+            });
+        }
+        if (anim === 'draw' && host) { // 재생 길이의 85% 동안: 글자마다 획이 천천히(0.6~1.8초) 그려지고, 앞 글자부터 차례로 이어짐
+            const T = (Number(duration) || 2.5) * 1000 * 0.85, D = Math.max(600, Math.min(1800, T * 0.45));
+            host.style.setProperty('--ibx-draw', Math.round(D) + 'ms');
+            host.style.setProperty('--ibx-dstep', Math.round(Math.max(0, T - D - 450) / Math.max(1, i - 1)) + 'ms');
+        }
         if (host) {
             host.style.setProperty('--ibx-total', Math.round(total) + 'ms');
             host.style.setProperty('--ibx-step', Math.round(anim === 'line' ? total * 0.7 / Math.max(1, l + 1) : total * 0.7 / Math.max(1, i)) + 'ms');
