@@ -622,7 +622,11 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-li span { flex: 1; min-width: 0; } .ez-li b { display: block; font-size: 11px; } .ez-li small { display: block; font-size: 9.5px; color: #8A8278; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ez-li u { flex: none; width: 24px; height: 14px; border-radius: 9px; background: var(--ui-point, #C9A961); }
 .ez-lorder { margin-top: 10px; padding: 8px 10px; border-radius: 10px; border: 1px dashed var(--ui-line, #D9D2C8); font-size: 10.5px; font-weight: 700; color: #6F6A63; }
-.ez-sws { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.ez-sws { flex: none; width: 104px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; } /* 오른쪽 버튼 칸은 폭을 고정해서 줄마다 같은 자리에 */
+.ez-sws .ez-lock { width: auto; text-align: left; padding-left: 2px; }
+.ez-fold-btn, .ez-fold-ph { width: 104px; justify-content: center; } .ez-fold-ph { flex: none; height: 30px; }
+.ez-row .so-sw { margin-right: 0; }
+.ez-row .ez-mv { min-width: 26px; }
 .ez-start { font-size: 10.5px; color: #7C4650; } .ez-start i { width: 30px; height: 17px; background: #7C4650; } .ez-start i::after { width: 13px; height: 13px; transform: translateX(13px); }
 .ez-start span { width: auto; white-space: nowrap; } .ez-start:not(.on) { color: #A29C94; }
 .ez-li em.ez-st { flex: none; font-style: normal; font-size: 8.5px; font-weight: 700; color: #7C4650; border: 1px solid #D9BFC4; border-radius: 99px; padding: 1px 5px; }
@@ -1363,7 +1367,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             ${readonly ? '<span class="ez-grip ez-grip-x"></span>' : '<span class="ez-grip" title="끌어서 순서 바꾸기">⠿</span>'}
             <span class="ez-no">${no}</span><span class="ez-ic">${ezEsc(ic)}</span>
             <span class="ez-t"><b>${ezEsc(d[0])}</b><small>${ezEsc(d[3])}</small><em>${ezEsc(note)}</em></span>
-            ${ezMv('data-ezq-mv', q.id, i > 0, i < ezAsk.length - 1)}${ezSw('data-ezq-on', q.id, q.on, lock ? '늘 물어요' : '')}</li>`;
+            ${ezMv('data-ezq-mv', q.id, i > 0, i < ezAsk.length - 1)}<span class="ez-sws">${ezSw('data-ezq-on', q.id, q.on, lock ? '늘 물어요' : '')}</span></li>`;
     }
     // ② 목록 메뉴 줄
     function ezRow(st, no, up, dn) {
@@ -1374,7 +1378,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             <span class="ez-t"><b>${ezEsc(EZ_NAMES[st.id] || st.id)}</b><small>${ezEsc(what)}</small>${sec ? `<em>섹션: ${ezEsc(sec)}</em>` : ''}</span>
             ${st.on && !fin ? ezMv('data-ez-mv', st.id, up, dn) : '<span class="ez-mv"></span>'}
             <span class="ez-sws">${ezSw('data-ez-on', st.id, st.on, st.id === 'names' ? '늘 보여요' : fin ? '늘 맨 끝' : '')}${st.on && !EZ_NOSTART.includes(st.id) ? `<label class="so-sw ez-start${st.start ? ' on' : ''}" title="켜면 고객이 처음 만들 때부터 이 섹션이 청첩장에 들어가 있어요 (끄면 질문·목록에서 고객이 켤 때까지 꺼져 있어요)"><input type="checkbox" data-ez-start="${st.id}"${st.start ? ' checked' : ''}${readonly ? ' disabled' : ''}><i></i><span>스타터 ${st.start ? 'ON' : 'OFF'}</span></label>` : ''}</span>
-            ${ezFold(st.id)}</li>`;
+            ${ezFold(st.id) || '<span class="ez-fold-ph"></span>'}</li>`;
     }
     // 세부 옵션 폴더: 줄의 [옵션 n/m ▾]를 누르면 아래로 펼쳐지고, 옵션마다 켜고 끔
     function ezFold(id) {

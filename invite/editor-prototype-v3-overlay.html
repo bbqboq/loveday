@@ -14248,7 +14248,15 @@ function spAskSteps() { // 관리자 "손쉬운 제작 → 처음 만들 때 질
         const seen = new Set(EASY_ASK.map(x => x && x.id));
         list = EASY_ASK.filter(x => x && by[x.id] && (x.on || x.id === 'names:name')).map(x => by[x.id]).concat(SP_ASK.filter(a => !seen.has(spAskId(a)))); // (관리자 목록에 없는 새 질문은 뒤에)
     }
-    return list.filter(a => { const d = SP_STEP_DEFS[a.k]; return d && (!d.show || d.show()) && (!a.blk || spHas(a.blk)); }).map(a => Object.assign({ k: a.k }, SP_STEP_DEFS[a.k], a, { t: a.q }));
+    const out = list.filter(a => { const d = SP_STEP_DEFS[a.k]; return d && (!d.show || d.show()) && (!a.blk || spHas(a.blk)); }).map(a => Object.assign({ k: a.k }, SP_STEP_DEFS[a.k], a, { t: a.q }));
+    // 관리자 "스타터 ON" 섹션 (처음부터 켜 둔 섹션) - 따로 묻는 질문이 없으면 마지막 질문 뒤에 한 장씩 (그 섹션 편집 칸 그대로, 빼려면 스위치)
+    const asked = new Set(SP_ASK.map(a => a.k));
+    spEasyList().forEach(x => {
+        const d = x && x.on && x.start && SP_STEP_DEFS[x.id];
+        if (!d || asked.has(x.id) || (d.show && !d.show())) return;
+        out.push(Object.assign({ k: x.id, starter: true }, d, { q: d.t, t: d.t, sub: '처음부터 넣어 둔 칸이에요. 내용을 고치거나, 필요 없으면 아래 스위치로 빼요.' }));
+    });
+    return out;
 }
 function spAskDone() { spStep = spAskSteps().length; spRender(); } // 다 답함 → "거의 다 됐어요" 정리 화면
 function spAskFinish(btn) { // 정리 화면 [완성본 보기]: 저장 → 완성본(발행하기) → 닫으면 목록 화면
@@ -14265,6 +14273,7 @@ function spNowCardHtml() {
     const lay = spHeroLayouts().find(l => l.id === f.heroLayout) || { layers: [], parts: {}, hide: [] };
     const loc = spBlock('location'), venue = loc && loc.enabled ? (loc.fields.venue || loc.fields.addressBase || '') : '';
     const chips = [['greeting', '인사말'], ['gallery', '갤러리'], ['account', '계좌'], ['rsvp', '참석 여부'], ['guestbook', '방명록']].filter(([id]) => spHas(id) && spBlock(id).enabled).map(x => x[1]);
+    spEasyList().forEach(x => { const d = x && x.on && x.start && SP_STEP_DEFS[x.id]; if (d && !['greet', 'gallery', 'account', 'rsvp', 'guestbook'].includes(x.id) && (d.s || []).some(id => spHas(id) && spBlock(id).enabled)) chips.push(d.t); }); // 스타터 섹션
     if (state.bgm && state.bgm.url && state.bgm.enabled !== false) chips.push('배경음악');
     const date = spDateLine();
     return `<button type="button" class="sp-now" id="spNow" title="누르면 미리보기"><span class="sp-now-th">${b ? spHeroLayoutMini(lay, b, kind) : ''}</span><span class="sp-now-tx"><small>지금 청첩장</small>
@@ -14280,6 +14289,7 @@ function spAskSumRows(steps) { // 정리 화면 줄: [이름, 값, 채웠나]
         if (st.k === 'venue') { const v = loc && (loc.fields.venue || loc.fields.addressBase); return ['예식장', v || '아직 안 정했어요', !!v]; }
         if (st.k === 'hero' && st.part === 'media') { const has = kind === 'video' ? !!hf.youtubeId : spIsReal(hf.heroImage); return [kind === 'video' ? '메인 영상' : '메인 사진', has ? (kind === 'video' ? '유튜브 영상' : '사진 1장') : '아직 안 넣었어요', has]; }
         if (st.k === 'hero') { const l = spHeroLayouts().find(x => x.id === hf.heroLayout); return ['첫 화면 모양', l ? l.label : '기본', true]; }
+        if (st.starter) { const on = (st.s || []).some(id => spHas(id) && spBlock(id).enabled); return [st.t, on ? '넣었어요' : '빼 두었어요', true]; } // 스타터 섹션
         const o = st.opts && st.opts.find(x => x[0] === ask[st.k]);
         return [{ greet: '인사말', account: '계좌', rsvp: '참석 여부', music: '배경음악' }[st.k] || st.t, o ? o[1] : '아직 안 정했어요', !!o];
     });
