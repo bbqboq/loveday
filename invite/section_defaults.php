@@ -283,11 +283,11 @@ const SECTION_EASY_OPTS = [
     'account' => ['parents' => '혼주(부모님) 계좌', 'display' => '표시 방식 · 카드 디자인', 'kakao' => '카카오페이 송금 링크'],
     'dday' => ['calendar' => '달력 보여주기', 'calStyle' => '달력 모양', 'counter' => '카운트 보여주기', 'counterStyle' => '카운터 모양', 'label' => '위쪽 작은 글씨'],
     'notice' => ['title' => '제목', 'quick' => '버튼으로 칸 추가', 'style' => '모양 (카드 · 박스 · 슬라이드 · 탭)'],
-    'rsvp' => ['deadline' => '마감일', 'headcount' => '참석 인원', 'meal' => '식사 여부', 'phone' => '연락처 받기', 'memo' => '전하는 말', 'popup' => '열 때 팝업'],
+    'rsvp' => ['deadline' => '마감일', 'headcount' => '참석 인원', 'meal' => '식사 여부', 'phone' => '연락처 받기', 'memo' => '전하는 말', 'popup' => '참석 여부 팝업'],
     'guestbook' => ['desc' => '안내 문구', 'allowWrite' => '하객 글쓰기 켜고 끄기', 'style' => '모양 (카드 / 줄글)'],
     'video' => ['title' => '영상 제목', 'fullWidth' => '가로 꽉 채우기'],
     'music' => ['library' => '기본 음악 고르기', 'upload' => '내 음악 올리기', 'autoplay' => '자동 재생', 'volume' => '음량'],
-    'finish' => ['intro' => '인트로'],
+    'finish' => ['intro' => '인트로', 'introFx' => '인트로 배경 · 글자 효과'],
 ];
 /** 끈 세부 옵션 정리 {step: [key, ...]} */
 function section_easy_off_clean($in): array

@@ -631,6 +631,18 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-start span { width: auto; white-space: nowrap; } .ez-start:not(.on) { color: #A29C94; }
 .ez-li em.ez-st { flex: none; font-style: normal; font-size: 8.5px; font-weight: 700; color: #7C4650; border: 1px solid #D9BFC4; border-radius: 99px; padding: 1px 5px; }
 .ez-ldone { margin-top: 10px; height: 34px; line-height: 34px; border-radius: 10px; background: #1B1A18; color: #fff; text-align: center; font-size: 11.5px; font-weight: 700; }
+@media (max-width: 640px) { /* 휴대폰: 1줄 = 번호·이름·설명(넓게), 2줄 = ▲▼ · 켜짐/스타터 · 옵션 */
+    .ez-sec { padding: 12px 10px; }
+    .ez-row { gap: 8px 8px; padding: 10px; }
+    .ez-row .ez-ic { display: none; }
+    .ez-row .ez-t { flex: 1 1 calc(100% - 60px); }
+    .ez-row .ez-mv { flex-direction: row; margin-left: 48px; gap: 4px; }
+    .ez-row .ez-mv button { width: 30px; height: 26px; }
+    .ez-sws { width: auto; flex-direction: row; align-items: center; gap: 10px; }
+    .ez-fold-btn, .ez-fold-ph { width: auto; margin-left: auto; } .ez-fold-ph { display: none; }
+    .ez-t b { font-size: 13.5px; } .ez-t small { font-size: 11.5px; }
+    .ez-row .so-sw span { display: inline !important; width: auto; font-size: 11px; white-space: nowrap; } /* (켜짐 · 스타터 글자는 휴대폰에서도) */
+}
 @media (max-width: 860px) { .ez-grid { grid-template-columns: 1fr; } .ez-pv { position: static; } }</style>
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>

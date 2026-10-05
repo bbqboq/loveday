@@ -530,6 +530,7 @@ function introBgImgCss(intro) {
 //  첫 화면의 등장 효과(스티커 팝·바운스 등)를 인트로가 반쯤 걷혔을 때 시작해야 효과가 온전히 보인다.
 //  예전엔 본문 등장 효과가 페이지를 여는 즉시 인트로 뒤에서 재생돼 버려서, 인트로가 걷혔을 땐 이미 끝나 있었다.
 //  인트로가 없으면 바로 부른다.
+const escHtml = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function playIntroAnimation(design, onReveal) {
     fixDesignUploadUrls(design);
     let revealed = false;
@@ -557,6 +558,9 @@ function playIntroAnimation(design, onReveal) {
         videoWrap.className = 'intro-bg-video-wrap';
         videoWrap.innerHTML = `<iframe src="${ytEmbedSrc(ytId)}" allow="autoplay" referrerpolicy="strict-origin-when-cross-origin" title="인트로 배경 영상"></iframe>`;
         overlay.appendChild(videoWrap);
+    } else if (bgType === 'clear') { // 메인 화면 위 (투명): 청첩장 메인 사진·영상이 비치고 글자만 움직임
+        overlay.classList.add('intro-clear');
+        overlay.style.setProperty('--intro-dim', Math.max(0, Math.min(80, intro.clearDim ?? 30)) / 100);
     } else {
         overlay.style.background = intro.bg || s.bg;
     }
@@ -572,7 +576,7 @@ function playIntroAnimation(design, onReveal) {
     const defaultFontFamily = (defaultFontOpt && defaultFontOpt.family) || s.headFont;
     textEl.style.fontFamily = (fontOpt && fontOpt.family) || defaultFontFamily;
     textEl.style.fontSize = fontToCqw(intro.fontSize || 26);
-    textEl.style.color = intro.color || s.ink;
+    textEl.style.color = intro.color || (bgType === 'clear' ? '#fff' : s.ink);
     if (textEdge(intro)) textEl.style.textShadow = textEdge(intro); // 에디터 인트로 문구 팝업의 '테두리' (그림자·외곽선)
     textEl.style.left = (intro.x ?? 50) + '%';
     textEl.style.top = (intro.y ?? 50) + '%';
@@ -644,8 +648,10 @@ function playIntroAnimation(design, onReveal) {
         overlay.style.animationPlayState = '';
         const typedEl = overlay.querySelector('.intro-typed');
         // 에디터에서 글꾸미기(굵게·색·글꼴 등)를 했으면 꾸민 모양 그대로 타자 효과, 아니면 예전처럼 글자만
-        if (intro.html && window.InviteBlocks && InviteBlocks.RichText) InviteBlocks.RichText.type(typedEl, intro.html, duration);
-        else { if (window.InviteBlocks && InviteBlocks.RichText) InviteBlocks.RichText.resetCursor(typedEl); typewriterInto(typedEl, intro.text || '', duration); }
+        const RT = window.InviteBlocks && InviteBlocks.RichText, anim = intro.anim || 'type';
+        if (anim !== 'type' && RT && RT.animate) RT.animate(typedEl, intro.html || escHtml(intro.text || ''), anim, duration); // 글자 효과 (천천히·한 글자씩·흐림·크게서 작게·톡톡·한 줄씩·손글씨)
+        else if (intro.html && RT) RT.type(typedEl, intro.html, duration);
+        else { if (RT) RT.resetCursor(typedEl); typewriterInto(typedEl, intro.text || '', duration); }
         setTimeout(reveal, (duration + 0.3) * 1000); // 인트로가 반쯤 걷힌 순간 - 이보다 빠르면 효과의 앞부분이 인트로에 가려진다
         setTimeout(() => {
             overlay.remove();

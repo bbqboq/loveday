@@ -4242,14 +4242,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017m">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017m">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017n">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017n">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017m"></script>
-<script src="assets/tip-demos.js?v=1017m"></script>
-<script src="assets/ld-dialog.js?v=1017m"></script>
+<script src="assets/invite-blocks.js?v=1017n"></script>
+<script src="assets/tip-demos.js?v=1017n"></script>
+<script src="assets/ld-dialog.js?v=1017n"></script>
 </head>
 <body>
 
@@ -4675,7 +4675,11 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
             <div class="settings-card" data-tabgroup="basic" style="--dot:#3FA7A0;">
                 <div class="field">
                     <label>재생 길이 <span class="val" id="is2DurationVal"></span></label>
-                    <input type="range" id="is2Duration" min="1" max="3" step="0.5">
+                    <input type="range" id="is2Duration" min="1" max="4" step="0.5">
+                </div>
+                <div class="field">
+                    <label>글자 효과</label>
+                    <div class="width-row" id="is2Anims"></div>
                 </div>
             </div>
             <div class="settings-card" data-tabgroup="detail" style="--dot:#8E5BB5;">
@@ -4685,7 +4689,13 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
                         <button type="button" class="width-btn" data-bgtype="color">색상</button>
                         <button type="button" class="width-btn" data-bgtype="image">사진</button>
                         <button type="button" class="width-btn" data-bgtype="video">유튜브</button>
+                        <button type="button" class="width-btn" data-bgtype="clear" title="배경 없이 청첩장 메인 사진·영상 위에 글자만 움직여요">메인 화면 위</button>
                     </div>
+                </div>
+                <div class="field" id="is2ClearField" style="display:none;">
+                    <label>메인 화면 어둡게 <span class="val" id="is2ClearDimVal"></span></label>
+                    <input type="range" id="is2ClearDim" min="0" max="70" step="5">
+                    <p class="field-hint">배경 없이 청첩장 메인 사진·영상 위에 글자만 나타났다가 사라져요. 글자가 잘 보이게 사진을 살짝 어둡게 할 수 있어요.</p>
                 </div>
                 <div class="field field-inline" id="is2BgColorField">
                     <label id="is2BgColorLabel">배경색</label>
@@ -8973,7 +8983,7 @@ function renderGalleryEditor(wrap, block) {
         <div class="width-row">
             ${InviteBlocks.GALLERY_TYPES.map(([val,lbl]) => `<button type="button" class="width-btn ${(f.layoutType||'grid')===val?'active':''}" data-gtype="${val}">${lbl}</button>`).join('')}
         </div>
-        ${(f.layoutType === 'slide') ? `<div class="mini-label" style="margin-top:10px;">하단 진행바</div>
+        ${(f.layoutType === 'slide' || f.layoutType === 'pages') ? `<div class="mini-label" style="margin-top:10px;">하단 진행바</div>
         <div class="width-row">
             <button type="button" class="width-btn ${f.slideProgress!==false?'active':''}" data-gprog="1">표시</button>
             <button type="button" class="width-btn ${f.slideProgress===false?'active':''}" data-gprog="0">숨기기</button>
@@ -10117,12 +10127,18 @@ function applyIntroPreviewStyle() {
             videoWrap.innerHTML = `<iframe src="${ytEmbedSrc(ytId)}" allow="autoplay" referrerpolicy="strict-origin-when-cross-origin" title="인트로 배경 영상"></iframe>`;
             videoWrap.dataset.ytId = ytId;
         }
+    } else if (bgType === 'clear') { // 메인 화면 위: 미리보기에선 메인 사진(영상이면 썸네일) 위에 + 어둡게
+        const hv = state.blocks.find(b => (b.id === 'hero' || b.id === 'heroVideo') && b.enabled), dim = (state.intro.clearDim ?? 30) / 100;
+        const pic = hv ? (hv.id === 'heroVideo' ? (hv.fields.youtubeId ? `https://i.ytimg.com/vi/${extractYoutubeId(hv.fields.youtubeId)}/hqdefault.jpg` : '') : (hv.fields.heroImage || '')) : '';
+        canvas.style.background = `linear-gradient(rgba(0,0,0,${dim}), rgba(0,0,0,${dim}))${pic ? `, center / cover no-repeat url("${InviteBlocks.imgUrl(pic).replace(/"/g, '%22')}")` : ''}, ${skins[state.skin].bg}`;
+        videoWrap.innerHTML = '';
+        videoWrap.dataset.ytId = '';
     } else {
         canvas.style.background = state.intro.bg || skins[state.skin].bg;
         videoWrap.innerHTML = '';
         videoWrap.dataset.ytId = '';
     }
-    textEl.style.color = state.intro.color || skins[state.skin].ink;
+    textEl.style.color = state.intro.color || (bgType === 'clear' ? '#fff' : skins[state.skin].ink);
     textEl.style.textShadow = textEdge(state.intro);
     // "기본값"(폰트 미지정) 상태면 CSS inherit 대신 청첩장이 실제로 쓰는 폰트를 명시적으로 넣는다.
     // 인트로 오버레이가 #previewRoot 바깥(document.body)에 붙는 구조라 CSS 상속만으로는
@@ -10181,7 +10197,11 @@ function loopIntroPreview() {
     stopIntroLoop();
     if (introTextSelected) { showIntroFullText(); window.__imtSync?.(); return; }
     const typedEl = document.querySelector('#introPreviewText .intro-typed');
-    const startTyping = () => (state.intro.html && window.InviteBlocks)
+    const anim = state.intro.anim || 'type';
+    if (anim === 'type' && window.InviteBlocks) InviteBlocks.RichText.animReset(typedEl);
+    const startTyping = () => anim !== 'type' && window.InviteBlocks
+        ? InviteBlocks.RichText.animate(typedEl, state.intro.html || esc(state.intro.text || ''), anim, state.intro.duration) // 글자 효과
+        : (state.intro.html && window.InviteBlocks)
         ? InviteBlocks.RichText.type(typedEl, state.intro.html, state.intro.duration) // 꾸민 글씨 그대로 타자 효과
         : (window.InviteBlocks && InviteBlocks.RichText.resetCursor(typedEl), typewriterInto(typedEl, state.intro.text || '', state.intro.duration));
     const fontOpt = fontOptions.find(f => f.id === state.intro.font);
@@ -10212,6 +10232,7 @@ function renderIntroSettingsScreen() {
     document.getElementById('is2RotationVal').textContent = state.intro.rotation + '°';
     document.getElementById('is2Duration').value = state.intro.duration;
     document.getElementById('is2DurationVal').textContent = state.intro.duration + '초';
+    renderIntroAnims();
     document.getElementById('is2Color').value = state.intro.color || skins[state.skin].ink;
     document.getElementById('is2Bg').value = state.intro.bg || skins[state.skin].bg;
     document.getElementById('is2BgYoutube').value = state.intro.bgYoutubeId || '';
@@ -10230,6 +10251,8 @@ function renderIntroBgTypeUI() {
     document.getElementById('is2BgColorLabel').textContent = bgType === 'image' ? '이미지 뒤 배경색' : '배경색';
     document.getElementById('is2BgImageField').style.display = bgType === 'image' ? '' : 'none';
     document.getElementById('is2BgVideoField').style.display = bgType === 'video' ? '' : 'none';
+    document.getElementById('is2ClearField').style.display = bgType === 'clear' ? '' : 'none';
+    document.getElementById('is2ClearDim').value = state.intro.clearDim ?? 30; document.getElementById('is2ClearDimVal').textContent = (state.intro.clearDim ?? 30) + '%';
     const previewWrap = document.getElementById('is2BgImagePreviewWrap');
     previewWrap.innerHTML = state.intro.bgImage ? `<img src="${esc(state.intro.bgImage)}" style="width:100%;max-height:120px;object-fit:contain;background:#eee;border-radius:8px;margin-bottom:8px;display:block;">` : '';
     renderIntroBgImgControls();
@@ -10480,6 +10503,16 @@ document.getElementById('is2Rotation').addEventListener('input', e => {
     state.intro.rotation = parseInt(e.target.value, 10);
     document.getElementById('is2RotationVal').textContent = state.intro.rotation + '°';
     updateIntroAndRestart();
+});
+// 인트로 글자 효과 칩 (타자 · 천천히 · 한 글자씩 · 흐림 · 크게서 작게 · 톡톡 · 한 줄씩 · 손글씨)
+function renderIntroAnims() {
+    const box = document.getElementById('is2Anims'); if (!box || !window.InviteBlocks) return;
+    const cur = state.intro.anim || 'type';
+    box.innerHTML = InviteBlocks.RichText.ANIMS.map(([k, l]) => `<button type="button" class="width-btn${cur === k ? ' active' : ''}" data-intro-anim="${k}">${esc(l)}</button>`).join('');
+    box.querySelectorAll('[data-intro-anim]').forEach(b => b.addEventListener('click', () => { state.intro.anim = b.dataset.introAnim; renderIntroAnims(); updateIntroAndRestart(); }));
+}
+document.getElementById('is2ClearDim').addEventListener('input', e => {
+    state.intro.clearDim = +e.target.value; document.getElementById('is2ClearDimVal').textContent = e.target.value + '%'; updateIntroBgOnly();
 });
 document.getElementById('is2Duration').addEventListener('input', e => {
     state.intro.duration = parseFloat(e.target.value);
@@ -10733,6 +10766,7 @@ function showIntroFullText() {
     const typedEl = document.querySelector('#introPreviewText .intro-typed');
     if (!typedEl) return;
     clearInterval(typedEl._typewriterTimer); typedEl._typewriterTimer = null;
+    if (window.InviteBlocks) InviteBlocks.RichText.animReset(typedEl); // (글자 효과 표시도 걷고 다 보이게)
     setIntroTypedFull(typedEl);
 }
 function clearIntroMainTextUI() {
@@ -15105,7 +15139,7 @@ function spRsvp(box) {
         (O('meal') ? spSw('askMeal', '식사 여부 묻기', '식사하실지 미리 알 수 있어요', f.askMeal) : '') +
         (O('phone') ? spSw('askPhone', '연락처 받기', '암호화해서 저장하고 관리 화면에서만 보여요', f.askPhone) : '') +
         (O('memo') ? spSw('askMemo', '전하는 말 받기', '하객이 짧은 축하 메시지를 남겨요', f.askMemo) : '') +
-        (O('popup') ? spSw('popup', '열 때 팝업으로 묻기', '청첩장을 열면 참석 여부 창이 먼저 떠요', f.popup) : '');
+        (O('popup') ? spSw('popup', '팝업으로 묻기', '하객이 메인 화면을 지나 내려가면 참석 여부 창이 떠요', f.popup) : '');
     spBindSw(box, f, 'rsvp');
 }
 function spGuestbook(box) {
@@ -15274,8 +15308,14 @@ function spFinish(box) {
     ensureExtraState();
     box.innerHTML = spH('거의 다 됐어요', '인트로까지 정했으면 [다음]을 누르세요. 저장하고 완성본을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.') + `
         ${spOpt('finish', 'intro') ? `<label class="sp-sw"><span><b>인트로</b><small>청첩장을 열 때 "${wzEsc(state.intro.text || '우리 결혼합니다')}" 짧은 애니메이션</small></span><input type="checkbox" id="spIntro" ${state.intro.enabled ? 'checked' : ''}><i></i></label>` : ''}
+        ${state.intro.enabled && spOpt('finish', 'introFx') && window.InviteBlocks ? `<div class="wz-field"><div class="wz-lab">인트로 배경</div><div class="sp-chips">${[['color', '디자인 색'], ['clear', '메인 화면 위 (투명)']].map(([v, l]) => `<button type="button" class="${(state.intro.bgType || 'color') === v ? 'on' : ''}" data-sp-ibg="${v}">${l}</button>`).join('')}</div></div>
+            <div class="wz-field"><div class="wz-lab">글자 효과</div><div class="sp-chips">${InviteBlocks.RichText.ANIMS.map(([v, l]) => `<button type="button" class="${(state.intro.anim || 'type') === v ? 'on' : ''}" data-sp-ianim="${v}">${esc(l)}</button>`).join('')}</div>
+            <button type="button" class="sp-link" id="spIntroPv">▶ 인트로 보기</button></div>` : ''}
         <p class="wz-hint">글자 위치·스티커·섹션 순서까지 바꾸고 싶으면 위의 <b>전문가 모드</b>를 누르세요. 언제든 간편 만들기로 돌아올 수 있어요.</p>`;
-    box.querySelector('#spIntro')?.addEventListener('change', e => { state.intro.enabled = e.target.checked; spChanged(); });
+    box.querySelector('#spIntro')?.addEventListener('change', e => { state.intro.enabled = e.target.checked; spChanged(); scheduleSnapshot(); spRender(); });
+    box.querySelectorAll('[data-sp-ibg]').forEach(b => b.addEventListener('click', () => { state.intro.bgType = b.dataset.spIbg; if (b.dataset.spIbg === 'clear' && state.intro.clearDim == null) state.intro.clearDim = 30; scheduleSnapshot(); spRender(); }));
+    box.querySelectorAll('[data-sp-ianim]').forEach(b => b.addEventListener('click', () => { state.intro.anim = b.dataset.spIanim; scheduleSnapshot(); spRender(); }));
+    box.querySelector('#spIntroPv')?.addEventListener('click', () => spOpenPreview(false)); // 하객이 보는 실제 화면으로 (인트로부터)
 }
 
 function spExitInPlace() {

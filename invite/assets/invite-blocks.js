@@ -792,6 +792,46 @@
     }
     /** 꾸밈 없는 글자 타자 효과로 돌아갈 때 - 원래 커서를 다시 보이게 */
     function rtTypeReset(el) { const host = el && el.parentElement; if (host) host.classList.remove('rt-typing'); }
+    // ---- 인트로 글자 효과 (타자 말고 7가지) - 에디터 인트로 미리보기와 공개 페이지가 같이 씀 ----
+    //  글자마다 <span class="ibx-ch" style="--i:글자 번호;--l:줄 번호">로 나누고(낱말은 .ibx-w로 묶어 줄바꿈 유지) invite-blocks.css .ibx-a-* 애니메이션
+    const INTRO_ANIMS = [['type', '타자 치듯'], ['fade', '천천히 나타나기'], ['rise', '한 글자씩 떠오르기'], ['blur', '흐릿하게 선명해지기'], ['zoom', '크게서 작게'], ['pop', '톡톡 튀기'], ['line', '한 줄씩 올라오기'], ['draw', '손글씨처럼 그려지기']];
+    function introAnimReset(el) { const host = el && el.parentElement; if (!host) return; [...host.classList].filter(c => /^ibx-a-/.test(c)).forEach(c => host.classList.remove(c)); }
+    function introAnim(el, html, anim, duration) {
+        if (!el) return;
+        if (el._typewriterTimer) { clearInterval(el._typewriterTimer); el._typewriterTimer = null; }
+        rtTypeReset(el); introAnimReset(el);
+        const host = el.parentElement;
+        el.innerHTML = rtSanitize(html || '');
+        rtLoadFonts(el);
+        let i = 0, l = 0, started = false;
+        const split = node => {
+            [...node.childNodes].forEach(ch => {
+                if (ch.nodeType === 3) {
+                    const frag = document.createDocumentFragment(); let word = null;
+                    Array.from(ch.nodeValue).forEach(c => {
+                        if (c === '\n') { word = null; l++; frag.appendChild(document.createTextNode('\n')); return; }
+                        if (/\s/.test(c)) { word = null; frag.appendChild(document.createTextNode(c)); return; }
+                        if (!word) { word = document.createElement('span'); word.className = 'ibx-w'; frag.appendChild(word); }
+                        const sp = document.createElement('span'); sp.className = 'ibx-ch'; sp.textContent = c; sp.style.setProperty('--i', i++); sp.style.setProperty('--l', l);
+                        word.appendChild(sp); started = true;
+                    });
+                    ch.replaceWith(frag);
+                } else if (ch.nodeType === 1) {
+                    if (ch.tagName === 'BR') { l++; return; }
+                    if (/^(DIV|P)$/.test(ch.tagName) && started) l++;
+                    split(ch);
+                }
+            });
+        };
+        split(el);
+        const total = (Number(duration) || 2.5) * 1000 * 0.6; // 재생 길이의 60% 동안 나타나고, 나머지는 다 나온 채로
+        if (host) {
+            host.style.setProperty('--ibx-total', Math.round(total) + 'ms');
+            host.style.setProperty('--ibx-step', Math.round(anim === 'line' ? total * 0.7 / Math.max(1, l + 1) : total * 0.7 / Math.max(1, i)) + 'ms');
+            void host.offsetWidth; // (같은 효과를 다시 틀 때 처음부터)
+            host.classList.add('ibx-a-' + (INTRO_ANIMS.some(a => a[0] === anim) ? anim : 'fade'));
+        }
+    }
     // =====================================================================
     // 스크롤바 모양 (화면 설정 → 부가기능 "스크롤바 모양") - PC에서 청첩장 오른쪽에 보이는 스크롤바
     // 휴대폰은 스크롤할 때만 잠깐 뜨는 얇은 막대라 대부분 기기 기본 모양으로 보인다.
@@ -929,7 +969,7 @@
         });
     }
 
-    const RichText = { resetCursor: rtTypeReset, sanitize: rtSanitize, plain: rtPlain, loadFonts: rtLoadFonts, type: rtType, toolbar: rtToolbar, editor: rtEditor, EMOJI: RT_EMOJI };
+    const RichText = { animate: introAnim, animReset: introAnimReset, ANIMS: INTRO_ANIMS, resetCursor: rtTypeReset, sanitize: rtSanitize, plain: rtPlain, loadFonts: rtLoadFonts, type: rtType, toolbar: rtToolbar, editor: rtEditor, EMOJI: RT_EMOJI };
 
     const PAPERS = { cotton: '코튼', white: '화이트', ivory: '줄노트', kraft: '크라프트', grid: '모눈', linen: '린넨', dot: '도트' };
 
@@ -1840,7 +1880,7 @@
         label: '참석 의사 전달', color: '#16A085',
         defaults: { title: '참석 의사 전달', desc: '축하의 마음으로 참석해주시는 분들을 위해\n정성껏 자리를 준비하고자 합니다.\n참석 여부를 알려주시면 감사하겠습니다.',
             buttonLabel: '참석 의사 전달하기', doneLabel: '전달한 내용 수정하기', deadline: '',
-            askHeadcount: true, askMeal: true, askPhone: false, askMemo: true, popup: false },
+            askHeadcount: true, askMeal: true, askPhone: false, askMemo: true, popup: false, popupAt: 'scroll' },
         editor: [
             { key: 'title', label: '제목', type: 'text' },
             { key: 'desc', label: '안내 문구', type: 'textarea', rows: 4 },
@@ -1853,7 +1893,8 @@
             { key: 'askPhone', label: '', type: 'check', checkLabel: '연락처 (선택 입력)', hint: '연락처는 암호화해서 저장하고 신랑·신부 관리 화면에서만 보여요. 예식일 뒤 일정 기간이 지나면 명단과 함께 자동 삭제돼요.' },
             { key: 'askMemo', label: '', type: 'check', checkLabel: '전하는 말 (선택 입력)' },
             { group: '팝업' },
-            { key: 'popup', label: '', type: 'check', checkLabel: '청첩장을 열면 참석 여부를 묻는 팝업 띄우기', hint: '이미 보낸 하객, 마감일이 지난 뒤, "오늘 하루 보지 않기"를 누른 하객에게는 안 떠요.' }
+            { key: 'popup', label: '', type: 'check', checkLabel: '참석 여부를 묻는 팝업 띄우기', hint: '이미 보낸 하객, 마감일이 지난 뒤, "오늘 하루 보지 않기"를 누른 하객에게는 안 떠요.' },
+            { key: 'popupAt', label: '팝업이 뜨는 때', type: 'choice', options: [['scroll', '메인 화면을 지나 내려가면'], ['open', '청첩장을 열자마자']], showIf: 'popup' }
         ],
         render(f) {
             const o = Object.assign({}, BLOCKS.rsvp.defaults, f);
@@ -2268,7 +2309,7 @@
 
     // ---------- 갤러리 모양 6종 ----------
     // grid(정사각 그리드)는 예전 마크업과 완전히 같게 둬서, 기존 청첩장은 모양이 하나도 바뀌지 않는다.
-    const GALLERY_TYPES = [['grid', '정사각 그리드'], ['tall', '세로 그리드'], ['collage', '콜라주'], ['wide', '가로형 콜라주'], ['circle', '써클'], ['slide', '슬라이드']];
+    const GALLERY_TYPES = [['grid', '정사각 그리드'], ['tall', '세로 그리드'], ['collage', '콜라주'], ['wide', '가로형 콜라주'], ['circle', '써클'], ['slide', '슬라이드'], ['pages', '넘기는 콜라주']];
     function galleryHtml(f, width, opts) {
         const o = opts || {};
         const images = (f.images && f.images.length) ? f.images : (o.defaultImages ? o.defaultImages() : []);
@@ -2290,6 +2331,15 @@
             return `<div class="blk-gallery ${edgeCls}" style="position:relative;">${title}<div class="grid ${cls} ${lightboxCls} ${cardCls}">${imgs}</div></div>`;
         }
         const imgs = images.map(im => `<img${lazy} src="${src(im)}" alt="">`).join('');
+        // 넘기는 콜라주: 사진 6장씩 두 줄 높낮이 콜라주 한 장 → 옆으로 넘김 (다음 장이 오른쪽에 살짝 보임)
+        if (type === 'pages') {
+            const W = { 1: [1], 2: [1, 1], 3: [4, 3, 5] }, WR = { 1: [1], 2: [1, 1], 3: [5, 4, 3] }; // 왼쪽·오른쪽 줄 사진 높이 비율 (엇갈리게)
+            const col = (arr, w) => `<div class="ib-gp-col">${arr.map((im, i) => `<img${lazy} src="${src(im)}" alt="" style="flex-grow:${(w[arr.length] || [])[i] || 1}">`).join('')}</div>`;
+            const pages = []; for (let i = 0; i < images.length; i += 6) pages.push(images.slice(i, i + 6));
+            const page = p => { const h = Math.ceil(p.length / 2); return `<div class="ib-gp-page">${col(p.slice(0, h), W)}${p.length > 1 ? col(p.slice(h), WR) : ''}</div>`; };
+            const bar = f.slideProgress !== false && pages.length > 1 ? `<div class="ib-g-progress"><span style="width:${100 / pages.length}%"></span></div>` : '';
+            return `<div class="blk-gallery ${edgeCls}" style="position:relative;">${title}<div class="grid ib-g-pages ${lightboxCls}${pages.length > 1 ? '' : ' one'}" data-ib-slide>${pages.map(page).join('')}</div>${bar}</div>`;
+        }
         if (type === 'slide') {
             const bar = f.slideProgress !== false ? `<div class="ib-g-progress"><span style="width:${images.length ? (100 / images.length) : 100}%"></span></div>` : '';
             return `<div class="blk-gallery ${edgeCls}" style="position:relative;">${title}<div class="grid ib-g-slide ${lightboxCls}" data-ib-slide>${imgs}</div>${bar}</div>`;
@@ -2829,15 +2879,27 @@
             });
         } else if (rsvpF && rsvpF.popup && s && !storeGet('ib_rsvp_' + s) && storeGet('ib_rsvp_skip_' + s) !== seoulToday()
                    && !(/^\d{4}-\d{2}-\d{2}$/.test(rsvpF.deadline || '') && seoulToday() > rsvpF.deadline)) {
-            afterIntro(() => {
+            afterIntro(() => afterHeroScroll(root, rsvpF.popupAt === 'open', () => {
+                if (storeGet('ib_rsvp_' + s) || document.querySelector('.ib-modal, .lbx')) return; // (그새 보냈거나 다른 창이 떠 있으면 안 띄움)
                 const cfg = { askHeadcount: rsvpF.askHeadcount !== false, askMeal: rsvpF.askMeal !== false, askPhone: !!rsvpF.askPhone, askMemo: rsvpF.askMemo !== false, doneLabel: rsvpF.doneLabel };
                 const m = openModal(rsvpF.title || '참석 의사 전달', `<p class="ib-rsvp-desc">${nl2br(rsvpF.desc)}</p>${rsvpF.deadline ? `<p class="ib-rsvp-dl">${esc(fmtKDate(rsvpF.deadline))}까지 알려주세요</p>` : ''}`, root.querySelector('[data-block-id="rsvp"]') || root,
                     { footer: `<button type="button" class="ib-f-submit" data-go>${esc(rsvpF.buttonLabel || '참석 의사 전달하기')}</button>
                                <button type="button" class="ib-f-skip" data-skip>오늘 하루 보지 않기</button>` });
                 m.el.querySelector('[data-go]').addEventListener('click', () => { m.close(); setTimeout(() => openRsvpForm(cfg, root), 240); });
                 m.el.querySelector('[data-skip]').addEventListener('click', () => { storeSet('ib_rsvp_skip_' + s, seoulToday()); m.close(); });
-            });
+            }));
         }
+    }
+    // 참석 여부 팝업: 맨 위가 메인 사진·영상이면 하객이 메인 화면을 지나 내려갈 때 띄움 (now = 열자마자)
+    function afterHeroScroll(root, now, fn) {
+        const first = root && root.querySelector('.col[data-block-id]');
+        if (now || !first || !/^hero/.test(first.dataset.blockId)) return fn();
+        let done = false;
+        const check = () => {
+            if (done || first.getBoundingClientRect().bottom > global.innerHeight * 0.45) return; // 메인 화면이 절반 넘게 올라가면
+            done = true; global.removeEventListener('scroll', check); setTimeout(fn, 350);
+        };
+        global.addEventListener('scroll', check, { passive: true }); check();
     }
 
     // ---- 캘린더에 저장 (예식 3시간 전 + 대절버스 출발 30분 전 알림) - 서버 calendar.php가 .ics를 만들어 줌 ----
