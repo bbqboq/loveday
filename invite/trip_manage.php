@@ -47,8 +47,8 @@ else $state = ['ok', '하객에게 보이는 중' . ($blk['delay'] ? " · 새 �
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <link rel="stylesheet" href="assets/invite-blocks.css?v=<?= $v('invite-blocks.css') ?>">
 <style>
-:root { --bg:var(--ui-page, #F6F4F1); --ink:#1B1A18; --sub:#6F6A63; --faint:#A39D95; --line:var(--ui-line, #EAE6E0); --soft:#F1EEEA; --accent:#C7823A; --ok:#2F7D55;
-  --p-bg:#FAF7F0; --p-ink:#2B2320; --p-accent:#7A3B41; --p-line:#E1D6C6; --p-muted:#8A7F72; }
+:root { --bg:var(--ui-page, #F6F4F1); --ink:#1B1A18; --sub:#6F6A63; --faint:#A39D95; --line:var(--ui-line, #EAE6E0); --soft:var(--ui-soft, #F1EEEA); --accent:#C7823A; --ok:#2F7D55;
+  --p-bg:var(--ui-soft, #FAF7F0); --p-ink:#2B2320; --p-accent:#7A3B41; --p-line:#E1D6C6; --p-muted:#8A7F72; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing: antialiased; word-break: keep-all; }
 .top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 16px; background: rgba(246,244,241,.92); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
@@ -66,7 +66,7 @@ h1 { font-size: 22px; letter-spacing: -.02em; margin: 6px 0 4px; }
 .pick .th { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--soft); }
 .pick .th img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .pick .th button { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; line-height: 24px; cursor: pointer; }
-.pick label.add { aspect-ratio: 1; border-radius: 10px; border: 1.5px dashed #D6D0C8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--sub); font-size: 12.5px; cursor: pointer; background: #FCFBF9; }
+.pick label.add { aspect-ratio: 1; border-radius: 10px; border: 1.5px dashed var(--ui-line, #D6D0C8); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--sub); font-size: 12.5px; cursor: pointer; background: #FCFBF9; }
 .pick label.add span { font-size: 24px; line-height: 1; }
 textarea, input[type=text] { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px; font: inherit; font-size: 15px; background: #FCFBF9; outline: none; }
 textarea:focus, input[type=text]:focus { border-color: var(--ink); background: #fff; }

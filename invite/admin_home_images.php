@@ -114,15 +114,15 @@ $bg = function (string $slot) use ($state): string {
 .hi-top .page-title { margin: 0; }
 .hi-top p { flex-basis: 100%; margin: 4px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 .hi-links { margin-left: auto; display: flex; gap: 8px; }
-.hi-links a { display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 999px; border: 1px solid #E3DED6; background: #fff; font-size: 13px; color: #2B2B2B; text-decoration: none; }
-.hi-links a:hover { background: #F6F3EE; }
+.hi-links a { display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 999px; border: 1px solid var(--ui-line, #E3DED6); background: #fff; font-size: 13px; color: #2B2B2B; text-decoration: none; }
+.hi-links a:hover { background: var(--ui-soft, #F6F3EE); }
 
 .hi-sec { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 22px; align-items: start; margin: 0 0 34px; }
 .hi-sec h3 { grid-column: 1 / -1; margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; }
 .hi-sec h3 small { font-size: 12.5px; color: var(--muted); font-weight: 500; }
 
 /* 미리보기 */
-.pv { position: sticky; top: 72px; border-radius: 18px; overflow: hidden; border: 1px solid #ECE8E2; box-shadow: 0 12px 30px rgba(40, 25, 20, .08); }
+.pv { position: sticky; top: 72px; border-radius: 18px; overflow: hidden; border: 1px solid var(--ui-line, #ECE8E2); box-shadow: 0 12px 30px rgba(40, 25, 20, .08); }
 .pv-cap { position: absolute; left: 12px; top: 12px; z-index: 5; font-size: 11px; font-weight: 700; letter-spacing: .08em; padding: 4px 9px; border-radius: 999px; background: rgba(255, 255, 255, .9); color: #6F6A63; }
 @keyframes hbob { 50% { translate: 0 -7px; } }
 /* 홈 미리보기 */
@@ -156,10 +156,10 @@ $bg = function (string $slot) use ($state): string {
 
 /* 칸 목록 */
 .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
-.slot { background: #fff; border: 1px solid #ECE8E2; border-radius: 16px; padding: 12px; display: flex; gap: 12px; align-items: flex-start; transition: border-color .2s, box-shadow .2s; }
+.slot { background: #fff; border: 1px solid var(--ui-line, #ECE8E2); border-radius: 16px; padding: 12px; display: flex; gap: 12px; align-items: flex-start; transition: border-color .2s, box-shadow .2s; }
 .slot.dirty { border-color: #2B2B2B; box-shadow: 0 0 0 3px rgba(43, 43, 43, .06); }
 .slot.drag { border-color: #03A04B; background: #F2FBF6; }
-.thumb { position: relative; flex: none; width: 84px; border-radius: 10px; overflow: hidden; cursor: crosshair; border: 1px solid #ECE8E2; transition: background .25s; }
+.thumb { position: relative; flex: none; width: 84px; border-radius: 10px; overflow: hidden; cursor: crosshair; border: 1px solid var(--ui-line, #ECE8E2); transition: background .25s; }
 .thumb.def { cursor: pointer; }
 .thumb .dot { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, .35), 0 2px 6px rgba(0, 0, 0, .3); pointer-events: none; display: none; }
 .thumb:not(.def) .dot { display: block; }
@@ -172,8 +172,8 @@ $bg = function (string $slot) use ($state): string {
 .slot-b .tag.photo { background: #E9F5EE; color: #2F7A4E; }
 .slot-b .tag.new { background: #2B2B2B; color: #fff; }
 .slot-act { display: flex; gap: 6px; flex-wrap: wrap; }
-.slot-act button { border: 1px solid #E3DED6; background: #fff; border-radius: 9px; padding: 6px 10px; font: inherit; font-size: 12.5px; cursor: pointer; color: #2B2B2B; }
-.slot-act button:hover { background: #F6F3EE; }
+.slot-act button { border: 1px solid var(--ui-line, #E3DED6); background: #fff; border-radius: 9px; padding: 6px 10px; font: inherit; font-size: 12.5px; cursor: pointer; color: #2B2B2B; }
+.slot-act button:hover { background: var(--ui-soft, #F6F3EE); }
 .slot-act .pick { background: #2B2B2B; border-color: #2B2B2B; color: #fff; }
 .slot-act .pick:hover { background: #111; }
 .slot-act button:disabled { opacity: .45; cursor: not-allowed; }
@@ -198,7 +198,7 @@ $bg = function (string $slot) use ($state): string {
 .homesw b:empty { display: none; }
 .sw { position: relative; flex: none; display: inline-block; width: 40px; height: 24px; cursor: pointer; }
 .sw input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
-.sw i { position: absolute; inset: 0; border-radius: 999px; background: #E3E0DB; transition: background .2s; }
+.sw i { position: absolute; inset: 0; border-radius: 999px; background: var(--ui-line, #E3E0DB); transition: background .2s; }
 .sw i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, .22); transition: transform .22s cubic-bezier(.3, .7, .4, 1.2); }
 .sw input:checked + i { background: #34C759; }
 .sw input:checked + i::after { transform: translateX(16px); }

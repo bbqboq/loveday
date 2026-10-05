@@ -149,7 +149,7 @@ function sa_perm_list(array $groups, array $groupIcon, array $perms, string $nam
 /* 아이폰식 스위치 */
 .sw { position: relative; flex: none; display: inline-block; width: 46px; height: 28px; cursor: pointer; }
 .sw input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
-.sw i { position: absolute; inset: 0; border-radius: 999px; background: #E3E0DB; transition: background .2s; }
+.sw i { position: absolute; inset: 0; border-radius: 999px; background: var(--ui-line, #E3E0DB); transition: background .2s; }
 .sw i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, .22); transition: transform .22s cubic-bezier(.3, .7, .4, 1.2); }
 .sw input:checked + i { background: #34C759; }
 .sw input:checked + i::after { transform: translateX(18px); }
@@ -159,22 +159,22 @@ function sa_perm_list(array $groups, array $groupIcon, array $perms, string $nam
 
 /* 권한 목록 */
 .perms { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
-.pg { background: #FCFBF9; border: 1px solid #F0ECE6; border-radius: 14px; padding: 6px 14px; }
+.pg { background: #FCFBF9; border: 1px solid var(--ui-line, #F0ECE6); border-radius: 14px; padding: 6px 14px; }
 .pg-t { font-size: 12px; font-weight: 700; color: #8A847B; padding: 8px 0 4px; letter-spacing: .02em; }
-.pr { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid #F0ECE6; }
+.pr { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--ui-line, #F0ECE6); }
 .pg-t + .pr { border-top: 0; }
 .pr-t { flex: 1; min-width: 0; }
 .pr-t b { display: block; font-size: 13.5px; font-weight: 600; }
 .pr-t small { display: block; font-size: 11.5px; color: #A29C94; line-height: 1.5; margin-top: 1px; }
 
 /* 부관리자 카드 */
-.su { background: #fff; border: 1px solid #ECE8E2; border-radius: 16px; margin: 0 0 16px; overflow: hidden; }
+.su { background: #fff; border: 1px solid var(--ui-line, #ECE8E2); border-radius: 16px; margin: 0 0 16px; overflow: hidden; }
 .su.off { opacity: .72; }
 .su-h { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--ui-soft, #F1EEE9); flex-wrap: wrap; }
 .su-av { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: #EEF2F7; color: #4A5A73; font-weight: 800; font-size: 16px; }
 .su-id { flex: 1; min-width: 140px; }
 .su-id b { font-size: 15px; } .su-id b[contenteditable] { outline: none; border-radius: 6px; padding: 0 3px; margin-left: -3px; }
-.su-id b[contenteditable]:focus { background: #F6F3EE; }
+.su-id b[contenteditable]:focus { background: var(--ui-soft, #F6F3EE); }
 .su-id small { display: block; font-size: 12px; color: #8A847B; margin-top: 1px; }
 .su-id code { font-size: 12px; }
 .su-act { display: flex; align-items: center; gap: 8px; }
@@ -183,19 +183,19 @@ function sa_perm_list(array $groups, array $groupIcon, array $perms, string $nam
 .su-tools { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 0 0 12px; }
 .su-tools .cnt { font-size: 12.5px; color: #6F6A63; margin-right: auto; }
 .su-tools .cnt b { color: #2B2B2B; }
-.chip { border: 1px solid #E3DED6; background: #fff; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 12.5px; cursor: pointer; color: #555; }
-.chip:hover { background: #F6F3EE; }
+.chip { border: 1px solid var(--ui-line, #E3DED6); background: #fff; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 12.5px; cursor: pointer; color: #555; }
+.chip:hover { background: var(--ui-soft, #F6F3EE); }
 .chip.danger { color: #A8434B; border-color: #EBCDD0; }
-.pwbox { display: none; gap: 8px; align-items: center; margin: 0 0 12px; padding: 10px 12px; background: #F6F3EE; border-radius: 12px; flex-wrap: wrap; }
+.pwbox { display: none; gap: 8px; align-items: center; margin: 0 0 12px; padding: 10px 12px; background: var(--ui-soft, #F6F3EE); border-radius: 12px; flex-wrap: wrap; }
 .pwbox.on { display: flex; }
-.pwbox input { flex: 1; min-width: 160px; padding: 9px 10px; border: 1px solid #E3DED6; border-radius: 9px; font: inherit; }
+.pwbox input { flex: 1; min-width: 160px; padding: 9px 10px; border: 1px solid var(--ui-line, #E3DED6); border-radius: 9px; font: inherit; }
 .pwbox small { width: 100%; font-size: 11.5px; color: #8A847B; }
-.su-empty { padding: 26px; text-align: center; color: #A29C94; border: 1px dashed #DDD7CE; border-radius: 14px; margin: 0 0 16px; font-size: 13.5px; }
+.su-empty { padding: 26px; text-align: center; color: #A29C94; border: 1px dashed var(--ui-line, #DDD7CE); border-radius: 14px; margin: 0 0 16px; font-size: 13.5px; }
 
 /* 새로 만들기 */
 .new-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px 14px; margin: 0 0 14px; }
 .new-grid label { display: block; font-size: 12.5px; color: #6F6A63; margin: 0 0 5px; }
-.new-grid input { width: 100%; padding: 10px 11px; border: 1px solid #E3DED6; border-radius: 10px; font: inherit; font-size: 14px; }
+.new-grid input { width: 100%; padding: 10px 11px; border: 1px solid var(--ui-line, #E3DED6); border-radius: 10px; font: inherit; font-size: 14px; }
 .new-grid .pwin { position: relative; display: block; }
 .new-grid .pwin input { padding-right: 58px; }
 .new-grid .eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; font-size: 12px; color: #8A847B; cursor: pointer; padding: 5px 6px; }

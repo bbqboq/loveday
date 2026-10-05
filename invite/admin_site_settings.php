@@ -112,6 +112,8 @@ $cur = fn(string $k) => $error ? (string) ($_POST[$k] ?? '') : app_setting($k);
     .ui-demo { display: flex; gap: 10px; align-items: stretch; padding: 14px; border-radius: 12px; border: 1px solid var(--d-line); background: var(--d-page); font-size: 12.5px; max-width: 520px; }
     .ui-demo > div { flex: 1; border-radius: 10px; padding: 12px; background: var(--d-tint); border: 1px solid var(--d-line); display: flex; flex-direction: column; gap: 8px; }
     .ui-demo span { display: inline-block; padding: 6px 10px; border-radius: 99px; background: var(--d-soft); }
+    .ui-demo .d-sw { display: inline-flex; align-items: center; gap: 6px; padding: 0; background: none; } .ui-demo .d-sw i { width: 34px; height: 20px; border-radius: 99px; background: var(--d-point); position: relative; display: inline-block; } .ui-demo .d-sw i::after { content: ''; position: absolute; right: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+    .ui-demo .d-pv { background: var(--d-pointsoft); }
 </style>
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
@@ -153,19 +155,23 @@ $cur = fn(string $k) => $error ? (string) ($_POST[$k] ?? '') : app_setting($k);
                     <span class="ui-sw"><?php foreach (array_keys(SITE_COLOR_KEYS) as $k): ?><i style="background:<?= snap_h(($pk === 'custom' ? $uiVals : $pv)[$k]) ?>"></i><?php endforeach; ?></span><b><?= snap_h($pv['label']) ?></b></label>
                 <?php endforeach; ?>
             </div>
-            <div class="ui-custom" id="uiCustom"<?= $uiPreset === 'custom' ? '' : ' hidden' ?>>
-                <?php foreach (SITE_COLOR_KEYS as $k => $lab): ?><label><input type="color" name="ui_<?= $k ?>" value="<?= snap_h($uiVals[$k]) ?>"><?= snap_h($lab) ?></label><?php endforeach; ?>
+            <p class="help" style="font-size:12.5px;color:#666;margin:10px 0 0;"><b>직접 바꾸기</b> · 위에서 고른 색을 바탕으로 하나씩 바꿀 수 있어요. 하나라도 바꾸면 "직접 고르기"로 저장돼요.</p>
+            <div class="ui-custom" id="uiCustom">
+                <?php foreach (SITE_COLOR_KEYS as $k => $lab): ?><label><input type="color" name="ui_<?= $k ?>" data-k="<?= $k ?>" value="<?= snap_h($uiVals[$k]) ?>"><?= snap_h($lab) ?></label><?php endforeach; ?>
             </div>
-            <div class="ui-demo" id="uiDemo"><div><b>미리 보기</b><span>칸·버튼</span><span>선택 칩</span></div><div>옅은 면 위의 글<br><small style="color:#888">바탕 위에 옅은 면 · 칸 · 선이 이렇게 보여요</small></div></div>
+            <div class="ui-demo" id="uiDemo"><div><b>미리 보기</b><span>칸·버튼</span><span class="d-sw"><i></i>켜짐 (포인트)</span><span class="d-pv">미리보기 버튼 (포인트 옅은 면)</span></div><div>옅은 면 위의 글<br><small style="color:#888">바탕 위에 옅은 면 · 칸 · 선이 이렇게 보여요</small></div></div>
             <p style="margin-top:14px;"><button class="btn" type="submit">색 저장</button></p>
         </form>
         <script>
         (function () { // 고르는 대로 미리 보기
             const f = document.getElementById('ui-colors'), demo = document.getElementById('uiDemo'), cu = document.getElementById('uiCustom');
-            const apply = () => { const r = f.querySelector('[name=ui_preset]:checked'); if (!r) return; const custom = r.value === 'custom'; cu.hidden = !custom;
-                const c = custom ? Object.fromEntries([...cu.querySelectorAll('input')].map(i => [i.name.slice(3), i.value])) : JSON.parse(r.dataset.c);
-                ['page', 'tint', 'soft', 'line'].forEach(k => demo.style.setProperty('--d-' + k, c[k])); };
-            f.addEventListener('input', apply); f.addEventListener('change', apply); apply();
+            const ins = [...cu.querySelectorAll('input[type=color]')], custom = f.querySelector('[name=ui_preset][value=custom]');
+            const show = c => Object.keys(c).forEach(k => demo.style.setProperty('--d-' + k.toLowerCase(), c[k]));
+            const fromPicks = () => Object.fromEntries(ins.map(i => [i.dataset.k, i.value]));
+            // 프리셋을 고르면 아래 색 칸도 그 색으로 → 거기서 하나씩 바꾸면 "직접 고르기"
+            f.querySelectorAll('[name=ui_preset]').forEach(r => r.addEventListener('change', () => { if (r.value !== 'custom') { const c = JSON.parse(r.dataset.c); ins.forEach(i => { if (c[i.dataset.k]) i.value = c[i.dataset.k]; }); } show(fromPicks()); }));
+            ins.forEach(i => i.addEventListener('input', () => { if (custom) custom.checked = true; show(fromPicks()); }));
+            show(fromPicks());
         })();
         </script>
     </div>

@@ -630,13 +630,14 @@ function permanently_delete_invitation(PDO $pdo, int $invitationId): void
  *  에디터·내 청첩장·관리자 화면 CSS가 var(--ui-page, #원래색)처럼 써 둔 4가지 색을 바꾼다.
  *  page 바탕 / tint 옅은 면 / soft 칸·버튼·칩 / line 선. 값은 app_settings 'ui_colors' (JSON)
  * ======================================================= */
-const SITE_COLOR_KEYS = ['page' => '바탕', 'tint' => '옅은 면', 'soft' => '칸·버튼', 'line' => '선'];
+// point = 켜짐 스위치·강조 / pointSoft = 포인트 옅은 면 (간편 만들기 아래 [미리보기] 버튼 등)
+const SITE_COLOR_KEYS = ['page' => '바탕', 'tint' => '옅은 면', 'soft' => '칸·버튼', 'line' => '선', 'point' => '포인트 (켜짐·강조)', 'pointSoft' => '포인트 옅은 면'];
 const SITE_COLOR_PRESETS = [
-    'warm'  => ['label' => '따뜻한 베이지 (처음 색)', 'page' => '#F6F4F1', 'tint' => '#FBF9F6', 'soft' => '#F3EEE6', 'line' => '#E5DED3'],
-    'white' => ['label' => '깨끗한 흰색',            'page' => '#FFFFFF', 'tint' => '#FAFAFA', 'soft' => '#F3F3F4', 'line' => '#E6E6E8'],
-    'gray'  => ['label' => '차분한 회색',            'page' => '#F5F6F7', 'tint' => '#FAFAFB', 'soft' => '#ECEEF0', 'line' => '#DEE1E5'],
-    'blue'  => ['label' => '블루 그레이',            'page' => '#F3F6F9', 'tint' => '#F8FAFC', 'soft' => '#E7EDF3', 'line' => '#D7E0E9'],
-    'rose'  => ['label' => '연한 로즈',              'page' => '#FAF6F6', 'tint' => '#FDFAFA', 'soft' => '#F3E9EA', 'line' => '#E8DADC'],
+    'warm'  => ['label' => '따뜻한 베이지 (처음 색)', 'page' => '#F6F4F1', 'tint' => '#FBF9F6', 'soft' => '#F3EEE6', 'line' => '#E5DED3', 'point' => '#C9A86A', 'pointSoft' => '#F6EEEC'],
+    'white' => ['label' => '깨끗한 흰색',            'page' => '#FFFFFF', 'tint' => '#FAFAFA', 'soft' => '#F3F3F4', 'line' => '#E6E6E8', 'point' => '#4A4A4F', 'pointSoft' => '#F1F1F3'],
+    'gray'  => ['label' => '차분한 회색',            'page' => '#F5F6F7', 'tint' => '#FAFAFB', 'soft' => '#ECEEF0', 'line' => '#DEE1E5', 'point' => '#6B7480', 'pointSoft' => '#ECEEF1'],
+    'blue'  => ['label' => '블루 그레이',            'page' => '#F3F6F9', 'tint' => '#F8FAFC', 'soft' => '#E7EDF3', 'line' => '#D7E0E9', 'point' => '#5E7C9A', 'pointSoft' => '#E8EEF4'],
+    'rose'  => ['label' => '연한 로즈',              'page' => '#FAF6F6', 'tint' => '#FDFAFA', 'soft' => '#F3E9EA', 'line' => '#E8DADC', 'point' => '#B98590', 'pointSoft' => '#F6ECEE'],
 ];
 function site_colors_get(): array
 {
@@ -669,7 +670,10 @@ function site_colors_css(): string
     $c = site_colors_get();
     if (($c['preset'] ?? 'warm') === 'warm') return "/* 사이트 색상: 처음 색 그대로 */\n";
     $v = site_colors_values($c);
-    return ':root{' . implode('', array_map(fn($k) => "--ui-$k:{$v[$k]};", array_keys($v))) . "}\n";
+    // 포인트 옅은 면 위 글자색 = 포인트 색을 진하게 (간편 만들기 [미리보기] 버튼 글자 등)
+    [$r, $g, $b] = sscanf($v['point'], '#%02x%02x%02x');
+    $v['pointInk'] = sprintf('#%02X%02X%02X', (int) round($r * .5), (int) round($g * .5), (int) round($b * .5));
+    return ':root{' . implode('', array_map(fn($k) => '--ui-' . strtolower($k) . ":{$v[$k]};", array_keys($v))) . "}\n";
 }
 /** 각 화면 <head>에 넣는 링크 (색이 바뀌면 주소가 바뀌어 바로 반영) */
 function site_colors_link(): string

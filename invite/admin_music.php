@@ -195,12 +195,12 @@ $mb = fn($b) => $b ? number_format($b / 1048576, 1) . 'MB' : '-';
     .tabs form { margin-left: auto; display: flex; gap: 6px; }
     .tabs input { padding: 7px 10px; width: 200px; }
     .mlist { display: grid; gap: 10px; }
-    .mrow { background: #fff; border: 1px solid #e6e2da; border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: center; }
+    .mrow { background: #fff; border: 1px solid var(--ui-line, #e6e2da); border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: center; }
     .mrow h4 { margin: 0 0 4px; font-size: 14.5px; }
     .mrow .meta { font-size: 12.5px; color: #777; line-height: 1.7; }
     .mrow audio { width: 100%; height: 34px; margin-top: 8px; }
     .tag { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-left: 4px; vertical-align: 1px; }
-    .tag.ok { background: #E7F3EC; color: #2F6B4F; } .tag.old { background: #F4EFE6; color: #8A6B3A; } .tag.off { background: #eee; color: #888; }
+    .tag.ok { background: #E7F3EC; color: #2F6B4F; } .tag.old { background: var(--ui-soft, #F4EFE6); color: #8A6B3A; } .tag.off { background: #eee; color: #888; }
     .rm { display: grid; gap: 6px; }
     .rm select, .rm input { padding: 7px 8px; width: 100%; box-sizing: border-box; }
     .rm button { background: #B24A4A; color: #fff; border: 0; border-radius: 8px; padding: 9px; font-weight: 600; cursor: pointer; }
@@ -208,7 +208,7 @@ $mb = fn($b) => $b ? number_format($b / 1048576, 1) . 'MB' : '-';
     table.log th, table.log td { border-bottom: 1px solid #eee; padding: 9px 8px; text-align: left; }
     table.log th { font-size: 12px; color: #888; background: #faf9f7; }
     .empty { text-align: center; color: #999; padding: 40px 0; background: #fff; border-radius: 12px; border: 1px solid #eee; }
-    .lib-up { background: #fff; border: 1px solid #e6e2da; border-radius: 12px; padding: 16px; margin: 0 0 14px; }
+    .lib-up { background: #fff; border: 1px solid var(--ui-line, #e6e2da); border-radius: 12px; padding: 16px; margin: 0 0 14px; }
     .lib-up b { font-size: 14.5px; } .lib-up p { font-size: 12.5px; color: #777; margin: 4px 0 12px; line-height: 1.6; }
     .lib-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 8px; align-items: center; }
     .lib-row input { padding: 8px 10px; min-width: 0; }

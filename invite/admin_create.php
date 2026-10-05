@@ -87,10 +87,10 @@ $tabCount = array_map(fn($g) => array_sum(array_map('count', $g)), $tabs);
     .empty-tab { padding: 30px; text-align: center; color: #999; border: 1px dashed #ddd; border-radius: 10px; }
     /* ---- 목록 (PC: 표 + ⋯ 메뉴 / 모바일: 표 + 왼쪽으로 밀면 수정·삭제) ---- */
     .ivt, .ivt * { box-sizing: border-box; }
-    .ivt { background: #fff; border: 1px solid #ECE8E2; border-radius: 14px; overflow: hidden; }
+    .ivt { background: #fff; border: 1px solid var(--ui-line, #ECE8E2); border-radius: 14px; overflow: hidden; }
     .iv-cols { display: grid; grid-template-columns: 46px minmax(110px, 1.6fr) 74px 70px minmax(84px, 1fr) minmax(96px, 1fr) 96px 40px; align-items: center; column-gap: 10px; }
     .iv-mc { display: flex; justify-content: flex-end; }
-    .iv-head { padding: 9px 14px; background: #FCFBF9; border-bottom: 1px solid #ECE8E2; font-size: 11.5px; font-weight: 600; color: #A29C94; }
+    .iv-head { padding: 9px 14px; background: #FCFBF9; border-bottom: 1px solid var(--ui-line, #ECE8E2); font-size: 11.5px; font-weight: 600; color: #A29C94; }
     .iv-head span:last-child { text-align: right; }
     .ivw { position: relative; overflow: hidden; border-bottom: 1px solid var(--ui-soft, #F1EEE9); }
     .ivt > .ivw:last-child, .iv-gbody > .ivw:last-child { border-bottom: 0; }
@@ -116,10 +116,10 @@ $tabCount = array_map(fn($g) => array_sum(array_map('count', $g)), $tabs);
     .iv-act a, .iv-act button { display: grid; place-items: center; width: 64px; border: 0; color: #fff; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; }
     .iv-act .e { background: #5E6B7E; } .iv-act .d { background: #A8434B; }
     /* 같은 고객 묶음 */
-    .iv-grp { border-bottom: 1px solid #ECE8E2; }
+    .iv-grp { border-bottom: 1px solid var(--ui-line, #ECE8E2); }
     .ivt > .iv-grp:last-child { border-bottom: 0; }
-    .iv-ghead { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: 0; background: #F6F2EB; font: inherit; font-size: 13px; text-align: left; cursor: pointer; flex-wrap: wrap; }
-    .iv-ghead:hover { background: #F1ECE3; }
+    .iv-ghead { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: 0; background: var(--ui-soft, #F6F2EB); font: inherit; font-size: 13px; text-align: left; cursor: pointer; flex-wrap: wrap; }
+    .iv-ghead:hover { background: var(--ui-soft, #F1ECE3); }
     .iv-ghead .chev { transition: transform .2s; color: #8F8980; font-size: 11px; }
     .iv-grp.open .iv-ghead .chev { transform: rotate(90deg); }
     .iv-ghead b { font-size: 13.5px; }
@@ -128,20 +128,20 @@ $tabCount = array_map(fn($g) => array_sum(array_map('count', $g)), $tabs);
     .iv-gbody { display: none; border-left: 3px solid #E8DFD0; }
     .iv-grp.open .iv-gbody { display: block; }
     /* ⋯ 메뉴 (화면에 하나만 떠서 줄 위치로 옮겨 다님) */
-    .iv-menu { position: fixed; z-index: 300; min-width: 170px; background: #fff; border: 1px solid #ECE8E2; border-radius: 12px; box-shadow: 0 14px 34px rgba(30, 20, 10, .14); padding: 5px; display: none; }
+    .iv-menu { position: fixed; z-index: 300; min-width: 170px; background: #fff; border: 1px solid var(--ui-line, #ECE8E2); border-radius: 12px; box-shadow: 0 14px 34px rgba(30, 20, 10, .14); padding: 5px; display: none; }
     .iv-menu.on { display: block; }
     .iv-menu a, .iv-menu button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 11px; border: 0; border-radius: 8px; background: none; font: inherit; font-size: 13px; color: #2B2B2B; text-decoration: none; text-align: left; cursor: pointer; }
-    .iv-menu a:hover, .iv-menu button:hover { background: #F6F3EE; }
+    .iv-menu a:hover, .iv-menu button:hover { background: var(--ui-soft, #F6F3EE); }
     .iv-menu .del { color: #A8434B; }
     .iv-menu hr { border: 0; border-top: 1px solid var(--ui-soft, #F1EEE9); margin: 4px 2px; }
     .tab-note .mo { display: none; }
     /* 검색 */
     .ls-search { display: flex; gap: 8px; margin: 4px 0 6px; }
     .ls-search .box { position: relative; flex: 1; min-width: 0; }
-    .ls-search input { width: 100%; box-sizing: border-box; padding: 12px 36px 12px 40px; border: 1px solid #E3DED6; border-radius: 12px; font: inherit; font-size: 14.5px; background: #fff; }
+    .ls-search input { width: 100%; box-sizing: border-box; padding: 12px 36px 12px 40px; border: 1px solid var(--ui-line, #E3DED6); border-radius: 12px; font: inherit; font-size: 14.5px; background: #fff; }
     .ls-search input:focus { outline: none; border-color: #2B2B2B; box-shadow: 0 0 0 3px rgba(43, 43, 43, .08); }
     .ls-search .ic { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; fill: none; stroke: #A29C94; stroke-width: 2; pointer-events: none; }
-    .ls-search .x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background: #EEEAE4; color: #6F6A63; display: grid; place-items: center; text-decoration: none; font-size: 12px; }
+    .ls-search .x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background: var(--ui-line, #EEEAE4); color: #6F6A63; display: grid; place-items: center; text-decoration: none; font-size: 12px; }
     .ls-search button { flex: none; border: 0; border-radius: 12px; background: #2B2B2B; color: #fff; font: inherit; font-size: 14.5px; font-weight: 600; padding: 0 20px; cursor: pointer; }
     .ls-hint { font-size: 12px; color: var(--muted); margin: 0 0 16px; line-height: 1.6; }
     .ls-found { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 10px; font-size: 13px; color: #6F6A63; }

@@ -127,7 +127,7 @@ $dispatch = app_setting('naver_auto_dispatch');
 <link rel="stylesheet" href="assets/admin.css">
 <style>
     .nv-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 18px; }
-    .nv-status > div { background: #fff; border: 1px solid #e6e2da; border-radius: 12px; padding: 12px 14px; }
+    .nv-status > div { background: #fff; border: 1px solid var(--ui-line, #e6e2da); border-radius: 12px; padding: 12px 14px; }
     .nv-status small { display: block; font-size: 12px; color: #888; margin-bottom: 4px; }
     .nv-status b { font-size: 15px; }
     .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }

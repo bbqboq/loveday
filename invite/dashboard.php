@@ -324,7 +324,7 @@ elseif (isset($_GET['demo_gone'])) $flash = '둘러보기 청첩장은 보관 �
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <style>
-:root{--bg:var(--ui-page, #F6F4F1);--surface:#fff;--ink:#1B1A18;--sub:#6F6A63;--faint:#A39D95;--line:var(--ui-line, #EAE6E0);--soft:#F1EEEA;--accent:#8A4B55;--accent-soft:#F4ECEC;--ok:#3E8A68;--warn:#C7823A;--idle:#B9B2A8;--danger:#B24A4A}
+:root{--bg:var(--ui-page, #F6F4F1);--surface:#fff;--ink:#1B1A18;--sub:#6F6A63;--faint:#A39D95;--line:var(--ui-line, #EAE6E0);--soft:var(--ui-soft, #F1EEEA);--accent:#8A4B55;--accent-soft:#F4ECEC;--ok:#3E8A68;--warn:#C7823A;--idle:#B9B2A8;--danger:#B24A4A}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -390,7 +390,7 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 /* 작은 버튼 - 별칭 / 다운로드 / 삭제 */
 .sbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--surface);color:var(--sub);border-radius:9px;padding:7px 11px;font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
 .sbtn svg.i{width:14px;height:14px}
-.sbtn:hover{border-color:#D6D0C8;color:var(--ink)}
+.sbtn:hover{border-color:var(--ui-line, #D6D0C8);color:var(--ink)}
 .sbtn.del{color:var(--danger);border-color:#EFCACA;background:#FFF7F6;font-weight:600}
 .sbtn.del:hover{background:var(--danger);border-color:var(--danger);color:#fff}
 .sbtn.off{color:var(--faint);cursor:default;background:var(--soft)}
@@ -451,7 +451,7 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 .sbtn.off[onclick]{cursor:pointer}
 .tools{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 0} /* 위 숫자 카드(.grid)와 같은 간격 */
 .tool{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px 14px 12px;border:1px solid var(--line);border-radius:16px;background:var(--surface);text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s;cursor:pointer}
-.tool:hover{border-color:#D6D0C8;transform:translateY(-1px)}
+.tool:hover{border-color:var(--ui-line, #D6D0C8);transform:translateY(-1px)}
 .tool .ti{width:34px;height:34px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:8px;color:#C0566B}
 .tool b{font-size:13.5px;letter-spacing:-.01em}.tool small{font-size:11.5px;color:var(--faint)}
 .tool.off{opacity:.55}
@@ -483,12 +483,12 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stro
   .slide .bt p{margin:0;font-size:12.5px;opacity:.9}
   .slide.noimg .empty{position:absolute;left:0;right:0;top:38%;display:flex;flex-direction:column;align-items:center;gap:10px;color:rgba(255,255,255,.92);font-size:12.5px}
   .slide.noimg .empty .ic{width:52px;height:52px;border-radius:16px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;color:#fff}
-  .slide.newslide{background:transparent;border:1.5px dashed #CFC8BE;box-shadow:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--sub);cursor:pointer}
+  .slide.newslide{background:transparent;border:1.5px dashed var(--ui-line, #CFC8BE);box-shadow:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--sub);cursor:pointer}
   .slide.newslide .ic{width:60px;height:60px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center}
   .slide.newslide b{font-size:17px;color:var(--ink)}.slide.newslide span{font-size:12.5px;color:var(--faint);text-align:center;line-height:1.6;padding:0 20px}
   .dots{display:flex;justify-content:center;gap:6px;margin:10px 0 14px}
-  .dots i{width:6px;height:6px;border-radius:3px;background:#D5CEC5;transition:.2s}.dots i.on{width:18px;background:var(--ink)}
-  .dots i.plus{background:none;border:1px solid #CFC8BE}.dots i.plus.on{background:var(--ink);border-color:var(--ink)}
+  .dots i{width:6px;height:6px;border-radius:3px;background:var(--ui-line, #D5CEC5);transition:.2s}.dots i.on{width:18px;background:var(--ink)}
+  .dots i.plus{background:none;border:1px solid var(--ui-line, #CFC8BE)}.dots i.plus.on{background:var(--ink);border-color:var(--ink)}
   .mact{padding:0 20px 40px}
   .medit{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--ink);color:#fff;border-radius:14px;padding:15px;font-weight:600;font-size:15px;width:100%;border:0}
   .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0 12px}

@@ -38,7 +38,7 @@ $v = fn($f) => @filemtime(__DIR__ . '/assets/' . $f) ?: 1;
 <title>추첨 진행 · LOVE DAY</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <style>
-:root { --bg:var(--ui-page, #F6F4F1); --ink:#1B1A18; --sub:#6F6A63; --faint:#A39D95; --line:var(--ui-line, #EAE6E0); --soft:#F1EEEA; --accent:#C0566B; --ok:#2F7D55; }
+:root { --bg:var(--ui-page, #F6F4F1); --ink:#1B1A18; --sub:#6F6A63; --faint:#A39D95; --line:var(--ui-line, #EAE6E0); --soft:var(--ui-soft, #F1EEEA); --accent:#C0566B; --ok:#2F7D55; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing: antialiased; word-break: keep-all; }
 .top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; background: rgba(246,244,241,.92); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }

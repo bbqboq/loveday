@@ -59,7 +59,7 @@
 - 마음 전하실 곳 자유 배치: 이름 칸 폭 `accLw`(신랑·신부만이면 좁게 → 가운데 정렬), 빈 줄 숨김.
 - 메인 레이아웃 2차: 문구 칸 세로(`vertical`)·곡선(`arc`,`arcW`)·등장 효과(`anim` write/fade/up/zoom), 사진 칸 모드 `heroBox`(x·y·w·h %, frame, fade). 기본 레이아웃 14개(참고 샘플 구성 9 + 매거진 표지·미니멀 아래 세 줄·둥근 영문 제목·위 사진 아래 글·큰 날짜 숫자).
 - 안내 말씀 모양: 카드·박스·**슬라이드**·**탭** + 예시(포토부스·주차·답례품·식사·화환·셔틀) `NOTICE_TPL`.
-- **사이트 색상**: 화면 CSS의 베이지는 `var(--ui-page|tint|soft|line, #원래색)`. 관리자 → 사이트 정보 → 사이트 색상(프리셋/직접) → `app_settings.ui_colors` → `site_colors.php`(`:root` 값). 새 화면을 만들면 색을 이 4개 변수로 쓰고 `<?= site_colors_link() ?>`를 `</head>` 앞에. `assets/admin.css`는 저장소에 없어서 아직 안 바꿈.
+- **사이트 색상**: 화면 CSS의 베이지는 `var(--ui-page|tint|soft|line, #원래색)`, 켜짐 스위치 금색은 `--ui-point`, 간편 만들기 [미리보기] 버튼은 `--ui-pointsoft`(글자 `--ui-pointink`, 자동 계산). 관리자 색 칸은 늘 보이고 하나라도 바꾸면 '직접 고르기'. 새 베이지를 쓰면 이 변수로 감쌀 것 (청첩장 디자인 미리보기 안의 색·노란 알림·NEW 꼬리표 같은 일부러 넣은 색은 제외). 관리자 → 사이트 정보 → 사이트 색상(프리셋/직접) → `app_settings.ui_colors` → `site_colors.php`(`:root` 값). 새 화면을 만들면 색을 이 4개 변수로 쓰고 `<?= site_colors_link() ?>`를 `</head>` 앞에. `assets/admin.css`는 저장소에 없어서 아직 안 바꿈.
 - 메인 문구 칸 편집(A안): 글 칸 오른쪽 [효과 ▾] → 작은 창(`hlPopHtml`, 간편=효과만 / 전문가=효과·방향·휘기), 아래 "모두 같게" 한 줄. 고른 줄만 재생 `playHeroAnimsTwice(root, key)`. 곡선 글씨는 `fitHeroArcs`가 곡선 길이에 맞춰 글자 크기를 줄임.
 - 글자 끌기 범위 `dragRange`: 보통 8~92%, 레이아웃에 `edge:true`(이름 양쪽·세로 글씨)면 1~99%.
 - 유튜브 히어로도 사진 칸 레이아웃 가능: `heroVideoBox`가 영상을 `.hero-box > .hero-vbox` 안에 넣고 `fitVideoCover`는 칸 크기로 맞춤 (에디터·render-invite 둘 다).

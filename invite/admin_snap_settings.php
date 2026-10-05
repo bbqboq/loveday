@@ -103,10 +103,10 @@ $csrf = csrf_token();
     .gd-sub { font-size: 13px; margin: 18px 0 2px; color: #555; }
     .sw-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer; }
     .sw-row small { display: block; font-size: 12px; color: #999; margin-top: 2px; font-weight: 400; }
-    .sw { appearance: none; -webkit-appearance: none; width: 40px; height: 22px; border-radius: 11px; background: #D5D2CB; position: relative; cursor: pointer; transition: background .2s; flex: none; margin: 0; }
+    .sw { appearance: none; -webkit-appearance: none; width: 40px; height: 22px; border-radius: 11px; background: var(--ui-line, #D5D2CB); position: relative; cursor: pointer; transition: background .2s; flex: none; margin: 0; }
     .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
     .sw:checked { background: #3D4F66; } .sw:checked::after { left: 21px; }
-    .copy { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .copy code { font-size: 12px; background: #F4F2EE; padding: 5px 8px; border-radius: 6px; word-break: break-all; }
+    .copy { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .copy code { font-size: 12px; background: var(--ui-soft, #F4F2EE); padding: 5px 8px; border-radius: 6px; word-break: break-all; }
     .btn.line { background: #fff; color: #3D4F66; border: 1px solid #C9CED6; } .btn.sm { padding: 4px 10px; font-size: 12px; } .mini { font-size: 12px; color: #888; margin-left: 8px; }
     table.stat { width: 100%; border-collapse: collapse; font-size: 13px; }
     table.stat th, table.stat td { padding: 8px 6px; border-bottom: 1px solid #eee; text-align: left; }

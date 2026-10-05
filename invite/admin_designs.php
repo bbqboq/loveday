@@ -41,7 +41,7 @@ $h = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
 <style>
 body { background: var(--ui-page, #F6F4F1); }
 .fd-intro { font-size: 13px; color: #8A847B; margin: -14px 0 20px; line-height: 1.75; }
-.fd-card { background: #fff; border: 1px solid #ECE8E2; border-radius: 16px; padding: 18px; margin: 0 0 18px; }
+.fd-card { background: #fff; border: 1px solid var(--ui-line, #ECE8E2); border-radius: 16px; padding: 18px; margin: 0 0 18px; }
 .fd-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 12px; }
 .fd-h b { font-size: 15px; }
 .fd-h small { font-size: 12.5px; color: #8A847B; }
@@ -57,8 +57,8 @@ body { background: var(--ui-page, #F6F4F1); }
 .fd-chip .ord button { width: 26px; height: 26px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; border-radius: 8px; cursor: pointer; font-size: 12px; color: #6F6A63; }
 .fd-chip .ord button:disabled { opacity: .3; cursor: default; }
 .fd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
-.fd-p { position: relative; border: 1.5px solid #ECE8E2; border-radius: 14px; background: #fff; overflow: hidden; cursor: pointer; text-align: left; padding: 0; font: inherit; color: inherit; transition: border-color .15s, box-shadow .15s; }
-.fd-p:hover { border-color: #C9C1B6; }
+.fd-p { position: relative; border: 1.5px solid var(--ui-line, #ECE8E2); border-radius: 14px; background: #fff; overflow: hidden; cursor: pointer; text-align: left; padding: 0; font: inherit; color: inherit; transition: border-color .15s, box-shadow .15s; }
+.fd-p:hover { border-color: var(--ui-line, #C9C1B6); }
 .fd-p.on { border-color: #2B2320; box-shadow: 0 0 0 1px #2B2320; }
 .fd-p .pv { height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; }
 .fd-p .pv i { width: 64%; height: 48px; border-radius: 8px; }

@@ -90,7 +90,7 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 .vip-warn { margin: 10px 0 0; font-size: 12.5px; color: #7A2E2E; line-height: 1.6; }
 .slug-prev { font-size: 12px; color: var(--muted); margin-top: 5px; }
 .slug-prev b { color: #2B2B2B; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.vip-list { background: #fff; border: 1px solid #ECE8E2; border-radius: 14px; overflow: hidden; }
+.vip-list { background: #fff; border: 1px solid var(--ui-line, #ECE8E2); border-radius: 14px; overflow: hidden; }
 .vip-list a { display: grid; grid-template-columns: 44px minmax(0, 1fr) 64px 50px 76px; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--ui-soft, #F1EEE9); color: inherit; text-decoration: none; font-size: 13px; }
 .vip-list a:last-child { border-bottom: 0; }
 .vip-list a:hover { background: var(--ui-tint, #FBF9F6); }

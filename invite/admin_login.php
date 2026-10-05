@@ -127,7 +127,7 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap">
 <style>
-:root { --bg: var(--ui-page, #F6F4F1); --ink: #1B1A18; --sub: #6F6A63; --faint: #A39D95; --line: var(--ui-line, #EAE6E0); --soft: #F1EEEA; --accent: #8A4B55; --accent-soft: #F4ECEC; --wine: #2A1C1F; }
+:root { --bg: var(--ui-page, #F6F4F1); --ink: #1B1A18; --sub: #6F6A63; --faint: #A39D95; --line: var(--ui-line, #EAE6E0); --soft: var(--ui-soft, #F1EEEA); --accent: #8A4B55; --accent-soft: #F4ECEC; --wine: #2A1C1F; }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; -webkit-font-smoothing: antialiased; word-break: keep-all; }
@@ -161,7 +161,7 @@ button, input { font-family: inherit; }
 .card .t small { display: block; font-size: 8px; letter-spacing: .3em; opacity: .85; }
 .card .t b { display: block; font-family: "Noto Serif KR", serif; font-weight: 600; font-size: 14px; margin-top: 6px; }
 .card.c1 { left: 0; top: 6px; transform: rotate(-7deg); background: linear-gradient(170deg, #E5D5CF 0%, #B28A89 55%, #6D3F48 100%); }
-.card.c2 { left: 104px; top: 0; transform: rotate(3deg); background: linear-gradient(165deg, #E9E4DA 0%, #A9B39E 60%, #5E6D57 100%); animation-delay: -2.4s; }
+.card.c2 { left: 104px; top: 0; transform: rotate(3deg); background: linear-gradient(165deg, var(--ui-line, #E9E4DA) 0%, #A9B39E 60%, #5E6D57 100%); animation-delay: -2.4s; }
 .card.c3 { left: 208px; top: 12px; transform: rotate(9deg); background: linear-gradient(170deg, #EDE3D6 0%, #C49E7C 55%, #7B5638 100%); animation-delay: -4.6s; }
 @keyframes bob { 50% { translate: 0 -8px; } }
 .chip { position: absolute; z-index: 2; left: 250px; top: 150px; display: flex; align-items: center; gap: 9px; padding: 9px 13px 9px 10px; border-radius: 14px; background: rgba(255, 255, 255, .95); color: var(--ink); font-size: 12px; line-height: 1.35; box-shadow: 0 14px 30px rgba(0, 0, 0, .25); animation: bob 6s ease-in-out infinite; animation-delay: -1s; }
