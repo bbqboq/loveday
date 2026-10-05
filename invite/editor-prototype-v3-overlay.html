@@ -14077,23 +14077,24 @@ let spInPlace = false; // 위쪽 "정보" 버튼으로 연 간편 화면: 지금
 // 처음 만들 때(질문): 디자인에 켜져 있던 섹션도 다 꺼 두고(메인 사진·영상·공유하기만 그대로) 질문에 닿을 때 하나씩 켬
 //  state.spDesignOn = 디자인에 켜져 있던 섹션, state.spRevealed = 질문이 이미 켠 섹션 (한 번만 켬 - 고객이 '넣지 않기'를 고르면 그대로 꺼 둠)
 const SP_START_KEEP = ['hero', 'heroVideo', 'share'];
-//  관리자 "스타터 ON"(easy.steps의 start) 칸의 섹션은 처음부터 켜 둠 (디자인에서 꺼져 있었어도)
+//  관리자 "스타터 ON"(easy.steps의 start) 칸도 처음엔 꺼 두고, 그 질문에 닿을 때 켬 (디자인에서 꺼져 있었어도) - spAskReveal
 function spEasyStartOff() {
     state.spDesignOn = state.blocks.filter(b => b.enabled && !SP_START_KEEP.includes(b.id)).map(b => b.id);
     state.spRevealed = [];
-    const starter = new Set();
-    spEasyList().forEach(x => { if (x && x.on && x.start) (SP_STEP_BLOCKS[x.id] || []).forEach(id => starter.add(id)); });
-    state.blocks.forEach(b => { if (!SP_START_KEEP.includes(b.id)) b.enabled = starter.has(b.id); });
-    starter.forEach(id => state.spRevealed.push(id)); // (질문에 닿아도 다시 켜지 않음 - 이미 켜져 있음)
+    state.blocks.forEach(b => { if (!SP_START_KEEP.includes(b.id)) b.enabled = false; });
 }
+const spIsStarter = k => spEasyList().some(x => x && x.id === k && x.on && x.start);
 const SP_ASK_REVEAL = { 'names:date': ['dday'], venue: ['location'], greet: ['greeting'] }; // 질문에 닿으면 켜는 섹션 (계좌·참석 여부는 [넣을게요·받을게요]를 고를 때)
 function spAskReveal(st) {
     if (!Array.isArray(state.spDesignOn)) return false;
     const rev = state.spRevealed || (state.spRevealed = []);
     let changed = false;
-    (SP_ASK_REVEAL[spAskId(st)] || []).forEach(id => {
-        if (rev.includes(id)) return; rev.push(id);
-        const b = spBlock(id); if (!b || !state.spDesignOn.includes(id)) return;
+    const starter = spIsStarter(st.k) ? (SP_STEP_BLOCKS[st.k] || []) : []; // 스타터 섹션은 디자인과 상관없이 켬
+    if (starter.length && st.opts && state.spAsk && !state.spAsk[st.k]) { const o = st.opts.find(x => x[0] !== 'no'); if (o) state.spAsk[st.k] = o[0]; } // (고르는 질문이면 '넣을게요' 쪽을 골라 둠)
+    [...(SP_ASK_REVEAL[spAskId(st)] || []), ...starter].forEach(id => {
+        if (rev.includes(id)) return;
+        const b = spBlock(id); if (!b || !(state.spDesignOn.includes(id) || starter.includes(id))) return;
+        rev.push(id);
         if (id === 'dday' && (weddingInfo().undecided || state.dateTbd)) return; // 일정 미정이면 디데이는 꺼 둠
         b.enabled = true; changed = true;
         if (id === 'greeting' && state.spAsk && !state.spAsk.greet) state.spAsk.greet = 'ex'; // 미리보기에 보이는 예시 문구 = '예시 문구 그대로'
