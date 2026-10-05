@@ -13530,6 +13530,7 @@ async function startWithPreset(presetId) {
         applyWizardDataToBlocks(); // 주문 때 받은 이름·장소가 있으면 미리 채움
         { const lay = InviteBlocks.HERO_LAYOUTS.find(l => l.id === 'magazine'); ['hero', 'heroVideo'].forEach(id => { const b = state.blocks.find(x => x.id === id); if (b && lay) { InviteBlocks.applyHeroLayout(b, lay); spForceFull(b); } }); } // 처음 만들 때 첫 화면은 매거진 표지
         spMarkDesignOff();
+        if (spOpt('flow', 'ask')) spEasyStartOff(); // 질문으로 만들 땐 메인 화면만 켜고 시작 → 질문에 닿을 때 그 섹션을 켬 (미리보기가 아래로 튀지 않게)
         state.spView = spOpt('flow', 'ask') ? 'quick' : 'list'; state.spAsk = {}; // 질문에 하나씩 답하기 → 정리 화면 → 완성본 → 목록 화면 (관리자가 질문을 끄면 바로 목록)
         spRenderAll();
         onboardingActive = false;
@@ -14055,6 +14056,29 @@ function spSetMode(on) {
 }
 // 간편 화면 열기 (새로 만들 때·저장된 간편 청첩장을 열 때·직접 만들기에서 돌아올 때)
 let spInPlace = false; // 위쪽 "정보" 버튼으로 연 간편 화면: 지금 디자인·배치 그대로 내용만 고침 (템플릿으로 되돌리지 않음)
+// 처음 만들 때(질문): 디자인에 켜져 있던 섹션도 다 꺼 두고(메인 사진·영상·공유하기만 그대로) 질문에 닿을 때 하나씩 켬
+//  state.spDesignOn = 디자인에 켜져 있던 섹션, state.spRevealed = 질문이 이미 켠 섹션 (한 번만 켬 - 고객이 '넣지 않기'를 고르면 그대로 꺼 둠)
+const SP_START_KEEP = ['hero', 'heroVideo', 'share'];
+function spEasyStartOff() {
+    state.spDesignOn = state.blocks.filter(b => b.enabled && !SP_START_KEEP.includes(b.id)).map(b => b.id);
+    state.spRevealed = [];
+    state.blocks.forEach(b => { if (!SP_START_KEEP.includes(b.id)) b.enabled = false; });
+}
+const SP_ASK_REVEAL = { 'names:date': ['dday'], venue: ['location'], greet: ['greeting'] }; // 질문에 닿으면 켜는 섹션 (계좌·참석 여부는 [넣을게요·받을게요]를 고를 때)
+function spAskReveal(st) {
+    if (!Array.isArray(state.spDesignOn)) return false;
+    const rev = state.spRevealed || (state.spRevealed = []);
+    let changed = false;
+    (SP_ASK_REVEAL[spAskId(st)] || []).forEach(id => {
+        if (rev.includes(id)) return; rev.push(id);
+        const b = spBlock(id); if (!b || !state.spDesignOn.includes(id)) return;
+        if (id === 'dday' && (weddingInfo().undecided || state.dateTbd)) return; // 일정 미정이면 디데이는 꺼 둠
+        b.enabled = true; changed = true;
+        if (id === 'greeting' && state.spAsk && !state.spAsk.greet) state.spAsk.greet = 'ex'; // 미리보기에 보이는 예시 문구 = '예시 문구 그대로'
+    });
+    if (changed) { try { renderBlockList(); } catch (e) {} renderPreview(); scheduleSnapshot(); }
+    return changed;
+}
 // 디자인에서 꺼 둔 섹션 (간편 만들기 목록에서 숨김 - 관리자 "손쉬운 제작 → 목록 화면"). 고객이 켜면 보이고, 목록에서 직접 끄면 계속 보임
 function spMarkDesignOff() { state.spDesignOff = state.blocks.filter(b => !b.enabled).map(b => b.id); }
 function openSimpleEditor(step, inPlace) {
@@ -14075,8 +14099,9 @@ function spScrollPreview(ids) {
     const pane = document.querySelector('.preview-pane'), root = document.getElementById('previewRoot');
     const col = ids.map(id => root.querySelector(`.col[data-block-id="${id}"]`)).find(Boolean);
     if (!pane || !col) return;
-    const top = col.getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - 24;
-    pane.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    const top = Math.max(0, col.getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - 24);
+    if (Math.abs(top - pane.scrollTop) < 160) return; // 이미 그 섹션을 보고 있으면 그대로 (글자를 칠 때마다 미리보기가 움찔하지 않게)
+    pane.scrollTo({ top, behavior: 'smooth' });
     col.classList.remove('sp-flash'); void col.offsetWidth; col.classList.add('sp-flash');
 }
 // 미리보기를 ↓ 스크롤 버튼이 보이는 자리로 (버튼 모양을 고를 때 - 맨 위로 올라가 버튼이 안 보이던 문제)
@@ -14246,6 +14271,7 @@ function spRenderAsk(pane) {
     const spKey = 'ask' + spStep + (scrollPh ? 's' : ''), same = pane._spKey === spKey, keepPane = pane.scrollTop, keepWin = window.scrollY;
     if (same) pane.style.minHeight = pane.offsetHeight + 'px';
     try { same ? stopBgmPreview() : stopAllBgm(); } catch (e) {}
+    if (st && !same) spAskReveal(st);
     const pick = st ? ask[st.k] || '' : '', opt = st && st.opts ? st.opts.find(o => o[0] === pick) : null;
     const backSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>';
     const pct = n => Math.round(n / N * 100) + '%';
