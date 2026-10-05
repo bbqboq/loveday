@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script>/* 편집 링크로 열면 저장된 청첩장을 불러올 때까지 화면을 가림 (예전엔 디자인 고르기 화면이 잠깐 보였다가 에디터로 넘어갔음) */if (/[?&](t|testbed)=/.test(location.search)) document.documentElement.classList.add('ld-boot');</script>
+<script>/* 편집 링크로 열면 저장된 청첩장을 불러올 때까지 화면을 가림 (예전엔 디자인 고르기 화면이 잠깐 보였다가 에디터로 넘어갔음) */if (/[?&](t|testbed)=/.test(location.search)) document.documentElement.classList.add('ld-boot'); /* 불러오는 중 오류가 나도(끌기 부품 못 받음 등) 화면이 영영 가려지지 않게 - 오류가 나면 바로, 아니어도 12초 뒤 걷음 */ window.addEventListener('error', function () { setTimeout(function () { document.documentElement.classList.remove('ld-boot'); }, 300); }); setTimeout(function () { document.documentElement.classList.remove('ld-boot'); }, 12000);</script>
 <title>청첩장 에디터 프로토타입 v3 - 오버레이 드래그 &amp; 라이트박스</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
@@ -4242,14 +4242,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017r">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017r">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017s">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017s">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017r"></script>
-<script src="assets/tip-demos.js?v=1017r"></script>
-<script src="assets/ld-dialog.js?v=1017r"></script>
+<script src="assets/invite-blocks.js?v=1017s"></script>
+<script src="assets/tip-demos.js?v=1017s"></script>
+<script src="assets/ld-dialog.js?v=1017s"></script>
 </head>
 <body>
 
@@ -6620,7 +6620,7 @@ function renderBlockList() {
         });
     });
 
-    if (!ul._sortableInit) {
+    if (!ul._sortableInit && typeof Sortable !== 'undefined') { // (끌기 부품을 못 받아도 에디터는 뜨게)
         // 섹션 줄 윗부분(이름 줄) 어디를 잡아도 끌어서 옮김 (예전엔 작은 ⠿만 잡혔음).
         // 휴대폰은 스크롤과 헷갈리지 않게 살짝 꾹 누른 뒤(0.22초) 끌기. 스위치·⤢·빼기 버튼은 끌기 대신 원래 동작.
         ul._sortable = Sortable.create(ul, {
@@ -9083,7 +9083,7 @@ function renderGalleryEditor(wrap, block) {
         renderGalleryEditor(wrap, block);
         renderPreview();
     });
-    Sortable.create(document.getElementById('galleryThumbList'), {
+    if (typeof Sortable !== 'undefined') Sortable.create(document.getElementById('galleryThumbList'), {
         animation: 150,
         onEnd: () => {
             const order = Array.from(document.getElementById('galleryThumbList').children).map(li => li.dataset.imgId);
