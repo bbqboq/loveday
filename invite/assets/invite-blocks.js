@@ -2971,23 +2971,16 @@
         if (!android && /KAKAOTALK/i.test(ua)) { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(ics); return; }
         fetch(API + 'calendar.php?json=1&s=' + encodeURIComponent(s)).then(r => r.json()).then(info => {
             if (!info.ok) throw new Error();
-            // 안드로이드: 캘린더 앱의 "새 일정" 화면을 바로 엶 (intent) - 앱이 없으면 fallback 주소로
-            //  package 없이 = 휴대폰 기본 캘린더(삼성 캘린더 등, 여러 개면 고르는 창), com.google.android.calendar = 구글 캘린더 앱
-            const intent = (pkg, fallback) => 'intent:#Intent;action=android.intent.action.INSERT;type=vnd.android.cursor.item/event;'
-                + `l.beginTime=${+info.startMs || 0};l.endTime=${+info.endMs || 0};S.title=${encodeURIComponent(info.title || '')};`
-                + `S.eventLocation=${encodeURIComponent(info.where || '')};S.description=${encodeURIComponent(info.details || '')};`
-                + (pkg ? `package=${pkg};` : '') + `S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
-            const bus = info.buses.length ? `<p class="ib-cal-bus">🚌 ${info.buses.map(b => esc(b.label) + ' ' + esc(b.time) + ' 출발').join(' · ')}<br><small>버스 일정은 [파일로 받기]에만 같이 들어가요.</small></p>` : '';
-            const body = android && info.startMs
-                ? `<div class="ib-cal-pick">
-                    <a class="ib-cal-opt" href="${esc(intent('', ics))}"><b>휴대폰 캘린더 앱</b><span>삼성 캘린더 등 · 앱의 새 일정 화면이 바로 열려요</span></a>
-                    <a class="ib-cal-opt" href="${esc(intent('com.google.android.calendar', info.google))}"><b>구글 캘린더 앱</b><span>앱이 없으면 구글 캘린더 웹으로 열려요</span></a>
-                    <a class="ib-cal-file" href="${esc(ics)}">파일로 받기 (예식 3시간 전${info.buses.length ? '·버스 출발 30분 전' : ''} 알림 포함)</a>${bus}</div>`
-                : `<div class="ib-cal-pick">
-                    <a class="ib-cal-opt" href="${esc(ics)}"><b>캘린더 파일</b><span>아웃룩·윈도우 캘린더 등 · 예식 3시간 전${info.buses.length ? ', 버스 출발 30분 전' : ''} 알림 포함</span></a>
-                    <a class="ib-cal-opt" href="${esc(info.google)}" target="_blank" rel="noopener"><b>구글 캘린더</b><span>구글 캘린더의 기본 알림 설정을 따라요</span></a>${bus}</div>`;
+            // 안드로이드: 웹페이지에서 캘린더 앱의 '새 일정' 화면을 바로 여는 건 크롬·삼성 인터넷 보안 정책상 막혀 있음
+            //  (intent는 앱이 '브라우저에서 열어도 됨(BROWSABLE)'으로 열어 둔 화면만 열리는데 캘린더 일정 추가 화면은 아님 → 늘 파일 받기로 넘어갔음)
+            //  그래서 휴대폰 캘린더 = .ics 파일(받은 뒤 '열기' → 삼성 캘린더 등 추가 화면), 구글 = 웹에서 저장하면 같은 계정의 구글 캘린더 앱에도 바로 보임
+            const bus = info.buses.length ? `<p class="ib-cal-bus">🚌 ${info.buses.map(b => esc(b.label) + ' ' + esc(b.time) + ' 출발').join(' · ')}<br><small>구글 캘린더를 고르면 버스 일정은 따로 저장되지 않아요.</small></p>` : '';
+            const alarm = `예식 3시간 전${info.buses.length ? '·버스 출발 30분 전' : ''} 알림 포함`;
+            const body = `<div class="ib-cal-pick">
+                    <a class="ib-cal-opt" data-ics href="${esc(ics)}"><b>${android ? '삼성 캘린더 · 휴대폰 캘린더' : '캘린더 파일'}</b><span>${android ? `파일을 받은 뒤 [열기]를 누르면 캘린더에 추가돼요 · ${alarm}` : `아웃룩·윈도우 캘린더 등 · ${alarm}`}</span></a>
+                    <a class="ib-cal-opt" href="${esc(info.google)}" target="_blank" rel="noopener"><b>구글 캘린더</b><span>${android ? '[저장]을 누르면 휴대폰 구글 캘린더 앱에도 바로 보여요' : '구글 캘린더의 기본 알림 설정을 따라요'}</span></a>${bus}</div>`;
             const m = openModal('캘린더에 저장', body, from);
-            m.el.querySelectorAll('.ib-cal-opt, .ib-cal-file').forEach(a => a.addEventListener('click', () => setTimeout(m.close, 300)));
+            m.el.querySelectorAll('.ib-cal-opt').forEach(a => a.addEventListener('click', () => { setTimeout(m.close, 300); if (android && a.hasAttribute('data-ics')) setTimeout(() => toast('화면 아래 받은 파일의 [열기]를 누르면 캘린더에 추가돼요'), 900); }));
         }).catch(() => { location.href = ics; });
     }
 

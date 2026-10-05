@@ -7,7 +7,7 @@
 
 - 답변은 **한국어**, 제목·볼드·표로 정리. "~라고 하셨듯이" 같은 서두 금지. 후속 질문은 최대 1개.
 - 결과물은 **바뀐 파일만** 전달 (`invite/...` 폴더 구조 유지한 zip 또는 커밋).
-- 공용 자산(`assets/invite-blocks.js` 등)을 바꾸면 에디터의 `?v=` 값을 올린다 (현재 `v=1017q`).
+- 공용 자산(`assets/invite-blocks.js` 등)을 바꾸면 에디터의 `?v=` 값을 올린다 (현재 `v=1017r`).
 - 디자인은 **차분하고 세련된(muted)** 톤.
 - 버튼·안내 문구는 왕초보도 알아듣는 쉬운 말.
 
@@ -75,7 +75,7 @@
 - **인트로 '메인 화면 위'**(`intro.bgType:'clear'`, 어둡게 `intro.clearDim` 0~70%, 글자 기본 흰색): 배경 없이 청첩장 메인 사진·영상 위에 글자만 나타났다 사라짐 (`.intro-overlay.intro-clear`). 에디터 인트로 미리보기는 메인 사진(영상이면 썸네일)을 깔아서 보여줌.
 - **인트로 글자 효과**(`intro.anim`, 기본 'type'): 타자 · 천천히 나타나기 · 한 글자씩 떠오르기 · 흐릿하게 선명해지기 · 크게서 작게 · 톡톡 튀기 · 한 줄씩 올라오기 · 손글씨처럼 그려지기 - `InviteBlocks.RichText.animate(el, html, anim, 초)` (글자마다 `.ibx-ch` --i/--l, 낱말 `.ibx-w`, CSS `.ibx-a-*` in invite-blocks.css). '손글씨처럼'(draw)은 글자마다 SVG `<text>` 윤곽선(`.ibx-stroke`, stroke-dashoffset)을 0.6~1.8초에 걸쳐 그린 뒤 속(`.ibx-fill`)을 채우고 선은 옅어짐, 앞 글자부터 `--ibx-dstep` 간격으로 이어짐. 영문 낱말은 통째로 한 칸(`.ibx-word`, 필기체 이음 유지 + 왼쪽부터 쓸듯이 `ibxSweep`). 기준선 위치는 글꼴을 다 받은 뒤 다시 잼(`document.fonts` ready·loadingdone → `place`). 에디터 인트로 설정(기본 탭 '글자 효과')·간편 만들기 인트로 칸(관리자 옵션 `finish.introFx`)·공개 페이지 같이 씀. 재생 길이 최대 4초.
 - **참석 여부 팝업 시점**(`rsvp.popupAt`, 기본 'scroll'): 맨 위가 메인 사진·영상이면 하객이 메인 화면을 절반 넘게 지나 내려갈 때 뜸(`afterHeroScroll`), 'open'이면 예전처럼 열자마자.
-- **캘린더에 저장**(`addToCalendar`, `calendar.php?json=1`에 startMs·endMs·details): 안드로이드는 앱을 바로 엶 - [휴대폰 캘린더 앱] = intent `android.intent.action.INSERT`(package 없음 → 기본 캘린더·고르는 창, 없으면 .ics), [구글 캘린더 앱] = package `com.google.android.calendar`(없으면 웹), 작은 [파일로 받기]는 .ics(3시간 전 알림 포함 - intent로는 알림을 못 넣어서 앱 기본 알림). 아이폰은 .ics → 아이폰 캘린더 '추가' 화면(카카오톡 안이면 기본 브라우저로). PC는 파일/구글 웹.
+- **캘린더에 저장**(`addToCalendar`): 안드로이드 크롬·삼성 인터넷은 보안 정책상 웹페이지에서 캘린더 앱 '새 일정' 화면(intent INSERT)을 못 엶 (앱 화면이 BROWSABLE이 아니라 늘 fallback으로 넘어감 - 2026-10-05 시도했다가 되돌림). 그래서 안드로이드 = [삼성 캘린더 · 휴대폰 캘린더] .ics 파일(받은 뒤 [열기] 안내 토스트) / [구글 캘린더] 웹 저장(같은 계정 앱에 바로 보임). 아이폰은 .ics → 아이폰 캘린더 '추가' 화면(카카오톡 안이면 기본 브라우저로). `calendar.php?json=1`의 startMs·endMs·details는 지금 안 씀.
 - 관리자 손쉬운 제작 탭 휴대폰(640px 이하): 칸 1줄 = 번호·이름·설명, 2줄 = ▲▼·켜짐·스타터·옵션.
 - 안내 말씀 모양: 카드·박스·**슬라이드**·**탭** + 예시(포토부스·주차·답례품·식사·화환·셔틀) `NOTICE_TPL`.
 - **사이트 색상**: 화면 CSS의 베이지는 `var(--ui-page|tint|soft|line, #원래색)`, 켜짐 스위치 금색은 `--ui-point`, 간편 만들기 [미리보기] 버튼은 `--ui-pointsoft`(글자 `--ui-pointink`, 자동 계산). 관리자 색 칸은 늘 보이고 하나라도 바꾸면 '직접 고르기'. 새 베이지를 쓰면 이 변수로 감쌀 것 (청첩장 디자인 미리보기 안의 색·노란 알림·NEW 꼬리표 같은 일부러 넣은 색은 제외). 관리자 → 사이트 정보 → 사이트 색상(프리셋/직접) → `app_settings.ui_colors` → `site_colors.php`(`:root` 값). 새 화면을 만들면 색을 이 4개 변수로 쓰고 `<?= site_colors_link() ?>`를 `</head>` 앞에. `assets/admin.css`는 저장소에 없어서 아직 안 바꿈.
