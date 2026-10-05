@@ -14254,8 +14254,8 @@ function spRenderAsk(pane) {
             const blk = st.blk && spBlock(st.blk);
             if (blk) { blk.enabled = v !== 'no'; try { renderBlockList(); } catch (e) {} }
             spChanged(blk ? [blk.id] : null); scheduleSnapshot();
-            if (o && o[3]) { pane._spKey = null; spAskLast = spStep; spRender(); setTimeout(() => { const m = document.getElementById('spAskMore'); if (m) m.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60); }
-            else { bodyEl.querySelectorAll('[data-ask]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); setTimeout(() => go(spStep + 1), 320); } // 고르면 바로 다음 질문
+            spRender(); // 고른 표시만 (넘어가기는 [다음]으로) - "직접 쓰기·넣을게요"면 아래에 입력 칸이 나옴
+            if (o && o[3]) setTimeout(() => { const m = document.getElementById('spAskMore'); if (m) m.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60);
         }));
     }
     if (st) spSelectStep(st);
