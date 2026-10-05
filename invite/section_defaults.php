@@ -220,7 +220,7 @@ function section_easy_default(): array { return section_easy_clean([]); }
 /** 단계마다 켜고 끌 수 있는 세부 옵션 (관리자 → 손쉬운 제작 → 단계를 누르면 폴더처럼 펼쳐짐). 끈 옵션은 고객 간편 만들기에서 안 보임 */
 const SECTION_EASY_OPTS = [
     'names' => ['time' => '예식 시간'],
-    'hero' => ['layout' => '레이아웃 고르기', 'kind' => '사진 / 유튜브 고르기', 'size' => '화면 크기', 'frame' => '프레임 모양', 'height' => '세로 높이 조절', 'crop' => '보일 부분 · 확대', 'shade' => '글자 잘 보이게 (그라데이션)',
+    'hero' => ['layout' => '레이아웃 고르기', 'kind' => '사진 / 유튜브 고르기', 'crop' => '보일 부분 · 확대', 'shade' => '글자 잘 보이게 (그라데이션)',
                'scroll' => '↓ 스크롤 버튼', 'scrollSize' => '스크롤 버튼 크기', 'scrollCustom' => '스크롤 버튼 직접 꾸미기', 'scrollMotion' => '스크롤 버튼 움직임', 'scrollFx' => '스크롤 버튼 등장 효과', 'scrollOpacity' => '스크롤 버튼 진하기'],
     'theme' => ['design' => '디자인 바꾸기', 'skin' => '색 묶음', 'font' => '글꼴', 'accent' => '포인트 색', 'paper' => '종이 질감', 'reset' => '따로 바꾼 값 되돌리기'],
     'gallery' => ['type' => '갤러리 모양', 'clearEx' => '예시 사진 모두 빼기'],

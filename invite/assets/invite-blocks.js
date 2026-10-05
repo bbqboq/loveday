@@ -1102,7 +1102,46 @@
           hide: ['datetime'],
           layers: [{ text: '{월}.{일}', x: 50, y: 66, fontSize: 32, font: 'playfair', ls: 40 },
                    { text: '{요일:영문짧게} {시간}', x: 50, y: 71.5, fontSize: 12, ls: 80 },
-                   { text: '{예식장}', x: 50, y: 75.5, fontSize: 12, ls: 20 }] }
+                   { text: '{예식장}', x: 50, y: 75.5, fontSize: 12, ls: 20 }] },
+        // 10. 매거진 표지: 위 큰 제목 · 아래 양쪽에 이름과 날짜
+        { id: 'magazine', label: '매거진 표지', desc: '위에 큰 WEDDING · 아래 양쪽에 이름과 날짜',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'both', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'both', heroShadeLv: '1' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'WEDDING', x: 50, y: 9, fontSize: 54, font: 'playfair', color: '#FFFFFF', ls: 40, anim: 'fade', animDur: 1.6 },
+                   { text: 'VOL. {년:2}  ·  {월}.{일}  ·  SPECIAL ISSUE', x: 50, y: 15.5, fontSize: 10, font: 'cormorant', color: '#FFFFFF', ls: 200, anim: 'fade', animDelay: .6 },
+                   { text: '{신랑}\n& {신부}', x: 24, y: 85, fontSize: 21, color: '#FFFFFF', ls: 20, align: 'left', anim: 'up', animDelay: 1 },
+                   { text: '{날짜:점}\n{예식장}', x: 76, y: 86, fontSize: 11.5, color: '#FFFFFF', ls: 40, align: 'right', anim: 'up', animDelay: 1.3 }] },
+        // 11. 미니멀 한 줄: 아래에 작은 글씨 세 줄만
+        { id: 'minimal-line', label: '미니멀 아래 세 줄', desc: '사진은 그대로 · 아래에 작은 글씨 세 줄',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'bottom', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'bottom', heroShadeLv: '1' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'WEDDING INVITATION', x: 50, y: 80.5, fontSize: 10.5, font: 'cormorant', color: '#FFFFFF', ls: 400, anim: 'fade' },
+                   { text: '{신랑}   ·   {신부}', x: 50, y: 85.5, fontSize: 20, color: '#FFFFFF', ls: 60, anim: 'fade', animDelay: .5 },
+                   { text: '{날짜:점}  {요일:영문짧게}  {시간}', x: 50, y: 90.5, fontSize: 11, color: '#FFFFFF', ls: 120, anim: 'fade', animDelay: 1 }] },
+        // 12. 위에 둥근 영문 · 아래 날짜
+        { id: 'arc-top', label: '둥근 영문 제목', desc: '위에 둥글게 휜 영문 · 이름 · 아래 영문 날짜',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'both', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'both', heroShadeLv: '1' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'WE ARE GETTING MARRIED', x: 50, y: 7.5, fontSize: 15, font: 'cormorant', color: '#FFFFFF', ls: 200, arc: 30, arcW: 80, anim: 'fade', animDur: 2 },
+                   { text: '{신랑} & {신부}', x: 50, y: 16, fontSize: 18, color: '#FFFFFF', ls: 40, anim: 'fade', animDelay: .8 },
+                   { text: '{날짜:영문}', x: 50, y: 90, fontSize: 12.5, font: 'cormorant', color: '#FFFFFF', ls: 80, anim: 'fade', animDelay: 1.2 }] },
+        // 13. 위 사진 · 아래 글 (사진 칸)
+        { id: 'split-top', label: '위 사진 · 아래 글', desc: '위쪽에 사진 · 아래 종이 위에 필기체와 이름',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 0, y: 0, w: 100, h: 58, frame: 'none' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'Wedding Invitation', x: 50, y: 65.5, fontSize: 31, font: 'pinyon', color: '#3A3430', anim: 'write', animDur: 2.2 },
+                   { text: '{신랑}   그리고   {신부}', x: 50, y: 73.5, fontSize: 17, ls: 40 },
+                   { text: '{날짜:점}  {시간}', x: 50, y: 79.5, fontSize: 12, ls: 40 },
+                   { text: '{예식장}', x: 50, y: 83.5, fontSize: 12, ls: 20 }] },
+        // 14. 왼쪽 위 큰 날짜 숫자 · 오른쪽 아래 이름
+        { id: 'big-date', label: '큰 날짜 숫자', desc: '왼쪽 위에 큰 날짜 숫자 · 오른쪽 아래 이름',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'full', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'full', heroShadeLv: '1' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: '{년:2}\n{월}\n{일}', x: 21, y: 27, fontSize: 70, font: 'playfair', color: '#FFFFFF', ls: -10, anim: 'up', animDur: 1.6 },
+                   { text: '{요일:영문}', x: 21, y: 47.5, fontSize: 11, font: 'cormorant', color: '#FFFFFF', ls: 300, anim: 'fade', animDelay: .8 },
+                   { text: '{신랑} · {신부}', x: 72, y: 87.5, fontSize: 16, color: '#FFFFFF', ls: 40, anim: 'fade', animDelay: 1.1 },
+                   { text: '{예식장}  {시간}', x: 72, y: 91.5, fontSize: 11, color: '#FFFFFF', ls: 20, anim: 'fade', animDelay: 1.3 }] }
     ];
     const HL_RESET = { font: '', color: '', ls: 0, rotation: 0, align: '', outline: false, shadow: false, glow: '', scaleX: 100, widthAuto: true, width: 80, vertical: '', arc: 0, arcW: 70, anim: '', animDur: 1.8, animDelay: 0 };
     function applyHeroLayout(block, lay) {
