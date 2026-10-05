@@ -958,7 +958,7 @@
     function heroVars(f) {
         const v = creditVars(); f = f || {};
         const bl = (CUR_DESIGN && CUR_DESIGN.blocks) || [], d = ((bl.find(b => b.id === 'dday') || {}).fields) || {};
-        const dt = d.year ? new Date(+d.year, +d.month - 1, +d.day) : null;
+        const dt = d.year && !(CUR_DESIGN && CUR_DESIGN.dateTbd) ? new Date(+d.year, +d.month - 1, +d.day) : null; // 예식 일정 미정이면 날짜 글자 칸은 비움
         const ord = n => n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th');
         return Object.assign(v, { '신랑': f.groomName || v['신랑'], '신부': f.brideName || v['신부'], '날짜': f.datetime || v['날짜'],
             '날짜:영문': dt ? `${EN_DAY[dt.getDay()].slice(0, 3)}, ${EN_MON[dt.getMonth()].slice(0, 3)} ${ord(dt.getDate())}, ${dt.getFullYear()}` : '',

@@ -483,7 +483,51 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-li-sw input:checked + i { background: var(--ui-point, #C9A86A); } .sp-li-sw input:checked + i::after { transform: translateX(18px); }
 .sp-li-b { padding: 4px 16px 16px; border-top: 1px solid var(--wz-line); }
 .sp-li-b > .wz-field:first-child, .sp-li-b > :first-child { margin-top: 12px; }
-/* 질문에 답하기 (처음 만들 때) */
+/* 질문에 답하기 (처음 만들 때) - 위: ‹ 질문 n/N · 진행 막대 · 지금 청첩장 카드 / 아래: [이전]이 둘째 질문부터 왼쪽에서 들어옴 */
+.sp-ask-head { justify-content: flex-start !important; gap: 4px !important; padding-left: 12px !important; }
+.sp-ask-head > b { flex: 1; font-size: 14px !important; font-weight: 700; color: var(--wz-sub); }
+.sp-ask-back { width: 40px; height: 40px; flex: none; border: 0; background: none; border-radius: 50%; display: grid; place-items: center; color: var(--wz-ink); cursor: pointer; }
+.sp-ask-back svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .sp-ask-back:disabled { opacity: .25; cursor: default; }
+.sp-now-wrap { padding: 12px 24px 0; }
+.sp-now { width: 100%; display: flex; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--wz-line); border-radius: 16px; background: #fff; font: inherit; color: var(--wz-ink); text-align: left; cursor: pointer; }
+.sp-now:hover { border-color: var(--wz-line2); } .sp-now-th { width: 54px; flex: none; } .sp-now-th .hl-m { border-radius: 7px; }
+.sp-now-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .sp-now-tx small { font-size: 10.5px; font-weight: 700; color: var(--wz-sub); letter-spacing: .04em; }
+.sp-now-tx b { font-size: 16px; font-weight: 800; } .sp-now-tx b i { font-style: normal; font-size: 12px; color: var(--wz-acc); }
+.sp-now-tx > span { font-size: 12px; color: #4E4943; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .sp-now-tx > span.ph { color: var(--wz-mute); }
+.sp-now-c { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; } .sp-now-c em { font-style: normal; font-size: 10.5px; padding: 2px 7px; border-radius: 99px; background: var(--wz-soft); color: #4E4943; }
+.sp-ask-nav .wz-back { flex: none; max-width: 140px; overflow: hidden; white-space: nowrap; transition: max-width .42s cubic-bezier(.3,.8,.3,1), padding .42s cubic-bezier(.3,.8,.3,1), margin .42s cubic-bezier(.3,.8,.3,1), opacity .3s ease, transform .42s cubic-bezier(.3,.8,.3,1), border-width .42s; }
+.sp-ask-nav.first .wz-back { max-width: 0; padding-left: 0; padding-right: 0; margin-right: -10px; border-width: 0; opacity: 0; transform: translateX(-28px); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .sp-ask-nav .wz-back { transition: none; } }
+/* 정리 화면 "거의 다 됐어요" */
+.spq-sum { background: #fff; border: 1px solid var(--wz-line); border-radius: 16px; overflow: hidden; }
+.spq-sum-r { width: 100%; display: flex; align-items: center; gap: 10px; padding: 13px 14px; border: 0; background: none; font: inherit; color: var(--wz-ink); text-align: left; cursor: pointer; }
+.spq-sum-r + .spq-sum-r { border-top: 1px solid var(--wz-line); } .spq-sum-r:hover { background: var(--ui-tint, #FBF9F6); }
+.spq-sum-r > span { width: 82px; flex: none; font-size: 12px; color: var(--wz-sub); } .spq-sum-r > b { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spq-sum-r > b.no { color: var(--wz-acc); } .spq-sum-r > em { flex: none; font-style: normal; font-size: 12px; font-weight: 700; color: var(--wz-acc); }
+.spq-sum-more { display: block; margin: 16px auto 0; }
+/* 예식 일정 미정 */
+.sp-tbd { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px dashed var(--wz-line2); border-radius: 14px; background: #fff; font: inherit; color: var(--wz-ink); text-align: left; cursor: pointer; }
+.sp-tbd i { width: 20px; height: 20px; flex: none; border-radius: 50%; border: 2px solid #CFC8BE; box-sizing: border-box; position: relative; }
+.sp-tbd > span { display: flex; flex-direction: column; gap: 2px; } .sp-tbd b { font-size: 14px; font-weight: 700; } .sp-tbd small { font-size: 12px; color: var(--wz-sub); }
+.sp-tbd.on { border-style: solid; border-color: var(--wz-ink); background: var(--wz-ink); color: #fff; } .sp-tbd.on small { color: rgba(255,255,255,.72); } .sp-tbd.on i { border-color: #fff; } .sp-tbd.on i::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: #fff; }
+/* 첫 화면 사진 고르기: 큰 버튼 (사진을 넣으면 그 사진이 바탕) */
+.sp-bigup { position: relative; width: 100%; min-height: 172px; border: 1.5px dashed #B9B1A6; border-radius: 18px; background: var(--ui-tint, #FBF9F6); color: var(--wz-ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font: inherit; cursor: pointer; overflow: hidden; }
+.sp-bigup svg { position: relative; width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.sp-bigup b { position: relative; font-size: 15px; font-weight: 800; } .sp-bigup small { position: relative; font-size: 12px; opacity: .8; }
+.sp-bigup.on { border: 0; color: #fff; background: #3F3730 var(--ph) center / cover no-repeat; } .sp-bigup.on::before { content: ''; position: absolute; inset: 0; background: rgba(30,25,20,.55); }
+/* 예식장: 지도 예시 (가로 꽉 채우기·높이가 바로 보이게) */
+.sp-body { --sp-px: 24px; }
+.sp-mapdemo { position: relative; margin: 12px 8px 0; border-radius: 14px; overflow: hidden; background: #E8EBE8; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); transition: margin .38s cubic-bezier(.3,.8,.3,1), border-radius .38s, height .12s ease; }
+.sp-mapdemo.full { margin-left: calc(-1 * var(--sp-px)); margin-right: calc(-1 * var(--sp-px)); border-radius: 0; }
+.sp-mapdemo::before { content: ''; position: absolute; left: 8%; top: 10%; width: 26%; height: 26%; border-radius: 6px; background: #D6E5D2; }
+.sp-mapdemo::after { content: ''; position: absolute; right: 6%; bottom: 14%; width: 22%; height: 20%; border-radius: 6px; background: #DCE3EA; }
+.sp-mapdemo i { position: absolute; background: #fff; z-index: 1; } .sp-mapdemo .r1 { left: -10%; right: -10%; top: 44%; height: 12px; transform: rotate(-7deg); }
+.sp-mapdemo .r2 { top: -10%; bottom: -10%; left: 57%; width: 10px; transform: rotate(12deg); } .sp-mapdemo .r3 { left: -10%; right: -10%; top: 74%; height: 6px; transform: rotate(4deg); opacity: .85; }
+.sp-mapdemo .pin { position: absolute; z-index: 2; left: 57%; top: 44%; width: 22px; height: 22px; border-radius: 50% 50% 50% 0; background: #C9584F; transform: translate(-50%, -100%) rotate(-45deg); box-shadow: 0 2px 4px rgba(0,0,0,.25); }
+.sp-mapdemo .pin::after { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: #fff; }
+.sp-mapdemo span { position: absolute; z-index: 2; left: 8px; bottom: 8px; font-size: 10.5px; padding: 3px 8px; border-radius: 99px; background: rgba(255,255,255,.92); color: #555; }
+@media (max-width: 860px) { .sp-body { --sp-px: 16px; } .sp-now-wrap { padding: 10px 16px 0; } .sp-ask-top { padding: 0 16px 4px; } .sp-ask-head { padding-left: 6px !important; } }
+
 .sp-ask-top { display: flex; align-items: center; gap: 12px; padding: 0 24px 4px; }
 .sp-ask-bar { flex: 1; height: 4px; border-radius: 99px; background: var(--wz-line, #EAE6E0); overflow: hidden; } .sp-ask-bar i { display: block; height: 100%; border-radius: 99px; background: var(--wz-ink, #1B1A18); transition: width .4s ease; }
 .sp-ask-skip { flex: none; border: 0; background: none; padding: 6px 0; font: inherit; font-size: 12.5px; color: var(--wz-sub); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; white-space: nowrap; }
@@ -4128,14 +4172,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017k">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017k">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017l">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017l">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017k"></script>
-<script src="assets/tip-demos.js?v=1017k"></script>
-<script src="assets/ld-dialog.js?v=1017k"></script>
+<script src="assets/invite-blocks.js?v=1017l"></script>
+<script src="assets/tip-demos.js?v=1017l"></script>
+<script src="assets/ld-dialog.js?v=1017l"></script>
 </head>
 <body>
 
@@ -11177,7 +11221,7 @@ function renderPreviewNow() {
     ensureExtraState();
     if (window.InviteBlocks) { // 명칭·순서·색 (공개페이지와 같은 공용 설정)
         const lab = InviteBlocks.setLabels(state.labels);
-        if (InviteBlocks.setDesign) InviteBlocks.setDesign({ blocks: state.blocks, labels: state.labels }); // 감사 인사 서명(신랑·신부 이름)용
+        if (InviteBlocks.setDesign) InviteBlocks.setDesign({ blocks: state.blocks, labels: state.labels, dateTbd: !!state.dateTbd }); // 감사 인사 서명(신랑·신부 이름)용
         const tbn = document.getElementById('tbNames'); if (tbn) { try { const [g, b] = stNames(); tbn.textContent = `${g} ♥ ${b}`; } catch (e) {} }
         root.style.setProperty('--groom-color', lab.groomColor);
         root.style.setProperty('--bride-color', lab.brideColor);
@@ -14022,55 +14066,106 @@ function spAskSteps() { // 관리자 "손쉬운 제작"에서 끈 단계·디자
     const on = new Set(spSteps().map(x => x.k));
     return SP_ASK.filter(a => on.has(a.k) && (!a.blk || spHas(a.blk))).map(a => Object.assign({}, SP_STEP_DEFS[a.k], a, { t: a.q }));
 }
-function spAskDone() { // 다 답함 → 저장하고 미리보기, 닫으면 목록 화면
+function spAskDone() { spStep = spAskSteps().length; spRender(); } // 다 답함 → "거의 다 됐어요" 정리 화면
+function spAskFinish(btn) { // 정리 화면 [완성본 보기]: 저장 → 완성본(발행하기) → 닫으면 목록 화면
     state.spView = 'list'; spOpenSet = new Set(); scheduleSnapshot();
-    if (EDIT_TOKEN) saveToServer(false, true);
-    spOpenPreview('quick');
+    if (btn) { btn.disabled = true; btn.textContent = '저장 중…'; }
+    const done = () => { spRender(); spOpenPreview(true); };
+    if (EDIT_TOKEN) saveToServer(false, true).then(ok => { if (ok) done(); else { state.spView = 'quick'; if (btn) { btn.disabled = false; btn.textContent = '완성본 보기'; } showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); } });
+    else done();
+}
+// 질문 화면 위 "지금 청첩장" 카드 (첫 화면 작은 그림 + 이름 · 날짜 · 예식장 + 켠 섹션) - 누르면 미리보기
+function spDateLine() { const wi = weddingInfo(); return wi.undecided ? '아직 예식 일정을 잡지 않았어요' : wi.date ? formatKoreanDateTime(wi.date, wi.time) : ''; }
+function spNowCardHtml() {
+    const wi = weddingInfo(), { b, kind } = spHeroCur(), f = (b || {}).fields || {};
+    const lay = spHeroLayouts().find(l => l.id === f.heroLayout) || { layers: [], parts: {}, hide: [] };
+    const loc = spBlock('location'), venue = loc && loc.enabled ? (loc.fields.venue || loc.fields.addressBase || '') : '';
+    const chips = [['greeting', '인사말'], ['gallery', '갤러리'], ['account', '계좌'], ['rsvp', '참석 여부'], ['guestbook', '방명록']].filter(([id]) => spHas(id) && spBlock(id).enabled).map(x => x[1]);
+    if (state.bgm && state.bgm.url && state.bgm.enabled !== false) chips.push('배경음악');
+    const date = spDateLine();
+    return `<button type="button" class="sp-now" id="spNow" title="누르면 미리보기"><span class="sp-now-th">${b ? spHeroLayoutMini(lay, b, kind) : ''}</span><span class="sp-now-tx"><small>지금 청첩장</small>
+        <b>${esc(wi.groom || '신랑')} <i>♥</i> ${esc(wi.bride || '신부')}</b><span class="${date ? '' : 'ph'}">${esc(date || '날짜를 아직 안 정했어요')}</span><span class="${venue ? '' : 'ph'}">${esc(venue || '예식장을 아직 안 정했어요')}</span>
+        ${chips.length ? `<span class="sp-now-c">${chips.map(c => `<em>${esc(c)}</em>`).join('')}</span>` : ''}</span></button>`;
+}
+let spAskLast = -1; // 바로 전에 그린 질문 (첫 질문 ↔ 둘째 질문: [이전] 버튼이 왼쪽에서 들어오거나 나가는 움직임)
+function spAskSumRows(steps) { // 정리 화면 줄: [이름, 값, 채웠나]
+    const wi = weddingInfo(), ask = state.spAsk || {}, { b, kind } = spHeroCur(), hf = (b || {}).fields || {}, loc = spBlock('location');
+    return steps.map(st => {
+        if (st.k === 'names' && st.part === 'name') return ['이름', `${wi.groom || '신랑'} · ${wi.bride || '신부'}`, !!(wi.groom && wi.bride)];
+        if (st.k === 'names') return ['예식 일시', spDateLine() || '아직 안 정했어요', !!(wi.date || wi.undecided)];
+        if (st.k === 'venue') { const v = loc && (loc.fields.venue || loc.fields.addressBase); return ['예식장', v || '아직 안 정했어요', !!v]; }
+        if (st.k === 'hero' && st.part === 'media') { const has = kind === 'video' ? !!hf.youtubeId : spIsReal(hf.heroImage); return [kind === 'video' ? '메인 영상' : '메인 사진', has ? (kind === 'video' ? '유튜브 영상' : '사진 1장') : '아직 안 넣었어요', has]; }
+        if (st.k === 'hero') { const l = spHeroLayouts().find(x => x.id === hf.heroLayout); return ['첫 화면 모양', l ? l.label : '기본', true]; }
+        const o = st.opts && st.opts.find(x => x[0] === ask[st.k]);
+        return [{ greet: '인사말', account: '계좌', rsvp: '참석 여부', music: '배경음악' }[st.k] || st.t, o ? o[1] : '아직 안 정했어요', !!o];
+    });
 }
 function spRenderAsk(pane) {
     const steps = spAskSteps(); if (!steps.length) { state.spView = 'list'; return spRenderList(); }
-    spStep = Math.max(0, Math.min(spStep, steps.length - 1));
-    const st = steps[spStep], N = steps.length, ask = state.spAsk || (state.spAsk = {});
-    if (st.k === 'hero') spHeroPhase = 'pick'; // 질문에서는 스크롤 버튼 화면까지 가지 않음 (목록에서 바꿈)
+    const N = steps.length; spStep = Math.max(0, Math.min(spStep, N));
+    const done = spStep === N, st = done ? null : steps[spStep], ask = state.spAsk || (state.spAsk = {});
+    if (st && st.k === 'hero') spHeroPhase = 'pick'; // 질문에서는 스크롤 버튼 화면까지 가지 않음 (목록에서 바꿈)
     const spKey = 'ask' + spStep, same = pane._spKey === spKey, keepPane = pane.scrollTop, keepWin = window.scrollY;
     if (same) pane.style.minHeight = pane.offsetHeight + 'px';
     try { stopBgmPreview(); } catch (e) {}
-    const tpl = spTplName(), pick = ask[st.k] || '', opt = st.opts ? st.opts.find(o => o[0] === pick) : null;
-    pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>질문 ${spStep + 1} / ${N}</b></div>${spUdHtml()}</div>
-        <div class="sp-ask-top"><div class="sp-ask-bar" aria-hidden="true"><i style="width:${Math.round((spStep + (same ? 0 : 0)) / N * 100)}%"></i></div><button type="button" class="sp-ask-skip" id="spSkip">${spStep === N - 1 ? '나중에 할게요' : '건너뛰기'}</button></div>
-        <div class="sp-body sp-ask" id="spBody">${st.opts ? spH(esc(st.q), esc(st.sub)) + `<div class="sp-ask-opts">${st.opts.map(([v, t, d]) => `<button type="button" class="sp-ask-o${pick === v ? ' on' : ''}" data-ask="${v}" aria-pressed="${pick === v}"><span><b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ''}</span><i></i></button>`).join('')}</div>${opt && opt[3] ? '<div class="sp-ask-more" id="spAskMore"></div>' : ''}` : ''}</div>
-        <div class="sp-nav"><button type="button" class="wz-back" id="spPrev"${spStep === 0 ? ' style="visibility:hidden"' : ''}>이전</button><button type="button" class="wz-next" id="spNext">${spStep === N - 1 ? '다 했어요' : '다음'}</button></div>`;
+    const pick = st ? ask[st.k] || '' : '', opt = st && st.opts ? st.opts.find(o => o[0] === pick) : null;
+    const backSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>';
+    const pct = n => Math.round(n / N * 100) + '%';
+    const navFirst = !done && spStep === 0;
+    let body = '';
+    if (done) {
+        body = `${spH('청첩장이 거의 다 됐어요', '고치고 싶은 게 있으면 눌러서 그 질문으로 돌아가요.')}<div class="spq-sum">${spAskSumRows(steps).map(([l, v, ok], i) => `<button type="button" class="spq-sum-r" data-ask-go="${i}"><span>${esc(l)}</span><b class="${ok ? '' : 'no'}">${esc(v)}</b><em>고치기</em></button>`).join('')}</div>
+            <button type="button" class="sp-link spq-sum-more" id="spAskList">하나씩 더 꾸미기 (갤러리 · 교통 · 연락처 …)</button>`;
+    } else if (st.opts) {
+        body = spH(esc(st.q), esc(st.sub)) + `<div class="sp-ask-opts">${st.opts.map(([v, t, d]) => `<button type="button" class="sp-ask-o${pick === v ? ' on' : ''}" data-ask="${v}" aria-pressed="${pick === v}"><span><b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ''}</span><i></i></button>`).join('')}</div>${opt && opt[3] ? '<div class="sp-ask-more" id="spAskMore"></div>' : ''}`;
+    }
+    pane.innerHTML = `<div class="sp-head sp-ask-head"><button type="button" class="sp-ask-back" id="spBack" aria-label="이전 질문"${spStep === 0 ? ' disabled' : ''}>${backSvg}</button><b>${done ? '다 됐어요' : `질문 ${spStep + 1} / ${N}`}</b>${spUdHtml()}</div>
+        <div class="sp-ask-top"><div class="sp-ask-bar" aria-hidden="true"><i style="width:${pct(same || spAskLast < 0 ? spStep : spAskLast)}"></i></div>${done ? '' : `<button type="button" class="sp-ask-skip" id="spSkip">나중에 할게요</button>`}</div>
+        <div class="sp-now-wrap">${spNowCardHtml()}</div>
+        <div class="sp-body sp-ask" id="spBody">${body}</div>
+        <div class="sp-nav sp-ask-nav${(same || spAskLast < 0 ? navFirst : spAskLast === 0 && !done) ? ' first' : ''}">${done
+            ? `<button type="button" class="wz-back" id="spRestart">처음부터</button><button type="button" class="wz-next" id="spFinish">완성본 보기</button>`
+            : `<button type="button" class="wz-back" id="spPrev" tabindex="${navFirst ? -1 : 0}">이전</button><button type="button" class="wz-next" id="spNext">${spStep === N - 1 ? '다 했어요' : '다음'}</button>`}</div>`;
     spBindHeadTools(pane);
-    const go = n => { if (n >= N) return spAskDone(); spStep = Math.max(0, n); spRender(); };
-    pane.querySelector('#spPrev').addEventListener('click', () => go(spStep - 1));
-    pane.querySelector('#spNext').addEventListener('click', () => go(spStep + 1));
-    pane.querySelector('#spSkip').addEventListener('click', () => go(spStep + 1));
-    const body = pane.querySelector('#spBody');
-    if (!st.opts) {
-        spHeroPart = st.k === 'hero' ? st.part || '' : ''; try { st.fn(body); } finally { spHeroPart = ''; }
-        if (st.k === 'names') spCutPart(body, st); spBindIncl(body);
-        const h = body.querySelector('.wz-h'), l = body.querySelector('.wz-lead');
+    const go = n => { spAskLast = spStep; spStep = Math.max(0, Math.min(N, n)); spRender(); };
+    pane.querySelector('#spBack').addEventListener('click', () => go(spStep - 1));
+    pane.querySelector('#spNow').addEventListener('click', () => spOpenPreview(false));
+    pane.querySelector('#spPrev')?.addEventListener('click', () => go(spStep - 1));
+    pane.querySelector('#spNext')?.addEventListener('click', () => go(spStep + 1));
+    pane.querySelector('#spSkip')?.addEventListener('click', () => go(spStep + 1));
+    pane.querySelector('#spRestart')?.addEventListener('click', () => go(0));
+    pane.querySelector('#spFinish')?.addEventListener('click', e => spAskFinish(e.currentTarget));
+    pane.querySelector('#spAskList')?.addEventListener('click', () => { state.spView = 'list'; spOpenSet = new Set(); scheduleSnapshot(); if (EDIT_TOKEN) saveToServer(false, true); spRender(); });
+    pane.querySelectorAll('[data-ask-go]').forEach(b => b.addEventListener('click', () => go(+b.dataset.askGo)));
+    const bodyEl = pane.querySelector('#spBody');
+    if (st && !st.opts) {
+        spHeroPart = st.k === 'hero' ? st.part || '' : ''; try { st.fn(bodyEl); } finally { spHeroPart = ''; }
+        if (st.k === 'names') spCutPart(bodyEl, st); spBindIncl(bodyEl);
+        const h = bodyEl.querySelector('.wz-h'), l = bodyEl.querySelector('.wz-lead');
         if (h) h.textContent = st.q; if (l) l.textContent = st.sub;
-    } else {
-        const more = body.querySelector('#spAskMore');
+    } else if (st) {
+        const more = bodyEl.querySelector('#spAskMore');
         if (more) { try { st.fn(more); } catch (e) { console.warn(e); } spBindIncl(more); spTrimBody(more, st.blk); }
-        body.querySelectorAll('[data-ask]').forEach(b => b.addEventListener('click', () => {
+        bodyEl.querySelectorAll('[data-ask]').forEach(b => b.addEventListener('click', () => {
             const v = b.dataset.ask, o = st.opts.find(x => x[0] === v); ask[st.k] = v;
             const blk = st.blk && spBlock(st.blk);
             if (blk) { blk.enabled = v !== 'no'; try { renderBlockList(); } catch (e) {} }
             spChanged(blk ? [blk.id] : null); scheduleSnapshot();
-            if (o && o[3]) { pane._spKey = null; spRender(); setTimeout(() => { const m = document.getElementById('spAskMore'); if (m) m.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60); }
-            else { body.querySelectorAll('[data-ask]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); setTimeout(() => go(spStep + 1), 320); } // 고르면 바로 다음 질문
+            if (o && o[3]) { pane._spKey = null; spAskLast = spStep; spRender(); setTimeout(() => { const m = document.getElementById('spAskMore'); if (m) m.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60); }
+            else { bodyEl.querySelectorAll('[data-ask]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); setTimeout(() => go(spStep + 1), 320); } // 고르면 바로 다음 질문
         }));
     }
-    spSelectStep(st);
+    if (st) spSelectStep(st);
     if (same) { pane.scrollTop = keepPane; window.scrollTo(0, keepWin); requestAnimationFrame(() => { pane.style.minHeight = ''; pane.scrollTop = keepPane; window.scrollTo(0, keepWin); }); }
     else {
         pane.style.minHeight = ''; pane.scrollTop = 0;
         if (pane._spKey && window.innerWidth <= 860) window.scrollTo(0, 0);
-        setTimeout(() => spScrollPreview(st.s || []), 80);
-        const bar = pane.querySelector('.sp-ask-bar i'); if (bar) { bar.style.width = Math.round(Math.max(0, spStep - 1) / N * 100) + '%'; requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = Math.round(spStep / N * 100) + '%'; })); }
+        if (st) setTimeout(() => spScrollPreview(st.s || []), 80);
+        // 진행 막대 · [이전] 버튼: 전 질문 모양에서 지금 모양으로 부드럽게
+        const bar = pane.querySelector('.sp-ask-bar i'), nav = pane.querySelector('.sp-ask-nav');
+        requestAnimationFrame(() => requestAnimationFrame(() => { if (bar) bar.style.width = pct(spStep); if (nav) nav.classList.toggle('first', navFirst); }));
     }
+    spAskLast = spStep;
     pane._spKey = spKey;
 }
 
@@ -14083,14 +14178,14 @@ const SP_GROUP_OF = { names: 'must', hero: 'must', venue: 'must', theme: 'deco',
 function spMustList() { // 꼭 필요한 4가지 (진행 표시)
     const wi = weddingInfo(), loc = spBlock('location'), { b, kind } = spHeroCur();
     const media = !!(b && (kind === 'video' ? b.fields.youtubeId : spIsReal(b.fields.heroImage)));
-    return [['이름', !!(String(wi.groom || '').trim() && String(wi.bride || '').trim())], ['예식 날짜', !!wi.date], ['예식장', !loc || !!(loc.fields.venue || loc.fields.address)], [kind === 'video' ? '메인 영상' : '메인 사진', media]];
+    return [['이름', !!(String(wi.groom || '').trim() && String(wi.bride || '').trim())], ['예식 날짜', !!(wi.date || wi.undecided)], ['예식장', !loc || !!(loc.fields.venue || loc.fields.address)], [kind === 'video' ? '메인 영상' : '메인 사진', media]];
 }
 function spSum(st) { // 접힌 칸의 한 줄 요약 [글, 채웠나]
     try {
         const wi = weddingInfo(), B = id => spBlock(id), F = id => (B(id) || {}).fields || {};
         const cnt = (arr, fn) => (Array.isArray(arr) ? arr : []).filter(fn).length;
         switch (st.k) {
-            case 'names': { const ok = !!(wi.groom && wi.bride && wi.date); return [`${wi.groom || '신랑'} · ${wi.bride || '신부'}${wi.date ? ' · ' + dtDateText(wi.date) : ' · 날짜를 아직 안 정했어요'}`, ok]; }
+            case 'names': { const ok = !!(wi.groom && wi.bride && (wi.date || wi.undecided)); return [`${wi.groom || '신랑'} · ${wi.bride || '신부'}${wi.undecided ? ' · 예식 일정 미정' : wi.date ? ' · ' + dtDateText(wi.date) : ' · 날짜를 아직 안 정했어요'}`, ok]; }
             case 'hero': { const { b, kind } = spHeroCur(), f = (b || {}).fields || {}, lay = spHeroLayouts().find(l => l.id === f.heroLayout);
                 const has = kind === 'video' ? !!f.youtubeId : spIsReal(f.heroImage);
                 return [(kind === 'video' ? (has ? '유튜브 영상' : '영상 주소가 아직 없어요') : (has ? '사진 1장' : '사진을 아직 안 넣었어요')) + (lay ? ' · ' + lay.label : ''), has]; }
@@ -14169,14 +14264,34 @@ function spNames(box) {
             <label><span class="wz-lab">신랑</span><input class="wz-inp" data-wi="groom" value="${wzEsc(wi.groom)}" placeholder="이름" maxlength="20"></label><span class="wz-heart">♥</span>
             <label><span class="wz-lab">신부</span><input class="wz-inp" data-wi="bride" value="${wzEsc(wi.bride)}" placeholder="이름" maxlength="20"></label></div></div>
         <div class="wz-field"><div class="wz-lab">예식 날짜</div><button type="button" class="wz-pick" id="spDateBtn"><span id="spDateTxt"></span>${WZ_CAL_SVG}</button><div class="wz-pop" id="spCal"></div></div>
-        ${spOpt('names', 'time') ? '<div class="wz-field"><div class="wz-lab">예식 시간</div><div id="spTime"></div></div>' : ''}`;
-    const set = (k, v) => { const w = weddingInfo(); w[k] = v; applyWeddingInfo(k === 'groom' || k === 'bride' ? 'names' : 'date'); spChanged(['hero', 'heroVideo']); };
+        ${spOpt('names', 'time') ? '<div class="wz-field"><div class="wz-lab">예식 시간</div><div id="spTime"></div></div>' : ''}
+        <div class="wz-field"><button type="button" class="sp-tbd${wi.undecided ? ' on' : ''}" id="spTbd" aria-pressed="${!!wi.undecided}"><i></i><span><b>아직 일정을 잡지 않았어요</b><small>정해지면 언제든 바꿀 수 있어요</small></span></button></div>`;
+    const set = (k, v) => { const w = weddingInfo(); w[k] = v; if ((k === 'date' || k === 'time') && v && w.undecided) spSetDateTbd(false); applyWeddingInfo(k === 'groom' || k === 'bride' ? 'names' : 'date'); spChanged(['hero', 'heroVideo']); };
+    box.querySelector('#spTbd').addEventListener('click', () => {
+        const on = !weddingInfo().undecided; spSetDateTbd(on); spChanged(['hero', 'heroVideo']); scheduleSnapshot(); spRender();
+        if (on && spViewNow() === 'quick') setTimeout(() => document.getElementById('spNext')?.click(), 320); // 고르면 바로 다음 질문
+    });
     box.querySelectorAll('[data-wi]').forEach(inp => inp.addEventListener('input', () => set(inp.dataset.wi, inp.value)));
     const dTxt = () => { const d = weddingInfo().date; box.querySelector('#spDateTxt').innerHTML = d ? wzEsc(dtDateText(d)) : '<span class="ph">날짜를 골라주세요</span>'; };
     const cal = box.querySelector('#spCal'), btn = box.querySelector('#spDateBtn');
     btn.addEventListener('click', () => { const on = !cal.classList.contains('on'); cal.classList.toggle('on', on); btn.classList.toggle('open', on); if (on) dtCalendar(cal, weddingInfo().date, v => { set('date', v); dTxt(); setTimeout(() => { cal.classList.remove('on'); btn.classList.remove('open'); }, 160); }); });
     if (box.querySelector('#spTime')) dtTimePicker(box.querySelector('#spTime'), weddingInfo().time, v => set('time', v));
     dTxt();
+}
+// 예식 일정 미정: 날짜·시간을 비우고 첫 화면 날짜 자리에 안내 문구, 디데이·달력은 잠시 끔 (날짜를 고르면 되돌림)
+const SP_TBD_TEXT = '아직 예식 일정을 잡지 않았어요';
+function spSetDateTbd(on) {
+    const wi = weddingInfo(), dd = state.blocks.find(b => b.id === 'dday');
+    if (on) {
+        wi.undecided = true; wi.date = ''; wi.time = ''; state.dateTbd = true;
+        state.blocks.forEach(b => { if (b.id === 'hero' || b.id === 'heroVideo') (b.fields || (b.fields = {})).datetime = SP_TBD_TEXT; });
+        if (dd) { if (wi._ddayWas == null) wi._ddayWas = !!dd.enabled; dd.enabled = false; }
+    } else {
+        wi.undecided = false; delete state.dateTbd;
+        state.blocks.forEach(b => { if ((b.id === 'hero' || b.id === 'heroVideo') && b.fields && b.fields.datetime === SP_TBD_TEXT) b.fields.datetime = ''; });
+        if (dd && wi._ddayWas != null) { dd.enabled = wi._ddayWas; delete wi._ddayWas; }
+    }
+    try { renderBlockList(); } catch (e) {}
 }
 // 2. 메인 화면 - ① 사진/유튜브 고르기 ② 사진 올리기(영상 주소) ③ 화면 크기
 const spIsReal = src => /uploads\//.test(typeof src === 'string' ? src : (src && src.src) || '');
@@ -14441,8 +14556,10 @@ function spHero(box) {
     if (hb && HO('layout')) html += spHeroLayoutHtml(hb, kind);
     if (kind === 'photo' && hp) {
         const f = hp.fields;
-        html += `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 1}</span>대표 사진</span></div>
-            <div class="sp-hero">${f.heroImage ? `<img src="${esc(InviteBlocks.imgUrl(f.heroImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" data-sp-up="hero">${spIsReal(f.heroImage) ? '사진 바꾸기' : '사진 올리기'}</button></div></div>
+        const real = spIsReal(f.heroImage);
+        html += (part === 'media' ? `<div class="wz-field"><button type="button" class="sp-bigup${real ? ' on' : ''}" data-sp-up="hero"${real ? ` style="--ph:url('${esc(InviteBlocks.imgUrl(f.heroImage))}')"` : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><polyline points="21 16 15 11 6 19"/></svg><b>${real ? '사진을 넣었어요 · 바꾸기' : '사진 고르기'}</b><small>휴대폰 앨범에서 한 장 골라요</small></button></div>`
+            : `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 1}</span>대표 사진</span></div>
+            <div class="sp-hero">${f.heroImage ? `<img src="${esc(InviteBlocks.imgUrl(f.heroImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" data-sp-up="hero">${real ? '사진 바꾸기' : '사진 올리기'}</button></div></div>`) + `
             ${f.heroImage && HO('crop') ? `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 2}</span>보일 부분 · 확대</span><small>사진을 끌어서 옮겨요</small></div><div id="spCropBox"></div></div>` : ''}
             ${HO('shade') && InviteBlocks.heroTextOn(f, 'hero') ? `<div class="sp-shade" data-blk="hero">${shadeFieldHtml(f, 'hero')}</div>` : ''}`;
     } else if (hv) {
@@ -14458,7 +14575,7 @@ function spHero(box) {
     if (hb) spBindHeroLayout(box, hb);
     if (part) { // 질문 하나에 필요한 칸만 남김
         const fieldOf = sel => [...box.querySelectorAll(sel)].map(x => x.closest('.wz-field') || x);
-        const drop = part === 'media' ? ['.hl-row', '.hl-lines', '#spCropBox', '#spVfpBox', '.sp-shade', '#spToScroll', ':scope > .wz-hint'] : ['[data-sp-kind]', '.sp-hero', '#spYt'];
+        const drop = part === 'media' ? ['.hl-row', '.hl-lines', '#spCropBox', '#spVfpBox', '.sp-shade', '#spToScroll', ':scope > .wz-hint'] : ['[data-sp-kind]', '.sp-hero', '.sp-bigup', '#spYt'];
         drop.forEach(sel => fieldOf(sel).forEach(x => x.remove()));
         box.querySelectorAll('.sp-n').forEach(x => x.remove());
     }
@@ -14728,10 +14845,16 @@ function spVenue(box) {
         ${spOpt('venue', 'map') ? `<div class="wz-field"><div class="wz-lab">지도</div>
             <label class="sp-sw"><span><b>지도 보여주기</b><small>주소로 카카오맵이 자동으로 떠요</small></span><input type="checkbox" data-sp-map="showMap"${f.showMap ? ' checked' : ''}><i></i></label>
             ${f.showMap ? `${spOpt('venue', 'mapWide') ? `<label class="sp-sw"><span><b>지도 가로 꽉 채우기</b><small>끄면 좌우 여백 있는 카드 모양</small></span><input type="checkbox" data-sp-map="mapFullWidth"${f.mapFullWidth ? ' checked' : ''}><i></i></label>` : ''}
-            ${spOpt('venue', 'mapHeight') ? `<div class="sp-range"><span>지도 높이</span><input type="range" id="spMapH" min="100" max="500" step="10" value="${f.mapHeight ?? 200}"><span id="spMapHV">${f.mapHeight ?? 200}px</span></div>` : ''}` : ''}</div>` : ''}`;
-    box.querySelectorAll('[data-sp-map]').forEach(c => c.addEventListener('change', () => { f[c.dataset.spMap] = c.checked; spChanged(['location']); scheduleSnapshot(); spRender(); }));
+            ${spOpt('venue', 'mapHeight') ? `<div class="sp-range"><span>지도 높이</span><input type="range" id="spMapH" min="100" max="500" step="10" value="${f.mapHeight ?? 200}"><span id="spMapHV">${f.mapHeight ?? 200}px</span></div>` : ''}
+            <div class="sp-mapdemo${f.mapFullWidth ? ' full' : ''}" id="spMapDemo" style="height:${Math.round((f.mapHeight ?? 200) * .8)}px" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b class="pin"></b><span>지도 예시 · 청첩장엔 예식장 지도가 이렇게 들어가요</span></div>` : ''}</div>` : ''}`;
+    // 지도 예시: 가로 꽉 채우기·높이를 바꾸면 그 자리에서 바로 (다시 그리지 않고 움직이며)
+    const demo = box.querySelector('#spMapDemo');
+    box.querySelectorAll('[data-sp-map]').forEach(c => c.addEventListener('change', () => {
+        f[c.dataset.spMap] = c.checked; spChanged(['location']); scheduleSnapshot();
+        if (c.dataset.spMap === 'mapFullWidth' && demo) demo.classList.toggle('full', c.checked); else spRender();
+    }));
     const mh = box.querySelector('#spMapH');
-    if (mh) { mh.addEventListener('input', () => { f.mapHeight = parseInt(mh.value, 10) || 200; box.querySelector('#spMapHV').textContent = mh.value + 'px'; renderPreview(); }); mh.addEventListener('change', () => scheduleSnapshot()); }
+    if (mh) { mh.addEventListener('input', () => { f.mapHeight = parseInt(mh.value, 10) || 200; box.querySelector('#spMapHV').textContent = mh.value + 'px'; if (demo) demo.style.height = Math.round(f.mapHeight * .8) + 'px'; renderPreview(); }); mh.addEventListener('change', () => scheduleSnapshot()); }
     box.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => {
         f[inp.dataset.f] = inp.value; f.address = [f.addressBase, f.addressDetail].filter(Boolean).join(' '); spChanged(['location']);
     }));
