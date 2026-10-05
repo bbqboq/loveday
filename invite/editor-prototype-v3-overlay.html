@@ -576,6 +576,17 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .spb-card { background: #fff; border: 1px solid var(--wz-line); border-radius: 16px; overflow: hidden; }
 .spb-li + .spb-li { border-top: 1px solid var(--wz-line, #EEEAE4); }
 .spb-h { display: flex; align-items: center; gap: 4px; padding-right: 12px; }
+/* PC: 칸을 끌어서 섹션 순서 바꾸기 - 마우스를 올리면 왼쪽에 손잡이 */
+.spb-li { position: relative; } .spb-grip { display: none; }
+@media (min-width: 861px) {
+    .spb-card .spb-li .spb-t { padding-left: 28px; }
+    .spb-grip { display: flex; position: absolute; left: 2px; top: 0; width: 20px; height: 60px; align-items: center; justify-content: center; font-size: 15px; color: #8A8278; opacity: .35; transition: opacity .15s, color .15s; pointer-events: none; }
+    .spb-li.spb-mov:hover .spb-grip { opacity: 1; color: #44403C; }
+    .spb-li.spb-mov:hover > .spb-h { background: var(--ui-tint, #FBF9F6); }
+    .spb-li.spb-mov .spb-h { cursor: grab; }
+    .spb-ghost { opacity: .4; background: var(--ui-soft, #F3EFE8); }
+    .spb-chosen { box-shadow: 0 8px 24px rgba(0,0,0,.12); background: #fff; }
+}
 .spb-t { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 8px 10px 16px; border: 0; background: none; font: inherit; color: var(--wz-ink); text-align: left; cursor: pointer; }
 .spb-st { width: 22px; height: 22px; flex: none; border-radius: 50%; box-sizing: border-box; position: relative; }
 .spb-done { background: var(--wz-ink, #1B1A18); } .spb-done::after { content: ''; position: absolute; left: 8px; top: 4.5px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
@@ -14380,6 +14391,51 @@ function spSum(st) { // 접힌 칸의 한 줄 요약 [글, 채웠나]
     } catch (e) {}
     return ['', true];
 }
+// PC 목록: 칸을 끌어서 청첩장 섹션 순서 바꾸기 (다른 묶음으로 옮기면 그 묶음에 남음 - state.spListG)
+const spMovIds = st => st.k === 'hero' ? [] : (SP_STEP_BLOCKS[st.k] || []).filter(id => spHas(id)); // 그 칸이 옮기는 섹션
+const spBlkPos = st => { const ids = spMovIds(st); return ids.length ? Math.min(...ids.map(id => state.blocks.findIndex(b => b.id === id))) : -1; };
+const spListDragOk = () => window.innerWidth > 860 && spOpt('flow', 'order') && typeof Sortable !== 'undefined'; // 관리자 '목록: 섹션 순서 바꾸기'를 끄면 끌기도 꺼짐
+const spListGroup = st => (state.spListG && state.spListG[st.k]) || st.g || SP_GROUP_OF[st.k] || 'more';
+function spSortByBlocks(its) { // 묶음 안: 섹션이 있는 칸은 청첩장 섹션 순서대로 (없는 칸 - 두 사람·색·음악 등 - 은 제자리)
+    const slots = its.map((st, i) => spBlkPos(st) >= 0 ? i : -1).filter(i => i >= 0), mov = slots.map(i => its[i]).sort((a, b) => spBlkPos(a) - spBlkPos(b)), out = its.slice();
+    slots.forEach((i, k) => { out[i] = mov[k]; });
+    return out;
+}
+function spListMove(k, g, nextK, prevK) { // k 칸의 섹션들을 nextK 칸 앞(없으면 prevK 칸 뒤)으로
+    const steps = spSteps(), byK = x => steps.find(st => st.k === x), st = byK(k); if (!st) return false;
+    const ids = spMovIds(st); if (!ids.length) return false;
+    const moving = state.blocks.filter(b => ids.includes(b.id)), rest = state.blocks.filter(b => !ids.includes(b.id));
+    let at = -1;
+    if (nextK) { const n = spMovIds(byK(nextK) || {}); at = rest.findIndex(b => n.includes(b.id)); }
+    if (at < 0 && prevK) { const pv = spMovIds(byK(prevK) || {}); rest.forEach((b, i) => { if (pv.includes(b.id)) at = i + 1; }); }
+    if (at < 0) return false;
+    rest.splice(at, 0, ...moving);
+    const top = rest.filter(b => b.id === 'hero' || b.id === 'heroVideo'), share = rest.filter(b => b.id === 'share');
+    state.blocks.splice(0, state.blocks.length, ...top, ...rest.filter(b => !top.includes(b) && !share.includes(b)), ...share);
+    const def = st.g || SP_GROUP_OF[st.k] || 'more';
+    state.spListG = Object.assign({}, state.spListG); if (g === def) delete state.spListG[k]; else state.spListG[k] = g;
+    state.spOrderCustom = true;
+    try { renderBlockList(); } catch (e) {}
+    renderPreview(); scheduleSnapshot();
+    return ids;
+}
+function spBindListDrag(pane) {
+    if (!spListDragOk()) return; // PC만 (휴대폰은 [섹션 순서 바꾸기])
+    const cards = [...pane.querySelectorAll('.spb-grp .spb-card')];
+    const movK = el => el && el.classList && el.classList.contains('spb-mov') ? el.dataset.li : null;
+    cards.forEach(card => Sortable.create(card, { group: 'spList', draggable: '.spb-li.spb-mov', handle: '.spb-h', filter: '.sp-li-sw, .sp-li-sw *', preventOnFilter: false,
+        forceFallback: true, fallbackTolerance: 6, animation: 160, ghostClass: 'spb-ghost', chosenClass: 'spb-chosen',
+        onEnd: ev => {
+            if (ev.from === ev.to && ev.oldIndex === ev.newIndex) return;
+            const li = ev.item, k = li.dataset.li, g = ev.to.closest('.spb-grp').dataset.g;
+            let nx = li.nextElementSibling; while (nx && !movK(nx)) nx = nx.nextElementSibling;
+            let pv = li.previousElementSibling; while (pv && !movK(pv)) pv = pv.previousElementSibling;
+            if (!nx && !pv) { const all = [...pane.querySelectorAll('.spb-li')], i = all.indexOf(li); pv = all.slice(0, i).reverse().find(movK); if (!pv) nx = all.slice(i + 1).find(movK); } // 묶음에 혼자면 앞뒤 묶음의 칸 기준
+            const ids = spListMove(k, g, movK(nx), movK(pv));
+            spRender();
+            if (ids) setTimeout(() => spScrollPreview(ids), 80);
+        } }));
+}
 function spRenderList() {
     const pane = document.getElementById('simplePane'); if (!pane) return;
     const keepPane = pane.scrollTop, keepWin = window.scrollY, again = pane._spKey === 'list';
@@ -14390,20 +14446,21 @@ function spRenderList() {
     const swOf = st => { if (SP_LIST_NOSW.includes(st.k)) return null; const ids = (st.s || []).filter(id => spHas(id)); return ids.length === 1 ? ids[0] : null; };
     const item = st => { const sw = swOf(st), on = sw ? spBlock(sw).enabled : true, open = on && spOpenSet.has(st.k), [sum, ok] = spSum(st);
         const stt = !on ? 'off' : ok ? 'done' : 'todo';
-        return `<section class="spb-li ${stt}${open ? ' open' : ''}" data-li="${st.k}"><div class="spb-h"><button type="button" class="spb-t" data-li-tog="${st.k}" aria-expanded="${open}"><span class="spb-st spb-${stt}" aria-hidden="true"></span><span class="spb-tx"><b>${esc(st.k === 'finish' ? '인트로' : st.t)}</b><small>${esc(on ? sum : '꺼져 있어요 · 청첩장에 안 보여요')}</small></span><span class="spb-chev" aria-hidden="true"></span></button>${sw ? `<label class="sp-li-sw" title="${on ? '끄면 청첩장에서 빠져요' : '켜면 청첩장에 들어가요'}"><input type="checkbox" data-li-sw="${sw}" aria-label="${esc(st.t)} ${on ? '끄기' : '켜기'}" ${on ? 'checked' : ''}><i></i></label>` : ''}</div>${open ? `<div class="sp-li-b" data-li-body="${st.k}"></div>` : ''}</section>`; };
+        return `<section class="spb-li ${stt}${open ? ' open' : ''}${spListDragOk() && spMovIds(st).length ? ' spb-mov' : ''}" data-li="${st.k}"><div class="spb-h">${spListDragOk() && spMovIds(st).length ? '<span class="spb-grip" title="끌어서 순서 바꾸기" aria-hidden="true">⠿</span>' : ''}<button type="button" class="spb-t" data-li-tog="${st.k}" aria-expanded="${open}"><span class="spb-st spb-${stt}" aria-hidden="true"></span><span class="spb-tx"><b>${esc(st.k === 'finish' ? '인트로' : st.t)}</b><small>${esc(on ? sum : '꺼져 있어요 · 청첩장에 안 보여요')}</small></span><span class="spb-chev" aria-hidden="true"></span></button>${sw ? `<label class="sp-li-sw" title="${on ? '끄면 청첩장에서 빠져요' : '켜면 청첩장에 들어가요'}"><input type="checkbox" data-li-sw="${sw}" aria-label="${esc(st.t)} ${on ? '끄기' : '켜기'}" ${on ? 'checked' : ''}><i></i></label>` : ''}</div>${open ? `<div class="sp-li-b" data-li-body="${st.k}"></div>` : ''}</section>`; };
     const must = spMustList(), nDone = must.filter(m => m[1]).length, left = must.filter(m => !m[1]).map(m => m[0]);
     const offSet = new Set(Array.isArray(state.spDesignOff) ? state.spDesignOff : []);
     const designOff = st => { if (EASY_SHOWOFF || ['names', 'hero', 'theme', 'music', 'finish'].includes(st.k)) return false; const ids = (st.s || []).filter(id => spHas(id)); return ids.length > 0 && ids.every(id => offSet.has(id) && !spBlock(id).enabled); }; // 디자인에서 꺼 둔 섹션 (관리자: 목록에 안 보이기)
-    const groups = SP_GROUPS.map(([g, t, sub]) => { const its = steps.filter(st => !designOff(st) && (st.g || SP_GROUP_OF[st.k] || 'more') === g); return its.length ? `<div class="spb-grp spb-${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${its.map(item).join('')}</div></div>` : ''; }).join('');
+    const groups = SP_GROUPS.map(([g, t, sub]) => { const its = spSortByBlocks(steps.filter(st => !designOff(st) && spListGroup(st) === g)); return its.length ? `<div class="spb-grp spb-${g}" data-g="${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${its.map(item).join('')}</div></div>` : ''; }).join('');
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 만들기</b></div>${spUdHtml()}</div>
         <div class="spb">
             <div class="spb-prog"><div><b>꼭 필요한 것</b><span>${nDone} / ${must.length}</span></div><div class="spb-dots">${must.map(m => `<i class="${m[1] ? 'on' : ''}"></i>`).join('')}</div><p>${left.length ? esc(left.join(' · ')) + (left.length === 1 ? '만 넣으면 보낼 수 있어요.' : '을(를) 넣으면 보낼 수 있어요.') : '꼭 필요한 건 다 채웠어요. 나머지는 원할 때만 채우면 돼요.'}</p></div>
             ${groups}
-            ${spOpt('flow', 'order') ? '' : '<!--'}<button type="button" class="spb-order" id="spOrderBtn"><span aria-hidden="true">⇅</span><span><b>섹션 순서 바꾸기</b><small>청첩장에 나오는 순서를 끌어서 바꿔요</small></span></button>${spOpt('flow', 'order') ? '' : '-->'}
+            ${spOpt('flow', 'order') ? '' : '<!--'}<button type="button" class="spb-order" id="spOrderBtn"><span aria-hidden="true">⇅</span><span><b>섹션 순서 바꾸기</b><small>청첩장에 나오는 순서를 끌어서 바꿔요${window.innerWidth > 860 ? ' · 위 칸을 바로 끌어도 돼요' : ''}</small></span></button>${spOpt('flow', 'order') ? '' : '-->'}
         </div>
         <div class="sp-list-end"><button type="button" class="wz-next" id="spListDone">완성본 보기</button><p class="wz-hint">저장하고 다 된 모습을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.</p></div>`;
     spBindHeadTools(pane);
     pane.querySelector('#spOrderBtn')?.addEventListener('click', () => { stopAllBgm(); spOrderMode = true; spRender(); });
+    spBindListDrag(pane);
     pane.querySelector('#spListDone').addEventListener('click', e => { const b = e.currentTarget; b.disabled = true; b.textContent = '저장 중…'; saveToServer(false, true).then(ok => { b.disabled = false; b.textContent = '완성본 보기'; if (ok) spOpenPreview(true, true); else showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }); });
     pane.querySelectorAll('[data-li-tog]').forEach(b => b.addEventListener('click', () => {
         const k = b.dataset.liTog, st = steps.find(x => x.k === k), sw = st && swOf(st); stopAllBgm();
