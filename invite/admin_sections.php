@@ -622,6 +622,10 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-li span { flex: 1; min-width: 0; } .ez-li b { display: block; font-size: 11px; } .ez-li small { display: block; font-size: 9.5px; color: #8A8278; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ez-li u { flex: none; width: 24px; height: 14px; border-radius: 9px; background: var(--ui-point, #C9A961); }
 .ez-lorder { margin-top: 10px; padding: 8px 10px; border-radius: 10px; border: 1px dashed var(--ui-line, #D9D2C8); font-size: 10.5px; font-weight: 700; color: #6F6A63; }
+.ez-sws { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.ez-start { font-size: 10.5px; color: #7C4650; } .ez-start i { width: 30px; height: 17px; background: #7C4650; } .ez-start i::after { width: 13px; height: 13px; transform: translateX(13px); }
+.ez-start span { width: auto; white-space: nowrap; } .ez-start:not(.on) { color: #A29C94; }
+.ez-li em.ez-st { flex: none; font-style: normal; font-size: 8.5px; font-weight: 700; color: #7C4650; border: 1px solid #D9BFC4; border-radius: 99px; padding: 1px 5px; }
 .ez-ldone { margin-top: 10px; height: 34px; line-height: 34px; border-radius: 10px; background: #1B1A18; color: #fff; text-align: center; font-size: 11.5px; font-weight: 700; }
 @media (max-width: 860px) { .ez-grid { grid-template-columns: 1fr; } .ez-pv { position: static; } }</style>
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
@@ -1335,6 +1339,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
     const EZ_INFO = <?= json_encode($easyInfo, JSON_UNESCAPED_UNICODE) ?>;
     const EZ_ASKDEF = <?= json_encode(SECTION_EASY_ASK, JSON_UNESCAPED_UNICODE) ?>; // id => [질문, 단계, 필요한 섹션, 설명, 고르는 답]
     const EZ_GROUPS = <?= json_encode(SECTION_EASY_GROUPS, JSON_UNESCAPED_UNICODE) ?>;
+    const EZ_NOSTART = <?= json_encode(SECTION_EASY_NOSTART) ?>; // 스타터를 고를 수 없는 단계 (섹션이 없거나 늘 켜짐)
     const EZ_OPTS = <?= json_encode(SECTION_EASY_OPTS, JSON_UNESCAPED_UNICODE) ?>; // 단계별 세부 옵션 {step: {key: 이름}}
     const EZ_SEC = { names: '', hero: '', theme: '', music: '', finish: '', gallery: '갤러리', venue: '오시는 길', transport: '교통수단', greet: '인사말', family: '혼주 소개 · 연락하기', account: '마음 전하실 곳', dday: '디데이', notice: '안내문', rsvp: '참석 여부', guestbook: '방명록', video: '영상', timeline: '타임라인', interview: '인터뷰', profile: '프로필형 소개', letter: '손편지', together: '함께한 시간', ending: '엔딩', guestsnap: '게스트스냅', trip: '신혼여행 라이브', lottery: '행운의 추첨', dayinfo: 'D-DAY 하객 안내', thanks: '예식 후 감사 인사' };
     const EZ_SUM = { names: '김민준 · 이서연 · 2027년 5월 22일', hero: '사진 1장 · 매거진 표지', venue: '라움아트센터', gallery: '사진 12장', transport: '안내 3개', greet: '서로 다른 길을 걸어온 두 사람이…', family: '부모님 성함 · 연락처', account: '계좌 2개', dday: '예식 날짜 달력 · 남은 날', notice: '안내 2개', rsvp: '하객이 참석·식사 여부를 알려줘요', guestbook: '하객이 축하 글을 남겨요', video: '영상 1개', theme: '모던 화이트', music: '음악 1곡', finish: '인트로 없음', timeline: '이야기 4개', interview: '문답 3개', profile: '신랑 · 신부 소개', letter: '편지 1통', together: '함께한 지 1,234일', ending: '마지막 인사', guestsnap: '하객 사진 모으기', trip: '여행 소식', lottery: '추첨 이벤트', dayinfo: '당일 안내', thanks: '감사 인사' };
@@ -1368,7 +1373,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             <span class="ez-no">${no}</span><span class="ez-ic">${ezEsc(ic)}</span>
             <span class="ez-t"><b>${ezEsc(EZ_NAMES[st.id] || st.id)}</b><small>${ezEsc(what)}</small>${sec ? `<em>섹션: ${ezEsc(sec)}</em>` : ''}</span>
             ${st.on && !fin ? ezMv('data-ez-mv', st.id, up, dn) : '<span class="ez-mv"></span>'}
-            ${ezSw('data-ez-on', st.id, st.on, st.id === 'names' ? '늘 보여요' : fin ? '늘 맨 끝' : '')}
+            <span class="ez-sws">${ezSw('data-ez-on', st.id, st.on, st.id === 'names' ? '늘 보여요' : fin ? '늘 맨 끝' : '')}${st.on && !EZ_NOSTART.includes(st.id) ? `<label class="so-sw ez-start${st.start ? ' on' : ''}" title="켜면 고객이 처음 만들 때부터 이 섹션이 청첩장에 들어가 있어요 (끄면 질문·목록에서 고객이 켤 때까지 꺼져 있어요)"><input type="checkbox" data-ez-start="${st.id}"${st.start ? ' checked' : ''}${readonly ? ' disabled' : ''}><i></i><span>스타터 ${st.start ? 'ON' : 'OFF'}</span></label>` : ''}</span>
             ${ezFold(st.id)}</li>`;
     }
     // 세부 옵션 폴더: 줄의 [옵션 n/m ▾]를 누르면 아래로 펼쳐지고, 옵션마다 켜고 끔
@@ -1430,7 +1435,8 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
                 const [id, d] = b.dataset.ezMv.split(':'), st = byId(id), same = ez.filter(x => x.on && grpOf(x) === grpOf(st) && x.id !== 'finish'), k = same.indexOf(st), o = same[k + +d]; if (!o) return;
                 const i1 = ez.indexOf(st), i2 = ez.indexOf(o); ez[i1] = o; ez[i2] = st; ezTab = 'list'; ezLSel = id; ezRender();
             }));
-            box.querySelectorAll('[data-ez-on]').forEach(c => c.addEventListener('change', () => { const st = byId(c.dataset.ezOn); st.on = c.checked; ezTab = 'list'; ezLSel = st.id; ezRender(); }));
+            box.querySelectorAll('[data-ez-on]').forEach(c => c.addEventListener('change', () => { const st = byId(c.dataset.ezOn); st.on = c.checked; if (!st.on) delete st.start; ezTab = 'list'; ezLSel = st.id; ezRender(); }));
+            box.querySelectorAll('[data-ez-start]').forEach(c => c.addEventListener('change', () => { const st = byId(c.dataset.ezStart); if (c.checked) st.start = true; else delete st.start; ezTab = 'list'; ezLSel = st.id; ezRender(); })); // 스타터: 처음 만들 때부터 켜 둠
             box.querySelectorAll('[data-ez-fold]').forEach(b => b.addEventListener('click', () => { const id = b.dataset.ezFold; if (ezOpen.has(id)) ezOpen.delete(id); else ezOpen.add(id); ezTab = 'list'; ezLSel = id; ezRender(); }));
             box.querySelectorAll('.ez-row').forEach(li => li.addEventListener('click', e => { if (e.target.closest('button, label, .ez-grip, .ez-fold')) return; ezTab = 'list'; ezLSel = li.dataset.id; ezRender(); }));
         });
@@ -1474,7 +1480,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             note.textContent = '점을 누르면 다른 질문을 봐요. 디자인에 그 섹션이 없으면 고객에게는 건너뛰어요.';
         } else {
             const its = g => ez.filter(x => x.on && grpOf(x) === g);
-            const row = st => { const sw = !!EZ_SEC[st.id]; return `<div class="ez-li${ezLSel === st.id ? ' sel' : ''}" data-ezl-pv="${st.id}"><i class="${['names', 'venue', 'greet', 'family', 'theme', 'music', 'finish', 'dday', 'rsvp', 'guestbook'].includes(st.id) ? 'ok' : ''}"></i><span><b>${ezEsc(st.id === 'finish' ? '인트로' : EZ_NAMES[st.id])}</b><small>${ezEsc(EZ_SUM[st.id] || '')}</small></span>${sw ? '<u></u>' : ''}</div>`; };
+            const row = st => { const sw = !!EZ_SEC[st.id]; return `<div class="ez-li${ezLSel === st.id ? ' sel' : ''}" data-ezl-pv="${st.id}"><i class="${['names', 'venue', 'greet', 'family', 'theme', 'music', 'finish', 'dday', 'rsvp', 'guestbook'].includes(st.id) ? 'ok' : ''}"></i><span><b>${ezEsc(st.id === 'finish' ? '인트로' : EZ_NAMES[st.id])}</b><small>${ezEsc(EZ_SUM[st.id] || '')}</small></span>${st.start ? '<em class="ez-st">처음부터</em>' : ''}${sw ? '<u></u>' : ''}</div>`; };
             ph.innerHTML = `<div class="ez-lhd"><small>간편 만들기</small><b>청첩장 만들기</b></div><div class="ez-lbody">
                 <div class="ez-prog"><b>꼭 필요한 것</b><span>3 / 4</span><div><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></div>
                 ${Object.keys(EZ_GROUPS).map(g => its(g).length ? `<div class="ez-lgh">${ezEsc(EZ_GROUPS[g])}</div><div class="ez-lcard">${its(g).map(row).join('')}</div>` : '').join('')}

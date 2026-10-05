@@ -14,7 +14,7 @@
  *                안 적힌 섹션은 디자인마다 정해진 대로. 첫 화면(메인 영상·메인 사진)은 디자인이 정하므로 안 받음
  *   labels     : 관리자가 바꾼 섹션 이름 {"heroVideo":"메인 영상", ...} - 바꾼 것만 (안 적힌 섹션은 원래 이름). 고객 에디터·관리자 화면에 쓰임
  *   easy       : 손쉬운 제작(간편 만들기) - 관리자 → 섹션 설정 → "손쉬운 제작" 탭.
- *                steps  : 목록 화면 메뉴 [{"id":"names","on":true,"g":"must"}, ...] (on = 목록에 보임, g = 묶음, 순서 = 묶음 안 순서·섹션 순서)
+ *                steps  : 목록 화면 메뉴 [{"id":"names","on":true,"g":"must"}, ...] (on = 목록에 보임, g = 묶음, start = 스타터(처음 만들 때부터 켬), 순서 = 묶음 안 순서·섹션 순서)
  *                ask    : 처음 만들 때 질문 [{"id":"names:name","on":true}, ...] (순서 = 묻는 순서)
  *                off    : 끈 세부 옵션 {step: [key]} · showOff: 디자인에서 꺼 둔 섹션도 목록에 보이기
  *                단계 순서와 켜기/끄기. names(두 사람)는 늘 켜짐, finish(마무리)는 늘 맨 끝. 정한 적 없으면 기본 순서·모두 켜짐
@@ -201,6 +201,8 @@ const SECTION_EASY_STEPS = [
     'guestsnap' => '게스트스냅', 'trip' => '신혼여행 라이브', 'lottery' => '행운의 추첨', 'dayinfo' => 'D-DAY 하객 안내', 'thanks' => '예식 후 감사 인사',
     'music' => '배경음악', 'finish' => '인트로',
 ];
+/** 스타터(처음 만들 때부터 켜 두기)를 고를 수 없는 단계 - 섹션이 없거나 늘 켜져 있음 */
+const SECTION_EASY_NOSTART = ['names', 'hero', 'theme', 'music', 'finish'];
 const SECTION_EASY_EXTRA = ['timeline', 'interview', 'profile', 'letter', 'together', 'ending', 'guestsnap', 'trip', 'lottery', 'dayinfo', 'thanks'];
 /** 목록 화면(다 만든 뒤 고치는 화면)의 묶음: must 꼭 필요한 것 · more 채우면 좋은 것 · deco 꾸미기 */
 const SECTION_EASY_GROUPS = ['must' => '꼭 필요한 것', 'more' => '채우면 좋은 것', 'deco' => '꾸미기'];
@@ -215,7 +217,9 @@ function section_easy_clean($in): array
         if (!isset(SECTION_EASY_STEPS[$id]) || isset($seen[$id]) || $id === 'finish') continue;
         $seen[$id] = 1;
         $g = (string) ($st['g'] ?? '');
-        $out[] = ['id' => $id, 'on' => $id === 'names' ? true : !empty($st['on']), 'g' => isset(SECTION_EASY_GROUPS[$g]) ? $g : section_easy_group_default($id)];
+        $row = ['id' => $id, 'on' => $id === 'names' ? true : !empty($st['on']), 'g' => isset(SECTION_EASY_GROUPS[$g]) ? $g : section_easy_group_default($id)];
+        if (!empty($st['start']) && !in_array($id, SECTION_EASY_NOSTART, true)) $row['start'] = true; // 스타터: 처음 만들 때부터 이 섹션을 켜 둠
+        $out[] = $row;
     }
     // 빠진 단계(새로 생긴 단계 등)는 기본 순서에서 바로 앞 단계 뒤에 켜진 채로 끼워 넣음
     $all = array_keys(SECTION_EASY_STEPS);
