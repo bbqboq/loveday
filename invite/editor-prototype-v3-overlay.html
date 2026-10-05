@@ -520,6 +520,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-steps { flex: none; display: flex; gap: 4px; padding: 0 20px 6px; overflow-x: auto; scrollbar-width: none; }
 .sp-head, .sp-nav { flex: none; }
 .simple-mode .simple-pane { order: -1; }
+.simple-mode .preview-pane { min-width: 0; } .simple-mode .simple-pane { flex-shrink: 0; } /* 미리보기 속 넓은 칸 때문에 미리보기가 늘어나 오른쪽 입력 칸을 화면 밖으로 밀던 것 */
 .sp-steps::-webkit-scrollbar { display: none; }
 .sp-steps button { flex: none; display: flex; align-items: center; gap: 5px; border: 0; background: none; padding: 6px 6px; border-radius: 99px; font: inherit; font-size: 12px; font-weight: 600; color: var(--wz-mute); cursor: pointer; white-space: nowrap; }
 .sp-steps button i { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 10px; border: 1px solid var(--wz-line2); background: #fff; }
@@ -4127,14 +4128,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017j">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017j">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017k">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017k">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017j"></script>
-<script src="assets/tip-demos.js?v=1017j"></script>
-<script src="assets/ld-dialog.js?v=1017j"></script>
+<script src="assets/invite-blocks.js?v=1017k"></script>
+<script src="assets/tip-demos.js?v=1017k"></script>
+<script src="assets/ld-dialog.js?v=1017k"></script>
 </head>
 <body>
 
@@ -13443,6 +13444,7 @@ async function startWithPreset(presetId) {
     delete state.simpleSnap; delete state.fullSnap;
     if (startTrack === 'simple') { // 간편 만들기: 기본 정보 단계 없이 바로 칸 채우기 화면 (이름·날짜부터)
         applyWizardDataToBlocks(); // 주문 때 받은 이름·장소가 있으면 미리 채움
+        { const lay = InviteBlocks.HERO_LAYOUTS.find(l => l.id === 'magazine'); ['hero', 'heroVideo'].forEach(id => { const b = state.blocks.find(x => x.id === id); if (b && lay) { InviteBlocks.applyHeroLayout(b, lay); spForceFull(b); } }); } // 처음 만들 때 첫 화면은 매거진 표지
         state.spView = 'quick'; state.spAsk = {}; // 질문에 하나씩 답하기 → 미리보기 → 목록 화면
         spRenderAll();
         onboardingActive = false;
@@ -13929,6 +13931,7 @@ function openSimpleEditor(step, inPlace) {
     spStep = step || 0;
     showScreen('editor');
     if (spApplyEasyOrder()) { try { renderBlockList(); } catch (e) {} renderPreview(); scheduleSnapshot(); }
+    if (!spInPlace && spForceFull(spHeroCur().b)) { renderPreview(); } // 간편 만들기는 처음부터 메인을 전체화면으로 (미리보기도)
     spRender();
     window.scrollTo(0, 0);
 }
@@ -14004,7 +14007,8 @@ const SP_ASK = [
     { k: 'names', part: 'name', q: '두 분의 이름을 알려 주세요', sub: '청첩장 맨 앞과 문자로 보낼 때 미리보기에 들어가요.' },
     { k: 'names', part: 'date', q: '예식은 언제인가요?', sub: '디데이와 달력이 저절로 만들어져요.' },
     { k: 'venue', q: '어디에서 하나요?', sub: '예식장을 찾아 고르면 지도와 길찾기 버튼이 들어가요.' },
-    { k: 'hero', q: '첫 화면을 꾸며요', sub: '사진이나 유튜브 영상이 휴대폰 화면 가득 보여요. 그 위에 올릴 글자 모양을 골라요.' },
+    { k: 'hero', part: 'media', q: '첫 화면에 쓸 사진을 골라 주세요', sub: '청첩장을 열면 휴대폰 화면 가득 가장 먼저 보여요. 유튜브 영상으로 해도 돼요.' },
+    { k: 'hero', part: 'look', q: '첫 화면을 꾸며요', sub: '사진 위에 올릴 글자 모양을 골라요. 글자와 나타나는 효과도 바꿀 수 있어요.' },
     { k: 'greet', blk: 'greeting', q: '인사말은 어떻게 할까요?', sub: '청첩장을 열면 처음 읽게 되는 짧은 글이에요.',
       opts: [['ex', '예시 문구 그대로', '디자인에 들어 있는 문구를 써요'], ['self', '직접 쓰기', '아래에 바로 적어요', 1], ['no', '넣지 않기', '인사말 칸을 빼요']] },
     { k: 'account', blk: 'account', q: '축의금 계좌를 넣을까요?', sub: '하객이 눌러서 계좌번호를 복사할 수 있어요.',
@@ -14043,7 +14047,8 @@ function spRenderAsk(pane) {
     pane.querySelector('#spSkip').addEventListener('click', () => go(spStep + 1));
     const body = pane.querySelector('#spBody');
     if (!st.opts) {
-        st.fn(body); spCutPart(body, st); spBindIncl(body);
+        spHeroPart = st.k === 'hero' ? st.part || '' : ''; try { st.fn(body); } finally { spHeroPart = ''; }
+        if (st.k === 'names') spCutPart(body, st); spBindIncl(body);
         const h = body.querySelector('.wz-h'), l = body.querySelector('.wz-lead');
         if (h) h.textContent = st.q; if (l) l.textContent = st.sub;
     } else {
@@ -14420,7 +14425,9 @@ function spForceFull(blk) {
     try { if (isV) { if (!InviteBlocks.heroTextOn(f, 'video')) { setVideoTextOver(blk, true); ch = true; } } else if (f.heroImage && !InviteBlocks.heroTextOn(f, 'hero')) { setHeroTextOver(blk, true); ch = true; } } catch (e) {}
     return ch;
 }
+let spHeroPart = ''; // 질문에 답하기에서 첫 화면을 두 질문으로: 'media' = 사진·영상 고르기 / 'look' = 글자 모양 꾸미기 (목록 화면은 '' = 한 칸에 다)
 function spHero(box) {
+    const part = spHeroPart;
     { const b0 = spHeroCur().b; if (spForceFull(b0)) { try { renderPreview(); } catch (e) {} } }
     if (spHeroPhase === 'scroll' && spHeroScrollOk()) return spHeroScroll(box);
     spHeroPhase = 'pick';
@@ -14435,7 +14442,7 @@ function spHero(box) {
     if (kind === 'photo' && hp) {
         const f = hp.fields;
         html += `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 1}</span>대표 사진</span></div>
-            <div class="sp-hero">${f.heroImage ? `<img src="${esc(InviteBlocks.imgUrl(f.heroImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" data-sp-up="hero">${f.heroImage ? '사진 바꾸기' : '사진 올리기'}</button></div></div>
+            <div class="sp-hero">${f.heroImage ? `<img src="${esc(InviteBlocks.imgUrl(f.heroImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" data-sp-up="hero">${spIsReal(f.heroImage) ? '사진 바꾸기' : '사진 올리기'}</button></div></div>
             ${f.heroImage && HO('crop') ? `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 2}</span>보일 부분 · 확대</span><small>사진을 끌어서 옮겨요</small></div><div id="spCropBox"></div></div>` : ''}
             ${HO('shade') && InviteBlocks.heroTextOn(f, 'hero') ? `<div class="sp-shade" data-blk="hero">${shadeFieldHtml(f, 'hero')}</div>` : ''}`;
     } else if (hv) {
@@ -14449,6 +14456,12 @@ function spHero(box) {
     box.innerHTML = html;
     box.querySelector('#spToScroll')?.addEventListener('click', () => { spHeroPhase = 'scroll'; spRender(); setTimeout(spScrollToNextBtn, 80); });
     if (hb) spBindHeroLayout(box, hb);
+    if (part) { // 질문 하나에 필요한 칸만 남김
+        const fieldOf = sel => [...box.querySelectorAll(sel)].map(x => x.closest('.wz-field') || x);
+        const drop = part === 'media' ? ['.hl-row', '.hl-lines', '#spCropBox', '#spVfpBox', '.sp-shade', '#spToScroll', ':scope > .wz-hint'] : ['[data-sp-kind]', '.sp-hero', '#spYt'];
+        drop.forEach(sel => fieldOf(sel).forEach(x => x.remove()));
+        box.querySelectorAll('.sp-n').forEach(x => x.remove());
+    }
     const cropBox = box.querySelector('#spCropBox'); if (cropBox) spPhotoCrop(cropBox, hp);
     box.querySelectorAll('.sp-shade').forEach(sh => { const blk = spBlock(sh.dataset.blk); bindShadeField(sh, blk); sh.addEventListener('click', e => { if (e.target.closest('[data-shade], [data-shade-lv]')) setTimeout(() => spRender(), 0); }); });
     const vfpBox = box.querySelector('#spVfpBox'); if (vfpBox) { try { appendVideoFocusControls(vfpBox, hv); const lb = vfpBox.querySelector('[data-vfp-lb]'); if (lb) lb.textContent = '확대 (꽉 채우기)'; } catch (e) { console.warn(e); } }
@@ -14462,6 +14475,7 @@ function spHero(box) {
             up.disabled = true; up.textContent = '올리는 중…';
             const url = await uploadPhotoToServer(file);
             if (url) { hp.fields.heroImage = url; spForceFull(hp); }
+            if (url && part === 'media' && spViewNow() === 'quick') spStep++; // 사진을 고르면 바로 "첫 화면을 꾸며요"로
             spChanged(['hero']); scheduleSnapshot(); spRender();
         });
         input.click();
