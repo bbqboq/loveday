@@ -13,7 +13,10 @@
  *   start      : 새 청첩장을 만들 때 섹션 시작 상태 {"guestbook":"on", "lottery":"off", ...} - on = 처음부터 넣기(적용), off = 대기 중.
  *                안 적힌 섹션은 디자인마다 정해진 대로. 첫 화면(메인 영상·메인 사진)은 디자인이 정하므로 안 받음
  *   labels     : 관리자가 바꾼 섹션 이름 {"heroVideo":"메인 영상", ...} - 바꾼 것만 (안 적힌 섹션은 원래 이름). 고객 에디터·관리자 화면에 쓰임
- *   easy       : 손쉬운 제작(간편 만들기) 단계 {"steps":[{"id":"names","on":true}, ...]} - 관리자 → 섹션 설정 → "손쉬운 제작" 탭.
+ *   easy       : 손쉬운 제작(간편 만들기) - 관리자 → 섹션 설정 → "손쉬운 제작" 탭.
+ *                steps  : 목록 화면 메뉴 [{"id":"names","on":true,"g":"must"}, ...] (on = 목록에 보임, g = 묶음, 순서 = 묶음 안 순서·섹션 순서)
+ *                ask    : 처음 만들 때 질문 [{"id":"names:name","on":true}, ...] (순서 = 묻는 순서)
+ *                off    : 끈 세부 옵션 {step: [key]} · showOff: 디자인에서 꺼 둔 섹션도 목록에 보이기
  *                단계 순서와 켜기/끄기. names(두 사람)는 늘 켜짐, finish(마무리)는 늘 맨 끝. 정한 적 없으면 기본 순서·모두 켜짐
  *   prefs      : 세부 모양 {heroPicker: old|A~E, videoPicker: old|A~E, photoField: old|P1~P4, guideStyle: old|G1~G8, overToggle: old|T1|T2|T3|T4|T7|T8, nextPicker: old|N5|N6, toggleChip: old|K1~K5, feAnim: old|none|F1~F8, jumpFix: old|S1|S2|S3|S4|S6, menuStyle: old|M1~M6, menuStylePc: old|M1~M6, sheetStyle: old|S1~S10, setStyle: old|D1~D8|A3|A7|A8, setInner: old|B4|B5, s10Add: old|C4|C5|C6}
  *
@@ -192,9 +195,13 @@ function section_defaults_panel_style(): string
 const SECTION_EASY_STEPS = [
     'names' => '두 사람', 'hero' => '메인 화면', 'theme' => '색·글꼴', 'gallery' => '갤러리', 'venue' => '예식장', 'transport' => '교통 안내',
     'greet' => '인사말', 'family' => '혼주·연락처', 'account' => '마음 전할 곳', 'dday' => '디데이·달력', 'notice' => '안내 말씀',
-    'rsvp' => '참석 여부', 'guestbook' => '방명록', 'video' => '영상', 'music' => '배경음악', 'finish' => '마무리',
+    'rsvp' => '참석 여부', 'guestbook' => '방명록', 'video' => '영상', 'music' => '배경음악', 'finish' => '인트로',
 ];
-/** 단계 정리: 아는 id만, 중복 없이, 빠진 단계는 뒤에(켜짐), names 늘 켜짐, finish 늘 맨 끝 */
+/** 목록 화면(다 만든 뒤 고치는 화면)의 묶음: must 꼭 필요한 것 · more 채우면 좋은 것 · deco 꾸미기 */
+const SECTION_EASY_GROUPS = ['must' => '꼭 필요한 것', 'more' => '채우면 좋은 것', 'deco' => '꾸미기'];
+const SECTION_EASY_GROUP_OF = ['names' => 'must', 'hero' => 'must', 'venue' => 'must', 'theme' => 'deco', 'dday' => 'deco', 'video' => 'deco', 'music' => 'deco', 'finish' => 'deco'];
+function section_easy_group_default(string $id): string { return SECTION_EASY_GROUP_OF[$id] ?? 'more'; }
+/** 단계(= 목록 화면 메뉴) 정리: 아는 id만, 중복 없이, 빠진 단계는 뒤에(켜짐), names 늘 켜짐, finish 늘 맨 끝(꾸미기). g = 묶음 */
 function section_easy_clean($in): array
 {
     $out = []; $seen = [];
@@ -202,7 +209,8 @@ function section_easy_clean($in): array
         $id = is_array($st) ? (string) ($st['id'] ?? '') : '';
         if (!isset(SECTION_EASY_STEPS[$id]) || isset($seen[$id]) || $id === 'finish') continue;
         $seen[$id] = 1;
-        $out[] = ['id' => $id, 'on' => $id === 'names' ? true : !empty($st['on'])];
+        $g = (string) ($st['g'] ?? '');
+        $out[] = ['id' => $id, 'on' => $id === 'names' ? true : !empty($st['on']), 'g' => isset(SECTION_EASY_GROUPS[$g]) ? $g : section_easy_group_default($id)];
     }
     // 빠진 단계(새로 생긴 단계 등)는 기본 순서에서 바로 앞 단계 뒤에 켜진 채로 끼워 넣음
     $all = array_keys(SECTION_EASY_STEPS);
@@ -210,18 +218,50 @@ function section_easy_clean($in): array
         if (isset($seen[$id]) || $id === 'finish') continue;
         $at = -1;
         for ($k = $i - 1; $k >= 0 && $at < 0; $k--) foreach ($out as $j => $st) if ($st['id'] === $all[$k]) { $at = $j; break; }
+        array_splice($out, $at + 1, 0, [['id' => $id, 'on' => true, 'g' => section_easy_group_default($id)]]);
+        $seen[$id] = 1;
+    }
+    $out[] = ['id' => 'finish', 'on' => true, 'g' => 'deco'];
+    return $out;
+}
+/** 처음 만들 때 질문 (에디터 SP_ASK와 같은 id: 단계 또는 단계:부분) - [질문, 단계, 디자인에 있어야 하는 섹션, 설명, 고르는 답] */
+const SECTION_EASY_ASK = [
+    'names:name' => ['두 분의 이름을 알려 주세요', 'names', '', '청첩장 맨 앞과 문자로 보낼 때 미리보기에 들어가요.', []],
+    'names:date' => ['예식은 언제인가요?', 'names', '', '디데이와 달력이 저절로 만들어져요.', []],
+    'venue' => ['어디에서 하나요?', 'venue', 'location', '예식장을 찾아 고르면 지도와 길찾기 버튼이 들어가요.', []],
+    'hero:media' => ['첫 화면에 쓸 사진을 골라 주세요', 'hero', '', '청첩장을 열면 휴대폰 화면 가득 가장 먼저 보여요.', []],
+    'hero:look' => ['첫 화면을 꾸며요', 'hero', '', '사진 위에 올릴 글자 모양을 골라요.', []],
+    'greet' => ['인사말은 어떻게 할까요?', 'greet', 'greeting', '청첩장을 열면 처음 읽게 되는 짧은 글이에요.', ['예시 문구 그대로', '직접 쓰기', '넣지 않기']],
+    'account' => ['축의금 계좌를 넣을까요?', 'account', 'account', '하객이 눌러서 계좌번호를 복사할 수 있어요.', ['넣을게요', '넣지 않을게요']],
+    'rsvp' => ['참석 여부를 받을까요?', 'rsvp', 'rsvp', '식사 인원을 미리 알 수 있어요.', ['받을게요', '안 받을게요']],
+    'music' => ['배경음악을 넣을까요?', 'music', '', '청첩장을 열면 잔잔하게 흘러요.', ['넣을게요', '나중에 할게요']],
+];
+/** 질문 정리 [{id,on}] - 아는 id만, 빠진 질문은 기본 순서에서 앞 질문 뒤에(켜짐), 이름 질문은 늘 켜짐 */
+function section_easy_ask_clean($in): array
+{
+    $out = []; $seen = [];
+    foreach ((is_array($in) ? $in : []) as $q) {
+        $id = is_array($q) ? (string) ($q['id'] ?? '') : '';
+        if (!isset(SECTION_EASY_ASK[$id]) || isset($seen[$id])) continue;
+        $seen[$id] = 1;
+        $out[] = ['id' => $id, 'on' => $id === 'names:name' ? true : !empty($q['on'])];
+    }
+    $all = array_keys(SECTION_EASY_ASK);
+    foreach ($all as $i => $id) {
+        if (isset($seen[$id])) continue;
+        $at = -1;
+        for ($k = $i - 1; $k >= 0 && $at < 0; $k--) foreach ($out as $j => $q) if ($q['id'] === $all[$k]) { $at = $j; break; }
         array_splice($out, $at + 1, 0, [['id' => $id, 'on' => true]]);
         $seen[$id] = 1;
     }
-    $out[] = ['id' => 'finish', 'on' => true];
     return $out;
 }
 function section_easy_default(): array { return section_easy_clean([]); }
 /** 단계마다 켜고 끌 수 있는 세부 옵션 (관리자 → 손쉬운 제작 → 단계를 누르면 폴더처럼 펼쳐짐). 끈 옵션은 고객 간편 만들기에서 안 보임 */
 const SECTION_EASY_OPTS = [
     // flow = 단계가 아니라 간편 만들기 전체에 걸친 기능 (관리자 손쉬운 제작 탭 맨 위 칸)
-    'flow' => ['ask' => '처음 만들 때 질문에 답하기', 'askGreet' => '질문: 인사말은 어떻게 할까요?', 'askAccount' => '질문: 축의금 계좌를 넣을까요?', 'askRsvp' => '질문: 참석 여부를 받을까요?', 'askMusic' => '질문: 배경음악을 넣을까요?',
-               'skip' => '질문 [나중에 할게요]', 'now' => '지금 청첩장 카드', 'summary' => '다 답한 뒤 정리 화면', 'order' => '목록: 섹션 순서 바꾸기'],
+    // (질문 하나하나 켜고 끄기·순서는 SECTION_EASY_ASK - 관리자 탭 "처음 만들 때 질문" 칸)
+    'flow' => ['ask' => '처음 만들 때 질문에 답하기', 'skip' => '질문 [나중에 할게요]', 'now' => '지금 청첩장 카드', 'summary' => '다 답한 뒤 정리 화면', 'order' => '목록: 섹션 순서 바꾸기'],
     'names' => ['time' => '예식 시간', 'tbd' => '아직 일정을 잡지 않았어요'],
     'hero' => ['layout' => '레이아웃 고르기', 'lines' => '글자 바꾸기 · 효과', 'kind' => '사진 / 유튜브 고르기', 'crop' => '보일 부분 · 확대', 'shade' => '글자 잘 보이게 (그라데이션)',
                'scroll' => '↓ 스크롤 버튼', 'scrollSize' => '스크롤 버튼 크기', 'scrollCustom' => '스크롤 버튼 직접 꾸미기', 'scrollMotion' => '스크롤 버튼 움직임', 'scrollFx' => '스크롤 버튼 등장 효과', 'scrollOpacity' => '스크롤 버튼 진하기'],
@@ -268,6 +308,29 @@ function section_defaults_easy_saved(): ?array
     return section_easy_clean($j['easy']['steps']);
 }
 function section_defaults_easy(): array { return section_defaults_easy_saved() ?? section_easy_default(); }
+/** 처음 만들 때 질문 순서·켜기. 저장한 적 없으면 기본 순서 (예전 '간편 만들기 전체'의 질문 끄기 askGreet 등은 여기로 옮겨 읽음) */
+function section_defaults_easy_ask_saved(): ?array
+{
+    $f = section_defaults_file();
+    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return null;
+    $j = json_decode((string) file_get_contents($f), true);
+    if (!is_array($j)) return null;
+    if (is_array($j['easy']['ask'] ?? null)) return section_easy_ask_clean($j['easy']['ask']);
+    $old = is_array($j['easy']['off']['flow'] ?? null) ? $j['easy']['off']['flow'] : [];
+    $map = ['askGreet' => 'greet', 'askAccount' => 'account', 'askRsvp' => 'rsvp', 'askMusic' => 'music'];
+    $offIds = []; foreach ($map as $k => $id) if (in_array($k, $old, true)) $offIds[] = $id;
+    if (!$offIds) return null;
+    return array_map(fn($q) => ['id' => $q['id'], 'on' => $q['on'] && !in_array($q['id'], $offIds, true)], section_easy_ask_clean([]));
+}
+function section_defaults_easy_ask(): array { return section_defaults_easy_ask_saved() ?? section_easy_ask_clean([]); }
+/** 목록 화면에 디자인에서 꺼 둔 섹션도 보일지 (기본: 안 보임) */
+function section_defaults_easy_show_off(): bool
+{
+    $f = section_defaults_file();
+    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return false;
+    $j = json_decode((string) file_get_contents($f), true);
+    return is_array($j) && !empty($j['easy']['showOff']);
+}
 
 /** 저장된 순서 (없거나 깨졌으면 빈 배열) */
 function section_defaults_get(): array
@@ -293,8 +356,12 @@ function section_defaults_hidden(): array
 }
 
 /** 순서·비노출·편집창 모양 저장 (전부 기본값이면 파일 삭제 = 디자인 기본 순서로). null로 넘긴 값은 저장된 값 유지 */
-function section_defaults_save(array $order, ?array $hidden = null, ?string $panel = null, ?array $prefs = null, ?array $groups = null, ?array $labels = null, ?array $start = null, ?array $easy = null, ?array $easyOff = null): bool
+function section_defaults_save(array $order, ?array $hidden = null, ?string $panel = null, ?array $prefs = null, ?array $groups = null, ?array $labels = null, ?array $start = null, ?array $easy = null, ?array $easyOff = null, ?array $easyMore = null): bool
 {
+    // $easyMore: null = 저장된 값 그대로, [] = 기본으로, ['ask' => [...], 'showOff' => bool] = 새로 저장
+    $easyAsk = $easyMore === null ? section_defaults_easy_ask_saved() : (isset($easyMore['ask']) ? section_easy_ask_clean($easyMore['ask']) : null);
+    if ($easyAsk === section_easy_ask_clean([])) $easyAsk = null;
+    $easyShowOff = $easyMore === null ? section_defaults_easy_show_off() : !empty($easyMore['showOff']);
     // $easyOff: null = 저장된 값 그대로, [] = 모두 켬, {step:[key]} = 새로 저장
     $easyOff = $easyOff === null ? section_defaults_easy_off() : section_easy_off_clean($easyOff);
     // $easy: null = 저장된 단계 그대로, [] = 기본으로, [[id,on], ...] = 새로 저장 (기본과 같으면 안 적음)
@@ -316,7 +383,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     $hid = [];
     foreach ($hidden as $id) if (is_string($id) && preg_match(SECTION_ID_RE, $id) && !in_array($id, $hid, true)) $hid[] = $id;
     $f = section_defaults_file();
-    if (!$clean && !$hid && !$groups && !$labels && !$start && !$easy && !$easyOff && $panel === SECTION_PANEL_DEFAULT && $prefs === SECTION_PREF_DEFAULTS) return !is_file($f) || @unlink($f);
+    if (!$clean && !$hid && !$groups && !$labels && !$start && !$easy && !$easyOff && !$easyAsk && !$easyShowOff && $panel === SECTION_PANEL_DEFAULT && $prefs === SECTION_PREF_DEFAULTS) return !is_file($f) || @unlink($f);
     $dir = dirname($f);
     if (!is_dir($dir) && !@mkdir($dir, 0755, true)) return false;
     $tmp = $f . '.' . bin2hex(random_bytes(4)) . '.tmp';
@@ -324,7 +391,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if ($groups) { $data['groups'] = $groups['groups']; $data['groupEtc'] = $groups['etc']; }
     if ($labels) $data['labels'] = $labels;
     if ($start) $data['start'] = $start;
-    if ($easy || $easyOff) $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []);
+    if ($easy || $easyOff || $easyAsk || $easyShowOff) $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []);
     $data['updated_at'] = date('c');
     $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     if (@file_put_contents($tmp, $json, LOCK_EX) === false) return false;
@@ -337,5 +404,5 @@ if (realpath((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
     header('Cache-Control: no-store');
     header('X-Content-Type-Options: nosniff');
     $grp = section_defaults_groups();
-    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass()]], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off()]], JSON_UNESCAPED_UNICODE);
 }

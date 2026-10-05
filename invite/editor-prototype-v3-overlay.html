@@ -420,15 +420,12 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .preset-card.pc-base { border-style: dashed; }
 /* ===== 간편 만들기 (simple-mode): 왼쪽 = 간편 칸, 오른쪽 = 실제 미리보기 ===== */
 .simple-pane { display: none; }
-/* 간편 만들기: 아래 버튼 줄은 [저장 | 미리보기] 두 칸 (원래 미리보기·임시저장·발행하기 줄은 숨김) */
-.sp-ebar, .sp-pvbar { display: none; }
+/* 간편 만들기: 원래 미리보기·임시저장·발행하기 줄은 숨김 (저장은 목록·정리 화면의 [완성본 보기]가 함께 함) */
+.sp-pvbar { display: none; }
 .simple-mode .action-bar { display: none !important; }
-.simple-mode .sp-ebar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 700; height: 56px; box-shadow: 0 -6px 18px rgba(0,0,0,.06); }
-.sp-ebar button { flex: 1; border: 0; font: inherit; font-size: 15px; font-weight: 700; letter-spacing: .02em; cursor: pointer; }
-.sp-ebar-save { background: #44403C; color: #fff; } .sp-ebar-save:hover { background: #2E2A27; } .sp-ebar-save:disabled { opacity: .7; cursor: default; }
-.sp-ebar-pv { background: var(--ui-pointsoft, #F6EEEC); color: var(--ui-pointink, #7C4650); } .sp-ebar-pv:hover { background: var(--ui-pointsoft, #F0E3E0); filter: brightness(.97); }
+.simple-mode body { padding-bottom: 0; } /* (아래 버튼 줄 자리 비우기 - 간편 만들기엔 그 줄이 없음) */
+@media (min-width: 861px) { .simple-mode #screenEditor .layout { height: calc(100vh - var(--sp-top-h, 62px)); } }
 /* 미리보기 화면: 청첩장만 화면 가득 + 아래 띠 (안내 · 돌아가기) */
-.simple-mode.sp-pv .sp-ebar { display: none; }
 .simple-mode.sp-pv .preview-pane { display: flex !important; position: fixed; inset: 0 0 56px; z-index: 750; background: var(--ui-soft, #EDE9E3); }
 .simple-mode.sp-pv .sp-pvbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 760; height: 56px; align-items: center; justify-content: space-between; gap: 10px; padding-left: 18px; background: rgba(62,58,55,.96); color: #fff; font-size: 13px; font-weight: 600; }
 .sp-pvbar span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -438,6 +435,15 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .simple-mode.sp-pv #previewRoot .section-ruler, .simple-mode.sp-pv #previewRoot .hb-area, .simple-mode.sp-pv #previewRoot .hb-handle, .simple-mode.sp-pv #previewRoot .hb-ok, .simple-mode.sp-pv #previewRoot .hh-group, .simple-mode.sp-pv.sp-pv body:not(.sp-x) #undoTab { display: none !important; }
 .simple-mode.sp-pv #previewRoot .col.sp-live { pointer-events: none; }
 .simple-mode.sp-pv #previewRoot .col.selected { outline: none !important; box-shadow: none !important; }
+/* 완성본 보기 = 하객이 보는 실제 화면 (invite_view.php?preview_t, 전문가 모드 [미리보기]와 같은 페이지) - 고칠 수 없고 음악도 나옴 */
+.sp-pvreal { display: none; }
+.simple-mode.sp-pv.sp-pv-real .preview-pane { display: none !important; }
+.simple-mode.sp-pv.sp-pv-real .sp-pvreal { display: flex; position: fixed; inset: 0 0 56px; z-index: 750; justify-content: center; background: var(--ui-soft, #EDE9E3); }
+.sp-pvreal iframe { width: 100%; height: 100%; border: 0; background: #fff; }
+.sp-pvreal .sp-pvload { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; color: #8A847C; pointer-events: none; }
+@media (min-width: 861px) { .sp-pvreal iframe { width: 430px; max-width: 100%; box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 12px 40px rgba(0,0,0,.12); } }
+/* (실제 화면을 못 띄울 때 - 샘플 편집 등 - 에디터 미리보기는 통째로 보기만) */
+.simple-mode.sp-pv #previewRoot, .simple-mode.sp-pv #previewRoot * { pointer-events: none !important; }
 @media (max-width: 860px) { .sp-pvbar { font-size: 12px; padding-left: 14px; } .sp-pvbar span:first-child { white-space: normal; line-height: 1.35; } .sp-pvbar button { padding: 0 16px; font-size: 14px; } }
 .simple-mode .simple-pane { --wz-ink: #1B1A18; --wz-sub: #6F6A63; --wz-mute: #A39D95; --wz-line: var(--ui-line, #EAE6E0); --wz-line2: var(--ui-line, #DED8CF); --wz-soft: var(--ui-soft, #F1EDE7); --wz-card: #fff; --wz-acc: #8A4B55; --wz-acc-soft: #F5EDEC; --wz-sun: #B5545F;
     display: flex; flex-direction: column; width: 440px; flex: none; background: var(--ui-page, #F6F4F1); border-right: 1px solid var(--line); overflow-y: auto; color: var(--wz-ink); }
@@ -782,10 +788,10 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-done { display: flex; gap: 8px; margin: 18px 0 10px; } .sp-done .wz-next { height: 52px; }
 .tb-to-simple { margin-left: 4px; }
 @media (max-width: 860px) {
-    .simple-mode .simple-pane { width: 100%; border-right: 0; min-height: calc(100vh - 120px); }
+    .simple-mode .simple-pane { width: 100%; border-right: 0; min-height: calc(100vh - 50px); min-height: calc(100dvh - 50px); }
     .simple-mode .preview-pane { display: none; }
-    .sp-head { padding: 14px 16px 10px; } .sp-steps { padding: 0 12px 6px; } .sp-body { padding: 14px 16px 40px; } .sp-nav { padding: 10px 16px 14px; bottom: 60px; }
-    .simple-mode .simple-pane { overflow: visible; } /* 휴대폰은 화면 전체가 스크롤 - 왼쪽 칸이 스크롤 상자면 아래 [이전·다음]이 붙어 있지 못하고 아래 버튼 줄에 가려졌음 */
+    .sp-head { padding: 14px 16px 10px; } .sp-steps { padding: 0 12px 6px; } .sp-body { padding: 14px 16px 40px; } .sp-nav { padding: 10px 16px 14px; bottom: 0; }
+    .simple-mode .simple-pane { overflow: visible; } /* 휴대폰은 화면 전체가 스크롤 - 왼쪽 칸이 스크롤 상자면 아래 [이전·다음]이 붙어 있지 못함 */
     .sp-row { grid-template-columns: 56px 1fr 1fr; }
 }
 
@@ -4504,7 +4510,7 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
     <button type="button" class="pill" id="saveDraftBtn">임시저장</button>
     <button type="button" class="pill-primary" id="publishBtn">발행하기</button>
 </div>
-<div class="sp-ebar" id="spFoot"><button type="button" class="sp-ebar-save" id="spFootSave">저장</button><button type="button" class="sp-ebar-pv" id="spFootPv">미리보기</button></div><!-- 간편 만들기 아래 버튼 줄 -->
+<div class="sp-pvreal" id="spPvReal"></div>
 <div class="sp-pvbar" id="spPvBar"><span id="spPvMsg">미리보기 입니다. 제작 후 꼭 저장해주세요.</span><span class="sp-pvbar-b"><button type="button" id="spPvPub" hidden>발행하기</button><button type="button" id="spPvBack">돌아가기</button></span></div>
 <div class="width-fab-row" id="widthFabRow">
     <button type="button" id="mWidthNormal" class="width-fab-btn active" title="표준 화면(실제 기기 폭)">표준</button>
@@ -4920,6 +4926,8 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.start && typeof j.start === 'object') Object.keys(j.start).forEach(id => { if (j.start[id] === 'on' || j.start[id] === 'off') SECTION_START[id] = j.start[id]; }); // 새 청첩장 섹션 시작 상태
     if (j && j.prefs && typeof j.prefs === 'object') setUipPrefs(j.prefs); // 사진 칸·위치·사용법 버튼 모양
     if (j && j.easy && j.easy.off && typeof j.easy.off === 'object') EASY_OFF = j.easy.off;
+    if (j && j.easy && Array.isArray(j.easy.ask)) EASY_ASK = j.easy.ask; // 처음 만들 때 질문 순서·켜기
+    if (j && j.easy) EASY_SHOWOFF = !!j.easy.showOff; // 목록에 디자인에서 꺼 둔 섹션도 보이기
     if (j && j.easy && Array.isArray(j.easy.steps)) { EASY_STEPS = j.easy.steps; try { if (document.documentElement.classList.contains('simple-mode')) { if (spApplyEasyOrder()) renderPreview(); spRender(); } } catch (e) {} } // 손쉬운 제작 단계
     // 편집창 모양 (관리자 → 섹션 순서 → 편집창 모양). 주소에 ?panel= 이 있으면 그게 우선
     if (j && typeof j.panelStyle === 'string' && !PZ_URL) {
@@ -13272,7 +13280,7 @@ function showScreen(name) {
     document.documentElement.classList.remove('ld-boot'); // 불러오기가 끝나 보여줄 화면이 정해짐
     document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
-    if (name !== 'editor') document.documentElement.classList.remove('simple-mode', 'sp-pv'); // 간편 화면은 에디터 화면 안에서만
+    if (name !== 'editor') document.documentElement.classList.remove('simple-mode', 'sp-pv', 'sp-pv-real'); // 간편 화면은 에디터 화면 안에서만
     else if (typeof syncSimpleBtn === 'function') { if (state.mode === 'simple') document.documentElement.classList.add('simple-mode'); syncSimpleBtn(); }
 }
 
@@ -13521,6 +13529,7 @@ async function startWithPreset(presetId) {
     if (startTrack === 'simple') { // 간편 만들기: 기본 정보 단계 없이 바로 칸 채우기 화면 (이름·날짜부터)
         applyWizardDataToBlocks(); // 주문 때 받은 이름·장소가 있으면 미리 채움
         { const lay = InviteBlocks.HERO_LAYOUTS.find(l => l.id === 'magazine'); ['hero', 'heroVideo'].forEach(id => { const b = state.blocks.find(x => x.id === id); if (b && lay) { InviteBlocks.applyHeroLayout(b, lay); spForceFull(b); } }); } // 처음 만들 때 첫 화면은 매거진 표지
+        spMarkDesignOff();
         state.spView = spOpt('flow', 'ask') ? 'quick' : 'list'; state.spAsk = {}; // 질문에 하나씩 답하기 → 정리 화면 → 완성본 → 목록 화면 (관리자가 질문을 끄면 바로 목록)
         spRenderAll();
         onboardingActive = false;
@@ -13590,28 +13599,48 @@ document.getElementById('tbToSimple').addEventListener('click', fullToSimple);
     });
     rz.addEventListener('dblclick', () => { set(0); try { localStorage.removeItem('ldPaneW'); } catch (x) {} window.dispatchEvent(new Event('resize')); });
 })();
-// 간편 만들기 아래 버튼 줄 [저장 | 미리보기] + 미리보기 화면 (아래 띠: 안내 + [돌아가기], 마무리에서 저장하면 [발행하기]도)
-let spPvMode = null;
-function spOpenPreview(final) { // final: true = 완성본(발행하기) / 'quick' = 빠른 시작 끝 (닫으면 옵션 창) / 그 외 = 그냥 미리보기
-    stopBgmPreview(); // 곡 미리 듣기는 멈춤 (미리보기에서는 오른쪽 위 음악 버튼으로 들어요)
+// 간편 만들기 미리보기 화면 (아래 띠: 안내 + [돌아가기], 완성본이면 [발행하기]도)
+//  편집 토큰이 있으면 저장한 뒤 하객이 보는 실제 화면(invite_view.php?preview_t - 전문가 모드 [미리보기]와 같은 페이지)을 띄움
+//  → 아무것도 고칠 수 없고, 배경음악을 켰으면 음악도 나옴. 토큰이 없을 때(샘플 편집)만 에디터 미리보기를 보기 전용으로
+let spPvMode = null, spPvSeq = 0;
+async function spOpenPreview(final, saved) { // final: true = 완성본(발행하기) / 'quick' = 질문 끝 (닫으면 목록) / 그 외 = 그냥 미리보기 · saved: 방금 저장했음
+    stopAllBgm(); // 곡 미리 듣기·에디터 음악은 멈춤 (실제 화면의 음악이 나옴)
     spPvMode = final;
     const quick = final === 'quick'; final = final === true;
-    document.documentElement.classList.add('sp-pv');
-    document.getElementById('spPvMsg').textContent = final ? '완성본이에요! 저장해 뒀어요. 발행하면 주소가 생겨요.' : quick ? '이렇게 만들어졌어요! 닫으면 나머지를 하나씩 고칠 수 있어요.' : '미리보기 입니다. 제작 후 꼭 저장해주세요.';
+    const root = document.documentElement, seq = ++spPvSeq;
+    root.classList.add('sp-pv');
+    document.getElementById('spPvMsg').textContent = final ? '완성본이에요! 저장해 뒀어요. 발행하면 주소가 생겨요.' : quick ? '이렇게 만들어졌어요! 닫으면 나머지를 하나씩 고칠 수 있어요.' : '하객에게 이렇게 보여요. 저장해 뒀어요.';
     document.getElementById('spPvPub').hidden = !final;
     document.getElementById('spPvBack').textContent = final ? '수정하기' : quick ? '닫기' : '돌아가기';
-    try { renderPreview(); } catch (e) {}
-    const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0;
+    const box = document.getElementById('spPvReal');
+    const real = !!EDIT_TOKEN && !SAMPLE_ID;
+    root.classList.toggle('sp-pv-real', real);
+    if (!real) { try { renderPreview(); } catch (e) {} const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0; return; }
+    box.innerHTML = '<div class="sp-pvload">불러오는 중…</div>';
+    const ok = saved || await saveToServer(false, true);
+    if (seq !== spPvSeq || !root.classList.contains('sp-pv')) return; // 그새 닫았음
+    if (!ok) { box.innerHTML = '<div class="sp-pvload">저장하지 못했어요. 닫고 잠시 뒤 다시 눌러 주세요.</div>'; return; }
+    const fr = document.createElement('iframe');
+    fr.title = '완성본 미리보기'; fr.setAttribute('allow', 'autoplay; fullscreen; clipboard-write; web-share');
+    fr.src = `invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}&_=${Date.now()}`;
+    fr.addEventListener('load', () => { // 배경음악을 켰으면 바로 틀기 (실제 화면의 음악 버튼과 같은 음악)
+        const box2 = box.querySelector('.sp-pvload'); if (box2) box2.remove();
+        const g = state.bgm || {}; if (!(g.enabled && g.url)) return;
+        let n = 0; const t = setInterval(() => {
+            let a = null; try { a = fr.contentWindow && fr.contentWindow.__ibBgmAudio; } catch (e) { clearInterval(t); return; }
+            if (a) { clearInterval(t); if (a.paused) a.play().catch(() => {}); } else if (++n > 40 || !fr.isConnected) clearInterval(t);
+        }, 150);
+    });
+    box.appendChild(fr);
 }
-function spClosePreview() { stopAllBgm(); document.documentElement.classList.remove('sp-pv'); try { renderPreview(); } catch (e) {} if (spPvMode === 'quick') { spPvMode = null; spRender(); window.scrollTo(0, 0); } }
-document.getElementById('spFootPv').addEventListener('click', () => spOpenPreview(false));
+function spClosePreview() {
+    spPvSeq++; stopAllBgm();
+    const box = document.getElementById('spPvReal'); if (box) box.innerHTML = ''; // 실제 화면을 지우면 그 음악도 멈춤
+    document.documentElement.classList.remove('sp-pv', 'sp-pv-real'); try { renderPreview(); } catch (e) {}
+    if (spPvMode === 'quick') { spPvMode = null; spRender(); window.scrollTo(0, 0); }
+}
 document.getElementById('spPvBack').addEventListener('click', spClosePreview);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('sp-pv')) spClosePreview(); });
-document.getElementById('spFootSave').addEventListener('click', async e => {
-    const b = e.currentTarget; if (b.disabled) return;
-    b.disabled = true; b.textContent = '저장 중…';
-    try { await saveToServer(false); } finally { b.disabled = false; b.textContent = '저장'; }
-});
 document.getElementById('spPvPub').addEventListener('click', async e => {
     const b = e.currentTarget; if (b.disabled) return;
     b.disabled = true; b.textContent = '발행 중…';
@@ -13952,7 +13981,7 @@ let spStep = 0, spAccCache = {};
 const spBlock = id => state.blocks.find(b => b.id === id);
 const spOn = id => { const b = spBlock(id); return !!(b && b.enabled && !SECTION_HIDDEN.has(id)); };
 // 손쉬운 제작 단계 - 관리자 → 섹션 설정 → "손쉬운 제작" 탭에서 켜기/끄기·순서를 정함 (section_defaults.php easy). 정한 적 없으면 아래 순서·모두 켜짐
-let EASY_STEPS = null, EASY_OFF = {}; // EASY_OFF: 관리자가 끈 단계별 세부 옵션 {step: [key]}
+let EASY_STEPS = null, EASY_OFF = {}, EASY_ASK = null, EASY_SHOWOFF = false; // EASY_OFF: 관리자가 끈 단계별 세부 옵션 {step: [key]} · EASY_ASK: 질문 [{id,on}] · EASY_SHOWOFF: 디자인에서 꺼 둔 섹션도 목록에
 const spOpt = (step, key) => !((EASY_OFF && EASY_OFF[step]) || []).includes(key);
 const SP_DEFAULT_ORDER = ['names', 'hero', 'theme', 'gallery', 'venue', 'transport', 'greet', 'family', 'account', 'dday', 'notice', 'rsvp', 'guestbook', 'video', 'music', 'finish'];
 const spHas = id => !!spBlock(id) && !SECTION_HIDDEN.has(id); // 디자인에 그 섹션이 있음 (꺼져 있어도 단계에서 켤 수 있음)
@@ -13988,9 +14017,9 @@ function spEasyList() {
 function spSteps() {
     const list = spEasyList();
     const out = list.filter(x => x && SP_STEP_DEFS[x.id] && (x.on || x.id === 'names' || x.id === 'finish') && x.id !== 'finish')
-        .map(x => Object.assign({ k: x.id }, SP_STEP_DEFS[x.id])).filter(x => !x.show || x.show());
+        .map(x => Object.assign({ k: x.id, g: x.g }, SP_STEP_DEFS[x.id])).filter(x => !x.show || x.show());
     if (!out.some(x => x.k === 'names')) out.unshift(Object.assign({ k: 'names' }, SP_STEP_DEFS.names));
-    out.push(Object.assign({ k: 'finish' }, SP_STEP_DEFS.finish));
+    out.push(Object.assign({ k: 'finish', g: 'deco' }, SP_STEP_DEFS.finish));
     return out;
 }
 // 간편 만들기에서는 청첩장 섹션 순서도 관리자 "손쉬운 제작" 단계 순서대로 (단계를 넘길 때 미리보기가 위에서 아래로 차례로 내려가게)
@@ -14022,15 +14051,18 @@ function spBindIncl(box) {
 const spOffNote = t => `<p class="sp-off">${t || '이 섹션은 지금 꺼져 있어요. 위 스위치를 켜면 적을 칸이 나와요.'}</p>`;
 function spSetMode(on) {
     document.documentElement.classList.toggle('simple-mode', !!on);
-    if (!on) document.documentElement.classList.remove('sp-pv');
+    if (!on) { document.documentElement.classList.remove('sp-pv', 'sp-pv-real'); const bx = document.getElementById('spPvReal'); if (bx) bx.innerHTML = ''; }
 }
 // 간편 화면 열기 (새로 만들 때·저장된 간편 청첩장을 열 때·직접 만들기에서 돌아올 때)
 let spInPlace = false; // 위쪽 "정보" 버튼으로 연 간편 화면: 지금 디자인·배치 그대로 내용만 고침 (템플릿으로 되돌리지 않음)
+// 디자인에서 꺼 둔 섹션 (간편 만들기 목록에서 숨김 - 관리자 "손쉬운 제작 → 목록 화면"). 고객이 켜면 보이고, 목록에서 직접 끄면 계속 보임
+function spMarkDesignOff() { state.spDesignOff = state.blocks.filter(b => !b.enabled).map(b => b.id); }
 function openSimpleEditor(step, inPlace) {
     spInPlace = !!inPlace;
     { const pn = document.getElementById('simplePane'); if (pn) pn._spKey = null; }
     if (!spInPlace) state.mode = 'simple';
     spAccCache = {}; spCurSt = null;
+    if (!Array.isArray(state.spDesignOff)) spMarkDesignOff();
     spSetMode(true);
     spStep = step || 0;
     showScreen('editor');
@@ -14160,17 +14192,22 @@ const SP_ASK = [
     { k: 'music', q: '배경음악을 넣을까요?', sub: '청첩장을 열면 잔잔하게 흘러요.',
       opts: [['yes', '넣을게요', '아래에서 골라요', 1], ['no', '나중에 할게요', '']] }
 ];
-function spAskSteps() { // 관리자 "손쉬운 제작"에서 끈 단계·디자인에 없는 섹션은 묻지 않음
-    const on = new Set(spSteps().map(x => x.k));
-    const optOf = { greet: 'askGreet', account: 'askAccount', rsvp: 'askRsvp', music: 'askMusic' }; // 관리자 → 손쉬운 제작 → 간편 만들기 전체에서 끈 질문은 빼고
-    return SP_ASK.filter(a => on.has(a.k) && (!a.blk || spHas(a.blk)) && (!optOf[a.k] || spOpt('flow', optOf[a.k]))).map(a => Object.assign({}, SP_STEP_DEFS[a.k], a, { t: a.q }));
+const spAskId = a => a.k + (a.part ? ':' + a.part : ''); // 관리자 "처음 만들 때 질문" id (section_defaults.php SECTION_EASY_ASK)
+function spAskSteps() { // 관리자 "손쉬운 제작 → 처음 만들 때 질문"의 순서·켜기대로. 디자인에 없는 섹션은 묻지 않음
+    let list = SP_ASK;
+    if (Array.isArray(EASY_ASK) && EASY_ASK.length) {
+        const by = {}; SP_ASK.forEach(a => { by[spAskId(a)] = a; });
+        const seen = new Set(EASY_ASK.map(x => x && x.id));
+        list = EASY_ASK.filter(x => x && by[x.id] && (x.on || x.id === 'names:name')).map(x => by[x.id]).concat(SP_ASK.filter(a => !seen.has(spAskId(a)))); // (관리자 목록에 없는 새 질문은 뒤에)
+    }
+    return list.filter(a => { const d = SP_STEP_DEFS[a.k]; return d && (!d.show || d.show()) && (!a.blk || spHas(a.blk)); }).map(a => Object.assign({ k: a.k }, SP_STEP_DEFS[a.k], a, { t: a.q }));
 }
 function spAskDone() { spStep = spAskSteps().length; spRender(); } // 다 답함 → "거의 다 됐어요" 정리 화면
 function spAskFinish(btn) { // 정리 화면 [완성본 보기]: 저장 → 완성본(발행하기) → 닫으면 목록 화면
     state.spView = 'list'; spOpenSet = new Set(); scheduleSnapshot();
     if (btn) { btn.disabled = true; btn.textContent = '저장 중…'; }
-    const done = () => { spRender(); spOpenPreview(true); };
-    if (EDIT_TOKEN) saveToServer(false, true).then(ok => { if (ok) done(); else { state.spView = 'quick'; if (btn) { btn.disabled = false; btn.textContent = '완성본 보기'; } showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); } });
+    const done = saved => { spRender(); spOpenPreview(true, saved); };
+    if (EDIT_TOKEN) saveToServer(false, true).then(ok => { if (ok) done(true); else { state.spView = 'quick'; if (btn) { btn.disabled = false; btn.textContent = '완성본 보기'; } showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); } });
     else done();
 }
 // 질문 화면 위 "지금 청첩장" 카드 (첫 화면 작은 그림 + 이름 · 날짜 · 예식장 + 켠 섹션) - 누르면 미리보기
@@ -14323,7 +14360,9 @@ function spRenderList() {
         const stt = !on ? 'off' : ok ? 'done' : 'todo';
         return `<section class="spb-li ${stt}${open ? ' open' : ''}" data-li="${st.k}"><div class="spb-h"><button type="button" class="spb-t" data-li-tog="${st.k}" aria-expanded="${open}"><span class="spb-st spb-${stt}" aria-hidden="true"></span><span class="spb-tx"><b>${esc(st.k === 'finish' ? '인트로' : st.t)}</b><small>${esc(on ? sum : '꺼져 있어요 · 청첩장에 안 보여요')}</small></span><span class="spb-chev" aria-hidden="true"></span></button>${sw ? `<label class="sp-li-sw" title="${on ? '끄면 청첩장에서 빠져요' : '켜면 청첩장에 들어가요'}"><input type="checkbox" data-li-sw="${sw}" aria-label="${esc(st.t)} ${on ? '끄기' : '켜기'}" ${on ? 'checked' : ''}><i></i></label>` : ''}</div>${open ? `<div class="sp-li-b" data-li-body="${st.k}"></div>` : ''}</section>`; };
     const must = spMustList(), nDone = must.filter(m => m[1]).length, left = must.filter(m => !m[1]).map(m => m[0]);
-    const groups = SP_GROUPS.map(([g, t, sub]) => { const its = steps.filter(st => (SP_GROUP_OF[st.k] || 'more') === g); return its.length ? `<div class="spb-grp spb-${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${its.map(item).join('')}</div></div>` : ''; }).join('');
+    const offSet = new Set(Array.isArray(state.spDesignOff) ? state.spDesignOff : []);
+    const designOff = st => { if (EASY_SHOWOFF || ['names', 'hero', 'theme', 'music', 'finish'].includes(st.k)) return false; const ids = (st.s || []).filter(id => spHas(id)); return ids.length > 0 && ids.every(id => offSet.has(id) && !spBlock(id).enabled); }; // 디자인에서 꺼 둔 섹션 (관리자: 목록에 안 보이기)
+    const groups = SP_GROUPS.map(([g, t, sub]) => { const its = steps.filter(st => !designOff(st) && (st.g || SP_GROUP_OF[st.k] || 'more') === g); return its.length ? `<div class="spb-grp spb-${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${its.map(item).join('')}</div></div>` : ''; }).join('');
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 만들기</b></div>${spUdHtml()}</div>
         <div class="spb">
             <div class="spb-prog"><div><b>꼭 필요한 것</b><span>${nDone} / ${must.length}</span></div><div class="spb-dots">${must.map(m => `<i class="${m[1] ? 'on' : ''}"></i>`).join('')}</div><p>${left.length ? esc(left.join(' · ')) + (left.length === 1 ? '만 넣으면 보낼 수 있어요.' : '을(를) 넣으면 보낼 수 있어요.') : '꼭 필요한 건 다 채웠어요. 나머지는 원할 때만 채우면 돼요.'}</p></div>
@@ -14333,7 +14372,7 @@ function spRenderList() {
         <div class="sp-list-end"><button type="button" class="wz-next" id="spListDone">완성본 보기</button><p class="wz-hint">저장하고 다 된 모습을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.</p></div>`;
     spBindHeadTools(pane);
     pane.querySelector('#spOrderBtn')?.addEventListener('click', () => { stopAllBgm(); spOrderMode = true; spRender(); });
-    pane.querySelector('#spListDone').addEventListener('click', e => { const b = e.currentTarget; b.disabled = true; b.textContent = '저장 중…'; saveToServer(false, true).then(ok => { b.disabled = false; b.textContent = '완성본 보기'; if (ok) spOpenPreview(true); else showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }); });
+    pane.querySelector('#spListDone').addEventListener('click', e => { const b = e.currentTarget; b.disabled = true; b.textContent = '저장 중…'; saveToServer(false, true).then(ok => { b.disabled = false; b.textContent = '완성본 보기'; if (ok) spOpenPreview(true, true); else showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }); });
     pane.querySelectorAll('[data-li-tog]').forEach(b => b.addEventListener('click', () => {
         const k = b.dataset.liTog, st = steps.find(x => x.k === k), sw = st && swOf(st); stopAllBgm();
         if (sw && !spBlock(sw).enabled) { spBlock(sw).enabled = true; try { renderBlockList(); } catch (e) {} spChanged([sw]); scheduleSnapshot(); } // 꺼진 칸을 누르면 켜고 펼침
@@ -14344,6 +14383,7 @@ function spRenderList() {
     pane.querySelectorAll('[data-li-sw]').forEach(c => c.addEventListener('change', () => {
         const blk = spBlock(c.dataset.liSw); if (!blk) return;
         blk.enabled = c.checked; try { renderBlockList(); } catch (e) {}
+        if (Array.isArray(state.spDesignOff)) state.spDesignOff = state.spDesignOff.filter(id => id !== blk.id); // 직접 끈 칸은 목록에 남김
         const k = c.closest('[data-li]').dataset.li; spOpenSet = c.checked ? new Set([k]) : (spOpenSet.has(k) ? new Set() : spOpenSet);
         spChanged([blk.id]); scheduleSnapshot(); spRender();
     }));
@@ -14773,6 +14813,7 @@ async function spChangeDesign(id) {
     state.sampleId = id;
     delete state.simpleSnap; delete state.fullSnap;
     spPour(content);
+    spMarkDesignOff();
     spAccCache = {}; spDesignOpen = false;
     spApplyEasyOrder();
     spRenderAll();
