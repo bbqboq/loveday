@@ -460,6 +460,9 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 /* 단, 지금 단계 섹션의 높이(위·아래 여백 눈금자)와 마음 전하실 곳 계좌 줄 옮기기는 간편 만들기에서도 됨 (spLiveSync) */
 .simple-mode #previewRoot .section-ruler, .simple-mode #previewRoot .col.sp-live { pointer-events: auto; }
 .simple-mode #previewRoot .col.sp-flash { animation: spFlash 1.4s ease; }
+#previewRoot.sp-pop { animation: spPop .28s ease; }
+@keyframes spPop { from { opacity: .25; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #previewRoot.sp-pop { animation: none; } }
 @keyframes spFlash { 0%, 50% { box-shadow: inset 0 0 0 2px rgba(138,75,85,.55); } 100% { box-shadow: inset 0 0 0 2px transparent; } }
 .sp-head { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 24px 12px; background: var(--ui-page, #F6F4F1); }
 .sp-head small { display: block; font-size: 11.5px; font-weight: 700; color: var(--wz-acc); letter-spacing: .03em; }
@@ -14095,12 +14098,13 @@ function openSimpleEditor(step, inPlace) {
     spRender();
     window.scrollTo(0, 0);
 }
-function spScrollPreview(ids) {
+function spScrollPreview(ids, pop) { // pop: 스크롤하지 않고 그 자리로 바로 (살짝 나타나는 효과)
     const pane = document.querySelector('.preview-pane'), root = document.getElementById('previewRoot');
     const col = ids.map(id => root.querySelector(`.col[data-block-id="${id}"]`)).find(Boolean);
     if (!pane || !col) return;
     const top = Math.max(0, col.getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - 24);
     if (Math.abs(top - pane.scrollTop) < 160) return; // 이미 그 섹션을 보고 있으면 그대로 (글자를 칠 때마다 미리보기가 움찔하지 않게)
+    if (pop) { pane.scrollTo({ top, behavior: 'instant' }); root.classList.remove('sp-pop'); void root.offsetWidth; root.classList.add('sp-pop'); return; }
     pane.scrollTo({ top, behavior: 'smooth' });
     col.classList.remove('sp-flash'); void col.offsetWidth; col.classList.add('sp-flash');
 }
@@ -14327,7 +14331,9 @@ function spRenderAsk(pane) {
     else {
         pane.style.minHeight = ''; pane.scrollTop = 0;
         if (pane._spKey && window.innerWidth <= 860) window.scrollTo(0, 0);
-        if (st) setTimeout(() => scrollPh ? spScrollToNextBtn() : spScrollPreview(st.s || []), 80);
+        // 다른 질문(예식장 등)에서 첫 화면 질문으로 올 땐 위로 길게 스크롤하지 않고 첫 화면이 바로 나타나게
+        const fromK = spAskLast >= 0 && spAskLast < N && spAskLast !== spStep ? steps[spAskLast].k : null, pop = !!(st && st.k === 'hero' && fromK && fromK !== 'hero');
+        if (st) setTimeout(() => scrollPh ? spScrollToNextBtn() : spScrollPreview(st.s || [], pop), 80);
         // 진행 막대 · [이전] 버튼: 전 질문 모양에서 지금 모양으로 부드럽게
         const bar = pane.querySelector('.sp-ask-bar i'), nav = pane.querySelector('.sp-ask-nav');
         requestAnimationFrame(() => requestAnimationFrame(() => { if (bar) bar.style.width = pct(spStep); if (nav) nav.classList.toggle('first', navFirst); }));
