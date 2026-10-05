@@ -4196,14 +4196,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017l">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017l">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017m">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017m">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017l"></script>
-<script src="assets/tip-demos.js?v=1017l"></script>
-<script src="assets/ld-dialog.js?v=1017l"></script>
+<script src="assets/invite-blocks.js?v=1017m"></script>
+<script src="assets/tip-demos.js?v=1017m"></script>
+<script src="assets/ld-dialog.js?v=1017m"></script>
 </head>
 <body>
 
@@ -13521,7 +13521,7 @@ async function startWithPreset(presetId) {
     if (startTrack === 'simple') { // 간편 만들기: 기본 정보 단계 없이 바로 칸 채우기 화면 (이름·날짜부터)
         applyWizardDataToBlocks(); // 주문 때 받은 이름·장소가 있으면 미리 채움
         { const lay = InviteBlocks.HERO_LAYOUTS.find(l => l.id === 'magazine'); ['hero', 'heroVideo'].forEach(id => { const b = state.blocks.find(x => x.id === id); if (b && lay) { InviteBlocks.applyHeroLayout(b, lay); spForceFull(b); } }); } // 처음 만들 때 첫 화면은 매거진 표지
-        state.spView = 'quick'; state.spAsk = {}; // 질문에 하나씩 답하기 → 미리보기 → 목록 화면
+        state.spView = spOpt('flow', 'ask') ? 'quick' : 'list'; state.spAsk = {}; // 질문에 하나씩 답하기 → 정리 화면 → 완성본 → 목록 화면 (관리자가 질문을 끄면 바로 목록)
         spRenderAll();
         onboardingActive = false;
         openSimpleEditor(0);
@@ -14077,7 +14077,7 @@ function spSelectStep(st) { // 눈금자는 고른 섹션(selectedId)에 뜸 →
 }
 
 // 간편 만들기 보기 방식 (state.spView): 'steps' 한 단계씩 / 'quick' 빠른 시작 4단계(이름 → 예식 일시 → 예식장 → 메인 사진) → 미리보기 → 'list' 옵션 창(한 번에 보기)
-const spViewNow = () => state.spView === 'quick' && !spInPlace ? 'quick' : 'list'; // 'quick' = 처음 만들 때 질문에 답하기 / 그 외 = 목록 한 장
+const spViewNow = () => state.spView === 'quick' && !spInPlace && spOpt('flow', 'ask') ? 'quick' : 'list'; // 'quick' = 처음 만들 때 질문에 답하기 / 그 외 = 목록 한 장
 function spCutPart(body, st) { // 빠른 시작: 두 사람 칸을 이름 / 날짜·시간 두 단계로 나눠 보여줌
     if (!st.part) return;
     const fields = [...body.querySelectorAll(':scope > .wz-field')];
@@ -14162,7 +14162,8 @@ const SP_ASK = [
 ];
 function spAskSteps() { // 관리자 "손쉬운 제작"에서 끈 단계·디자인에 없는 섹션은 묻지 않음
     const on = new Set(spSteps().map(x => x.k));
-    return SP_ASK.filter(a => on.has(a.k) && (!a.blk || spHas(a.blk))).map(a => Object.assign({}, SP_STEP_DEFS[a.k], a, { t: a.q }));
+    const optOf = { greet: 'askGreet', account: 'askAccount', rsvp: 'askRsvp', music: 'askMusic' }; // 관리자 → 손쉬운 제작 → 간편 만들기 전체에서 끈 질문은 빼고
+    return SP_ASK.filter(a => on.has(a.k) && (!a.blk || spHas(a.blk)) && (!optOf[a.k] || spOpt('flow', optOf[a.k]))).map(a => Object.assign({}, SP_STEP_DEFS[a.k], a, { t: a.q }));
 }
 function spAskDone() { spStep = spAskSteps().length; spRender(); } // 다 답함 → "거의 다 됐어요" 정리 화면
 function spAskFinish(btn) { // 정리 화면 [완성본 보기]: 저장 → 완성본(발행하기) → 닫으면 목록 화면
@@ -14220,19 +14221,19 @@ function spRenderAsk(pane) {
         body = spH(esc(st.q), esc(st.sub)) + `<div class="sp-ask-opts">${st.opts.map(([v, t, d]) => `<button type="button" class="sp-ask-o${pick === v ? ' on' : ''}" data-ask="${v}" aria-pressed="${pick === v}"><span><b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ''}</span><i></i></button>`).join('')}</div>${opt && opt[3] ? '<div class="sp-ask-more" id="spAskMore"></div>' : ''}`;
     }
     pane.innerHTML = `<div class="sp-head sp-ask-head"><button type="button" class="sp-ask-back" id="spBack" aria-label="이전"${spStep === 0 && !scrollPh ? ' disabled' : ''}>${backSvg}</button><b>${done ? '다 됐어요' : `질문 ${spStep + 1} / ${N}`}</b>${spUdHtml()}</div>
-        <div class="sp-ask-top"><div class="sp-ask-bar" aria-hidden="true"><i style="width:${pct(same || spAskLast < 0 ? spStep : spAskLast)}"></i></div>${done ? '' : `<button type="button" class="sp-ask-skip" id="spSkip">나중에 할게요</button>`}</div>
-        <div class="sp-now-wrap">${spNowCardHtml()}</div>
+        <div class="sp-ask-top"><div class="sp-ask-bar" aria-hidden="true"><i style="width:${pct(same || spAskLast < 0 ? spStep : spAskLast)}"></i></div>${done || !spOpt('flow', 'skip') ? '' : `<button type="button" class="sp-ask-skip" id="spSkip">나중에 할게요</button>`}</div>
+        ${spOpt('flow', 'now') ? `<div class="sp-now-wrap">${spNowCardHtml()}</div>` : ''}
         <div class="sp-body sp-ask" id="spBody">${body}</div>
         <div class="sp-nav sp-ask-nav${(same || spAskLast < 0 ? navFirst : spAskLast === 0 && !done) ? ' first' : ''}">${done
             ? `<button type="button" class="wz-back" id="spRestart">처음부터</button><button type="button" class="wz-next" id="spFinish">완성본 보기</button>`
             : `<button type="button" class="wz-back" id="spPrev" tabindex="${navFirst ? -1 : 0}">이전</button><button type="button" class="wz-next" id="spNext">${spStep === N - 1 ? '다 했어요' : '다음'}</button>`}</div>`;
     spBindHeadTools(pane);
-    const go = n => { spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n)); spRender(); };
+    const go = n => { if (n >= N && !spOpt('flow', 'summary')) return spAskFinish(); spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n)); spRender(); }; // 정리 화면을 끄면 바로 완성본
     const lookToScroll = () => st && st.k === 'hero' && st.part === 'look' && !scrollPh && spHeroScrollOk();
     const next = () => lookToScroll() ? spHeroToScroll(pane.querySelector('#spBody')) : go(spStep + 1);
     const prev = () => scrollPh ? (spHeroPhase = 'pick', spRender()) : go(spStep - 1);
     pane.querySelector('#spBack').addEventListener('click', prev);
-    pane.querySelector('#spNow').addEventListener('click', () => spOpenPreview(false));
+    pane.querySelector('#spNow')?.addEventListener('click', () => spOpenPreview(false));
     pane.querySelector('#spPrev')?.addEventListener('click', prev);
     pane.querySelector('#spNext')?.addEventListener('click', next);
     pane.querySelector('#spSkip')?.addEventListener('click', next);
@@ -14327,11 +14328,11 @@ function spRenderList() {
         <div class="spb">
             <div class="spb-prog"><div><b>꼭 필요한 것</b><span>${nDone} / ${must.length}</span></div><div class="spb-dots">${must.map(m => `<i class="${m[1] ? 'on' : ''}"></i>`).join('')}</div><p>${left.length ? esc(left.join(' · ')) + (left.length === 1 ? '만 넣으면 보낼 수 있어요.' : '을(를) 넣으면 보낼 수 있어요.') : '꼭 필요한 건 다 채웠어요. 나머지는 원할 때만 채우면 돼요.'}</p></div>
             ${groups}
-            <button type="button" class="spb-order" id="spOrderBtn"><span aria-hidden="true">⇅</span><span><b>섹션 순서 바꾸기</b><small>청첩장에 나오는 순서를 끌어서 바꿔요</small></span></button>
+            ${spOpt('flow', 'order') ? '' : '<!--'}<button type="button" class="spb-order" id="spOrderBtn"><span aria-hidden="true">⇅</span><span><b>섹션 순서 바꾸기</b><small>청첩장에 나오는 순서를 끌어서 바꿔요</small></span></button>${spOpt('flow', 'order') ? '' : '-->'}
         </div>
         <div class="sp-list-end"><button type="button" class="wz-next" id="spListDone">완성본 보기</button><p class="wz-hint">저장하고 다 된 모습을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.</p></div>`;
     spBindHeadTools(pane);
-    pane.querySelector('#spOrderBtn').addEventListener('click', () => { stopAllBgm(); spOrderMode = true; spRender(); });
+    pane.querySelector('#spOrderBtn')?.addEventListener('click', () => { stopAllBgm(); spOrderMode = true; spRender(); });
     pane.querySelector('#spListDone').addEventListener('click', e => { const b = e.currentTarget; b.disabled = true; b.textContent = '저장 중…'; saveToServer(false, true).then(ok => { b.disabled = false; b.textContent = '완성본 보기'; if (ok) spOpenPreview(true); else showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }); });
     pane.querySelectorAll('[data-li-tog]').forEach(b => b.addEventListener('click', () => {
         const k = b.dataset.liTog, st = steps.find(x => x.k === k), sw = st && swOf(st); stopAllBgm();
@@ -14370,13 +14371,13 @@ function spNames(box) {
             <label><span class="wz-lab">신부</span><input class="wz-inp" data-wi="bride" value="${wzEsc(wi.bride)}" placeholder="이름" maxlength="20"></label></div></div>
         <div class="wz-field"><div class="wz-lab">예식 날짜</div><button type="button" class="wz-pick" id="spDateBtn"><span id="spDateTxt"></span>${WZ_CAL_SVG}</button><div class="wz-pop" id="spCal"></div></div>
         ${spOpt('names', 'time') ? '<div class="wz-field"><div class="wz-lab">예식 시간</div><div id="spTime"></div></div>' : ''}
-        <div class="wz-field"><button type="button" class="sp-tbd${wi.undecided ? ' on' : ''}" id="spTbd" aria-pressed="${!!wi.undecided}"><i></i><span><b>아직 일정을 잡지 않았어요</b><small>정해지면 언제든 바꿀 수 있어요</small></span></button></div>`;
+        ${spOpt('names', 'tbd') ? `<div class="wz-field"><button type="button" class="sp-tbd${wi.undecided ? ' on' : ''}" id="spTbd" aria-pressed="${!!wi.undecided}"><i></i><span><b>아직 일정을 잡지 않았어요</b><small>정해지면 언제든 바꿀 수 있어요</small></span></button></div>` : ''}`;
     const set = (k, v) => { const w = weddingInfo(); w[k] = v;
         if ((k === 'date' || k === 'time') && v && w.undecided) { // 날짜·시간을 고르면 "일정 미정"은 풀림 (버튼 표시도 바로)
             spSetDateTbd(false); const tb = box.querySelector('#spTbd'); if (tb) { tb.classList.remove('on'); tb.setAttribute('aria-pressed', 'false'); }
         }
         applyWeddingInfo(k === 'groom' || k === 'bride' ? 'names' : 'date'); spChanged(['hero', 'heroVideo']); };
-    box.querySelector('#spTbd').addEventListener('click', () => {
+    box.querySelector('#spTbd')?.addEventListener('click', () => {
         const on = !weddingInfo().undecided; spSetDateTbd(on); spChanged(['hero', 'heroVideo']); scheduleSnapshot(); spRender(); // 넘어가기는 [다음]으로
     });
     box.querySelectorAll('[data-wi]').forEach(inp => inp.addEventListener('input', () => set(inp.dataset.wi, inp.value)));
@@ -14565,7 +14566,7 @@ function spHeroLayoutHtml(hb, kind) {
             ${keys.length ? `<div class="hl-xh"><div class="mini-label hl-xl">글자 · 효과</div>${replay}</div><div class="hl-lines">${lines}</div>${all}<p class="field-hint" style="margin-top:6px">${tip}</p>` : ''}`;
     }
     return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div><div class="hl-row">${cards}</div></div>
-        ${keys.length ? `<div class="wz-field"><div class="wz-lab"><span>글자 · 효과</span>${replay}</div><div class="hl-lines">${lines}</div>${all}<p class="wz-hint" style="margin:6px 0 0">${tip}</p></div>` : ''}`;
+        ${keys.length && spOpt('hero', 'lines') ? `<div class="wz-field"><div class="wz-lab"><span>글자 · 효과</span>${replay}</div><div class="hl-lines">${lines}</div>${all}<p class="wz-hint" style="margin:6px 0 0">${tip}</p></div>` : ''}`;
 }
 // [효과 ▾] 작은 창 - 고른 줄만 다시 그려도 열린 채 (방향·휘기를 이어서 고를 수 있게)
 let hlPopKey = '';
@@ -14961,7 +14962,7 @@ function spVenue(box) {
             <label class="sp-sw"><span><b>지도 보여주기</b><small>주소로 카카오맵이 자동으로 떠요</small></span><input type="checkbox" data-sp-map="showMap"${f.showMap ? ' checked' : ''}><i></i></label>
             ${f.showMap ? `${spOpt('venue', 'mapWide') ? `<label class="sp-sw"><span><b>지도 가로 꽉 채우기</b><small>끄면 좌우 여백 있는 카드 모양</small></span><input type="checkbox" data-sp-map="mapFullWidth"${f.mapFullWidth ? ' checked' : ''}><i></i></label>` : ''}
             ${spOpt('venue', 'mapHeight') ? `<div class="sp-range"><span>지도 높이</span><input type="range" id="spMapH" min="100" max="500" step="10" value="${f.mapHeight ?? 200}"><span id="spMapHV">${f.mapHeight ?? 200}px</span></div>` : ''}
-            <div class="sp-mapdemo${f.mapFullWidth ? ' full' : ''}" id="spMapDemo" style="height:${Math.round((f.mapHeight ?? 200) * .8)}px" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b class="pin"></b><span>지도 예시 · 청첩장엔 예식장 지도가 이렇게 들어가요</span></div>` : ''}</div>` : ''}`;
+            ${spOpt('venue', 'mapDemo') ? '' : '<!--'}<div class="sp-mapdemo${f.mapFullWidth ? ' full' : ''}" id="spMapDemo" style="height:${Math.round((f.mapHeight ?? 200) * .8)}px" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b class="pin"></b><span>지도 예시 · 청첩장엔 예식장 지도가 이렇게 들어가요</span></div>${spOpt('venue', 'mapDemo') ? '' : '-->'}` : ''}</div>` : ''}`;
     // 지도 예시: 가로 꽉 채우기·높이를 바꾸면 그 자리에서 바로 (다시 그리지 않고 움직이며)
     const demo = box.querySelector('#spMapDemo');
     box.querySelectorAll('[data-sp-map]').forEach(c => c.addEventListener('change', () => {

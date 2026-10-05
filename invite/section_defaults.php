@@ -219,18 +219,21 @@ function section_easy_clean($in): array
 function section_easy_default(): array { return section_easy_clean([]); }
 /** 단계마다 켜고 끌 수 있는 세부 옵션 (관리자 → 손쉬운 제작 → 단계를 누르면 폴더처럼 펼쳐짐). 끈 옵션은 고객 간편 만들기에서 안 보임 */
 const SECTION_EASY_OPTS = [
-    'names' => ['time' => '예식 시간'],
-    'hero' => ['layout' => '레이아웃 고르기', 'kind' => '사진 / 유튜브 고르기', 'crop' => '보일 부분 · 확대', 'shade' => '글자 잘 보이게 (그라데이션)',
+    // flow = 단계가 아니라 간편 만들기 전체에 걸친 기능 (관리자 손쉬운 제작 탭 맨 위 칸)
+    'flow' => ['ask' => '처음 만들 때 질문에 답하기', 'askGreet' => '질문: 인사말은 어떻게 할까요?', 'askAccount' => '질문: 축의금 계좌를 넣을까요?', 'askRsvp' => '질문: 참석 여부를 받을까요?', 'askMusic' => '질문: 배경음악을 넣을까요?',
+               'skip' => '질문 [나중에 할게요]', 'now' => '지금 청첩장 카드', 'summary' => '다 답한 뒤 정리 화면', 'order' => '목록: 섹션 순서 바꾸기'],
+    'names' => ['time' => '예식 시간', 'tbd' => '아직 일정을 잡지 않았어요'],
+    'hero' => ['layout' => '레이아웃 고르기', 'lines' => '글자 바꾸기 · 효과', 'kind' => '사진 / 유튜브 고르기', 'crop' => '보일 부분 · 확대', 'shade' => '글자 잘 보이게 (그라데이션)',
                'scroll' => '↓ 스크롤 버튼', 'scrollSize' => '스크롤 버튼 크기', 'scrollCustom' => '스크롤 버튼 직접 꾸미기', 'scrollMotion' => '스크롤 버튼 움직임', 'scrollFx' => '스크롤 버튼 등장 효과', 'scrollOpacity' => '스크롤 버튼 진하기'],
     'theme' => ['design' => '디자인 바꾸기', 'skin' => '색 묶음', 'font' => '글꼴', 'accent' => '포인트 색', 'paper' => '종이 질감', 'reset' => '따로 바꾼 값 되돌리기'],
     'gallery' => ['type' => '갤러리 모양', 'clearEx' => '예시 사진 모두 빼기'],
-    'venue' => ['detail' => '층 · 홀 이름', 'phone' => '예식장 전화', 'map' => '지도 보여주기', 'mapWide' => '지도 가로 꽉 채우기', 'mapHeight' => '지도 높이'],
+    'venue' => ['detail' => '층 · 홀 이름', 'phone' => '예식장 전화', 'map' => '지도 보여주기', 'mapWide' => '지도 가로 꽉 채우기', 'mapHeight' => '지도 높이', 'mapDemo' => '지도 예시 (휴대폰)'],
     'transport' => ['title' => '제목', 'quick' => '버튼으로 칸 추가'],
     'greet' => ['tones' => '예시 인사말 고르기'],
     'family' => ['family' => '혼주 성함', 'deceased' => '고인 표시', 'contact' => '연락처'],
     'account' => ['parents' => '혼주(부모님) 계좌', 'display' => '표시 방식 · 카드 디자인', 'kakao' => '카카오페이 송금 링크'],
     'dday' => ['calendar' => '달력 보여주기', 'calStyle' => '달력 모양', 'counter' => '카운트 보여주기', 'counterStyle' => '카운터 모양', 'label' => '위쪽 작은 글씨'],
-    'notice' => ['title' => '제목', 'quick' => '버튼으로 칸 추가', 'style' => '모양 (카드 / 박스)'],
+    'notice' => ['title' => '제목', 'quick' => '버튼으로 칸 추가', 'style' => '모양 (카드 · 박스 · 슬라이드 · 탭)'],
     'rsvp' => ['deadline' => '마감일', 'headcount' => '참석 인원', 'meal' => '식사 여부', 'phone' => '연락처 받기', 'memo' => '전하는 말', 'popup' => '열 때 팝업'],
     'guestbook' => ['desc' => '안내 문구', 'allowWrite' => '하객 글쓰기 켜고 끄기', 'style' => '모양 (카드 / 줄글)'],
     'video' => ['title' => '영상 제목', 'fullWidth' => '가로 꽉 채우기'],

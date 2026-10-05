@@ -414,7 +414,14 @@
         if (!col) return;
         const cols = Array.from(document.querySelectorAll('.col[data-block-id]')).filter(c => c.offsetParent !== null && c.getBoundingClientRect().height > 2 && c.closest('#previewRoot, .invite-root, body') === col.closest('#previewRoot, .invite-root, body'));
         const next = cols[cols.indexOf(col) + 1];
-        if (next) next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (!next) return;
+        // 다음 섹션 위쪽에 딱 맞게: 스크롤 등장 효과(아래에서 올라오기 등)로 섹션이 잠깐 아래로 밀려 있어도
+        // 밀리기 전 원래 자리(offsetTop - transform 무시)로 계산 (예전 scrollIntoView는 밀린 자리에 맞춰서 살짝 더 내려갔음)
+        const absTop = el => { let t = 0; for (let e = el; e; e = e.offsetParent) t += e.offsetTop + (e !== el ? e.clientTop : 0); return t; };
+        let sc = next.parentElement;
+        while (sc && sc !== document.body && sc !== document.documentElement) { const o = getComputedStyle(sc).overflowY; if ((o === 'auto' || o === 'scroll') && sc.scrollHeight > sc.clientHeight + 2) break; sc = sc.parentElement; }
+        if (sc && sc !== document.body && sc !== document.documentElement) sc.scrollTo({ top: Math.max(0, absTop(next) - absTop(sc) - sc.clientTop), behavior: 'smooth' });
+        else global.scrollTo({ top: Math.max(0, absTop(next)), behavior: 'smooth' });
     }
     // ---- ↓ 버튼을 "지금 보이는 화면" 아래쪽에 맞추기 ----
     // 휴대폰은 100vh·화면 꽉 사진이 주소창·아래 도구막대 뒤까지 내려가거나, 히어로가 첫 화면보다 길어서

@@ -516,6 +516,9 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-row { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--ui-line, #E8E3DB); border-radius: 12px; padding: 10px 12px; }
 .ez-row.off { background: #FAF8F5; }
 .ez-row { flex-wrap: wrap; }
+.ez-flow { margin: 0 0 14px; padding: 14px; border-radius: 16px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; }
+.ez-flow-h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; } .ez-flow-h b { font-size: 14px; } .ez-flow-h span { font-size: 12px; color: #8A8278; flex: 1; } .ez-flow-h em { font-style: normal; font-size: 12px; font-weight: 700; color: #6F6A63; }
+.ez-flow .ez-fold { margin: 0; }
 .ez-fold-btn { flex: none; height: 30px; padding: 0 10px; border: 1px solid var(--ui-line, #E3DED7); border-radius: 99px; background: #fff; font: inherit; font-size: 11.5px; font-weight: 700; color: #6F6A63; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
 .ez-fold-btn b { color: #2F7A4E; } .ez-fold-btn.part b { color: #B5713A; }
 .ez-fold-btn i { font-style: normal; transition: transform .2s; } .ez-fold-btn.open i { transform: rotate(180deg); }
@@ -588,6 +591,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
                 <div class="so-state<?= $easyCustom ? ' custom' : '' ?>">● <?= $easyCustom ? '관리자가 정한 단계 사용 중' : '기본 단계 사용 중 (모두 켜짐)' ?></div>
                 <button type="button" class="so-reset" id="ezReset"<?= $easyCustom ? '' : ' disabled' ?>>기본 단계로 되돌리기</button>
             </div>
+            <div class="ez-flow" id="ezFlow"></div>
             <div class="ez-grid">
                 <div>
                     <ul class="ez-list" id="ezList"></ul>
@@ -1297,7 +1301,22 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             <div class="ez-fold"${open ? '' : ' hidden'}>${keys.map(k => `<label class="ez-opt${off.includes(k) ? ' off' : ''}"><input type="checkbox" data-ez-opt="${id}:${k}"${off.includes(k) ? '' : ' checked'}${readonly ? ' disabled' : ''}><i></i><span>${ezEsc(ops[k])}</span></label>`).join('')}
             <span class="ez-fold-act"><button type="button" data-ez-all="${id}:1">모두 켜기</button><button type="button" data-ez-all="${id}:0">모두 끄기</button></span></div>`;
     }
+    // 간편 만들기 전체 기능 (단계가 아님): 늘 펼친 칸, 켜고 끄기만
+    function ezFlowRender() {
+        const box = document.getElementById('ezFlow'), ops = EZ_OPTS.flow; if (!box || !ops) return;
+        const keys = Object.keys(ops), off = ezOff.flow || [];
+        box.innerHTML = `<div class="ez-flow-h"><b>간편 만들기 전체</b><span>질문 화면 · 정리 화면 · 목록 화면에 걸친 기능이에요. 끄면 고객 화면에서 빠져요.</span><em>${keys.length - off.filter(k => keys.includes(k)).length}/${keys.length}</em></div>
+            <div class="ez-fold">${keys.map(k => `<label class="ez-opt${off.includes(k) ? ' off' : ''}"><input type="checkbox" data-ez-opt="flow:${k}"${off.includes(k) ? '' : ' checked'}${readonly ? ' disabled' : ''}><i></i><span>${ezEsc(ops[k])}</span></label>`).join('')}
+            <span class="ez-fold-act"><button type="button" data-ez-all="flow:1">모두 켜기</button><button type="button" data-ez-all="flow:0">모두 끄기</button></span></div>`;
+        box.querySelectorAll('[data-ez-opt]').forEach(c => c.addEventListener('change', () => {
+            const k = c.dataset.ezOpt.split(':')[1], l = new Set(ezOff.flow || []);
+            if (c.checked) l.delete(k); else l.add(k);
+            ezOff.flow = [...l]; if (!ezOff.flow.length) delete ezOff.flow; ezRender();
+        }));
+        box.querySelectorAll('[data-ez-all]').forEach(b => b.addEventListener('click', () => { if (b.dataset.ezAll.endsWith(':1')) delete ezOff.flow; else ezOff.flow = keys.slice(); ezRender(); }));
+    }
     function ezRender() {
+        ezFlowRender();
         const ul = document.getElementById('ezList'), off = document.getElementById('ezOff'); if (!ul) return;
         ezNorm();
         let n = 0;
