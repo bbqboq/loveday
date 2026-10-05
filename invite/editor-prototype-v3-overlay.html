@@ -14371,7 +14371,11 @@ function spNames(box) {
         <div class="wz-field"><div class="wz-lab">예식 날짜</div><button type="button" class="wz-pick" id="spDateBtn"><span id="spDateTxt"></span>${WZ_CAL_SVG}</button><div class="wz-pop" id="spCal"></div></div>
         ${spOpt('names', 'time') ? '<div class="wz-field"><div class="wz-lab">예식 시간</div><div id="spTime"></div></div>' : ''}
         <div class="wz-field"><button type="button" class="sp-tbd${wi.undecided ? ' on' : ''}" id="spTbd" aria-pressed="${!!wi.undecided}"><i></i><span><b>아직 일정을 잡지 않았어요</b><small>정해지면 언제든 바꿀 수 있어요</small></span></button></div>`;
-    const set = (k, v) => { const w = weddingInfo(); w[k] = v; if ((k === 'date' || k === 'time') && v && w.undecided) spSetDateTbd(false); applyWeddingInfo(k === 'groom' || k === 'bride' ? 'names' : 'date'); spChanged(['hero', 'heroVideo']); };
+    const set = (k, v) => { const w = weddingInfo(); w[k] = v;
+        if ((k === 'date' || k === 'time') && v && w.undecided) { // 날짜·시간을 고르면 "일정 미정"은 풀림 (버튼 표시도 바로)
+            spSetDateTbd(false); const tb = box.querySelector('#spTbd'); if (tb) { tb.classList.remove('on'); tb.setAttribute('aria-pressed', 'false'); }
+        }
+        applyWeddingInfo(k === 'groom' || k === 'bride' ? 'names' : 'date'); spChanged(['hero', 'heroVideo']); };
     box.querySelector('#spTbd').addEventListener('click', () => {
         const on = !weddingInfo().undecided; spSetDateTbd(on); spChanged(['hero', 'heroVideo']); scheduleSnapshot(); spRender(); // 넘어가기는 [다음]으로
     });
