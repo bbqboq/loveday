@@ -89,7 +89,9 @@ if (isset($_GET['json'])) {
     ]);
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
+    // 안드로이드 캘린더 앱 바로 열기(intent)에 쓰는 값: 시작·끝 시각(밀리초), 설명
     echo json_encode(['ok' => true, 'title' => $title, 'start' => $start->format('c'), 'where' => $where, 'google' => $google,
+        'startMs' => $start->getTimestamp() * 1000, 'endMs' => $end->getTimestamp() * 1000, 'details' => "모바일 청첩장: {$url}",
         'buses' => array_map(fn($x) => ['label' => $x['label'], 'time' => $x['start']->format('H:i')], $buses)], JSON_UNESCAPED_UNICODE);
     exit;
 }
