@@ -1204,6 +1204,10 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
     stroke-dasharray: var(--L, 400) var(--L, 400); stroke-dashoffset: var(--L, 400);
     animation: ibxStroke var(--ibx-draw, 1000ms) cubic-bezier(.4,.15,.5,1) forwards, ibxStrokeOut .5s ease forwards;
     animation-delay: calc(var(--i) * var(--ibx-dstep, 60ms)), calc(var(--i) * var(--ibx-dstep, 60ms) + var(--ibx-draw, 1000ms) + .3s); }
+/* 영문 낱말 한 칸(.ibx-word, 필기체 이음 유지): 선은 그려지면서 왼쪽부터 쓸듯이 드러나고, 속도 왼쪽부터 채워짐 */
+.ibx-a-draw .ibx-word .ibx-stroke { animation: ibxSweep var(--ibx-draw, 1000ms) cubic-bezier(.4,.15,.5,1) both; animation-delay: calc(var(--i) * var(--ibx-dstep, 60ms)); }
+.ibx-a-draw .ibx-word .ibx-fill { opacity: 1; animation: ibxSweep .6s ease both; animation-delay: calc(var(--i) * var(--ibx-dstep, 60ms) + var(--ibx-draw, 1000ms) * .85); }
+@keyframes ibxSweep { from { clip-path: inset(-40% 100% -40% -15%); } to { clip-path: inset(-40% -15% -40% -15%); } }
 @keyframes ibxStroke { to { stroke-dashoffset: 0; } }
 @keyframes ibxStrokeOut { to { stroke-opacity: 0; } }
 @keyframes ibxFillIn { to { opacity: 1; } }

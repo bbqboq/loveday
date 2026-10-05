@@ -7,7 +7,7 @@
 
 - 답변은 **한국어**, 제목·볼드·표로 정리. "~라고 하셨듯이" 같은 서두 금지. 후속 질문은 최대 1개.
 - 결과물은 **바뀐 파일만** 전달 (`invite/...` 폴더 구조 유지한 zip 또는 커밋).
-- 공용 자산(`assets/invite-blocks.js` 등)을 바꾸면 에디터의 `?v=` 값을 올린다 (현재 `v=1017p`).
+- 공용 자산(`assets/invite-blocks.js` 등)을 바꾸면 에디터의 `?v=` 값을 올린다 (현재 `v=1017q`).
 - 디자인은 **차분하고 세련된(muted)** 톤.
 - 버튼·안내 문구는 왕초보도 알아듣는 쉬운 말.
 
@@ -73,7 +73,7 @@
 - 메인 레이아웃 2차: 문구 칸 세로(`vertical`)·곡선(`arc`,`arcW`)·등장 효과(`anim` write/fade/up/zoom), 사진 칸 모드 `heroBox`(x·y·w·h %, frame, fade). 기본 레이아웃 14개(참고 샘플 구성 9 + 매거진 표지·미니멀 아래 세 줄·둥근 영문 제목·위 사진 아래 글·큰 날짜 숫자).
 - **갤러리 '넘기는 콜라주'**(`layoutType:'pages'`, `galleryHtml`): 사진 6장씩 두 줄 높낮이 콜라주(`.ib-gp-page` > `.ib-gp-col`, 높이 비율 왼쪽 4·3·5 / 오른쪽 5·4·3) 한 장씩 옆으로 넘김, 다음 장이 오른쪽에 살짝 보임, 진행바는 슬라이드와 같은 `data-ib-slide`.
 - **인트로 '메인 화면 위'**(`intro.bgType:'clear'`, 어둡게 `intro.clearDim` 0~70%, 글자 기본 흰색): 배경 없이 청첩장 메인 사진·영상 위에 글자만 나타났다 사라짐 (`.intro-overlay.intro-clear`). 에디터 인트로 미리보기는 메인 사진(영상이면 썸네일)을 깔아서 보여줌.
-- **인트로 글자 효과**(`intro.anim`, 기본 'type'): 타자 · 천천히 나타나기 · 한 글자씩 떠오르기 · 흐릿하게 선명해지기 · 크게서 작게 · 톡톡 튀기 · 한 줄씩 올라오기 · 손글씨처럼 그려지기 - `InviteBlocks.RichText.animate(el, html, anim, 초)` (글자마다 `.ibx-ch` --i/--l, 낱말 `.ibx-w`, CSS `.ibx-a-*` in invite-blocks.css). '손글씨처럼'(draw)은 글자마다 SVG `<text>` 윤곽선(`.ibx-stroke`, stroke-dashoffset)을 0.6~1.8초에 걸쳐 그린 뒤 속(`.ibx-fill`)을 채우고 선은 옅어짐, 앞 글자부터 `--ibx-dstep` 간격으로 이어짐. 에디터 인트로 설정(기본 탭 '글자 효과')·간편 만들기 인트로 칸(관리자 옵션 `finish.introFx`)·공개 페이지 같이 씀. 재생 길이 최대 4초.
+- **인트로 글자 효과**(`intro.anim`, 기본 'type'): 타자 · 천천히 나타나기 · 한 글자씩 떠오르기 · 흐릿하게 선명해지기 · 크게서 작게 · 톡톡 튀기 · 한 줄씩 올라오기 · 손글씨처럼 그려지기 - `InviteBlocks.RichText.animate(el, html, anim, 초)` (글자마다 `.ibx-ch` --i/--l, 낱말 `.ibx-w`, CSS `.ibx-a-*` in invite-blocks.css). '손글씨처럼'(draw)은 글자마다 SVG `<text>` 윤곽선(`.ibx-stroke`, stroke-dashoffset)을 0.6~1.8초에 걸쳐 그린 뒤 속(`.ibx-fill`)을 채우고 선은 옅어짐, 앞 글자부터 `--ibx-dstep` 간격으로 이어짐. 영문 낱말은 통째로 한 칸(`.ibx-word`, 필기체 이음 유지 + 왼쪽부터 쓸듯이 `ibxSweep`). 기준선 위치는 글꼴을 다 받은 뒤 다시 잼(`document.fonts` ready·loadingdone → `place`). 에디터 인트로 설정(기본 탭 '글자 효과')·간편 만들기 인트로 칸(관리자 옵션 `finish.introFx`)·공개 페이지 같이 씀. 재생 길이 최대 4초.
 - **참석 여부 팝업 시점**(`rsvp.popupAt`, 기본 'scroll'): 맨 위가 메인 사진·영상이면 하객이 메인 화면을 절반 넘게 지나 내려갈 때 뜸(`afterHeroScroll`), 'open'이면 예전처럼 열자마자.
 - **캘린더에 저장**(`addToCalendar`, `calendar.php?json=1`에 startMs·endMs·details): 안드로이드는 앱을 바로 엶 - [휴대폰 캘린더 앱] = intent `android.intent.action.INSERT`(package 없음 → 기본 캘린더·고르는 창, 없으면 .ics), [구글 캘린더 앱] = package `com.google.android.calendar`(없으면 웹), 작은 [파일로 받기]는 .ics(3시간 전 알림 포함 - intent로는 알림을 못 넣어서 앱 기본 알림). 아이폰은 .ics → 아이폰 캘린더 '추가' 화면(카카오톡 안이면 기본 브라우저로). PC는 파일/구글 웹.
 - 관리자 손쉬운 제작 탭 휴대폰(640px 이하): 칸 1줄 = 번호·이름·설명, 2줄 = ▲▼·켜짐·스타터·옵션.

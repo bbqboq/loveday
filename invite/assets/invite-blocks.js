@@ -827,18 +827,38 @@
         const total = (Number(duration) || 2.5) * 1000 * 0.6; // 재생 길이의 60% 동안 나타나고, 나머지는 다 나온 채로
         if (anim === 'draw' && document.createElementNS) { // 손글씨처럼: 글자마다 윤곽선을 한 획씩 따라 그린 뒤(SVG 글자 선) 속을 채움
             const NS = 'http://www.w3.org/2000/svg';
-            el.querySelectorAll('.ibx-ch').forEach(sp => {
+            // 영문 낱말은 통째로 한 칸 (필기체는 글자끼리 이어져야 해서 - 쪼개면 이음이 끊기고 모양이 달라짐) → 왼쪽부터 쓸듯이 드러남
+            el.querySelectorAll('.ibx-w').forEach(w => {
+                const chs = [...w.querySelectorAll(':scope > .ibx-ch')]; if (chs.length < 2) return;
+                const txt = chs.map(c => c.textContent).join('');
+                if (!/^[A-Za-z0-9'’&.,!?\-]+$/.test(txt)) return;
+                const u = chs[0]; u.textContent = txt; u.classList.add('ibx-word'); chs.slice(1).forEach(c => c.remove());
+            });
+            const units = [...el.querySelectorAll('.ibx-ch')];
+            units.forEach(sp => {
                 const c = sp.textContent; sp.textContent = ''; sp.style.position = 'relative'; sp.style.display = 'inline-block';
                 const fill = document.createElement('span'); fill.className = 'ibx-fill'; fill.textContent = c;
-                const bl = document.createElement('i'); bl.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline;';
-                sp.append(fill, bl);
-                const y = bl.offsetTop, fs = parseFloat(getComputedStyle(sp).fontSize) || 20; bl.remove(); // (글자 기준선 높이)
                 const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'ibx-stroke'); svg.setAttribute('aria-hidden', 'true');
-                const t = document.createElementNS(NS, 'text'); t.setAttribute('x', '0'); t.setAttribute('y', String(y)); t.textContent = c;
-                svg.appendChild(t); sp.appendChild(svg);
-                sp.style.setProperty('--L', String(Math.round(fs * 14))); // 윤곽선 길이(넉넉히) - 이만큼을 점선 한 칸으로 두고 밀어서 그려지게
+                const t = document.createElementNS(NS, 'text'); t.setAttribute('x', '0'); t.textContent = c;
+                svg.appendChild(t); sp.append(fill, svg);
+            });
+            // 글자 기준선 높이를 재서 SVG 글자를 HTML 글자에 딱 겹침 - 글꼴이 늦게 받아지면(필기체 등) 받아진 뒤 다시 잼
+            const place = () => units.forEach(sp => {
+                if (!sp.isConnected) return;
+                const t = sp.querySelector('.ibx-stroke text'); if (!t) return;
+                const bl = document.createElement('i'); bl.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline;';
+                sp.insertBefore(bl, sp.firstChild); const y = bl.offsetTop; bl.remove();
+                const fs = parseFloat(getComputedStyle(sp).fontSize) || 20, len = (sp.textContent || '').length || 1;
+                t.setAttribute('y', String(y));
+                sp.style.setProperty('--L', String(Math.round(fs * 14 * Math.max(1, len * 0.6)))); // 윤곽선 길이(넉넉히) - 이만큼을 점선 한 칸으로 두고 밀어서 그려지게
                 sp.style.setProperty('--sw', Math.max(0.8, fs * 0.035).toFixed(2) + 'px');
             });
+            place();
+            if (document.fonts) {
+                if (document.fonts.ready) document.fonts.ready.then(place);
+                const onDone = () => place(); document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', onDone);
+                setTimeout(() => { document.fonts.removeEventListener && document.fonts.removeEventListener('loadingdone', onDone); }, 8000);
+            }
         }
         if (anim === 'draw' && host) { // 재생 길이의 85% 동안: 글자마다 획이 천천히(0.6~1.8초) 그려지고, 앞 글자부터 차례로 이어짐
             const T = (Number(duration) || 2.5) * 1000 * 0.85, D = Math.max(600, Math.min(1800, T * 0.45));
