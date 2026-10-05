@@ -7496,6 +7496,7 @@ async function compressMusic(file, onProgress) {
 }
 
 function renderFieldEditor() {
+    if (spGenBox && spGenBox.isConnected && spGenId === selectedId && document.documentElement.classList.contains('simple-mode')) { const gb = state.blocks.find(b => b.id === spGenId); if (gb) { spGenFill(spGenBox, gb); return; } } // 간편 만들기 목록 안의 전문가 모드 칸
     const wrap = document.getElementById('fieldEditor');
     const block = state.blocks.find(b => b.id === selectedId);
     // 섹션 종류를 색으로 구분해서 지금 편집창이 목록의 어느 섹션과 연결된 건지 한눈에 보이게 함
@@ -13998,7 +13999,9 @@ const spOn = id => { const b = spBlock(id); return !!(b && b.enabled && !SECTION
 // 손쉬운 제작 단계 - 관리자 → 섹션 설정 → "손쉬운 제작" 탭에서 켜기/끄기·순서를 정함 (section_defaults.php easy). 정한 적 없으면 아래 순서·모두 켜짐
 let EASY_STEPS = null, EASY_OFF = {}, EASY_ASK = null, EASY_SHOWOFF = false; // EASY_OFF: 관리자가 끈 단계별 세부 옵션 {step: [key]} · EASY_ASK: 질문 [{id,on}] · EASY_SHOWOFF: 디자인에서 꺼 둔 섹션도 목록에
 const spOpt = (step, key) => !((EASY_OFF && EASY_OFF[step]) || []).includes(key);
-const SP_DEFAULT_ORDER = ['names', 'hero', 'theme', 'gallery', 'venue', 'transport', 'greet', 'family', 'account', 'dday', 'notice', 'rsvp', 'guestbook', 'video', 'music', 'finish'];
+// 전문가 모드에만 있던 섹션 - 관리자 손쉬운 제작에서 켜면 목록에 나옴 (기본 꺼짐, 단계 id = 섹션 id, 편집 칸은 전문가 모드와 같은 것 spGeneric)
+const SP_EXTRA = ['timeline', 'interview', 'profile', 'letter', 'together', 'ending', 'guestsnap', 'trip', 'lottery', 'dayinfo', 'thanks'];
+const SP_DEFAULT_ORDER = ['names', 'hero', 'theme', 'gallery', 'venue', 'transport', 'greet', 'family', 'account', 'dday', 'notice', 'rsvp', 'guestbook', 'video', ...SP_EXTRA, 'music', 'finish'];
 const spHas = id => !!spBlock(id) && !SECTION_HIDDEN.has(id); // 디자인에 그 섹션이 있음 (꺼져 있어도 단계에서 켤 수 있음)
 const SP_STEP_DEFS = {
     names: { t: '두 사람', s: ['hero', 'heroVideo'], fn: spNames },
@@ -14018,14 +14021,15 @@ const SP_STEP_DEFS = {
     music: { t: '배경음악', s: [], fn: spMusic },
     finish: { t: '마무리', s: [], fn: spFinish },
 };
+SP_EXTRA.forEach(id => { SP_STEP_DEFS[id] = { t: (window.InviteBlocks && InviteBlocks.BLOCKS[id] && InviteBlocks.BLOCKS[id].label) || ({ timeline: '타임라인', interview: '인터뷰' })[id] || id, s: [id], fn: box => spGeneric(box, id), show: () => spHas(id) }; });
 // 관리자 설정에 없는 새 단계(예: 테마)는 기본 순서에서 바로 앞 단계 뒤에 켜진 채로 끼워 넣음
 function spEasyList() {
-    if (!(EASY_STEPS && EASY_STEPS.length)) return SP_DEFAULT_ORDER.map(id => ({ id, on: true }));
+    if (!(EASY_STEPS && EASY_STEPS.length)) return SP_DEFAULT_ORDER.map(id => ({ id, on: !SP_EXTRA.includes(id) }));
     const list = EASY_STEPS.map(x => Object.assign({}, x));
     SP_DEFAULT_ORDER.forEach((id, i) => {
         if (list.some(x => x.id === id)) return;
         let at = -1; for (let k = i - 1; k >= 0 && at < 0; k--) at = list.findIndex(x => x.id === SP_DEFAULT_ORDER[k]);
-        list.splice(at + 1, 0, { id, on: true });
+        list.splice(at + 1, 0, { id, on: !SP_EXTRA.includes(id) });
     });
     return list;
 }
@@ -14039,7 +14043,7 @@ function spSteps() {
 }
 // 간편 만들기에서는 청첩장 섹션 순서도 관리자 "손쉬운 제작" 단계 순서대로 (단계를 넘길 때 미리보기가 위에서 아래로 차례로 내려가게)
 //  메인 사진·영상은 늘 맨 위, 단계에 없는 섹션(타임라인·엔딩 등)은 그 뒤에 원래 순서대로, 공유하기는 늘 맨 아래
-const SP_STEP_BLOCKS = { hero: ['heroVideo', 'hero'], gallery: ['gallery'], venue: ['location'], transport: ['transport'], greet: ['greeting'], family: ['family', 'contact'], account: ['account'], dday: ['dday'], notice: ['notice'], rsvp: ['rsvp'], guestbook: ['guestbook'], video: ['video'] };
+const SP_STEP_BLOCKS = { ...Object.fromEntries(SP_EXTRA.map(id => [id, [id]])), hero: ['heroVideo', 'hero'], gallery: ['gallery'], venue: ['location'], transport: ['transport'], greet: ['greeting'], family: ['family', 'contact'], account: ['account'], dday: ['dday'], notice: ['notice'], rsvp: ['rsvp'], guestbook: ['guestbook'], video: ['video'] };
 function spApplyEasyOrder() {
     if (state.spOrderCustom) return false; // 간편 만들기에서 순서를 직접 바꿨으면 그대로
     const list = spEasyList();
@@ -14358,7 +14362,7 @@ function spRenderAsk(pane) {
 let spOpenSet = new Set();
 const SP_LIST_NOSW = ['names', 'hero', 'theme', 'family', 'music', 'finish'];
 const SP_GROUPS = [['must', '꼭 필요한 것', ''], ['more', '채우면 좋은 것', '안 써도 돼요 · 끄면 안 보여요'], ['deco', '꾸미기', '디자인에 맞춰 골라 두었어요']];
-const SP_GROUP_OF = { names: 'must', hero: 'must', venue: 'must', theme: 'deco', dday: 'deco', video: 'deco', music: 'deco', finish: 'deco' };
+const SP_GROUP_OF = { names: 'must', hero: 'must', venue: 'must', theme: 'deco', dday: 'deco', video: 'deco', ending: 'deco', music: 'deco', finish: 'deco' };
 function spMustList() { // 꼭 필요한 4가지 (진행 표시)
     const wi = weddingInfo(), loc = spBlock('location'), { b, kind } = spHeroCur();
     const media = !!(b && (kind === 'video' ? b.fields.youtubeId : spIsReal(b.fields.heroImage)));
@@ -14388,6 +14392,7 @@ function spSum(st) { // 접힌 칸의 한 줄 요약 [글, 채웠나]
             case 'music': { const g = state.bgm || {}; return [g.url && g.enabled !== false ? (g.title || '음악 1곡') : '음악 없음', true]; }
             case 'finish': { const it = state.intro || {}; return [it.enabled ? '청첩장을 열 때 인트로가 나와요' : '인트로 없음', true]; }
         }
+        if (SP_EXTRA.includes(st.k)) return ['눌러서 내용을 고쳐요', true];
     } catch (e) {}
     return ['', true];
 }
@@ -14449,7 +14454,7 @@ function spRenderList() {
         return `<section class="spb-li ${stt}${open ? ' open' : ''}${spListDragOk() && spMovIds(st).length ? ' spb-mov' : ''}" data-li="${st.k}"><div class="spb-h">${spListDragOk() && spMovIds(st).length ? '<span class="spb-grip" title="끌어서 순서 바꾸기" aria-hidden="true">⠿</span>' : ''}<button type="button" class="spb-t" data-li-tog="${st.k}" aria-expanded="${open}"><span class="spb-st spb-${stt}" aria-hidden="true"></span><span class="spb-tx"><b>${esc(st.k === 'finish' ? '인트로' : st.t)}</b><small>${esc(on ? sum : '꺼져 있어요 · 청첩장에 안 보여요')}</small></span><span class="spb-chev" aria-hidden="true"></span></button>${sw ? `<label class="sp-li-sw" title="${on ? '끄면 청첩장에서 빠져요' : '켜면 청첩장에 들어가요'}"><input type="checkbox" data-li-sw="${sw}" aria-label="${esc(st.t)} ${on ? '끄기' : '켜기'}" ${on ? 'checked' : ''}><i></i></label>` : ''}</div>${open ? `<div class="sp-li-b" data-li-body="${st.k}"></div>` : ''}</section>`; };
     const must = spMustList(), nDone = must.filter(m => m[1]).length, left = must.filter(m => !m[1]).map(m => m[0]);
     const offSet = new Set(Array.isArray(state.spDesignOff) ? state.spDesignOff : []);
-    const designOff = st => { if (EASY_SHOWOFF || ['names', 'hero', 'theme', 'music', 'finish'].includes(st.k)) return false; const ids = (st.s || []).filter(id => spHas(id)); return ids.length > 0 && ids.every(id => offSet.has(id) && !spBlock(id).enabled); }; // 디자인에서 꺼 둔 섹션 (관리자: 목록에 안 보이기)
+    const designOff = st => { if (EASY_SHOWOFF || SP_EXTRA.includes(st.k) || ['names', 'hero', 'theme', 'music', 'finish'].includes(st.k)) return false; /* (관리자가 켠 전문가 모드 섹션은 늘 보임) */ const ids = (st.s || []).filter(id => spHas(id)); return ids.length > 0 && ids.every(id => offSet.has(id) && !spBlock(id).enabled); }; // 디자인에서 꺼 둔 섹션 (관리자: 목록에 안 보이기)
     const groups = SP_GROUPS.map(([g, t, sub]) => { const its = spSortByBlocks(steps.filter(st => !designOff(st) && spListGroup(st) === g)); return its.length ? `<div class="spb-grp spb-${g}" data-g="${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${its.map(item).join('')}</div></div>` : ''; }).join('');
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 만들기</b></div>${spUdHtml()}</div>
         <div class="spb">
@@ -14491,6 +14496,23 @@ function spRenderList() {
     pane._spKey = 'list';
 }
 const spH = (h, lead) => `<h2 class="wz-h">${h}</h2><p class="wz-lead">${lead}</p>`;
+// 전문가 모드 섹션 (타임라인·인터뷰·손편지·엔딩 …): 전문가 모드 편집창과 같은 칸을 그대로 넣음
+//  편집 칸이 스스로 다시 그릴 때(renderFieldEditor)도 이 칸에 그리도록 spGenBox를 기억 (var - 화면 준비 중에 먼저 불릴 수 있음)
+var spGenBox = null, spGenId = null;
+function spGeneric(box, id) {
+    const b = spBlock(id); if (!b) return;
+    box.innerHTML = spH(esc(blockLabels[id] || id), '전문가 모드와 같은 칸이에요.') + spInclHtml(id);
+    if (!b.enabled) { box.insertAdjacentHTML('beforeend', spOffNote()); return; }
+    const wrap = document.createElement('div'); wrap.className = 'field-editor sp-gen'; box.appendChild(wrap);
+    spGenBox = wrap; spGenId = id;
+    const fe = document.getElementById('fieldEditor'); if (fe) fe.innerHTML = ''; // (숨은 전문가 편집창과 같은 id 칸이 두 개 생기지 않게)
+    spGenFill(wrap, b);
+}
+function spGenFill(wrap, b) {
+    wrap.innerHTML = '';
+    try { if (b.id === 'timeline') renderTimelineEditor(wrap, b); else if (b.id === 'interview') renderInterviewEditor(wrap, b); else if (sharedBlockDef(b.id)) renderSchemaEditor(wrap, b); } catch (e) { console.warn(e); }
+    wrap.querySelectorAll(':scope > h3').forEach(h => { if (/편집/.test(h.textContent)) h.remove(); }); // 'OO 편집' 제목은 목록 칸 이름과 겹침
+}
 // 1. 두 사람
 function spNames(box) {
     const wi = weddingInfo();

@@ -125,6 +125,17 @@ $easyInfo = [
     'rsvp' => ['✉', '마감일, 받을 항목(인원·식사), 열 때 팝업', '참석 여부'],
     'guestbook' => ['❝', '안내 문구, 하객 글쓰기 허용', '방명록'],
     'video' => ['▶', '식전 영상 유튜브 주소', '영상'],
+    'timeline' => ['⋮', '만남부터 결혼까지 날짜별 이야기 (전문가 모드와 같은 칸)', '타임라인'],
+    'interview' => ['❞', '두 사람 문답 (전문가 모드와 같은 칸)', '인터뷰'],
+    'profile' => ['☻', '신랑·신부 사진과 소개 (전문가 모드와 같은 칸)', '프로필형 소개'],
+    'letter' => ['✉', '손글씨 느낌의 편지 (전문가 모드와 같은 칸)', '손편지'],
+    'together' => ['∞', '함께한 날 수 세기 (전문가 모드와 같은 칸)', '함께한 시간'],
+    'ending' => ['◐', '맨 끝 사진과 마지막 인사 (전문가 모드와 같은 칸)', '엔딩'],
+    'guestsnap' => ['◎', '하객이 찍은 사진 모으기 (전문가 모드와 같은 칸)', '게스트스냅'],
+    'trip' => ['✈', '신혼여행 소식 올리기 (전문가 모드와 같은 칸)', '신혼여행 라이브'],
+    'lottery' => ['★', '하객 대상 추첨 이벤트 (전문가 모드와 같은 칸)', '행운의 추첨'],
+    'dayinfo' => ['ⓓ', '예식 당일 하객 안내 (전문가 모드와 같은 칸)', 'D-DAY 하객 안내'],
+    'thanks' => ['♡', '예식 뒤 감사 인사 (전문가 모드와 같은 칸)', '예식 후 감사 인사'],
     'music' => ['♪', '기본 제공 음악에서 미리 듣고 고르기, 켜고 끄기', '배경음악'],
     'finish' => ['✓', '청첩장을 열 때 나오는 인트로 켜기 (늘 꾸미기 맨 끝)', ''],
 ];
@@ -1325,8 +1336,8 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
     const EZ_ASKDEF = <?= json_encode(SECTION_EASY_ASK, JSON_UNESCAPED_UNICODE) ?>; // id => [질문, 단계, 필요한 섹션, 설명, 고르는 답]
     const EZ_GROUPS = <?= json_encode(SECTION_EASY_GROUPS, JSON_UNESCAPED_UNICODE) ?>;
     const EZ_OPTS = <?= json_encode(SECTION_EASY_OPTS, JSON_UNESCAPED_UNICODE) ?>; // 단계별 세부 옵션 {step: {key: 이름}}
-    const EZ_SEC = { names: '', hero: '', theme: '', music: '', finish: '', gallery: '갤러리', venue: '오시는 길', transport: '교통수단', greet: '인사말', family: '혼주 소개 · 연락하기', account: '마음 전하실 곳', dday: '디데이', notice: '안내문', rsvp: '참석 여부', guestbook: '방명록', video: '영상' };
-    const EZ_SUM = { names: '김민준 · 이서연 · 2027년 5월 22일', hero: '사진 1장 · 매거진 표지', venue: '라움아트센터', gallery: '사진 12장', transport: '안내 3개', greet: '서로 다른 길을 걸어온 두 사람이…', family: '부모님 성함 · 연락처', account: '계좌 2개', dday: '예식 날짜 달력 · 남은 날', notice: '안내 2개', rsvp: '하객이 참석·식사 여부를 알려줘요', guestbook: '하객이 축하 글을 남겨요', video: '영상 1개', theme: '모던 화이트', music: '음악 1곡', finish: '인트로 없음' };
+    const EZ_SEC = { names: '', hero: '', theme: '', music: '', finish: '', gallery: '갤러리', venue: '오시는 길', transport: '교통수단', greet: '인사말', family: '혼주 소개 · 연락하기', account: '마음 전하실 곳', dday: '디데이', notice: '안내문', rsvp: '참석 여부', guestbook: '방명록', video: '영상', timeline: '타임라인', interview: '인터뷰', profile: '프로필형 소개', letter: '손편지', together: '함께한 시간', ending: '엔딩', guestsnap: '게스트스냅', trip: '신혼여행 라이브', lottery: '행운의 추첨', dayinfo: 'D-DAY 하객 안내', thanks: '예식 후 감사 인사' };
+    const EZ_SUM = { names: '김민준 · 이서연 · 2027년 5월 22일', hero: '사진 1장 · 매거진 표지', venue: '라움아트센터', gallery: '사진 12장', transport: '안내 3개', greet: '서로 다른 길을 걸어온 두 사람이…', family: '부모님 성함 · 연락처', account: '계좌 2개', dday: '예식 날짜 달력 · 남은 날', notice: '안내 2개', rsvp: '하객이 참석·식사 여부를 알려줘요', guestbook: '하객이 축하 글을 남겨요', video: '영상 1개', theme: '모던 화이트', music: '음악 1곡', finish: '인트로 없음', timeline: '이야기 4개', interview: '문답 3개', profile: '신랑 · 신부 소개', letter: '편지 1통', together: '함께한 지 1,234일', ending: '마지막 인사', guestsnap: '하객 사진 모으기', trip: '여행 소식', lottery: '추첨 이벤트', dayinfo: '당일 안내', thanks: '감사 인사' };
     const EZ0 = { steps: <?= json_encode($easyNow, JSON_UNESCAPED_UNICODE) ?>, ask: <?= json_encode($easyAsk, JSON_UNESCAPED_UNICODE) ?>, off: <?= json_encode($easyOff ?: new stdClass(), JSON_UNESCAPED_UNICODE) ?>, showOff: <?= $easyShowOff ? 'true' : 'false' ?> };
     const ezCopy = o => JSON.parse(JSON.stringify(o));
     let ez = ezCopy(EZ0.steps), ezAsk = ezCopy(EZ0.ask), ezOff = ezCopy(EZ0.off), ezShowOff = EZ0.showOff;

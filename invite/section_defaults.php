@@ -195,11 +195,16 @@ function section_defaults_panel_style(): string
 const SECTION_EASY_STEPS = [
     'names' => '두 사람', 'hero' => '메인 화면', 'theme' => '색·글꼴', 'gallery' => '갤러리', 'venue' => '예식장', 'transport' => '교통 안내',
     'greet' => '인사말', 'family' => '혼주·연락처', 'account' => '마음 전할 곳', 'dday' => '디데이·달력', 'notice' => '안내 말씀',
-    'rsvp' => '참석 여부', 'guestbook' => '방명록', 'video' => '영상', 'music' => '배경음악', 'finish' => '인트로',
+    'rsvp' => '참석 여부', 'guestbook' => '방명록', 'video' => '영상',
+    // 전문가 모드에만 있던 섹션 (기본 꺼짐 - 관리자가 켜면 간편 만들기 목록에 전문가 모드와 같은 편집 칸으로 나옴, id = 섹션 id)
+    'timeline' => '타임라인', 'interview' => '인터뷰', 'profile' => '프로필형 소개', 'letter' => '손편지', 'together' => '함께한 시간', 'ending' => '엔딩',
+    'guestsnap' => '게스트스냅', 'trip' => '신혼여행 라이브', 'lottery' => '행운의 추첨', 'dayinfo' => 'D-DAY 하객 안내', 'thanks' => '예식 후 감사 인사',
+    'music' => '배경음악', 'finish' => '인트로',
 ];
+const SECTION_EASY_EXTRA = ['timeline', 'interview', 'profile', 'letter', 'together', 'ending', 'guestsnap', 'trip', 'lottery', 'dayinfo', 'thanks'];
 /** 목록 화면(다 만든 뒤 고치는 화면)의 묶음: must 꼭 필요한 것 · more 채우면 좋은 것 · deco 꾸미기 */
 const SECTION_EASY_GROUPS = ['must' => '꼭 필요한 것', 'more' => '채우면 좋은 것', 'deco' => '꾸미기'];
-const SECTION_EASY_GROUP_OF = ['names' => 'must', 'hero' => 'must', 'venue' => 'must', 'theme' => 'deco', 'dday' => 'deco', 'video' => 'deco', 'music' => 'deco', 'finish' => 'deco'];
+const SECTION_EASY_GROUP_OF = ['names' => 'must', 'hero' => 'must', 'venue' => 'must', 'theme' => 'deco', 'dday' => 'deco', 'video' => 'deco', 'ending' => 'deco', 'music' => 'deco', 'finish' => 'deco'];
 function section_easy_group_default(string $id): string { return SECTION_EASY_GROUP_OF[$id] ?? 'more'; }
 /** 단계(= 목록 화면 메뉴) 정리: 아는 id만, 중복 없이, 빠진 단계는 뒤에(켜짐), names 늘 켜짐, finish 늘 맨 끝(꾸미기). g = 묶음 */
 function section_easy_clean($in): array
@@ -218,7 +223,7 @@ function section_easy_clean($in): array
         if (isset($seen[$id]) || $id === 'finish') continue;
         $at = -1;
         for ($k = $i - 1; $k >= 0 && $at < 0; $k--) foreach ($out as $j => $st) if ($st['id'] === $all[$k]) { $at = $j; break; }
-        array_splice($out, $at + 1, 0, [['id' => $id, 'on' => true, 'g' => section_easy_group_default($id)]]);
+        array_splice($out, $at + 1, 0, [['id' => $id, 'on' => !in_array($id, SECTION_EASY_EXTRA, true), 'g' => section_easy_group_default($id)]]); // (전문가 모드 섹션은 꺼진 채로)
         $seen[$id] = 1;
     }
     $out[] = ['id' => 'finish', 'on' => true, 'g' => 'deco'];
