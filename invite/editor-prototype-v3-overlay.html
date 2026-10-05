@@ -784,6 +784,32 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-seg.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .sp-seg.n3 button { padding: 11px 10px; } .sp-seg.n3 button small { font-size: 11px; }
 .sp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+/* 간편 만들기 목록 안의 전문가 모드 섹션 칸 (spGeneric) - 간편 만들기 모양으로 */
+.sp-gen { padding: 4px 0 0; }
+.sp-gen .field { margin: 0 0 20px; }
+.sp-gen .field > label:not(.sp-sw), .sp-gen .field-row > label { display: block; font-size: 13px; font-weight: 700; color: var(--wz-ink); margin: 0 0 8px; }
+.sp-gen .mini-label { margin: 26px 0 12px; padding-top: 14px; border-top: 1px solid var(--wz-line); font-size: 12px; font-weight: 700; letter-spacing: .02em; color: var(--wz-sub); }
+.sp-gen .mini-label:first-child { margin-top: 4px; padding-top: 0; border-top: 0; }
+.sp-gen input[type="text"], .sp-gen input[type="url"], .sp-gen input[type="number"], .sp-gen input[type="date"], .sp-gen input[type="time"], .sp-gen textarea, .sp-gen select {
+    width: 100%; box-sizing: border-box; min-height: 48px; border: 1px solid var(--wz-line2); border-radius: 14px; background: #fff; padding: 0 14px; font: inherit; font-size: 15px; color: var(--wz-ink); outline: 0; transition: border-color .15s, box-shadow .15s; }
+.sp-gen textarea { min-height: 48px; height: auto; padding: 12px 14px; line-height: 1.6; resize: vertical; }
+.sp-gen textarea[rows="4"], .sp-gen textarea[rows="5"], .sp-gen textarea[rows="6"] { min-height: 110px; }
+.sp-gen input:focus, .sp-gen textarea:focus, .sp-gen select:focus { border-color: var(--wz-ink); box-shadow: 0 0 0 4px rgba(27,26,24,.06); }
+.sp-gen input::placeholder, .sp-gen textarea::placeholder { color: #C2BCB4; }
+.sp-gen .field-hint { background: none; padding: 0; margin: 7px 2px 0; font-size: 12px; line-height: 1.55; color: var(--wz-mute); border-radius: 0; }
+.sp-gen .width-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.sp-gen .width-btn { flex: none; height: 36px; padding: 0 14px; border: 1px solid var(--wz-line); border-radius: 999px; background: #fff; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--wz-sub); cursor: pointer; box-shadow: none; }
+.sp-gen .width-btn.active { background: var(--wz-ink); border-color: var(--wz-ink); color: #fff; }
+.sp-gen .field label.sp-gen-sw { display: flex; margin: 0; font-size: inherit; color: var(--wz-ink); } /* (전문가 모드 .field label 덮기) */
+.sp-gen .sp-gen-sw b { font-size: 13.5px; } .sp-gen .sp-gen-sw small { font-size: 12px; line-height: 1.5; }
+.sp-gen .width-row { margin: 0; padding: 0; }
+.sp-gen .sp-gen-del { height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: none; color: var(--wz-mute); font: inherit; font-size: 12px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.sp-gen .sp-gen-mv { width: 32px; height: 30px; padding: 0; border: 1px solid var(--wz-line); border-radius: 8px; background: #fff; color: var(--wz-sub); font: inherit; font-size: 13px; cursor: pointer; }
+.sp-gen .sp-gen-mv:hover { border-color: var(--wz-ink); color: var(--wz-ink); }
+.sp-gen .sp-gen-del:hover { color: var(--wz-sun, #B5545F); }
+.sp-gen .sp-gen-btn { height: 46px; padding: 0 18px; border-radius: 14px; border: 1px dashed #B9B1A6; background: var(--ui-tint, #FBF9F6); color: var(--wz-ink); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.sp-gen .sp-gen-btn:hover { border-color: var(--wz-ink); }
+.sp-gen .sf-range { display: flex; align-items: center; gap: 10px; } .sp-gen .sf-range input[type="range"] { flex: 1; accent-color: var(--wz-ink); }
 .sp-chips button { border: 1px solid var(--wz-line); background: #fff; border-radius: 99px; padding: 7px 13px; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--wz-sub); cursor: pointer; }
 .sp-chips button.on { background: var(--wz-ink); border-color: var(--wz-ink); color: #fff; }
 .sp-item { background: #fff; border: 1px solid var(--wz-line); border-radius: 14px; padding: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
@@ -8291,6 +8317,7 @@ function padHidden(block) { return (block.id === 'hero' || block.id === 'heroVid
 let pdLink = false; // "위아래 같이 바꾸기"
 // 모든 섹션 공통 - 위/아래 여백(숫자 입력, 미리보기에서 드래그도 가능)과 섹션 배경색
 function appendSectionSpacingControls(wrap, block) {
+    if (wrap.classList && wrap.classList.contains('sp-gen')) return; // (간편 만들기 칸엔 여백·배경 칸 없음 - 여백은 미리보기 눈금자로)
     const isVideo = block.id === 'heroVideo'; // 히어로 영상은 항상 꽉 채워야 해서 여백 개념만 없고, 배경색은 영상 로딩 전/여백에 쓰이므로 남겨둔다
     // "전체/1/2/1/3" 폭 버튼 - 섹션 목록뿐 아니라 여기 옵션(필드 편집기)에서도 버튼 자체는 숨긴다.
     // block.width 값과 이 버튼들의 클릭 로직은 그대로 남겨뒀으니(display:none만 줌), 나중에 필요하면
@@ -14526,7 +14553,29 @@ function spGeneric(box, id) {
 function spGenFill(wrap, b) {
     wrap.innerHTML = '';
     try { if (b.id === 'timeline') renderTimelineEditor(wrap, b); else if (b.id === 'interview') renderInterviewEditor(wrap, b); else if (sharedBlockDef(b.id)) renderSchemaEditor(wrap, b); } catch (e) { console.warn(e); }
-    wrap.querySelectorAll(':scope > h3').forEach(h => { if (/편집/.test(h.textContent)) h.remove(); }); // 'OO 편집' 제목은 목록 칸 이름과 겹침
+    spGenTidy(wrap);
+    if (!wrap._mo) { wrap._mo = new MutationObserver(() => spGenTidy(wrap)); wrap._mo.observe(wrap, { childList: true }); } // 편집 칸이 스스로 다시 그려도 간편 모양으로
+}
+// 전문가 모드 편집 칸(기본 모양)을 간편 만들기 모양으로: 켜고 끄기 → 스위치 줄(설명은 안의 작은 글씨), 고르는 버튼 → 칩, 사진 버튼 → 간편 버튼
+function spGenTidy(wrap) {
+    if (wrap._tidying) return; wrap._tidying = true;
+    try {
+        wrap.querySelectorAll(':scope > h3').forEach(h => { if (/편집/.test(h.textContent)) h.remove(); }); // 'OO 편집' 제목은 목록 칸 이름과 겹침
+        wrap.querySelectorAll('label.account-toggle').forEach(lb => {
+            const inp = lb.querySelector('input[type=checkbox]'); if (!inp) return;
+            const nx = lb.nextElementSibling, hint = nx && nx.classList.contains('field-hint') ? nx : null;
+            const sw = document.createElement('label'); sw.className = 'sp-sw sp-gen-sw';
+            sw.innerHTML = '<span><b></b>' + (hint ? '<small></small>' : '') + '</span>';
+            sw.querySelector('b').textContent = lb.textContent.trim();
+            if (hint) { sw.querySelector('small').textContent = hint.textContent.trim(); hint.remove(); }
+            sw.append(inp, document.createElement('i'));
+            lb.replaceWith(sw);
+        });
+        wrap.querySelectorAll('.mini-label').forEach(m => { const f = m.nextElementSibling, l = f && f.querySelector(':scope > label:not(.sp-sw)'); if (l && l.textContent.trim() === m.textContent.trim()) l.remove(); }); // 소제목과 같은 칸 제목
+        wrap.querySelectorAll('.pill').forEach(x => x.classList.add(/^\s*(삭제|빼기|✕)\s*$/.test(x.textContent) ? 'sp-gen-del' : /^\s*[↑↓▲▼]\s*$/.test(x.textContent) ? 'sp-gen-mv' : 'sp-gen-btn'));
+        wrap.querySelectorAll('.field-hint').forEach(x => { if (/더블클릭|손잡이|포토샵|드래그/.test(x.textContent)) x.remove(); }); // 전문가 모드 미리보기 조작 안내는 빼기 (간편 만들기 미리보기는 보기만)
+        wrap.querySelectorAll('.field-hint').forEach(x => x.removeAttribute('style'));
+    } finally { wrap._tidying = false; }
 }
 // 1. 두 사람
 function spNames(box) {
