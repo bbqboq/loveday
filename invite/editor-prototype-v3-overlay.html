@@ -7005,7 +7005,7 @@ async function loadMusicTracks() {
     catch (e) { musicTracksCache = []; }
     return musicTracksCache;
 }
-let bgmPreviewAudio = null;
+let bgmPreviewAudio = null, spTrkTop = 0; // spTrkTop: 간편 만들기 곡 목록 칸의 스크롤 자리
 // 음악 고르기 창의 "미리 듣기"는 창을 닫거나(다른 칸으로 넘어가 음악 칸이 안 보이면) 바로 멈춘다
 function stopBgmPreview() {
     if (bgmPreviewAudio && !bgmPreviewAudio.paused) { try { bgmPreviewAudio.pause(); } catch (e) {} }
@@ -14930,7 +14930,14 @@ function spMusic(box) {
         if (!list.isConnected) return;
         if (!tracks.length) { list.innerHTML = '<p class="sp-off">아직 준비된 기본 음악이 없어요. 아래 <b>내 음악 올리기</b>로 직접 올릴 수 있어요.</p>'; return; }
         list.innerHTML = tracks.map(t => `<div class="sp-trk${bg.url === t.url ? ' on' : ''}"><button type="button" class="sp-play" data-sp-play="${esc(t.url)}" aria-label="미리 듣기">▶</button><button type="button" class="sp-pick" data-sp-pick="${esc(t.url)}" data-title="${esc(t.title)}"><b>${esc(t.title)}</b><small>${(t.tags || []).map(x => '#' + esc(x)).join(' ')}</small></button>${bg.url === t.url ? '<em>✓</em>' : ''}</div>`).join('');
-        list.querySelectorAll('[data-sp-pick]').forEach(b => b.addEventListener('click', () => { state.bgm.url = b.dataset.spPick; state.bgm.title = b.dataset.title; state.bgm.enabled = true; delete state.bgm.removed; spChanged(); scheduleSnapshot(); spRender(); }));
+        list.scrollTop = spTrkTop; list.addEventListener('scroll', () => { spTrkTop = list.scrollTop; }, { passive: true }); // 곡 목록 안 스크롤 자리 기억
+        list.querySelectorAll('[data-sp-pick]').forEach(b => b.addEventListener('click', () => {
+            const had = !!state.bgm.url; spTrkTop = list.scrollTop;
+            state.bgm.url = b.dataset.spPick; state.bgm.title = b.dataset.title; state.bgm.enabled = true; delete state.bgm.removed; spChanged(); scheduleSnapshot();
+            if (!had) return spRender(); // 처음 고르면 자동 재생·음량 칸이 생겨서 다시 그림
+            list.querySelectorAll('.sp-trk').forEach(t => t.classList.toggle('on', t.contains(b))); // 그 밖엔 그 자리에서 표시만 (스크롤 그대로)
+            const sw = box.querySelector('#spBgm'); if (sw) { sw.checked = true; const sm = sw.closest('label')?.querySelector('small'); if (sm) sm.textContent = '지금: ' + (b.dataset.title || '고른 음악'); }
+        }));
         list.querySelectorAll('[data-sp-play]').forEach(b => b.addEventListener('click', () => {
             if (bgmPreviewAudio && bgmPreviewAudio._src === b.dataset.spPlay && !bgmPreviewAudio.paused) { bgmPreviewAudio.pause(); b.textContent = '▶'; return; }
             if (bgmPreviewAudio) bgmPreviewAudio.pause();
