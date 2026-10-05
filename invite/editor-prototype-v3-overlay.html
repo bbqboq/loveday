@@ -431,7 +431,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-pvbar span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sp-pvbar-b { display: flex; flex: none; height: 100%; }
 .sp-pvbar button { height: 100%; border: 0; padding: 0 clamp(18px, 6vw, 40px); background: #2A2725; color: #fff; font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
-.sp-pvbar button:hover { background: #1B1917; } #spPvPub { background: #7C4650; } #spPvPub:hover { background: #6A3A44; }
+.sp-pvbar button:hover { background: #1B1917; } #spPvPub { background: #7C4650; } #spPvPub:hover { background: #6A3A44; } #spPvOpen { background: #3D3936; font-weight: 600; }
 .simple-mode.sp-pv #previewRoot .section-ruler, .simple-mode.sp-pv #previewRoot .hb-area, .simple-mode.sp-pv #previewRoot .hb-handle, .simple-mode.sp-pv #previewRoot .hb-ok, .simple-mode.sp-pv #previewRoot .hh-group, .simple-mode.sp-pv.sp-pv body:not(.sp-x) #undoTab { display: none !important; }
 .simple-mode.sp-pv #previewRoot .col.sp-live { pointer-events: none; }
 .simple-mode.sp-pv #previewRoot .col.selected { outline: none !important; box-shadow: none !important; }
@@ -4242,14 +4242,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017s">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017s">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017t">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017t">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017s"></script>
-<script src="assets/tip-demos.js?v=1017s"></script>
-<script src="assets/ld-dialog.js?v=1017s"></script>
+<script src="assets/invite-blocks.js?v=1017t"></script>
+<script src="assets/tip-demos.js?v=1017t"></script>
+<script src="assets/ld-dialog.js?v=1017t"></script>
 </head>
 <body>
 
@@ -4551,7 +4551,7 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
     <button type="button" class="pill-primary" id="publishBtn">발행하기</button>
 </div>
 <div class="sp-pvreal" id="spPvReal"></div>
-<div class="sp-pvbar" id="spPvBar"><span id="spPvMsg">미리보기 입니다. 제작 후 꼭 저장해주세요.</span><span class="sp-pvbar-b"><button type="button" id="spPvPub" hidden>발행하기</button><button type="button" id="spPvBack">돌아가기</button></span></div>
+<div class="sp-pvbar" id="spPvBar"><span id="spPvMsg">미리보기 입니다. 제작 후 꼭 저장해주세요.</span><span class="sp-pvbar-b"><button type="button" id="spPvOpen" hidden>새 창으로 보기</button><button type="button" id="spPvPub" hidden>발행하기</button><button type="button" id="spPvBack">돌아가기</button></span></div>
 <div class="width-fab-row" id="widthFabRow">
     <button type="button" id="mWidthNormal" class="width-fab-btn active" title="표준 화면(실제 기기 폭)">표준</button>
     <button type="button" id="mWidthNarrow" class="width-fab-btn" title="좁은 화면(테스트용 320px)">좁게</button>
@@ -13688,6 +13688,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     root.classList.add('sp-pv');
     document.getElementById('spPvMsg').textContent = final ? '완성본이에요! 저장해 뒀어요. 발행하면 주소가 생겨요.' : quick ? '이렇게 만들어졌어요! 닫으면 나머지를 하나씩 고칠 수 있어요.' : '하객에게 이렇게 보여요. 저장해 뒀어요.';
     document.getElementById('spPvPub').hidden = !final;
+    document.getElementById('spPvOpen').hidden = true;
     document.getElementById('spPvBack').textContent = final ? '수정하기' : quick ? '닫기' : '돌아가기';
     const box = document.getElementById('spPvReal');
     const real = !!EDIT_TOKEN && !SAMPLE_ID;
@@ -13700,7 +13701,19 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     const fr = document.createElement('iframe');
     fr.title = '완성본 미리보기'; fr.setAttribute('allow', 'autoplay; fullscreen; clipboard-write; web-share');
     fr.src = `invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}&_=${Date.now()}`;
+    // 서버가 다른 화면 안에 끼워 보이기를 막으면(X-Frame-Options: DENY 등) 창이 하얗게 비어 버림 → 에디터 미리보기(보기 전용) + [새 창으로 보기]
+    const fallback = () => {
+        if (seq !== spPvSeq || !root.classList.contains('sp-pv-real')) return;
+        box.innerHTML = ''; root.classList.remove('sp-pv-real');
+        try { renderPreview(); } catch (e) {} const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0;
+        const ob = document.getElementById('spPvOpen'); if (ob) ob.hidden = false;
+        document.getElementById('spPvMsg').textContent = final ? '완성본 · 저장했어요' : '미리보기'; // (버튼이 셋이라 짧게)
+    };
+    const guard = setTimeout(fallback, 9000); // (아예 안 열리면)
     fr.addEventListener('load', () => { // 배경음악을 켰으면 바로 틀기 (실제 화면의 음악 버튼과 같은 음악)
+        clearTimeout(guard);
+        let okFrame = false; try { const d = fr.contentDocument; okFrame = !!(d && d.body && d.body.children.length && /invite_view/.test(d.location.href)); } catch (e) {}
+        if (!okFrame) return fallback();
         const box2 = box.querySelector('.sp-pvload'); if (box2) box2.remove();
         const g = state.bgm || {}; if (!(g.enabled && g.url)) return;
         let n = 0; const t = setInterval(() => {
@@ -13717,6 +13730,7 @@ function spClosePreview() {
     if (spPvMode === 'quick') { spPvMode = null; spRender(); window.scrollTo(0, 0); }
 }
 document.getElementById('spPvBack').addEventListener('click', spClosePreview);
+document.getElementById('spPvOpen').addEventListener('click', () => { if (EDIT_TOKEN) window.open(`invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}`, '_blank', 'noopener'); }); // (창 안에 못 띄울 때 - 하객이 보는 화면을 새 창으로)
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('sp-pv')) spClosePreview(); });
 document.getElementById('spPvPub').addEventListener('click', async e => {
     const b = e.currentTarget; if (b.disabled) return;
