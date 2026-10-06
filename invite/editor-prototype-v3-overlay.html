@@ -4242,14 +4242,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017u">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017u">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017v">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017v">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017u"></script>
-<script src="assets/tip-demos.js?v=1017u"></script>
-<script src="assets/ld-dialog.js?v=1017u"></script>
+<script src="assets/invite-blocks.js?v=1017v"></script>
+<script src="assets/tip-demos.js?v=1017v"></script>
+<script src="assets/ld-dialog.js?v=1017v"></script>
 </head>
 <body>
 
@@ -4978,7 +4978,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy && j.easy.off && typeof j.easy.off === 'object') EASY_OFF = j.easy.off;
     if (j && j.easy && Array.isArray(j.easy.ask)) EASY_ASK = j.easy.ask; // 처음 만들 때 질문 순서·켜기
     if (j && j.easy) EASY_SHOWOFF = !!j.easy.showOff;
-    if (j && j.easy) EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; // 메인 사진 예시 (관리자 손쉬운 제작) // 목록에 디자인에서 꺼 둔 섹션도 보이기
+    if (j && j.easy) { EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; EASY_HERO_POS = j.easy.heroPos && typeof j.easy.heroPos === 'object' ? j.easy.heroPos : {}; } // 메인 사진 예시 + 보일 부분·확대 (관리자 손쉬운 제작)
     if (j && j.easy && Array.isArray(j.easy.steps)) { EASY_STEPS = j.easy.steps; try { if (document.documentElement.classList.contains('simple-mode')) { if (spApplyEasyOrder()) renderPreview(); spRender(); } } catch (e) {} } // 손쉬운 제작 단계
     // 편집창 모양 (관리자 → 섹션 순서 → 편집창 모양). 주소에 ?panel= 이 있으면 그게 우선
     if (j && typeof j.panelStyle === 'string' && !PZ_URL) {
@@ -14074,7 +14074,7 @@ let spStep = 0, spAccCache = {};
 const spBlock = id => state.blocks.find(b => b.id === id);
 const spOn = id => { const b = spBlock(id); return !!(b && b.enabled && !SECTION_HIDDEN.has(id)); };
 // 손쉬운 제작 단계 - 관리자 → 섹션 설정 → "손쉬운 제작" 탭에서 켜기/끄기·순서를 정함 (section_defaults.php easy). 정한 적 없으면 아래 순서·모두 켜짐
-let EASY_STEPS = null, EASY_OFF = {}, EASY_ASK = null, EASY_SHOWOFF = false, EASY_HERO_SAMPLE = ''; // EASY_OFF: 관리자가 끈 단계별 세부 옵션 {step: [key]} · EASY_ASK: 질문 [{id,on}] · EASY_SHOWOFF: 디자인에서 꺼 둔 섹션도 목록에
+let EASY_STEPS = null, EASY_OFF = {}, EASY_ASK = null, EASY_SHOWOFF = false, EASY_HERO_SAMPLE = '', EASY_HERO_POS = {}; // EASY_OFF: 관리자가 끈 단계별 세부 옵션 {step: [key]} · EASY_ASK: 질문 [{id,on}] · EASY_SHOWOFF: 디자인에서 꺼 둔 섹션도 목록에
 const spOpt = (step, key) => !((EASY_OFF && EASY_OFF[step]) || []).includes(key);
 // 전문가 모드에만 있던 섹션 - 관리자 손쉬운 제작에서 켜면 목록에 나옴 (기본 꺼짐, 단계 id = 섹션 id, 편집 칸은 전문가 모드와 같은 것 spGeneric)
 const SP_EXTRA = ['timeline', 'interview', 'profile', 'letter', 'together', 'ending', 'guestsnap', 'trip', 'lottery', 'dayinfo', 'thanks'];
@@ -14670,9 +14670,17 @@ function spSetDateTbd(on) {
 // 2. 메인 화면 - ① 사진/유튜브 고르기 ② 사진 올리기(영상 주소) ③ 화면 크기
 const spIsReal = src => /uploads\/(?!site\/)/.test(typeof src === 'string' ? src : (src && src.src) || ''); // 고객이 올린 사진 (uploads/site/ = 관리자가 올린 예시 사진은 아님)
 // 간편 만들기: 메인 사진을 아직 안 골랐으면 관리자가 정한 예시 사진을 보여줌 (고객이 사진을 고르면 그 사진으로 바뀜)
+//  관리자가 정한 보일 부분·확대(EASY_HERO_POS)는 그 사진의 state.imgFocus / imgZoom으로 (관리자가 나중에 고쳐도 다시 열면 따라감)
 function spApplyHeroSample() {
-    const hp = spBlock('hero'); if (!EASY_HERO_SAMPLE || !hp || spIsReal(hp.fields.heroImage) || hp.fields.heroImage === EASY_HERO_SAMPLE) return false;
-    hp.fields.heroImage = EASY_HERO_SAMPLE; delete hp.fields.heroFocus; return true;
+    const hp = spBlock('hero'); if (!EASY_HERO_SAMPLE || !hp || spIsReal(hp.fields.heroImage)) return false;
+    let ch = false;
+    if (hp.fields.heroImage !== EASY_HERO_SAMPLE) { hp.fields.heroImage = EASY_HERO_SAMPLE; delete hp.fields.heroFocus; ch = true; }
+    const key = InviteBlocks.imgKey(EASY_HERO_SAMPLE), fo = /^\d{1,3}(\.\d+)?% \d{1,3}(\.\d+)?%$/.test(EASY_HERO_POS.focus || '') ? EASY_HERO_POS.focus : '';
+    const z = Number(EASY_HERO_POS.zoom) > 1.001 ? Math.min(4, Math.round(Number(EASY_HERO_POS.zoom) * 100) / 100) : 0;
+    state.imgFocus = state.imgFocus || {}; state.imgZoom = state.imgZoom || {};
+    if ((state.imgFocus[key] || '') !== fo) { if (fo) state.imgFocus[key] = fo; else delete state.imgFocus[key]; ch = true; }
+    if ((state.imgZoom[key] || 0) !== z) { if (z) state.imgZoom[key] = z; else delete state.imgZoom[key]; ch = true; }
+    return ch;
 }
 function spHeroKind() {
     const hp = spBlock('hero'), hv = spBlock('heroVideo');
@@ -14939,7 +14947,7 @@ function spHero(box) {
         html += (part === 'media' ? `<div class="wz-field"><button type="button" class="sp-bigup${real ? ' on' : ''}" data-sp-up="hero"${real ? ` style="--ph:url('${esc(InviteBlocks.imgUrl(f.heroImage))}')"` : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><polyline points="21 16 15 11 6 19"/></svg><b>${real ? '사진을 넣었어요 · 바꾸기' : '사진 고르기'}</b><small>휴대폰 앨범에서 한 장 골라요</small></button></div>`
             : `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 1}</span>대표 사진</span></div>
             <div class="sp-hero">${f.heroImage ? `<img src="${esc(InviteBlocks.imgUrl(f.heroImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" data-sp-up="hero">${real ? '사진 바꾸기' : '사진 올리기'}</button></div></div>`) + `
-            ${f.heroImage && HO('crop') ? `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 2}</span>보일 부분 · 확대</span><small>사진을 끌어서 옮겨요</small></div><div id="spCropBox"></div></div>` : ''}
+            ${spIsReal(f.heroImage) && HO('crop') ? `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 2}</span>보일 부분 · 확대</span><small>사진을 끌어서 옮겨요</small></div><div id="spCropBox"></div></div>` : ''}
             ${HO('shade') && InviteBlocks.heroTextOn(f, 'hero') ? `<div class="sp-shade" data-blk="hero">${shadeFieldHtml(f, 'hero')}</div>` : ''}`;
     } else if (hv) {
         const f = hv.fields;

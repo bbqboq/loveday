@@ -88,12 +88,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 [$name] = snap_store_image($file, 0, $dir);
                 $new = '/invite/uploads/site/' . $name;
             }
-            $ok = section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['heroSample' => $new]);
+            $ok = section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['heroSample' => $new, 'heroPos' => []]); // (새 사진이면 보일 부분은 처음대로)
             if ($ok && $cur !== '' && $cur !== $new) @unlink($dir . basename($cur));
             if ($ok) { echo json_encode(['ok' => true, 'url' => $new], JSON_UNESCAPED_UNICODE); exit; }
         } catch (Throwable $e) {
             echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit;
         }
+    } elseif ($act === 'easy_hero_pos') {
+        // 메인 사진 예시에서 보일 부분·확대 (끌거나 확대하면 바로 저장)
+        $ok = section_defaults_easy_hero() !== '' && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['heroPos' => ['focus' => (string) ($_POST['focus'] ?? ''), 'zoom' => (float) ($_POST['zoom'] ?? 1)]]);
     } elseif ($act === 'groups_reset') {
         $ok = section_defaults_save(section_defaults_get(), null, null, null, []);
     } elseif ($act === 'save') {
@@ -128,7 +131,7 @@ $easyNow = section_defaults_easy();
 $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
-$easyHero = section_defaults_easy_hero();
+$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos();
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
 $easyInfo = [
@@ -643,9 +646,20 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-li span { flex: 1; min-width: 0; } .ez-li b { display: block; font-size: 11px; } .ez-li small { display: block; font-size: 9.5px; color: #8A8278; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ez-li u { flex: none; width: 24px; height: 14px; border-radius: 9px; background: var(--ui-point, #C9A961); }
 .ez-lorder { margin-top: 10px; padding: 8px 10px; border-radius: 10px; border: 1px dashed var(--ui-line, #D9D2C8); font-size: 10.5px; font-weight: 700; color: #6F6A63; }
-.ez-hero { display: flex; gap: 14px; align-items: center; margin: 0 0 14px; padding: 14px; border-radius: 16px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; }
-.ez-hero-pic { flex: none; width: 76px; height: 120px; border-radius: 12px; overflow: hidden; background: var(--ui-soft, #F3EFE8); display: grid; place-items: center; font-size: 10.5px; color: #A29C94; text-align: center; }
-.ez-hero-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ez-hero { display: flex; gap: 14px; align-items: flex-start; margin: 0 0 14px; padding: 14px; border-radius: 16px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; }
+.ez-hero-l { flex: none; width: 124px; display: flex; flex-direction: column; gap: 6px; }
+.ez-hero-pic { position: relative; width: 124px; aspect-ratio: 390 / 844; border-radius: 14px; overflow: hidden; background: var(--ui-soft, #F3EFE8); display: grid; place-items: center; font-size: 10.5px; color: #A29C94; text-align: center; touch-action: none; user-select: none; }
+.ez-hero-pic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.ez-hero-pic.has { cursor: grab; } .ez-hero-pic.drag { cursor: grabbing; }
+.ez-hero-pic i { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); padding: 3px 8px; border-radius: 99px; background: rgba(0,0,0,.45); color: #fff; font-style: normal; font-size: 10px; white-space: nowrap; pointer-events: none; transition: opacity .2s; }
+.ez-hero-pic.drag i { opacity: 0; }
+.ez-hero-z { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #8A8278; }
+.ez-hero-z[hidden] { display: none; }
+.ez-hero-z input { flex: 1; min-width: 0; accent-color: var(--ui-point, #B8925A); }
+.ez-hero-z button { flex: none; width: 22px; height: 22px; padding: 0; border-radius: 50%; border: 1px solid var(--ui-line, #E5DED3); background: #fff; color: #6B645B; font-size: 13px; line-height: 1; cursor: pointer; }
+.ez-hero-f { display: flex; justify-content: space-between; align-items: center; min-height: 16px; font-size: 11px; } .ez-hero-f b { font-weight: 600; color: #6B645B; } .ez-hero-f b[hidden] { display: none; }
+.ez-hero-rs { margin-left: auto; border: 0; background: none; padding: 0; font-size: 11px; color: #8A8278; text-decoration: underline; cursor: pointer; }
+.ez-hero-rs[hidden] { display: none; }
 .ez-hero-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; } .ez-hero-t b { font-size: 14px; } .ez-hero-t small { font-size: 12px; color: #8A8278; line-height: 1.5; }
 .ez-hero-b { display: flex; gap: 6px; margin-top: 6px; }
 .ez-sws { flex: none; width: 104px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; } /* 오른쪽 버튼 칸은 폭을 고정해서 줄마다 같은 자리에 */
@@ -691,8 +705,12 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
                 <button type="button" class="so-reset" id="ezReset"<?= $easyCustom ? '' : ' disabled' ?>>기본으로 되돌리기</button>
             </div>
             <div class="ez-hero" id="ezHero">
-                <div class="ez-hero-pic" id="ezHeroPic"><?= $easyHero ? '<img src="' . $h($easyHero) . '" alt="">' : '<span>예시 사진 없음</span>' ?></div>
-                <div class="ez-hero-t"><b>메인 사진 예시</b><small>고객이 간편 만들기에서 메인 사진을 고르기 전까지 첫 화면에 이 사진이 보여요. 세로로 긴 사진이 좋아요. 올리면 바로 저장돼요.</small>
+                <div class="ez-hero-l">
+                    <div class="ez-hero-pic<?= $easyHero ? ' has' : '' ?>" id="ezHeroPic" data-focus="<?= $h($easyHeroPos['focus']) ?>" data-zoom="<?= $h((string) $easyHeroPos['zoom']) ?>"><?= $easyHero ? '<img src="' . $h($easyHero) . '" alt="" draggable="false"><i>✥ 끌어서 옮기기</i>' : '<span>예시 사진 없음</span>' ?></div>
+                    <div class="ez-hero-z" id="ezHeroZ"<?= $easyHero ? '' : ' hidden' ?>><button type="button" data-z="-" aria-label="축소">−</button><input type="range" min="100" max="300" step="5" value="100" aria-label="확대"><button type="button" data-z="+" aria-label="확대">＋</button></div>
+                    <div class="ez-hero-f"><b id="ezHeroZv"<?= $easyHero ? '' : ' hidden' ?>>100%</b><button type="button" class="ez-hero-rs" id="ezHeroRs" hidden>처음대로</button></div>
+                </div>
+                <div class="ez-hero-t"><b>메인 사진 예시</b><small>고객이 간편 만들기에서 메인 사진을 고르기 전까지 첫 화면에 이 사진이 보여요. 세로로 긴 사진이 좋아요. 올리면 바로 저장돼요.<br>왼쪽 사진을 <b>끌어서 보일 부분</b>을 옮기고, 아래 막대로 확대해요. 고친 위치도 바로 저장돼요. (휴대폰마다 화면 길이가 달라서 위아래가 조금 더 보이거나 잘릴 수 있어요)</small>
                     <span class="ez-hero-b"><button type="button" class="gp-save" id="ezHeroUp"><?= $easyHero ? '사진 바꾸기' : '사진 올리기' ?></button><button type="button" class="gp-undo" id="ezHeroDel"<?= $easyHero ? '' : ' hidden' ?>>지우기</button></span>
                     <input type="file" id="ezHeroIn" accept="image/jpeg,image/png,image/webp" hidden></div>
             </div>
@@ -1557,16 +1575,59 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
     // 메인 사진 예시 올리기 · 지우기 (바로 저장)
     (function ezHeroBox() {
         const up = document.getElementById('ezHeroUp'), del = document.getElementById('ezHeroDel'), inp = document.getElementById('ezHeroIn'), pic = document.getElementById('ezHeroPic');
+        const zb = document.getElementById('ezHeroZ'), rng = zb.querySelector('input'), zv = document.getElementById('ezHeroZv'), rs = document.getElementById('ezHeroRs');
         if (!up) return;
-        if (readonly) { up.disabled = true; del.hidden = true; return; }
-        const show = url => { pic.innerHTML = url ? `<img src="${ezEsc(url)}" alt="">` : '<span>예시 사진 없음</span>'; up.textContent = url ? '사진 바꾸기' : '사진 올리기'; del.hidden = !url; };
+        let fx = 50, fy = 50, zoom = 1, saveT = 0;
+        { const m = /^([\d.]+)% ([\d.]+)%$/.exec(pic.dataset.focus || ''); if (m) { fx = +m[1]; fy = +m[2]; } const z = parseFloat(pic.dataset.zoom); if (z > 1) zoom = Math.min(3, z); }
+        const img = () => pic.querySelector('img');
+        // 고객 화면과 같은 방식 (InviteBlocks.applyImgFocus): 보일 부분 = object-position, 확대 = 그 점을 기준으로 scale
+        const paint = () => {
+            const im = img(); if (im) { im.style.objectPosition = `${fx}% ${fy}%`; im.style.transformOrigin = `${fx}% ${fy}%`; im.style.scale = zoom > 1 ? String(zoom) : ''; }
+            rng.value = Math.round(zoom * 100); zv.textContent = Math.round(zoom * 100) + '%';
+            rs.hidden = !im || (fx === 50 && fy === 50 && zoom === 1);
+        };
+        const savePos = () => { clearTimeout(saveT); saveT = setTimeout(() => {
+            post({ act: 'easy_hero_pos', focus: (fx === 50 && fy === 50) ? '' : `${fx}% ${fy}%`, zoom: String(zoom) }).then(() => toast('사진 위치를 저장했어요')).catch(err => say(err.message));
+        }, 500); };
+        const show = url => {
+            pic.innerHTML = url ? `<img src="${ezEsc(url)}" alt="" draggable="false"><i>✥ 끌어서 옮기기</i>` : '<span>예시 사진 없음</span>';
+            pic.classList.toggle('has', !!url); zb.hidden = zv.hidden = !url; up.textContent = url ? '사진 바꾸기' : '사진 올리기'; del.hidden = !url;
+            paint();
+        };
+        paint();
+        if (readonly) { up.disabled = true; del.hidden = true; zb.hidden = true; zv.hidden = true; rs.hidden = true; pic.classList.remove('has'); return; }
         up.addEventListener('click', () => inp.click());
         inp.addEventListener('change', () => {
             const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+            const old = img() ? img().getAttribute('src') : '';
             up.disabled = true; up.textContent = '올리는 중…';
-            post({ act: 'easy_hero', img: f }).then(j => { show(j.url); toast('메인 사진 예시를 저장했어요'); }).catch(err => { say(err.message); show(pic.querySelector('img') ? pic.querySelector('img').src : ''); }).finally(() => { up.disabled = false; });
+            post({ act: 'easy_hero', img: f }).then(j => { fx = fy = 50; zoom = 1; show(j.url); toast('메인 사진 예시를 저장했어요'); }).catch(err => { say(err.message); show(old); }).finally(() => { up.disabled = false; });
         });
-        del.addEventListener('click', () => LD.confirm('메인 사진 예시를 지울까요?', { message: '지우면 고객 화면엔 디자인에 들어 있는 기본 모습이 보여요.' }).then(ok => { if (!ok) return; post({ act: 'easy_hero', remove: '1' }).then(() => { show(''); toast('지웠어요'); }).catch(err => say(err.message)); }));
+        del.addEventListener('click', () => LD.confirm('메인 사진 예시를 지울까요?', { message: '지우면 고객 화면엔 디자인에 들어 있는 기본 모습이 보여요.' }).then(ok => { if (!ok) return; post({ act: 'easy_hero', remove: '1' }).then(() => { fx = fy = 50; zoom = 1; show(''); toast('지웠어요'); }).catch(err => say(err.message)); }));
+        const setZoom = z => { zoom = Math.max(1, Math.min(3, Math.round(z * 100) / 100)); paint(); };
+        rng.addEventListener('input', () => setZoom(rng.value / 100));
+        rng.addEventListener('change', savePos);
+        zb.querySelectorAll('[data-z]').forEach(b => b.addEventListener('click', () => { if (!img()) return; setZoom(zoom + (b.dataset.z === '+' ? .2 : -.2)); savePos(); }));
+        rs.addEventListener('click', () => { fx = fy = 50; zoom = 1; paint(); savePos(); });
+        // 끌기: 고객 에디터 '보일 부분'과 같은 계산 (칸보다 넘치는 만큼 + 확대한 만큼 옮길 수 있음)
+        pic.addEventListener('pointerdown', e => {
+            const im = img(); if (!im || e.button > 0) return;
+            e.preventDefault();
+            const W = pic.clientWidth, H = pic.clientHeight, nw = im.naturalWidth || W, nh = im.naturalHeight || H;
+            const sc = Math.max(W / nw, H / nh), ox = nw * sc - W, oy = nh * sc - H;
+            const x0 = fx, y0 = fy, sx = e.clientX, sy = e.clientY;
+            try { pic.setPointerCapture(e.pointerId); } catch (er) {}
+            pic.classList.add('drag');
+            const mv = ev => {
+                const kx = ox * zoom + (zoom - 1) * W, ky = oy * zoom + (zoom - 1) * H;
+                const r1 = v => Math.round(Math.max(0, Math.min(100, v)) * 10) / 10;
+                if (kx > 1) fx = r1(x0 - (ev.clientX - sx) / kx * 100);
+                if (ky > 1) fy = r1(y0 - (ev.clientY - sy) / ky * 100);
+                paint();
+            };
+            const end = () => { pic.classList.remove('drag'); pic.removeEventListener('pointermove', mv); pic.removeEventListener('pointerup', end); pic.removeEventListener('pointercancel', end); if (fx !== x0 || fy !== y0) savePos(); };
+            pic.addEventListener('pointermove', mv); pic.addEventListener('pointerup', end); pic.addEventListener('pointercancel', end);
+        });
     })();
 
     document.getElementById('soS10Fix')?.addEventListener('click', () => { order = s10Sort(order); build(); }); // 묶음 순서대로 정리 (저장 버튼을 눌러야 저장)

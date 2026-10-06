@@ -18,6 +18,7 @@
  *                ask    : 처음 만들 때 질문 [{"id":"names:name","on":true}, ...] (순서 = 묻는 순서)
  *                off    : 끈 세부 옵션 {step: [key]} · showOff: 디자인에서 꺼 둔 섹션도 목록에 보이기
  *                heroSample : 메인 사진 예시 '/invite/uploads/site/….webp' (고객이 사진을 고르기 전까지 간편 만들기 첫 화면에 보임)
+ *                heroPos    : 그 예시 사진에서 보일 부분·확대 {focus:'x% y%', zoom:1~4} (관리자가 끌어서 정함, 고객 화면 state.imgFocus/imgZoom으로 들어감)
  *                단계 순서와 켜기/끄기. names(두 사람)는 늘 켜짐, finish(마무리)는 늘 맨 끝. 정한 적 없으면 기본 순서·모두 켜짐
  *   prefs      : 세부 모양 {heroPicker: old|A~E, videoPicker: old|A~E, photoField: old|P1~P4, guideStyle: old|G1~G8, overToggle: old|T1|T2|T3|T4|T7|T8, nextPicker: old|N5|N6, toggleChip: old|K1~K5, feAnim: old|none|F1~F8, jumpFix: old|S1|S2|S3|S4|S6, menuStyle: old|M1~M6, menuStylePc: old|M1~M6, sheetStyle: old|S1~S10, setStyle: old|D1~D8|A3|A7|A8, setInner: old|B4|B5, s10Add: old|C4|C5|C6}
  *
@@ -352,6 +353,23 @@ function section_defaults_easy_hero(): string
     return preg_match('#^/invite/uploads/site/[a-f0-9]{32}\.webp$#', $u) ? $u : '';
 }
 
+/** 메인 사진 예시에서 보일 부분·확대 (관리자가 끌어서 정함) - ['focus' => 'x% y%' 또는 '', 'zoom' => 1~4] */
+function section_easy_hero_pos_clean($p): array
+{
+    $p = is_array($p) ? $p : [];
+    $f = (string) ($p['focus'] ?? '');
+    if (!preg_match('/^(\d{1,3}(?:\.\d+)?)% (\d{1,3}(?:\.\d+)?)%$/', $f, $m) || (float) $m[1] > 100 || (float) $m[2] > 100 || $f === '50% 50%') $f = '';
+    $z = round((float) ($p['zoom'] ?? 1), 2);
+    return ['focus' => $f, 'zoom' => ($z > 1.001 && $z <= 4) ? $z : 1];
+}
+function section_defaults_easy_hero_pos(): array
+{
+    $f = section_defaults_file();
+    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return section_easy_hero_pos_clean([]);
+    $j = json_decode((string) file_get_contents($f), true);
+    return section_easy_hero_pos_clean(is_array($j) ? ($j['easy']['heroPos'] ?? []) : []);
+}
+
 /** 저장된 순서 (없거나 깨졌으면 빈 배열) */
 function section_defaults_get(): array
 {
@@ -385,6 +403,8 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     $easyShowOff = ($easyMore === null || !array_key_exists('showOff', $easyMore)) ? section_defaults_easy_show_off() : !empty($easyMore['showOff']);
     $easyHero = ($easyMore !== null && array_key_exists('heroSample', $easyMore)) ? (string) $easyMore['heroSample'] : section_defaults_easy_hero(); // (예시 사진은 따로 저장 - 다른 저장에선 그대로)
     if ($easyHero !== '' && !preg_match('#^/invite/uploads/site/[a-f0-9]{32}\.webp$#', $easyHero)) $easyHero = '';
+    $easyHeroPos = ($easyMore !== null && array_key_exists('heroPos', $easyMore)) ? section_easy_hero_pos_clean($easyMore['heroPos']) : section_defaults_easy_hero_pos(); // 예시 사진 보일 부분·확대
+    if ($easyHero === '' || $easyHeroPos === section_easy_hero_pos_clean([])) $easyHeroPos = null;
     // $easyOff: null = 저장된 값 그대로, [] = 모두 켬, {step:[key]} = 새로 저장
     $easyOff = $easyOff === null ? section_defaults_easy_off() : section_easy_off_clean($easyOff);
     // $easy: null = 저장된 단계 그대로, [] = 기본으로, [[id,on], ...] = 새로 저장 (기본과 같으면 안 적음)
@@ -414,7 +434,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if ($groups) { $data['groups'] = $groups['groups']; $data['groupEtc'] = $groups['etc']; }
     if ($labels) $data['labels'] = $labels;
     if ($start) $data['start'] = $start;
-    if ($easy || $easyOff || $easyAsk || $easyShowOff || $easyHero !== '') $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []) + ($easyHero !== '' ? ['heroSample' => $easyHero] : []);
+    if ($easy || $easyOff || $easyAsk || $easyShowOff || $easyHero !== '') $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []) + ($easyHero !== '' ? ['heroSample' => $easyHero] : []) + ($easyHeroPos ? ['heroPos' => $easyHeroPos] : []);
     $data['updated_at'] = date('c');
     $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     if (@file_put_contents($tmp, $json, LOCK_EX) === false) return false;
@@ -427,5 +447,5 @@ if (realpath((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
     header('Cache-Control: no-store');
     header('X-Content-Type-Options: nosniff');
     $grp = section_defaults_groups();
-    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero()]], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos()]], JSON_UNESCAPED_UNICODE);
 }
