@@ -198,6 +198,7 @@ function dash_first_line($s): string { $s = trim(strip_tags(str_replace(['<br>',
 function dash_img_ok($u, int $id): string {
     $u = (string) $u;
     if (preg_match('#^/?(?:invite/)?uploads/' . $id . '/[a-f0-9]{32}\.webp$#', $u)) return '/invite/' . preg_replace('#^/?(?:invite/)?#', '', $u);
+    if (preg_match('#^/invite/uploads/site/[a-f0-9]{32}\.webp$#', $u)) return $u; // 간편 만들기 메인 사진 예시 (관리자가 올린 사진)
     if (preg_match('#^https://[^\s"\'<>]+$#', $u)) return $u; // 프리셋 예시 사진 등
     return '';
 }
@@ -252,6 +253,15 @@ function dash_card(PDO $pdo, array $o): array
     $cover = '';
     foreach (['hero'] as $hid) { $hb = $blk($hid); if ($hb) $cover = dash_img_ok($hb['fields']['heroImage'] ?? '', $id); }
     if ($cover === '') { $gb = $blk('gallery'); foreach ((array) ($gb['fields']['images'] ?? []) as $im) { $cover = dash_img_ok(is_array($im) ? ($im['src'] ?? '') : $im, $id); if ($cover !== '') break; } }
+    // 표지 사진의 보일 부분·확대 (에디터 '보일 부분'과 같은 값 - design.imgFocus / imgZoom, 파일 이름이 열쇠)
+    $coverPos = ''; $coverZ = 1;
+    if ($cover !== '') {
+        $ck = basename(parse_url($cover, PHP_URL_PATH) ?: '');
+        $fv = (string) (($d['imgFocus'] ?? [])[$ck] ?? '');
+        if (preg_match('/^\d{1,3}(\.\d+)?% \d{1,3}(\.\d+)?%$/', $fv)) $coverPos = $fv;
+        $zv = (float) (($d['imgZoom'] ?? [])[$ck] ?? 1);
+        if ($zv > 1.001 && $zv <= 4) $coverZ = round($zv, 2);
+    }
     $pal = is_array($d['palette'] ?? null) ? $d['palette'] : [];
     $tint = preg_match('/^#[0-9a-f]{6}$/i', (string) ($pal['accent'] ?? '')) ? $pal['accent'] : '#8A4B55';
     // 상태·보관 - 시각은 DB가 직접 초로 바꿔 준 값으로 비교 (PHP와 DB 시간대가 어긋나도 정확)
@@ -276,7 +286,7 @@ function dash_card(PDO $pdo, array $o): array
         'title' => $named ? "{$g} ♥ {$b}" : '이름 없는 청첩장',
         'created' => date('n월 j일', strtotime((string) $o['created_at'])) . ' 만듦',
         'dday' => $dday, 'date' => $dateText, 'venue' => $venue,
-        'cover' => $cover, 'tint' => $tint,
+        'cover' => $cover, 'coverPos' => $coverPos, 'coverZ' => $coverZ, 'tint' => $tint,
         'expTs' => $expTs ? $expTs * 1000 : null, 'startTs' => ((int) ($ts['c'] ?? $now)) * 1000, 'demo' => $isDemo,
         'purgeTs' => $purgeTs ? $purgeTs * 1000 : null, 'graceH' => trial_grace_hours(),
         'status' => $expired ? 'expired' : $o['status'], 'plan' => $plan, 'planText' => $planText, 'warn' => $plan === 'trial',
@@ -348,6 +358,7 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 .dot-sep{color:var(--faint)}
 .cv{border-radius:12px;position:relative;overflow:hidden;flex:none;background-size:cover;background-position:center}
 .cv.noimg{display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.9)}
+.cvz{position:absolute;inset:0;background-size:cover;background-repeat:no-repeat}
 .cv .gl{position:absolute;inset:0;background:radial-gradient(circle at 72% 22%,rgba(255,255,255,.3),transparent 45%)}
 .b1{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:var(--ink);color:#fff;border-radius:10px;padding:11px 18px;font-weight:600;font-size:13.5px;cursor:pointer}
 .b1[aria-disabled=true]{opacity:.4;pointer-events:none}
@@ -606,7 +617,9 @@ const ic = (id, st) => `<svg class="i"${st ? ` style="${st}"` : ''}><use href="#
 function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1800); }
 const ddayText = d => d == null ? '' : (d > 0 ? 'D-' + d : d === 0 ? 'D-DAY' : 'D+' + (-d));
 const statusHtml = c => c.status === 'expired' ? '<span class="st bad">기간 만료</span>' : c.published ? '<span class="st ok">발행됨</span>' : '<span class="st">편집중</span>';
-const coverStyle = c => c.cover ? `background-image:url('${esc(c.cover)}')` : `background:linear-gradient(155deg, color-mix(in srgb, ${c.tint} 25%, #fff), ${c.tint})`;
+const coverStyle = c => c.cover ? `background-image:url('${esc(c.cover)}');${c.coverPos ? `background-position:${esc(c.coverPos)};` : ''}` : `background:linear-gradient(155deg, color-mix(in srgb, ${c.tint} 25%, #fff), ${c.tint})`;
+// 확대해 둔 사진은 안쪽에 한 겹 더 깔아서 그 점을 기준으로 키움 (칸 크기는 그대로)
+const coverZoom = c => c.cover && c.coverZ > 1 ? `<i class="cvz" style="background-image:url('${esc(c.cover)}');background-position:${esc(c.coverPos || '50% 50%')};scale:${+c.coverZ};transform-origin:${esc(c.coverPos || '50% 50%')}"></i>` : '';
 
 // ---------- 공통 동작 ----------
 function copyLink(c) {
@@ -858,7 +871,7 @@ setInterval(() => {
 function renderPcList() {
     const el = document.getElementById('pcList'); if (!el) return;
     el.innerHTML = CARDS.map((c, i) => `<button type="button" class="item ${i === cur ? 'on' : ''}" onclick="select(${i})">
-        <span class="cv ${c.cover ? '' : 'noimg'}" style="width:44px;height:58px;${coverStyle(c)}">${c.cover ? '<i class="gl"></i>' : ic('img')}</span>
+        <span class="cv ${c.cover ? '' : 'noimg'}" style="width:44px;height:58px;${coverStyle(c)}">${c.cover ? coverZoom(c) + '<i class="gl"></i>' : ic('img')}</span>
         <span style="min-width:0"><h4 class="${c.named || c.nick ? '' : 'none'}">${esc(c.nick || c.title)}</h4>
         <span class="m">${c.dday != null ? `<span class="dday ${c.dday > 60 || c.dday < 0 ? 'mute' : ''}">${ddayText(c.dday)}</span>` : ''}${statusHtml(c)}${c.dday == null ? `<span class="dot-sep">·</span>${esc(c.created)}` : ''}</span></span></button>`).join('')
         || '<p style="padding:20px 8px;color:var(--faint);font-size:13px">아직 만든 청첩장이 없어요.</p>';
@@ -869,7 +882,7 @@ function renderPcDetail() {
     const exp = c.status === 'expired';
     el.innerHTML = `
       <div class="hero">
-        <div class="cv ${c.cover ? '' : 'noimg'}" style="width:124px;height:164px;border-radius:16px;${coverStyle(c)}">${c.cover ? '<i class="gl"></i>' : ic('img', 'width:28px;height:28px')}</div>
+        <div class="cv ${c.cover ? '' : 'noimg'}" style="width:124px;height:164px;border-radius:16px;${coverStyle(c)}">${c.cover ? coverZoom(c) + '<i class="gl"></i>' : ic('img', 'width:28px;height:28px')}</div>
         <div style="flex:1;min-width:0">
           ${c.dday != null ? `<span class="dday">${ddayText(c.dday)}</span>` : ''}
           <h1 class="${c.named ? '' : 'none'}">${esc(c.title)}${c.nick ? `<span class="nick">${esc(c.nick)}</span>` : ''}</h1>
@@ -904,7 +917,7 @@ const canCreate = MODE === 'customer';
 function renderMo() {
     const tr = document.getElementById('moTrack');
     tr.innerHTML = CARDS.map((c, i) => `<div class="slide ${c.cover ? '' : 'noimg'}" data-i="${i}" style="${coverStyle(c)}">
-        <i class="gl"></i>${c.cover ? '<i class="shade"></i>' : `<div class="empty"><span class="ic">${ic('img', 'width:22px;height:22px')}</span>대표 사진을 넣으면 여기에 보여요</div><i class="shade" style="opacity:.5"></i>`}
+        ${coverZoom(c)}<i class="gl"></i>${c.cover ? '<i class="shade"></i>' : `<div class="empty"><span class="ic">${ic('img', 'width:22px;height:22px')}</span>대표 사진을 넣으면 여기에 보여요</div><i class="shade" style="opacity:.5"></i>`}
         <div class="tp">${c.dday != null ? `<span class="dday">${ddayText(c.dday)}</span>` : ''}<span class="sp"></span><span class="pill ${c.status === 'expired' ? 'bad' : c.published ? 'ok' : ''}"><i></i>${c.status === 'expired' ? '만료' : c.published ? '발행됨' : '편집중'}</span></div>
         <div class="bt"><h2>${esc(c.nick || c.title)}</h2><p>${esc([c.date, c.venue].filter(Boolean).join(' · ') || c.created)}</p></div></div>`).join('')
       + (canCreate ? `<div class="slide newslide" data-i="new" onclick="${SLOTS.used < SLOTS.max ? "document.getElementById('newForm').submit()" : ''}"><span class="ic">${ic('plus', 'width:26px;height:26px')}</span><b>${SLOTS.used < SLOTS.max ? '새 청첩장 만들기' : '자리가 가득 찼어요'}</b><span>${SLOTS.used < SLOTS.max ? '디자인을 고르고 바로 시작해요' : '청첩장은 최대 ' + SLOTS.max + '개까지예요.<br>안 쓰는 청첩장을 지우면 새로 만들 수 있어요'}</span></div>` : '');

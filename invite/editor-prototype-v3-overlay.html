@@ -718,6 +718,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .hl-c:hover { border-color: var(--wz-line2); } .hl-c.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink); }
 .hl-c b { display: block; margin-top: 5px; font-size: 11px; font-weight: 700; line-height: 1.3; word-break: keep-all; }
 .hl-m { position: relative; display: block; aspect-ratio: 9 / 19.5; border-radius: 8px; overflow: hidden; background: #3A342F center / cover no-repeat; container-type: inline-size; }
+.hl-m .hl-mi { position: absolute; inset: 0; background: center / cover no-repeat; }
 .hl-m .hl-sh { position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.28), rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,.32)); }
 .hl-m span { position: absolute; white-space: nowrap; line-height: 1.02; text-align: center; text-shadow: 0 1px 6px rgba(0,0,0,.2); }
 .hl-ins { display: grid; gap: 6px; }
@@ -4242,14 +4243,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017v">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017v">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017w">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017w">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017v"></script>
-<script src="assets/tip-demos.js?v=1017v"></script>
-<script src="assets/ld-dialog.js?v=1017v"></script>
+<script src="assets/invite-blocks.js?v=1017w"></script>
+<script src="assets/tip-demos.js?v=1017w"></script>
+<script src="assets/ld-dialog.js?v=1017w"></script>
 </head>
 <body>
 
@@ -14336,6 +14337,19 @@ function spAskSteps() { // 관리자 "손쉬운 제작 → 처음 만들 때 질
     });
     return out;
 }
+// 질문을 넘길 때마다 서버에 저장 (답한 내용 + 지금 질문 자리) - 새로고침하거나 나갔다 와도 거기서부터
+let spAskSaveT = 0;
+function spAskAutoSave() { if (!EDIT_TOKEN) return; clearTimeout(spAskSaveT); spAskSaveT = setTimeout(() => { try { saveToServer(false, true); } catch (e) {} }, 700); }
+// 저장된 질문 자리(state.spAt)를 지금 질문 목록의 번호로 (없어진 질문이면 그 앞 질문들 중 마지막 자리 → 못 찾으면 처음)
+function spResumeStep() {
+    if (state.spView !== 'quick' || !state.spAt) return 0;
+    const steps = spAskSteps();
+    if (state.spAt === '#done') return steps.length;
+    const i = steps.findIndex(st => spAskId(st) === state.spAt);
+    return i >= 0 ? i : 0;
+}
+// 간편 만들기 진행 상태 (질문 화면/목록, 지금 질문, 답, 질문이 켠 섹션, 디자인에서 꺼 둔 섹션, 목록 묶음·순서) - 디자인과 같이 저장
+const SP_KEEP = ['spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom'];
 function spAskDone() { spStep = spAskSteps().length; spRender(); } // 다 답함 → "거의 다 됐어요" 정리 화면
 function spAskFinish(btn) { // 정리 화면 [완성본 보기]: 저장 → 완성본(발행하기) → 닫으면 목록 화면
     state.spView = 'list'; spOpenSet = new Set(); scheduleSnapshot();
@@ -14375,6 +14389,7 @@ function spAskSumRows(steps) { // 정리 화면 줄: [이름, 값, 채웠나]
 function spRenderAsk(pane) {
     const steps = spAskSteps(); if (!steps.length) { state.spView = 'list'; return spRenderList(); }
     const N = steps.length; spStep = Math.max(0, Math.min(spStep, N));
+    state.spAt = spStep >= N ? '#done' : spAskId(steps[spStep]); // 지금 질문 (저장해 두었다가 새로고침해도 이 질문부터)
     const done = spStep === N, st = done ? null : steps[spStep], ask = state.spAsk || (state.spAsk = {});
     // 첫 화면 꾸미기 질문: [다음] → 같은 질문 안에서 스크롤 버튼(↓) 꾸미기 → [다음] → 다음 질문 (사진 고르기 질문은 늘 처음 화면)
     const scrollPh = !!(st && st.k === 'hero' && st.part === 'look' && spHeroPhase === 'scroll' && spHeroScrollOk());
@@ -14402,7 +14417,7 @@ function spRenderAsk(pane) {
             ? `<button type="button" class="wz-back" id="spRestart">처음부터</button><button type="button" class="wz-next" id="spFinish">완성본 보기</button>`
             : `<button type="button" class="wz-back" id="spPrev" tabindex="${navFirst ? -1 : 0}">이전</button><button type="button" class="wz-next" id="spNext">${spStep === N - 1 ? '다 했어요' : '다음'}</button>`}</div>`;
     spBindHeadTools(pane);
-    const go = n => { if (n >= N && !spOpt('flow', 'summary')) return spAskFinish(); spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n)); spRender(); }; // 정리 화면을 끄면 바로 완성본
+    const go = n => { if (n >= N && !spOpt('flow', 'summary')) return spAskFinish(); spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n)); spRender(); spAskAutoSave(); }; // 정리 화면을 끄면 바로 완성본
     const lookToScroll = () => st && st.k === 'hero' && st.part === 'look' && !scrollPh && spHeroScrollOk();
     const next = () => lookToScroll() ? spHeroToScroll(pane.querySelector('#spBody')) : go(spStep + 1);
     const prev = () => scrollPh ? (spHeroPhase = 'pick', spRender()) : go(spStep - 1);
@@ -14808,7 +14823,11 @@ let HERO_LAYOUTS_ADMIN = []; // 관리자가 저장한 레이아웃 (hero_layout
 const spHeroLayouts = () => ((window.InviteBlocks && InviteBlocks.HERO_LAYOUTS) || []).concat(HERO_LAYOUTS_ADMIN);
 function spHeroLayoutMini(lay, hb, kind) {
     const f = hb.fields, sk = skins[state.skin] || skins.classic, box = lay.box; // 사진 칸 레이아웃은 영상도 칸 안에 (영상은 썸네일로)
-    const img = kind === 'photo' ? (f.heroImage ? `url('${esc(InviteBlocks.imgUrl(f.heroImage))}')` : '') : (f.youtubeId ? `url('https://i.ytimg.com/vi/${encodeURIComponent(f.youtubeId)}/hqdefault.jpg')` : '');
+    const isPhoto = kind !== 'video'; // ('photo' 또는 'hero' - 예전엔 'hero'로 부르면 사진이 안 나왔음: 지금 청첩장 카드)
+    // 사진의 보일 부분·확대 (state.imgFocus / imgZoom - 관리자가 정한 예시 사진 위치도 여기로 들어옴)
+    const ik = isPhoto && f.heroImage ? InviteBlocks.imgKey(f.heroImage) : '', fp = ik && state.imgFocus && /%/.test(state.imgFocus[ik] || '') ? state.imgFocus[ik] : '', fz = ik ? InviteBlocks.zoomOf(state.imgZoom, ik) : 1;
+    const posCss = (fp ? `background-position:${fp};` : '') + (fz > 1 ? `scale:${fz};transform-origin:${fp || '50% 50%'};` : '');
+    const img = isPhoto ? (f.heroImage ? `url('${esc(InviteBlocks.imgUrl(f.heroImage))}')` : '') : (f.youtubeId ? `url('https://i.ytimg.com/vi/${encodeURIComponent(f.youtubeId)}/hqdefault.jpg')` : '');
     const ph = img || `linear-gradient(160deg, ${sk.accent}, ${sk.ink})`;
     const txt = (L, t) => { if (!L) return ''; if (L.font) loadFontCss(L.font);
         const fam = partFontFamily(L.font) || String(sk.headFont || '').replace(/"/g, "'");
@@ -14820,9 +14839,9 @@ function spHeroLayoutMini(lay, hb, kind) {
     if (box) {
         const fr = box.frame || 'none', fade = Number(box.fade) || 0;
         const mask = fade ? `-webkit-mask-image:linear-gradient(#000 ${100 - fade}%,transparent);mask-image:linear-gradient(#000 ${100 - fade}%,transparent);` : '';
-        return `<span class="hl-m hl-m-box" style="background:${box.bg || sk.bg}"><i class="hl-mb hb-fr-${esc(fr)}" style="left:${box.x}%;top:${box.y}%;width:${box.w}%;height:${box.h}%;${mask}"><em style="background-image:${ph}"></em></i>${parts}${layers}</span>`;
+        return `<span class="hl-m hl-m-box" style="background:${box.bg || sk.bg}"><i class="hl-mb hb-fr-${esc(fr)}" style="left:${box.x}%;top:${box.y}%;width:${box.w}%;height:${box.h}%;${mask}"><em style="background-image:${ph};${img ? posCss : ''}"></em></i>${parts}${layers}</span>`;
     }
-    return `<span class="hl-m" style="background-image:${ph};"><i class="hl-sh"></i>${parts}${layers}</span>`;
+    return `<span class="hl-m" style="background-image:${ph};">${img && posCss ? `<i class="hl-mi" style="background-image:${ph};${posCss}"></i>` : ''}<i class="hl-sh"></i>${parts}${layers}</span>`;
 }
 function spHeroLayoutHtml(hb, kind) {
     const f = hb.fields, list = spHeroLayouts(), adv = !document.documentElement.classList.contains('simple-mode'); // 사진 칸 레이아웃은 사진에만
@@ -15754,7 +15773,7 @@ async function bootstrapFromServer() {
             if (state.intro.font) loadFontCss(state.intro.font);
             state.blocks = data.design.blocks;
             state.info = data.design.info && typeof data.design.info === 'object' ? data.design.info : null;
-            ['mode', 'sampleId', 'simpleSnap', 'fullSnap'].forEach(k => { if (data.design[k] && !SAMPLE_ID) state[k] = data.design[k]; else delete state[k]; }); // 간편 만들기 상태 (샘플 편집에선 안 씀)
+            ['mode', 'sampleId', 'simpleSnap', 'fullSnap', ...SP_KEEP].forEach(k => { if (data.design[k] && !SAMPLE_ID) state[k] = data.design[k]; else delete state[k]; }); // 간편 만들기 상태 (샘플 편집에선 안 씀)
             // 저장된 디자인이 만들어질 당시엔 없었던 섹션(디데이/타임라인/인터뷰 등 나중에 추가된 것)을
             // 기본 템플릿에서 찾아 뒤에 채워 넣는다 - 안 그러면 그 섹션들이 목록에서 통째로 사라져 보인다.
             const savedIds = new Set(state.blocks.map(b => b.id));
@@ -15825,7 +15844,7 @@ async function bootstrapFromServer() {
             lastSnapshotJSON = JSON.stringify(state);
             undoStack = []; redoStack = [];
             updateHistoryButtons();
-            if (state.mode === 'simple') openSimpleEditor(0); else showScreen('editor');
+            if (state.mode === 'simple') openSimpleEditor(spResumeStep()); else showScreen('editor'); // 간편 만들기: 하던 질문부터 (목록 화면이었으면 목록)
             syncSimpleBtn();
         } else {
             if (SAMPLE_ID) { // 샘플을 처음 꾸미는 경우: 바탕 디자인 그대로 바로 에디터
@@ -16132,7 +16151,7 @@ async function saveToServer(publish, silent) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 edit_token: EDIT_TOKEN,
-                design: { skin: state.skin, presetId: state.presetId || null, palette: (({ label, ...rest }) => rest)(skins[state.skin] || skins.classic), customFont: state.customFont, customBg: state.customBg, paper: state.paper || undefined, customAccent: state.customAccent || undefined, desktopSideBg: state.desktopSideBg, desktopShadow: state.desktopShadow, effects: state.effects, stickers: state.stickers, customTexts: state.customTexts, intro: state.intro, bgm: state.bgm, share: state.share, labels: state.labels, extras: state.extras, imgFocus: state.imgFocus, imgZoom: state.imgZoom, info: state.info, blocks: state.blocks, mode: state.mode || undefined, sampleId: state.sampleId || undefined, simpleSnap: state.simpleSnap || undefined, fullSnap: state.fullSnap || undefined },
+                design: { skin: state.skin, presetId: state.presetId || null, palette: (({ label, ...rest }) => rest)(skins[state.skin] || skins.classic), customFont: state.customFont, customBg: state.customBg, paper: state.paper || undefined, customAccent: state.customAccent || undefined, desktopSideBg: state.desktopSideBg, desktopShadow: state.desktopShadow, effects: state.effects, stickers: state.stickers, customTexts: state.customTexts, intro: state.intro, bgm: state.bgm, share: state.share, labels: state.labels, extras: state.extras, imgFocus: state.imgFocus, imgZoom: state.imgZoom, info: state.info, blocks: state.blocks, mode: state.mode || undefined, ...Object.fromEntries(SP_KEEP.filter(k => state[k] !== undefined && state[k] !== null).map(k => [k, state[k]])), sampleId: state.sampleId || undefined, simpleSnap: state.simpleSnap || undefined, fullSnap: state.fullSnap || undefined },
                 // 대시보드·관리자 목록에 쓰는 이름 - 지금 "예식 정보"에 적힌 이름으로 갱신 (비어 있으면 불러온 값 유지)
                 groom_name: (String(weddingInfo().groom || '').split('\n')[0].trim() || lastLoadedMeta.groom_name).slice(0, 50),
                 bride_name: (String(weddingInfo().bride || '').split('\n')[0].trim() || lastLoadedMeta.bride_name).slice(0, 50),
