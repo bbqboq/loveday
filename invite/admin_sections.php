@@ -73,7 +73,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $more = is_array($aj) ? ['ask' => $aj, 'showOff' => ($_POST['showOff'] ?? '') === '1'] : null;
         $ok = section_defaults_save(section_defaults_get(), null, null, null, null, null, null, $ej, is_array($oj) ? $oj : null, $more);
     } elseif ($act === 'easy_reset') {
-        $ok = section_defaults_save(section_defaults_get(), null, null, null, null, null, null, [], [], []);
+        $ok = section_defaults_save(section_defaults_get(), null, null, null, null, null, null, [], [], ['ask' => [], 'showOff' => false]); // (메인 사진 예시는 그대로)
+    } elseif ($act === 'easy_hero') {
+        // 간편 만들기 메인 사진 예시: 올리면 webp로 다시 만들어 uploads/site/에 저장, 지우면 비움
+        require_once __DIR__ . '/snap_functions.php';
+        $dir = UPLOAD_DIR . 'site/';
+        $cur = section_defaults_easy_hero();
+        try {
+            if (!is_dir($dir) && !@mkdir($dir, 0755, true)) throw new RuntimeException('uploads/site 폴더를 만들 수 없어요.');
+            if (!empty($_POST['remove'])) $new = '';
+            else {
+                $file = $_FILES['img'] ?? null;
+                if (!$file || ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) throw new RuntimeException('사진을 골라 주세요.');
+                [$name] = snap_store_image($file, 0, $dir);
+                $new = '/invite/uploads/site/' . $name;
+            }
+            $ok = section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['heroSample' => $new]);
+            if ($ok && $cur !== '' && $cur !== $new) @unlink($dir . basename($cur));
+            if ($ok) { echo json_encode(['ok' => true, 'url' => $new], JSON_UNESCAPED_UNICODE); exit; }
+        } catch (Throwable $e) {
+            echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit;
+        }
     } elseif ($act === 'groups_reset') {
         $ok = section_defaults_save(section_defaults_get(), null, null, null, []);
     } elseif ($act === 'save') {
@@ -108,6 +128,7 @@ $easyNow = section_defaults_easy();
 $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
+$easyHero = section_defaults_easy_hero();
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
 $easyInfo = [
@@ -622,6 +643,11 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-li span { flex: 1; min-width: 0; } .ez-li b { display: block; font-size: 11px; } .ez-li small { display: block; font-size: 9.5px; color: #8A8278; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ez-li u { flex: none; width: 24px; height: 14px; border-radius: 9px; background: var(--ui-point, #C9A961); }
 .ez-lorder { margin-top: 10px; padding: 8px 10px; border-radius: 10px; border: 1px dashed var(--ui-line, #D9D2C8); font-size: 10.5px; font-weight: 700; color: #6F6A63; }
+.ez-hero { display: flex; gap: 14px; align-items: center; margin: 0 0 14px; padding: 14px; border-radius: 16px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; }
+.ez-hero-pic { flex: none; width: 76px; height: 120px; border-radius: 12px; overflow: hidden; background: var(--ui-soft, #F3EFE8); display: grid; place-items: center; font-size: 10.5px; color: #A29C94; text-align: center; }
+.ez-hero-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ez-hero-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; } .ez-hero-t b { font-size: 14px; } .ez-hero-t small { font-size: 12px; color: #8A8278; line-height: 1.5; }
+.ez-hero-b { display: flex; gap: 6px; margin-top: 6px; }
 .ez-sws { flex: none; width: 104px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; } /* 오른쪽 버튼 칸은 폭을 고정해서 줄마다 같은 자리에 */
 .ez-sws .ez-lock { width: auto; text-align: left; padding-left: 2px; }
 .ez-fold-btn, .ez-fold-ph { width: 104px; justify-content: center; } .ez-fold-ph { flex: none; height: 30px; }
@@ -663,6 +689,12 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             <div class="so-bar">
                 <div class="so-state<?= $easyCustom ? ' custom' : '' ?>">● <?= $easyCustom ? '관리자가 정한 설정 사용 중' : '기본 설정 사용 중 (모두 켜짐)' ?></div>
                 <button type="button" class="so-reset" id="ezReset"<?= $easyCustom ? '' : ' disabled' ?>>기본으로 되돌리기</button>
+            </div>
+            <div class="ez-hero" id="ezHero">
+                <div class="ez-hero-pic" id="ezHeroPic"><?= $easyHero ? '<img src="' . $h($easyHero) . '" alt="">' : '<span>예시 사진 없음</span>' ?></div>
+                <div class="ez-hero-t"><b>메인 사진 예시</b><small>고객이 간편 만들기에서 메인 사진을 고르기 전까지 첫 화면에 이 사진이 보여요. 세로로 긴 사진이 좋아요. 올리면 바로 저장돼요.</small>
+                    <span class="ez-hero-b"><button type="button" class="gp-save" id="ezHeroUp"><?= $easyHero ? '사진 바꾸기' : '사진 올리기' ?></button><button type="button" class="gp-undo" id="ezHeroDel"<?= $easyHero ? '' : ' hidden' ?>>지우기</button></span>
+                    <input type="file" id="ezHeroIn" accept="image/jpeg,image/png,image/webp" hidden></div>
             </div>
             <div class="ez-flow" id="ezFlow"></div>
             <div class="ez-grid">
@@ -1522,6 +1554,20 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
         });
     });
     ezRender();
+    // 메인 사진 예시 올리기 · 지우기 (바로 저장)
+    (function ezHeroBox() {
+        const up = document.getElementById('ezHeroUp'), del = document.getElementById('ezHeroDel'), inp = document.getElementById('ezHeroIn'), pic = document.getElementById('ezHeroPic');
+        if (!up) return;
+        if (readonly) { up.disabled = true; del.hidden = true; return; }
+        const show = url => { pic.innerHTML = url ? `<img src="${ezEsc(url)}" alt="">` : '<span>예시 사진 없음</span>'; up.textContent = url ? '사진 바꾸기' : '사진 올리기'; del.hidden = !url; };
+        up.addEventListener('click', () => inp.click());
+        inp.addEventListener('change', () => {
+            const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+            up.disabled = true; up.textContent = '올리는 중…';
+            post({ act: 'easy_hero', img: f }).then(j => { show(j.url); toast('메인 사진 예시를 저장했어요'); }).catch(err => { say(err.message); show(pic.querySelector('img') ? pic.querySelector('img').src : ''); }).finally(() => { up.disabled = false; });
+        });
+        del.addEventListener('click', () => LD.confirm('메인 사진 예시를 지울까요?', { message: '지우면 고객 화면엔 디자인에 들어 있는 기본 모습이 보여요.' }).then(ok => { if (!ok) return; post({ act: 'easy_hero', remove: '1' }).then(() => { show(''); toast('지웠어요'); }).catch(err => say(err.message)); }));
+    })();
 
     document.getElementById('soS10Fix')?.addEventListener('click', () => { order = s10Sort(order); build(); }); // 묶음 순서대로 정리 (저장 버튼을 눌러야 저장)
     build();

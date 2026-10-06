@@ -725,6 +725,10 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-ty p { margin: 0; font-size: .95em; line-height: 1.85; opacity: .86; }
 .ib-ty-sign { display: block; margin-top: 16px; font-size: .88em; color: var(--p-muted, #8A7F72); }
 .ib-ty-btn { display: inline-flex; align-items: center; justify-content: center; margin-top: 18px; min-height: 42px; padding: 0 22px; border-radius: 999px; background: var(--p-accent, #7A3B41); color: #fff; font-size: .88em; font-weight: 700; text-decoration: none; }
+/* 흰 카드·편지지 위 글자는 늘 어둡게 (어두운 디자인이면 글자색이 밝아서 안 보였음) - 디자인 글자색을 조금 섞어 색감은 남김 */
+.ib-ty-card .ib-ty-in, .ib-ty-letter .ib-ty-in { color: #2B2320; color: color-mix(in srgb, var(--p-ink, #2B2320) 22%, #2B2320); }
+.ib-ty-card .ib-ty-sign, .ib-ty-letter .ib-ty-sign, .ib-thanks .ib-thanks-sign { color: #8A7F72; }
+.ib-thanks h3, .ib-thanks p { color: #2B2320; color: color-mix(in srgb, var(--p-ink, #2B2320) 22%, #2B2320); }
 .ib-ty-card .ib-ty-in { padding: 30px 22px 26px; border-radius: 20px; background: #fff; box-shadow: 0 10px 30px rgba(40, 30, 20, .08), 0 0 0 1px rgba(0, 0, 0, .04); }
 .ib-ty-letter .ib-ty-in { padding: 34px 26px 28px; border-radius: 6px; text-align: left; background: #FFFDF7 repeating-linear-gradient(transparent 0 30px, rgba(122, 59, 65, .06) 30px 31px); box-shadow: 0 8px 24px rgba(40, 30, 20, .1); }
 .ib-ty-letter .ib-ty-in::before { content: ''; position: absolute; inset: 8px; border: 1px solid rgba(122, 59, 65, .16); border-radius: 3px; pointer-events: none; }

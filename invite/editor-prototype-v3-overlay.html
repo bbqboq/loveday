@@ -4242,14 +4242,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017t">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017t">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017u">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017u">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017t"></script>
-<script src="assets/tip-demos.js?v=1017t"></script>
-<script src="assets/ld-dialog.js?v=1017t"></script>
+<script src="assets/invite-blocks.js?v=1017u"></script>
+<script src="assets/tip-demos.js?v=1017u"></script>
+<script src="assets/ld-dialog.js?v=1017u"></script>
 </head>
 <body>
 
@@ -4977,7 +4977,8 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.prefs && typeof j.prefs === 'object') setUipPrefs(j.prefs); // 사진 칸·위치·사용법 버튼 모양
     if (j && j.easy && j.easy.off && typeof j.easy.off === 'object') EASY_OFF = j.easy.off;
     if (j && j.easy && Array.isArray(j.easy.ask)) EASY_ASK = j.easy.ask; // 처음 만들 때 질문 순서·켜기
-    if (j && j.easy) EASY_SHOWOFF = !!j.easy.showOff; // 목록에 디자인에서 꺼 둔 섹션도 보이기
+    if (j && j.easy) EASY_SHOWOFF = !!j.easy.showOff;
+    if (j && j.easy) EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; // 메인 사진 예시 (관리자 손쉬운 제작) // 목록에 디자인에서 꺼 둔 섹션도 보이기
     if (j && j.easy && Array.isArray(j.easy.steps)) { EASY_STEPS = j.easy.steps; try { if (document.documentElement.classList.contains('simple-mode')) { if (spApplyEasyOrder()) renderPreview(); spRender(); } } catch (e) {} } // 손쉬운 제작 단계
     // 편집창 모양 (관리자 → 섹션 순서 → 편집창 모양). 주소에 ?panel= 이 있으면 그게 우선
     if (j && typeof j.panelStyle === 'string' && !PZ_URL) {
@@ -13606,6 +13607,7 @@ async function startWithPreset(presetId) {
         applyWizardDataToBlocks(); // 주문 때 받은 이름·장소가 있으면 미리 채움
         { const lay = InviteBlocks.HERO_LAYOUTS.find(l => l.id === 'magazine'); ['hero', 'heroVideo'].forEach(id => { const b = state.blocks.find(x => x.id === id); if (b && lay) { InviteBlocks.applyHeroLayout(b, lay); spForceFull(b); } }); } // 처음 만들 때 첫 화면은 매거진 표지
         spMarkDesignOff();
+        spApplyHeroSample();
         if (spOpt('flow', 'ask')) spEasyStartOff(); // 질문으로 만들 땐 메인 화면만 켜고 시작 → 질문에 닿을 때 그 섹션을 켬 (미리보기가 아래로 튀지 않게)
         state.spView = spOpt('flow', 'ask') ? 'quick' : 'list'; state.spAsk = {}; // 질문에 하나씩 답하기 → 정리 화면 → 완성본 → 목록 화면 (관리자가 질문을 끄면 바로 목록)
         spRenderAll();
@@ -14072,7 +14074,7 @@ let spStep = 0, spAccCache = {};
 const spBlock = id => state.blocks.find(b => b.id === id);
 const spOn = id => { const b = spBlock(id); return !!(b && b.enabled && !SECTION_HIDDEN.has(id)); };
 // 손쉬운 제작 단계 - 관리자 → 섹션 설정 → "손쉬운 제작" 탭에서 켜기/끄기·순서를 정함 (section_defaults.php easy). 정한 적 없으면 아래 순서·모두 켜짐
-let EASY_STEPS = null, EASY_OFF = {}, EASY_ASK = null, EASY_SHOWOFF = false; // EASY_OFF: 관리자가 끈 단계별 세부 옵션 {step: [key]} · EASY_ASK: 질문 [{id,on}] · EASY_SHOWOFF: 디자인에서 꺼 둔 섹션도 목록에
+let EASY_STEPS = null, EASY_OFF = {}, EASY_ASK = null, EASY_SHOWOFF = false, EASY_HERO_SAMPLE = ''; // EASY_OFF: 관리자가 끈 단계별 세부 옵션 {step: [key]} · EASY_ASK: 질문 [{id,on}] · EASY_SHOWOFF: 디자인에서 꺼 둔 섹션도 목록에
 const spOpt = (step, key) => !((EASY_OFF && EASY_OFF[step]) || []).includes(key);
 // 전문가 모드에만 있던 섹션 - 관리자 손쉬운 제작에서 켜면 목록에 나옴 (기본 꺼짐, 단계 id = 섹션 id, 편집 칸은 전문가 모드와 같은 것 spGeneric)
 const SP_EXTRA = ['timeline', 'interview', 'profile', 'letter', 'together', 'ending', 'guestsnap', 'trip', 'lottery', 'dayinfo', 'thanks'];
@@ -14189,7 +14191,7 @@ function openSimpleEditor(step, inPlace) {
     spStep = step || 0;
     showScreen('editor');
     if (spApplyEasyOrder()) { try { renderBlockList(); } catch (e) {} renderPreview(); scheduleSnapshot(); }
-    if (!spInPlace && spForceFull(spHeroCur().b)) { renderPreview(); } // 간편 만들기는 처음부터 메인을 전체화면으로 (미리보기도)
+    if (!spInPlace && (spForceFull(spHeroCur().b) | spApplyHeroSample())) { renderPreview(); } // 간편 만들기는 처음부터 메인을 전체화면으로 (미리보기도) + 사진 고르기 전엔 예시 사진
     spRender();
     window.scrollTo(0, 0);
 }
@@ -14666,7 +14668,12 @@ function spSetDateTbd(on) {
     try { renderBlockList(); } catch (e) {}
 }
 // 2. 메인 화면 - ① 사진/유튜브 고르기 ② 사진 올리기(영상 주소) ③ 화면 크기
-const spIsReal = src => /uploads\//.test(typeof src === 'string' ? src : (src && src.src) || '');
+const spIsReal = src => /uploads\/(?!site\/)/.test(typeof src === 'string' ? src : (src && src.src) || ''); // 고객이 올린 사진 (uploads/site/ = 관리자가 올린 예시 사진은 아님)
+// 간편 만들기: 메인 사진을 아직 안 골랐으면 관리자가 정한 예시 사진을 보여줌 (고객이 사진을 고르면 그 사진으로 바뀜)
+function spApplyHeroSample() {
+    const hp = spBlock('hero'); if (!EASY_HERO_SAMPLE || !hp || spIsReal(hp.fields.heroImage) || hp.fields.heroImage === EASY_HERO_SAMPLE) return false;
+    hp.fields.heroImage = EASY_HERO_SAMPLE; delete hp.fields.heroFocus; return true;
+}
 function spHeroKind() {
     const hp = spBlock('hero'), hv = spBlock('heroVideo');
     const pOn = !!(hp && hp.enabled), vOn = !!(hv && hv.enabled);
