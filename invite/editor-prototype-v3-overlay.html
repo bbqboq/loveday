@@ -4243,14 +4243,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017w">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017w">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017x">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017x">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017w"></script>
-<script src="assets/tip-demos.js?v=1017w"></script>
-<script src="assets/ld-dialog.js?v=1017w"></script>
+<script src="assets/invite-blocks.js?v=1017x"></script>
+<script src="assets/tip-demos.js?v=1017x"></script>
+<script src="assets/ld-dialog.js?v=1017x"></script>
 </head>
 <body>
 
@@ -14778,6 +14778,27 @@ function spHeroScroll(box) {
     const cp = box.querySelector('[data-sp-ncol]');
     if (cp) { cp.addEventListener('input', () => { f.nextColor = cp.value.toUpperCase(); renderPreview(); }); cp.addEventListener('change', () => { f.nextColor = cp.value.toUpperCase(); after(); }); }
 }
+// 작은 첫 화면 그림들(지금 청첩장 카드 · 레이아웃 고르기 카드)도 끌거나 확대하는 동안 바로 따라오게
+//  (휴대폰은 큰 미리보기가 안 보여서, 예전엔 위 카드가 그대로라 '실시간으로 안 바뀐다'로 보였음)
+let spMiniRaf = 0;
+function spMiniFocus(key) {
+    if (spMiniRaf) return;
+    spMiniRaf = requestAnimationFrame(() => {
+        spMiniRaf = 0;
+        const pane = document.getElementById('simplePane'); if (!pane) return;
+        const fp = state.imgFocus && /%/.test(state.imgFocus[key] || '') ? state.imgFocus[key] : '', fz = InviteBlocks.zoomOf(state.imgZoom, key);
+        pane.querySelectorAll('.hl-m').forEach(m => {
+            const box = m.querySelector('.hl-mb em');
+            let el = box || m.querySelector('.hl-mi');
+            const bg = (box || m).style.backgroundImage || '';
+            if (!/^url\(/.test(bg) || InviteBlocks.imgKey(bg.replace(/^url\(["']?|["']?\)$/g, '')) !== key) return; // 이 사진을 쓰는 그림만
+            if (!el) { el = document.createElement('i'); el.className = 'hl-mi'; el.style.backgroundImage = bg; m.insertBefore(el, m.firstChild); }
+            el.style.backgroundPosition = fp || '';
+            el.style.scale = fz > 1 ? String(fz) : '';
+            el.style.transformOrigin = fz > 1 ? (fp || '50% 50%') : '';
+        });
+    });
+}
 // 대표 사진: 보일 부분 옮기기(끌기) + 확대·축소 - 전문가 모드의 "보일 부분"과 같은 값(state.imgFocus / imgZoom)
 function spPhotoCrop(holder, blk) {
     const src = InviteBlocks.imgUrl(blk.fields.heroImage), key = InviteBlocks.imgKey(blk.fields.heroImage);
@@ -14790,7 +14811,7 @@ function spPhotoCrop(holder, blk) {
         <div class="sp-crop-ctl"><button type="button" data-z="-" aria-label="축소">−</button><input type="range" min="100" max="400" step="5" value="${Math.round(z0 * 100)}" aria-label="확대"><button type="button" data-z="+" aria-label="확대">＋</button><b>${Math.round(z0 * 100)}%</b><button type="button" class="sp-link" data-c>처음대로</button></div></div>`;
     const st = holder.querySelector('.sp-crop-st'), im = st.querySelector('img'), rng = holder.querySelector('input'), val = holder.querySelector('.sp-crop-ctl b');
     const pos = () => { const v = state.imgFocus[key]; return v && /%/.test(v) ? v.split(' ').map(parseFloat) : [50, 50]; };
-    const live = () => { InviteBlocks.applyImgFocus(st, state.imgFocus, state.imgZoom); const r = document.getElementById('previewRoot'); if (r) InviteBlocks.applyImgFocus(r, state.imgFocus, state.imgZoom); };
+    const live = () => { InviteBlocks.applyImgFocus(st, state.imgFocus, state.imgZoom); const r = document.getElementById('previewRoot'); if (r) InviteBlocks.applyImgFocus(r, state.imgFocus, state.imgZoom); spMiniFocus(key); };
     const setZoom = z => { z = Math.max(1, Math.min(4, Math.round(z * 100) / 100)); if (z > 1.001) state.imgZoom[key] = z; else delete state.imgZoom[key]; rng.value = Math.round(z * 100); val.textContent = Math.round(z * 100) + '%'; live(); };
     live();
     rng.addEventListener('input', () => setZoom(rng.value / 100));
