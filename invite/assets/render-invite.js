@@ -762,7 +762,7 @@ const templates = {
         const activeExtras = extraKeys.filter(k => f[k]);
         const canvasHeight = 220 + activeExtras.length * 40;
         const maskAttr = k => f._masked ? `data-masked="1" data-part="${k}" data-nowrap="1"` : '';
-        const val = k => f._masked ? MASK_TEXT : esc(String(f[k] || '').replace(/\s*\(\s*\)\s*$/, '')); // 빈 예금주 "()" 숨김
+        const val = k => f._masked ? MASK_TEXT : InviteBlocks.accHtml(f[k]); // 예금주는 괄호 없이 옅은 글씨 (빈 "()"는 숨김)
         // 자동 정렬(accCols): 이름 | 계좌 두 열 (에디터와 같음). 마스킹이면 계좌 칸만 나중에 채움(data-reveal="value")
         const cols = !!f.accCols, vw = Math.max(6, Math.min(30, Number(f.accVw) || 14));
         // 이름 칸 폭(accLw em)도 자동 정렬이 실제 이름 글자에 맞춰 잼 - 신랑측·신부측만 있으면 좁게 (없으면 예전처럼 6.4em)
@@ -1212,10 +1212,10 @@ function bindGuestSecure(rootEl, opts) {
         maskedEls().forEach(target => {
             const key = target.dataset.part;
             if (target.dataset.reveal === 'value') { // 카드형: 값만 들어가는 칸
-                target.textContent = String(acc[key] || '').replace(/\s*\(\s*\)\s*$/, '');
+                target.innerHTML = InviteBlocks.accHtml(acc[key]); // (예금주는 괄호 없이 옅은 글씨)
             } else {
                 const label = target.textContent.split('·')[0].trim();
-                if (acc[key]) target.textContent = `${label} · ${acc[key]}`;
+                if (acc[key]) target.innerHTML = `${InviteBlocks.esc(label)} · ${InviteBlocks.accHtml(acc[key])}`;
             }
             target.removeAttribute('data-masked');
             target.removeAttribute('data-nowrap'); // 실제 계좌번호는 길이가 달라서 다시 줄바꿈 가능하게 둠

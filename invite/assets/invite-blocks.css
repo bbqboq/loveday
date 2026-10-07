@@ -1228,3 +1228,14 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 @media (prefers-reduced-motion: reduce) { [class*="ibx-a-"] .ibx-ch, [class*="ibx-a-"] .intro-typed, .ibx-a-draw .ibx-fill, .ibx-a-draw .ibx-stroke text { animation: none !important; } .ibx-a-draw .ibx-fill { opacity: 1; } .ibx-a-draw .ibx-stroke { display: none; } }
 /* 인트로 '메인 화면 위' (투명 배경): 청첩장 메인 화면이 비치고 글자만 움직임 */
 .intro-overlay.intro-clear { background: rgba(0,0,0,var(--intro-dim, .3)) !important; }
+
+/* ===== 글 줄바꿈 (청첩장 전체) =====
+   - 낱말 가운데서 끊지 않기 (keep-all: "살겠습니다"가 "살 / 겠습니다"로 갈라지지 않게) - 띄어쓰기 없는 긴 글만 칸 끝에서 끊음
+   - 문단은 마지막 줄에 한두 글자만 남지 않게 (text-wrap: pretty), 제목·짧은 글은 줄 길이를 고르게 (balance)
+   - 손님이 쓴 방명록 글도 낱말 단위로 (아주 긴 주소·숫자만 끊음) */
+.col[data-block-id] { word-break: keep-all; overflow-wrap: break-word; }
+.col[data-block-id] :is(p, li, dd, .ib-day-item p, .ib-ty-in, .ib-gb-msg) { text-wrap: pretty; }
+.col[data-block-id] :is(h1, h2, h3, h4, .ib-title, .ib-title-layer, .ib-eyebrow, .ib-ty-in h3, .ib-day-item b, .drag-part) { text-wrap: balance; }
+.col[data-block-id] .ib-gb-msg { word-break: keep-all; overflow-wrap: anywhere; }
+/* 계좌 예금주: 괄호 대신 옅은 글씨로 계좌번호 옆에 */
+.ib-acc-hd { margin-left: .5em; opacity: .62; font-size: .94em; white-space: nowrap; }

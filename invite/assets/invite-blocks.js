@@ -98,6 +98,11 @@
         return `<div class="ib-title-canvas free-canvas drag-canvas" data-title-key="${key}" style="height:${hh}px;"><h4 class="${cls || ''} ib-title-layer drag-part on-light" data-part="${key}" data-drag-el data-fs="${fs || 18}" data-th="${h || 44}" style="${style}">${esc(text)}</h4></div>`;
     }
     function sectionTitle(t, f) { return titleLayer(t, f, 'title', 'ib-title'); }
+    // 계좌 한 줄 "국민 123-456 (김민준)" → 계좌번호 + 예금주는 괄호 없이 옅은 글씨로 (빈 괄호 "()"는 숨김)
+    function accHtml(v) {
+        const s = String(v || '').replace(/\s*\(\s*\)\s*$/, '').trim(), m = s.match(/^(.*?)\s*\(([^()]+)\)$/);
+        return m ? `${esc(m[1])}<span class="ib-acc-hd">${esc(m[2].trim())}</span>` : esc(s);
+    }
 
     // ---------- 사진 "보이는 부분" (잘릴 때 어느 쪽을 보여줄지) ----------
     // 청첩장 전체에 하나의 표 design.imgFocus = { "파일이름.webp": "50% 30%" } (사진 파일 이름은 올릴 때 무작위라 겹치지 않음).
@@ -1077,9 +1082,57 @@
             t.dataset.fs0 = fit.toFixed(1); t.setAttribute('font-size', fit.toFixed(1));
         });
     }
+    // 자유 배치 글자 칸(메인 화면 이름·날짜·문구, 섹션 제목 등): 칸 폭이 정해져 있어서 "김민준 & 박새 / 로이"처럼
+    //  낱말 가운데서 줄이 바뀌던 것 → 한 줄(또는 직접 줄을 바꾼 그대로)로 들어가면 칸을 글자만큼 넓혀서 한 줄로,
+    //  화면 폭(92%)을 넘으면 글자를 조금(72%까지) 줄여서 한 줄로, 그래도 길면 원래대로 줄바꿈 (낱말 단위 - CSS keep-all)
+    //  넓힐 때는 왼쪽·오른쪽 정렬 칸이면 그쪽 끝을 그대로 두고, 화면 밖으로 나가면 안쪽(3%)으로 들임
+    const FIT_SEL = '.drag-part, .ib-title-layer';
+    const fitSeen = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
+    let fitRO = null, fitRoRaf = 0; const fitQ = new Set();
+    if (typeof ResizeObserver !== 'undefined' && fitSeen) fitRO = new ResizeObserver(es => {
+        es.forEach(e => { if (e.contentRect.width) fitQ.add(e.target); });
+        if (fitRoRaf || !fitQ.size) return;
+        fitRoRaf = requestAnimationFrame(() => { fitRoRaf = 0; const q = [...fitQ]; fitQ.clear();
+            q.forEach(t => { if (t.isConnected) t.querySelectorAll(':scope > .drag-part, :scope > .ib-title-layer').forEach(el => { try { fitOne(el); } catch (er) {} }); }); });
+    });
+    function fitOne(el) {
+        if (!el.isConnected || el.matches('.acc-row, .hl-vert, .hl-curve, [contenteditable="true"]') || el.querySelector('svg, img, input, textarea, button')) return;
+        if (fitRO && el.parentElement && !fitSeen.has(el.parentElement)) { fitSeen.add(el.parentElement); fitRO.observe(el.parentElement); } // 숨어 있다가 보이거나 폭이 바뀌면 다시 맞춤
+        const cb = el.offsetParent || el.parentElement; if (!cb) return;
+        const W = cb.clientWidth; if (!W) return;
+        const st = el.style, d = el.dataset;
+        if (d.fit) { st.whiteSpace = d.fitWs; st.width = d.fitW; st.minWidth = ''; st.marginLeft = ''; st.fontSize = d.fitFs; } // 다시 맞출 땐 원래 값부터
+        else { d.fit = '1'; d.fitWs = st.whiteSpace; d.fitW = st.width; d.fitFs = st.fontSize; }
+        const box0 = el.offsetWidth, h0 = el.offsetHeight;
+        const lines = /\n/.test((el.innerText || el.textContent || '').trim()) || !!el.querySelector('br');
+        st.whiteSpace = lines ? 'pre' : 'nowrap'; st.width = 'max-content';
+        let nw = el.offsetWidth;
+        const lim = W * 0.92;
+        const restore = () => { st.whiteSpace = d.fitWs; st.width = d.fitW; st.fontSize = d.fitFs; };
+        if (nw <= box0 + 1 && el.offsetHeight >= h0 - 1) { restore(); return; } // 원래도 줄이 안 바뀜
+        if (nw > lim) {
+            const r = lim / nw;
+            if (r < 0.72) { restore(); return; } // 긴 문장은 원래대로 (낱말 단위 줄바꿈)
+            st.fontSize = (parseFloat(getComputedStyle(el).fontSize) * r).toFixed(2) + 'px'; nw = el.offsetWidth;
+        }
+        if (/%$/.test(d.fitW || '')) st.minWidth = d.fitW;
+        const g = el.offsetWidth - box0, ta = getComputedStyle(el).textAlign;
+        let ml = /left|start/.test(ta) ? g / 2 : /right|end/.test(ta) ? -g / 2 : 0; // 정렬한 쪽 끝은 그대로
+        st.marginLeft = ml ? ml.toFixed(1) + 'px' : '';
+        const cr = cb.getBoundingClientRect(), er = el.getBoundingClientRect(), k = cr.width / W || 1; // (에디터 미리보기는 줄여서 보여 줌)
+        const L = (er.left - cr.left) / k, R = (er.right - cr.left) / k;
+        if (L < W * 0.03) ml += W * 0.03 - L; else if (R > W * 0.97) ml -= R - W * 0.97;
+        st.marginLeft = ml ? ml.toFixed(1) + 'px' : '';
+    }
+    function fitTextLayers(root) {
+        if (typeof document === 'undefined') return;
+        (root || document).querySelectorAll(FIT_SEL).forEach(el => { try { fitOne(el); } catch (e) {} });
+    }
     if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') { // 에디터 미리보기·레이아웃 카드·공개 페이지 어디서 그려도 저절로
-        let fitRaf = 0; const fitSoon = () => { if (!fitRaf) fitRaf = requestAnimationFrame(() => { fitRaf = 0; fitHeroArcs(document); }); };
-        const startFit = () => { new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && (n.matches('svg.hl-arc') || n.querySelector('svg.hl-arc'))))) fitSoon(); }).observe(document.documentElement, { childList: true, subtree: true }); fitSoon(); };
+        let fitRaf = 0; const fitSoon = () => { if (!fitRaf) fitRaf = requestAnimationFrame(() => { fitRaf = 0; fitHeroArcs(document); fitTextLayers(document); }); };
+        const hasFit = n => n.nodeType === 1 && (n.matches('svg.hl-arc, ' + FIT_SEL) || n.querySelector('svg.hl-arc, ' + FIT_SEL));
+        const startFit = () => { new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(hasFit))) fitSoon(); }).observe(document.documentElement, { childList: true, subtree: true }); fitSoon(); };
+        if (typeof window !== 'undefined') window.addEventListener('resize', fitSoon);
         document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', startFit) : startFit();
         if (document.fonts) { document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', fitSoon); document.fonts.ready && document.fonts.ready.then(fitSoon); }
     }
@@ -2405,7 +2458,7 @@
             const rows = ACCOUNT_ROLES.filter(r => r.side === sideKey && f[r.key]).map(r => `
                 <div class="ib-acc-row">
                     <span class="ib-acc-who">${esc(r.role === 'self' ? L[sideKey] : L[r.role])}</span>
-                    <span class="ib-acc-val" ${masked ? `data-masked="1" data-part="${r.key}" data-reveal="value"` : ''}>${masked ? MASK : esc(f[r.key])}</span>
+                    <span class="ib-acc-val" ${masked ? `data-masked="1" data-part="${r.key}" data-reveal="value"` : ''}>${masked ? MASK : accHtml(f[r.key])}</span>
                     <button type="button" class="ib-copy-btn" data-ib-copy>복사</button>
                 </div>${r.role === 'self' ? kakao : ''}`).join('');
             if (!rows) return '';
@@ -3215,5 +3268,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

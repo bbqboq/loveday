@@ -513,7 +513,14 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .spq-sum-r + .spq-sum-r { border-top: 1px solid var(--wz-line); } .spq-sum-r:hover { background: var(--ui-tint, #FBF9F6); }
 .spq-sum-r > span { width: 82px; flex: none; font-size: 12px; color: var(--wz-sub); } .spq-sum-r > b { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .spq-sum-r > b.no { color: var(--wz-acc); } .spq-sum-r > em { flex: none; font-style: normal; font-size: 12px; font-weight: 700; color: var(--wz-acc); }
-.spq-sum-more { display: block; margin: 16px auto 0; }
+.spq-add { margin-top: 14px; padding: 16px 14px 14px; border-radius: 16px; background: var(--ui-tint, #FBF9F6); border: 1px solid var(--wz-line); }
+.spq-add-h { display: flex; flex-direction: column; gap: 3px; margin: 0 2px 12px; } .spq-add-h b { font-size: 15px; font-weight: 700; color: var(--wz-ink); } .spq-add-h small { font-size: 12px; color: var(--wz-sub); line-height: 1.5; word-break: keep-all; }
+.spq-add-g { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.spq-add-c { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--wz-line); background: #fff; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--wz-ink); text-align: left; cursor: pointer; word-break: keep-all; transition: border-color .15s, background .15s; }
+.spq-add-c i { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--ui-soft, #F3EFE8); color: var(--wz-ink); font-style: normal; font-size: 13px; font-weight: 700; }
+.spq-add-c:hover { border-color: var(--wz-line2); background: var(--ui-tint, #FBF9F6); }
+.spq-add-all { width: 100%; min-height: 46px; border-radius: 12px; border: 1px solid var(--wz-ink); background: #fff; font: inherit; font-size: 14px; font-weight: 700; color: var(--wz-ink); cursor: pointer; }
+.spq-add-all:hover { background: var(--wz-ink); color: #fff; }
 /* 예식 일정 미정 */
 .sp-tbd { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px dashed var(--wz-line2); border-radius: 14px; background: #fff; font: inherit; color: var(--wz-ink); text-align: left; cursor: pointer; }
 .sp-tbd i { width: 20px; height: 20px; flex: none; border-radius: 50%; border: 2px solid #CFC8BE; box-sizing: border-box; position: relative; }
@@ -4243,14 +4250,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017x">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017x">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017y">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017y">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017x"></script>
-<script src="assets/tip-demos.js?v=1017x"></script>
-<script src="assets/ld-dialog.js?v=1017x"></script>
+<script src="assets/invite-blocks.js?v=1017y"></script>
+<script src="assets/tip-demos.js?v=1017y"></script>
+<script src="assets/ld-dialog.js?v=1017y"></script>
 </head>
 <body>
 
@@ -6079,7 +6086,7 @@ const templates = {
         const cols = !!f.accCols, vw = Math.max(6, Math.min(30, Number(f.accVw) || 14));
         // 이름 칸 폭(accLw em)도 자동 정렬이 실제 이름 글자에 맞춰 잼 - 신랑측·신부측만 있으면 좁게 (없으면 예전처럼 6.4em)
         const lw = Number(f.accLw) > 0 ? Math.max(2, Math.min(10, Number(f.accLw))) : 0, colsCss = lw ? `grid-template-columns:${lw}em ${vw}em;` : '';
-        const line = (k, label) => `<span class="drag-part on-light${cols ? ' acc-row' : ''}" data-part="${k}" data-drag-el style="${s(k)}${cols ? `--acc-vw:${vw}em;${colsCss}` : ''}" title="${DRAG_HINT}">${cols ? `<b class="acc-l">${label}</b><span class="acc-v">${esc(accTxt(f[k]))}</span>` : `${label} · ${esc(accTxt(f[k]))}`}</span>`;
+        const line = (k, label) => `<span class="drag-part on-light${cols ? ' acc-row' : ''}" data-part="${k}" data-drag-el style="${s(k)}${cols ? `--acc-vw:${vw}em;${colsCss}` : ''}" title="${DRAG_HINT}">${cols ? `<b class="acc-l">${label}</b><span class="acc-v">${InviteBlocks.accHtml(f[k])}</span>` : `${label} · ${InviteBlocks.accHtml(f[k])}`}</span>`; // 예금주는 괄호 없이 옅은 글씨
         const extraSpans = activeExtras.map(k => line(k, extraLabels[k])).join('');
         const main = (k, label) => f[k] ? line(k, label) : ''; // 비워 둔 신랑·신부 줄은 빼고 그림 (공개 페이지와 같게)
         return `<div class="blk-account"><div class="free-canvas drag-canvas" style="height:${canvasHeight}px;">
@@ -14350,6 +14357,27 @@ function spResumeStep() {
 }
 // 간편 만들기 진행 상태 (질문 화면/목록, 지금 질문, 답, 질문이 켠 섹션, 디자인에서 꺼 둔 섹션, 목록 묶음·순서) - 디자인과 같이 저장
 const SP_KEEP = ['spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom'];
+// 정리 화면 "기능 더 넣기": 아직 안 넣은 섹션(갤러리·교통 안내·연락처 …)을 누르면 바로 넣고 목록 화면에서 그 칸을 펼침
+//  (예전엔 '하나씩 더 꾸미기' 글자 링크 하나라 잘 안 보였음)
+function spAddable() {
+    return spSteps().filter(st => { if (SP_LIST_NOSW.includes(st.k)) return false; const ids = (st.s || []).filter(id => spHas(id)); return ids.length === 1 && !spBlock(ids[0]).enabled; });
+}
+function spAddMoreHtml() {
+    const list = spAddable().slice(0, 8);
+    return `<div class="spq-add"><div class="spq-add-h"><b>기능 더 넣기</b><small>${list.length ? '누르면 청첩장에 바로 넣고, 내용을 채우는 칸이 열려요.' : '사진·글을 더 고치거나 섹션 순서를 바꿔요.'}</small></div>
+        ${list.length ? `<div class="spq-add-g">${list.map(st => `<button type="button" class="spq-add-c" data-sp-add="${esc(st.k)}"><i aria-hidden="true">＋</i>${esc(st.t)}</button>`).join('')}</div>` : ''}
+        <button type="button" class="spq-add-all" id="spAskList">모든 칸 보며 더 꾸미기 <span aria-hidden="true">→</span></button></div>`;
+}
+function spAddGo(k) {
+    const st = spSteps().find(x => x.k === k); if (!st) return;
+    const id = (st.s || []).find(x => spHas(x)), blk = id && spBlock(id); if (!blk) return;
+    blk.enabled = true; try { renderBlockList(); } catch (e) {}
+    if (Array.isArray(state.spDesignOff)) state.spDesignOff = state.spDesignOff.filter(x => x !== blk.id);
+    state.spView = 'list'; spOpenSet = new Set([k]);
+    spChanged([blk.id]); scheduleSnapshot(); spAskAutoSave(); spRender();
+    try { spHeroPhase = 'pick'; spSelectStep(st); } catch (e) {}
+    setTimeout(() => { const el = document.querySelector(`#simplePane [data-li="${k}"]`); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); spScrollPreview(st.s || []); }, 120);
+}
 function spAskDone() { spStep = spAskSteps().length; spRender(); } // 다 답함 → "거의 다 됐어요" 정리 화면
 function spAskFinish(btn) { // 정리 화면 [완성본 보기]: 저장 → 완성본(발행하기) → 닫으면 목록 화면
     state.spView = 'list'; spOpenSet = new Set(); scheduleSnapshot();
@@ -14404,8 +14432,7 @@ function spRenderAsk(pane) {
     const navFirst = !done && spStep === 0;
     let body = '';
     if (done) {
-        body = `${spH('청첩장이 거의 다 됐어요', '고치고 싶은 게 있으면 눌러서 그 질문으로 돌아가요.')}<div class="spq-sum">${spAskSumRows(steps).map(([l, v, ok], i) => `<button type="button" class="spq-sum-r" data-ask-go="${i}"><span>${esc(l)}</span><b class="${ok ? '' : 'no'}">${esc(v)}</b><em>고치기</em></button>`).join('')}</div>
-            <button type="button" class="sp-link spq-sum-more" id="spAskList">하나씩 더 꾸미기 (갤러리 · 교통 · 연락처 …)</button>`;
+        body = `${spH('청첩장이 거의 다 됐어요', '고치고 싶은 게 있으면 눌러서 그 질문으로 돌아가요.')}<div class="spq-sum">${spAskSumRows(steps).map(([l, v, ok], i) => `<button type="button" class="spq-sum-r" data-ask-go="${i}"><span>${esc(l)}</span><b class="${ok ? '' : 'no'}">${esc(v)}</b><em>고치기</em></button>`).join('')}</div>${spAddMoreHtml()}`;
     } else if (st.opts) {
         body = spH(esc(st.q), esc(st.sub)) + `<div class="sp-ask-opts">${st.opts.map(([v, t, d]) => `<button type="button" class="sp-ask-o${pick === v ? ' on' : ''}" data-ask="${v}" aria-pressed="${pick === v}"><span><b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ''}</span><i></i></button>`).join('')}</div>${opt && opt[3] ? '<div class="sp-ask-more" id="spAskMore"></div>' : ''}`;
     }
@@ -14430,6 +14457,7 @@ function spRenderAsk(pane) {
     pane.querySelector('#spFinish')?.addEventListener('click', e => spAskFinish(e.currentTarget));
     pane.querySelector('#spAskList')?.addEventListener('click', () => { state.spView = 'list'; spOpenSet = new Set(); scheduleSnapshot(); if (EDIT_TOKEN) saveToServer(false, true); spRender(); });
     pane.querySelectorAll('[data-ask-go]').forEach(b => b.addEventListener('click', () => go(+b.dataset.askGo)));
+    pane.querySelectorAll('[data-sp-add]').forEach(b => b.addEventListener('click', () => spAddGo(b.dataset.spAdd)));
     const bodyEl = pane.querySelector('#spBody');
     if (st && !st.opts) {
         spHeroPart = st.k === 'hero' ? st.part || '' : ''; try { st.fn(bodyEl); } finally { spHeroPart = ''; }
