@@ -1395,11 +1395,12 @@
         const rows = (f.creditRows || []).map(r => ({ l: fill(r.label), t: fill(r.text) })).filter(r => r.l || r.t);
         const list = rows.map(r => `<div class="ib-cr-row"><b>${esc(r.l)}</b><span>${esc(r.t)}</span></div>`).join('');
         const sec = Math.max(20, Math.min(120, Number(f.creditSpeed) || 45)), top = Math.max(5, Math.min(60, Number(f.creditTop) || 24)), hh = Math.max(20, Math.min(80, Number(f.creditH) || 46));
-        const pos = { top: 'flex-start', center: 'center', bottom: 'flex-end' }[f.align] || 'flex-end';
+        const pos = f.align === 'top' ? 'flex-start' : 'flex-end'; // 글귀는 위 또는 아래 (가운데면 올라가는 크레딧과 겹쳐서)
         // 같은 목록을 두 번 이어 붙여 -50%까지 올리면 끊김 없이 반복됨. 칸 위·아래는 흐려지게(mask)
         return `<div class="ib-block ib-ending ib-credits${f.image ? '' : ' ib-credits-noimg'}${f.creditAlign === 'center' ? ' ib-cr-center' : ''}" style="justify-content:${pos};">
             ${f.image ? `<img loading="lazy" decoding="async" src="${esc(imgUrl(f.image))}" alt=""><div class="ib-ending-shade" style="background:rgba(0,0,0,${(Number(f.overlay) || 0) / 100});"></div>` : ''}
             <div class="ib-cr-win" style="top:${top}%;height:${hh}%;"><div class="ib-cr-roll" style="animation-duration:${sec}s;">${rows.length ? `<div class="ib-cr-list">${list}</div><div class="ib-cr-list" aria-hidden="true">${list}</div>` : ''}</div></div>
+            ${f.creditText !== false && String(f.text || '').trim() ? `<p class="ib-cr-text">${nl2br(f.text)}</p>` : ''}
         </div>`;
     }
     // 안내 말씀 모양 + 바로 넣는 예시 (간편 만들기 "눌러서 칸 추가" · 전문가 모드 예시 버튼)
@@ -1646,12 +1647,14 @@
         ending: {
             label: '엔딩', color: '#34495E',
             defaults: { image: '', text: '저희의 새로운 시작을\n함께해 주셔서 감사합니다.', align: 'bottom', overlay: 35,
-                credits: false, creditRows: CREDIT_ROWS_DEFAULT.map(r => Object.assign({}, r)), creditSpeed: 45, creditAlign: 'left', creditTop: 24, creditH: 46 },
+                credits: false, creditText: true, creditRows: CREDIT_ROWS_DEFAULT.map(r => Object.assign({}, r)), creditSpeed: 45, creditAlign: 'left', creditTop: 24, creditH: 46 },
             editor: [
                 { key: 'credits', label: '', type: 'check', checkLabel: '엔딩 크레딧(스탭롤)로 보여주기',
                   hint: '사진을 화면 가득 깔고, 그 위 정해진 칸 안에서만 글자가 영화 엔딩처럼 아주 천천히 올라가요.' },
+                { key: 'creditText', label: '', type: 'check', checkLabel: '크레딧과 함께 글귀도 보여주기', showIf: 'credits',
+                  hint: '켜면 글귀가 크레딧 칸 아래(글 위치가 상단이면 위)에 그대로 보여요.' },
                 { key: 'image', label: '사진', type: 'image' },
-                { key: 'text', label: '글귀', type: 'textarea', showIf: '!credits' },
+                { key: 'text', label: '글귀', type: 'textarea', showIf: '!credits|creditText' },
                 { key: 'align', label: '글 위치 (사진 위)', type: 'choice', options: [['top', '상단'], ['center', '중간'], ['bottom', '하단']], showIf: 'image' },
                 { key: 'overlay', label: '사진 어둡게 (글씨 강조)', type: 'range', min: 0, max: 80, unit: '%', showIf: 'image' },
                 { key: 'creditRows', label: '크레딧 줄', type: 'items', addLabel: '줄 추가', item: { label: '', text: '' }, showIf: 'credits', compact: true, fields: [

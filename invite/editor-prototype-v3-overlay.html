@@ -642,6 +642,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-body .wz-lead { margin-bottom: 22px; font-size: 13.5px; }
 .sp-nav { position: sticky; bottom: 0; z-index: 6; display: flex; gap: 10px; padding: 12px 24px 16px; background: linear-gradient(rgba(246,244,241,0), var(--ui-page, #F6F4F1) 35%); }
 .sp-hero { display: flex; align-items: center; gap: 12px; }
+.sp-more-hd { display: flex; align-items: baseline; gap: 8px; margin: 22px 0 10px; padding-top: 16px; border-top: 1px dashed var(--wz-line); } .sp-more-hd b { font-size: 14.5px; } .sp-more-hd small { font-size: 12px; color: var(--wz-mute); }
 .sp-hero.sp-ibg-ph { margin-top: 10px; } .sp-hero.sp-ibg-ph img, .sp-hero.sp-ibg-ph > span { width: 72px; height: 104px; }
 #spIbgYt { margin-top: 10px; }
 .sp-hero img, .sp-hero > span { width: 96px; height: 120px; border-radius: 12px; object-fit: cover; background: var(--ui-line, #EDE7DF); display: grid; place-items: center; font-size: 12px; color: var(--wz-mute); flex: none; }
@@ -4651,14 +4652,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018s">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018s">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018t">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018t">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018s"></script>
-<script src="assets/tip-demos.js?v=1018s"></script>
-<script src="assets/ld-dialog.js?v=1018s"></script>
+<script src="assets/invite-blocks.js?v=1018t"></script>
+<script src="assets/tip-demos.js?v=1018t"></script>
+<script src="assets/ld-dialog.js?v=1018t"></script>
 </head>
 <body>
 
@@ -7235,7 +7236,8 @@ function renderSchemaEditor(wrap, block) {
     // 나중에 추가된 옵션(예: 영상 폭·둥글기)은 예전에 저장된 섹션에 값이 없으니 기본값으로 채워 둔다
     Object.keys(def.defaults || {}).forEach(k => { if (f[k] === undefined) f[k] = JSON.parse(JSON.stringify(def.defaults[k])); });
     // showIf: 'fab' = 그 값이 꺼져 있거나 비어 있으면 숨김 (사진·주소 같은 글 값도 됨) / '!fullWidth' = 켜져 있으면 숨김
-    const showIfHidden = si => si.charAt(0) === '!' ? !!f[si.slice(1)] : !f[si];
+    const showIfOne = si => si.charAt(0) === '!' ? !!f[si.slice(1)] : !f[si];
+    const showIfHidden = si => String(si).split('|').every(showIfOne); // 'a|b' = 둘 중 하나라도 맞으면 보임 (예: 크레딧이 꺼졌거나 '글귀도 보여주기'가 켜졌으면 글귀 칸)
     const fieldHtml = (d, path) => d.type === 'deceased' ? deceasedTileHtml(f) : d.group
         ? `<div class="mini-label" style="margin:16px 0 6px;">${esc(d.group)}</div>`
         : (d.showIf && showIfHidden(d.showIf)) ? '' // showIf: 'fab' = 그 체크가 꺼지면 숨김 / '!fullWidth' = 그 체크가 켜지면 숨김
@@ -7328,7 +7330,7 @@ function renderSchemaEditor(wrap, block) {
     }));
     wrap.querySelectorAll('[data-sf-check]').forEach(cb => cb.addEventListener('change', () => {
         sfSet(f, cb.dataset.sfCheck, cb.checked);
-        commit(def.editor.some(x => x.showIf === cb.dataset.sfCheck || x.showIf === '!' + cb.dataset.sfCheck)); // 이 체크에 딸린 입력칸이 있으면 편집창도 다시 그림
+        commit(def.editor.some(x => typeof x.showIf === 'string' && x.showIf.split('|').some(si => si === cb.dataset.sfCheck || si === '!' + cb.dataset.sfCheck))); // 이 체크에 딸린 입력칸이 있으면 편집창도 다시 그림
     }));
     wrap.querySelectorAll('[data-sf-clear]').forEach(btn => btn.addEventListener('click', () => { sfSet(f, btn.dataset.sfClear, ''); commit(true); }));
     wrap.querySelectorAll('[data-sf-add]').forEach(btn => btn.addEventListener('click', () => {
@@ -16858,6 +16860,39 @@ function spIntroBgList() {
     const media = spOpt('finish', 'introMedia');
     return [['color', '디자인 색'], ...(media ? [['image', '사진'], ['video', '유튜브 영상']] : []), ['clear', '메인 화면 위 (투명)']];
 }
+// 마무리 칸 '더 꾸미기': 전문가 모드의 장식 효과 · 섹션 나타나는 효과 · 스크롤바 · 떠 있는 공유 버튼 · PC 그림자 · 글꼴 (관리자 옵션 finish.*)
+function spFinishMoreHtml() {
+    const O = k => spOpt('finish', k), ex = state.extras || {}, eff = state.effects || {}, A = (window.InviteBlocks && InviteBlocks.AMBIENT) || {};
+    const chips = (list, cur, attr) => `<div class="sp-chips">${list.map(([v, l]) => `<button type="button" class="${String(cur) === String(v) ? 'on' : ''}" ${attr}="${esc(v)}">${esc(l)}</button>`).join('')}</div>`;
+    const sw = (id, on, t, d) => `<label class="sp-sw"><span><b>${t}</b><small>${d}</small></span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><i></i></label>`;
+    const sh = state.blocks.find(b => b.id === 'share'), sf = (sh && sh.fields) || {}, fabOn = !!(sh && sh.enabled && sf.fab !== false);
+    let h = '';
+    if (O('ambient')) h += `<div class="wz-field"><div class="wz-lab">장식 효과 <small>청첩장 위에 꽃잎·눈·별이 흩날려요</small></div>${chips([['none', '없음'], ...Object.entries(A).map(([k, v]) => [k, v.label])], eff.ambient || 'none', 'data-sp-amb')}</div>`;
+    if (O('scrollFx')) h += sw('spFxOn', ex.scrollFx !== false, '섹션 나타나는 효과', '내려가면 섹션이 하나씩 부드럽게 나타나요')
+        + (ex.scrollFx !== false ? `<div class="wz-field sp-in">${chips(SECTION_FX_OPTIONS.filter(([v]) => v !== 'none'), ex.fxType || 'bounce', 'data-sp-fx')}</div>` : '');
+    if (O('scrollbar') && window.InviteBlocks && InviteBlocks.SCROLLBARS) h += `<div class="wz-field"><div class="wz-lab">스크롤바 <small>PC 화면 오른쪽 스크롤 막대 모양</small></div>${chips(InviteBlocks.SCROLLBARS, ex.scrollbar || 'default', 'data-sp-sb')}</div>`;
+    if (O('share') && sh) h += sw('spFabOn', fabOn, '떠 있는 공유 버튼', '화면 구석에서 카카오톡 공유 · 링크 복사')
+        + (fabOn ? `<div class="wz-field sp-in"><div class="wz-lab">위치</div>${chips([['right', '오른쪽 아래'], ['left', '왼쪽 아래']], sf.fabPos || 'right', 'data-sp-fabpos')}<div class="wz-lab" style="margin-top:10px">색</div>${chips([['dark', '어두운 반투명'], ['light', '밝은 반투명'], ['accent', '포인트색']], sf.fabStyle || 'dark', 'data-sp-fabst')}</div>` : '');
+    if (O('shadow')) h += sw('spShadow', !!state.desktopShadow, 'PC 그림자', 'PC로 볼 때 청첩장 양옆 경계에 은은한 그림자');
+    if (O('font')) h += `<div class="wz-field"><div class="wz-lab">글꼴</div><div class="sp-fonts">${fontOptions.filter(fo => !fo.en).map(fo => `<button type="button" class="${(state.customFont || '') === fo.id ? 'on' : ''}" data-sp-font2="${esc(fo.id)}" style="font-family:${String(fo.family || 'inherit').replace(/"/g, "'")}">${esc(fo.id ? fo.label.replace(/\s*\(.*\)\s*$/, '') : '테마 기본')}</button>`).join('')}</div></div>`;
+    return h ? `<div class="sp-more-hd" id="spMoreHd"><b>더 꾸미기</b><small>전문가 모드 기능을 여기서도 골라요</small></div>${h}` : '';
+}
+function spFinishMoreBind(box) {
+    const done = (pv) => { scheduleSnapshot(); renderPreview(); spRender(); if (pv) spChanged(); };
+    const sh = state.blocks.find(b => b.id === 'share');
+    box.querySelectorAll('[data-sp-amb]').forEach(b => b.addEventListener('click', () => { state.effects = state.effects || { ambient: 'none', pinchZoom: true }; state.effects.ambient = b.dataset.spAmb; try { syncAmbientOpacityUI(); } catch (e) {} done(); }));
+    box.querySelector('#spFxOn')?.addEventListener('change', e => { ensureExtraState(); state.extras.scrollFx = e.target.checked; done(); });
+    box.querySelectorAll('[data-sp-fx]').forEach(b => b.addEventListener('click', () => { ensureExtraState(); const v = b.dataset.spFx; state.extras.fxType = v; state.extras.scrollFx = true;
+        state.blocks.forEach(bl => { if (bl.id !== 'heroVideo' && bl.id !== 'hero') bl.scrollEffect = v; }); done();
+        const first = state.blocks.find(bl => bl.enabled && !['hero', 'heroVideo', 'share'].includes(bl.id)); if (first) setTimeout(() => { try { spScrollPreview([first.id]); replaySectionFx(first.id); } catch (e) {} }, 250); })); // 고른 효과를 바로 보여 줌
+    box.querySelectorAll('[data-sp-sb]').forEach(b => b.addEventListener('click', () => { ensureExtraState(); state.extras.scrollbar = b.dataset.spSb; done(); }));
+    box.querySelector('#spFabOn')?.addEventListener('change', e => { if (!sh) return; if (e.target.checked) sh.enabled = true; sh.fields.fab = e.target.checked; done(true); });
+    box.querySelectorAll('[data-sp-fabpos]').forEach(b => b.addEventListener('click', () => { if (sh) sh.fields.fabPos = b.dataset.spFabpos; done(true); }));
+    box.querySelectorAll('[data-sp-fabst]').forEach(b => b.addEventListener('click', () => { if (sh) sh.fields.fabStyle = b.dataset.spFabst; done(true); }));
+    box.querySelector('#spShadow')?.addEventListener('change', e => { state.desktopShadow = e.target.checked; const cb = document.getElementById('desktopShadowToggle'); if (cb) cb.checked = e.target.checked; try { renderColorSwatches(); } catch (er) {} done(); });
+    box.querySelectorAll('[data-sp-font2]').forEach(b => b.addEventListener('click', () => { state.customFont = b.dataset.spFont2 || null; if (state.customFont) loadFontCss(state.customFont); done(true); }));
+    if (box.querySelector('[data-sp-font2]')) try { loadAllFontCss(); } catch (e) {}
+}
 function spFinish(box) {
     ensureExtraState();
     const ibg = spIntroBgList().some(x => x[0] === state.intro.bgType) ? state.intro.bgType : 'color';
@@ -16869,7 +16904,9 @@ function spFinish(box) {
             ${ibg === 'clear' ? `<div class="sp-range"><span>뒤 화면 어둡게</span><input type="range" id="spIbgDim" min="0" max="70" step="5" value="${state.intro.clearDim ?? 30}"><span>${state.intro.clearDim ?? 30}%</span></div>` : ''}</div>
             <div class="wz-field"><div class="wz-lab">글자 효과</div><div class="sp-chips">${InviteBlocks.RichText.ANIMS.map(([v, l]) => `<button type="button" class="${(state.intro.anim || 'type') === v ? 'on' : ''}" data-sp-ianim="${v}">${esc(l)}</button>`).join('')}</div>
             <button type="button" class="sp-link" id="spIntroPv">▶ 인트로 보기</button></div>` : ''}
+        ${spFinishMoreHtml()}
         <p class="wz-hint">글자 위치·스티커·섹션 순서까지 바꾸고 싶으면 위의 <b>전문가 모드</b>를 누르세요. 언제든 간편 만들기로 돌아올 수 있어요.</p>`;
+    spFinishMoreBind(box);
     box.querySelector('#spIntro')?.addEventListener('change', e => { state.intro.enabled = e.target.checked; spChanged(); scheduleSnapshot(); spRender(); });
     const ibgUp = () => { const input = makeFileInput(); input.addEventListener('change', async () => {
             const file = input.files && input.files[0]; if (!file) return;
@@ -18455,6 +18492,7 @@ const LDH_EASY = [
     { t: '칸 모양 바꾸기 (빈티지 · 다른 디자인 스킨)', d: '인사말·방명록 같은 칸을 다른 모양으로', when: () => spOpt('theme', 'sskin'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'섹션 꾸밈\'에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 중 하나를 눌러요.', '아래 \'디자인 스킨\'에서 다른 디자인(가든 · 필름 · 스크랩북 …)을 누르면 그 디자인의 색 · 글꼴 · 꾸밈이 모든 칸에 입혀져요. 처음처럼 하려면 [디자인 따라]를 눌러요.', '칸마다 따로 바꾸려면 전문가 모드의 \'섹션 스킨\'에서 해요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', when: () => spOpt('gallery', 'reveal'), steps: ['아래 [그 칸으로 가기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 위(옆) 청첩장에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요. [한 번에]를 누르면 예전처럼 바로 보여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'gallery')] },
     { t: '인트로 배경에 사진 · 영상 넣기', d: '청첩장을 열 때 뒤에 깔리는 화면', when: () => spOpt('finish', 'intro') && spOpt('finish', 'introFx') && spOpt('finish', 'introMedia'), steps: ['아래 [그 칸으로 가기]를 누르면 \'마무리\' 칸이 열려요. 인트로 스위치를 켜요.', '\'인트로 배경\'에서 [사진]을 누르면 앨범이 열려요. 한 장 고르면 인트로 뒤에 깔려요.', '[유튜브 영상]을 누르고 유튜브 주소를 붙여 넣으면 영상이 소리 없이 뒤에서 흘러가요.', '[▶ 인트로 보기]를 누르면 하객이 보는 그대로 확인할 수 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'finish')] },
+    { t: '꽃잎 효과 · 공유 버튼 · 그림자 · 글꼴 고르기', d: '마무리 칸 \'더 꾸미기\'', when: () => ['ambient', 'scrollFx', 'scrollbar', 'share', 'shadow', 'font'].some(k => spOpt('finish', k)), steps: ['아래 [그 칸으로 가기]를 누르면 \'마무리\' 칸이 열려요. 아래쪽 \'더 꾸미기\'를 봐요.', '장식 효과(꽃잎 · 눈 · 별 …)와 섹션 나타나는 효과를 누르면 위(옆) 청첩장에서 바로 보여 줘요.', '떠 있는 공유 버튼 스위치로 화면 구석 공유 버튼을 켜고, 위치 · 색을 골라요.', 'PC 그림자는 컴퓨터로 볼 때 청첩장 양옆에 은은한 그림자를 넣어요. 글꼴도 여기서 다시 고를 수 있어요.'], go: ['그 칸으로 가기', () => { ldhEasyGo('', 'finish'); setTimeout(() => document.getElementById('spMoreHd')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 450); }] },
     { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 스티커', steps: ['디자인을 고를 때(또는 \'색·글꼴\' 칸 [디자인 바꾸기]) \'웹툰 · 우리 결혼해요\'를 고르면 한 번에 웹툰 모양이 돼요.', '지금 디자인 그대로 두고 싶으면 첫 화면 꾸미기에서 \'웹툰 표지\'·\'웹툰 말풍선\' 레이아웃을, \'색·글꼴\' 칸 \'섹션 꾸밈\'에서 \'웹툰 컷\'을 골라요.', '\'스티커 꾸미기\'의 \'웹툰 첫 화\'·\'두근두근 말풍선\' 세트로 웹툰 스티커를 한 번에 붙여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '스티커 한 번에 꾸미기', d: '하트·꽃·별 스티커를 세트로', when: () => spOpt('flow', 'stkset'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 아래 \'스티커 꾸미기\'가 보여요.', '마음에 드는 세트를 누르면 첫 화면·인사말·갤러리 모서리에 어울리게 붙어요.', '[다른 세트로]로 바꾸거나 [스티커 다 빼기]로 모두 뺄 수 있어요. 하나씩 옮기려면 전문가 모드에서 해요.'], go: ['그 칸으로 가기', () => spAddGo('#stk')] },
     { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },

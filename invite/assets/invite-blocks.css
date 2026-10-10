@@ -163,6 +163,8 @@
 .ib-cr-row b { font-weight: 500; } .ib-cr-row span { font-weight: 300; opacity: .72; word-break: keep-all; }
 .ib-cr-center .ib-cr-row { grid-template-columns: 1fr; text-align: center; row-gap: 3px; padding: 10px 0; }
 .ib-credits-noimg .ib-cr-row { color: var(--p-ink); text-shadow: none; }
+.ib-credits > p.ib-cr-text { z-index: 2; padding: 26px 22px 38px; text-align: center; } /* 크레딧과 함께 보이는 글귀 (위 또는 아래) */
+.ib-credits-noimg > p.ib-cr-text { color: var(--p-ink); text-shadow: none; font-family: var(--p-head-font); }
 @keyframes ibCrRoll { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 @media (prefers-reduced-motion: reduce) { .ib-cr-roll { animation: none; } .ib-cr-list[aria-hidden] { display: none; } .ib-cr-win { overflow-y: auto; } }
 

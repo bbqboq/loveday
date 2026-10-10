@@ -291,7 +291,7 @@ const SECTION_EASY_OPTS = [
     'guestbook' => ['desc' => '안내 문구', 'allowWrite' => '하객 글쓰기 켜고 끄기', 'style' => '모양 (카드 / 줄글)'],
     'video' => ['title' => '영상 제목', 'fullWidth' => '가로 꽉 채우기'],
     'music' => ['library' => '기본 음악 고르기', 'upload' => '내 음악 올리기', 'autoplay' => '자동 재생', 'volume' => '음량'],
-    'finish' => ['intro' => '인트로', 'introFx' => '인트로 배경 · 글자 효과', 'introMedia' => '인트로 배경에 사진 · 유튜브 영상'],
+    'finish' => ['intro' => '인트로', 'introFx' => '인트로 배경 · 글자 효과', 'introMedia' => '인트로 배경에 사진 · 유튜브 영상', 'ambient' => '더 꾸미기: 장식 효과', 'scrollFx' => '더 꾸미기: 섹션 나타나는 효과', 'scrollbar' => '더 꾸미기: 스크롤바', 'share' => '더 꾸미기: 떠 있는 공유 버튼', 'shadow' => '더 꾸미기: PC 그림자', 'font' => '더 꾸미기: 글꼴'],
 ];
 /** 끈 세부 옵션 정리 {step: [key, ...]} */
 function section_easy_off_clean($in): array
