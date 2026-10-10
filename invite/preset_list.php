@@ -37,7 +37,11 @@ const ALLOWED_STYLE   = [
     'notice.style'       => ['card', 'box', 'slide', 'tabs'],
     'guestbook.style'    => ['card', 'line'],
     'gallery.reveal'     => ['', 'seq', 'random'], // 사진 나타나는 방식 (차례로 · 무작위로 차라락)
+    'interview.style'    => ['', 'chat', 'card', 'mag', 'split'], // 인터뷰 모양 (InviteBlocks.IV_STYLES)
+    'thanks.style'       => ['card', 'letter', 'photo', 'plain'],
 ];
+// 디자인 테마 스킨 꾸밈 (전문가 모드 섹션 스킨에서 이 디자인을 고르면 섹션에 입히는 모양 - InviteBlocks.THEME_DECOS, '@webtoon' 같은 건 섹션 테마)
+const ALLOWED_LOOKS   = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', '@vintage', '@night', '@mist', '@webtoon'];
 const ALLOWED_HERO    = ['video', 'photo', 'text'];
 const ALLOWED_FRAMES  = ['none', 'rounded', 'circle', 'pill', 'arch'];
 const ALLOWED_FONTS   = ['', 'pretendard', 'noto-serif-kr', 'gowun-batang', 'nanum-myeongjo', 'gothic-a1', 'song-myung',
@@ -113,6 +117,7 @@ function load_preset(string $folder): array {
     }
     if (isset($p['heroLayout']) && is_string($p['heroLayout']) && preg_match('/^[a-z0-9_-]{1,40}$/', $p['heroLayout'])) $out['heroLayout'] = $p['heroLayout'];
     if (isset($p['paper']) && in_array($p['paper'], ALLOWED_PAPER, true)) $out['paper'] = $p['paper'];
+    if (isset($p['sectionLook']) && in_array($p['sectionLook'], ALLOWED_LOOKS, true)) $out['sectionLook'] = $p['sectionLook']; // 섹션 스킨 꾸밈 (없으면 에디터 THEME_LOOKS)
     if (($p['ambientScope'] ?? '') === 'hero') $out['ambientScope'] = 'hero';
     if (isset($p['ambientOpacity'])) $out['ambientOpacity'] = max(10, min(100, (int) $p['ambientOpacity']));
     // 폰트 필드(headFont 등)는 CSS에 그대로 들어가므로 따옴표·세미콜론 같은 위험 문자 제거

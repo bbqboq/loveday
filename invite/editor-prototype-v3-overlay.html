@@ -1070,6 +1070,32 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
 .fp-more:hover { border-color: #1B1A18; color: #1B1A18; }
 .fp-all[hidden], .fp-grid[hidden] { display: none; }
 .skp { display: grid; gap: 8px; }
+/* 섹션 스킨 (전문가 모드 편집창 맨 위 sskMount) - 카드마다 그 섹션을 진짜로 그려서 작게 (390px → 92px) */
+.ssk { margin: 2px 0 14px; padding: 12px 12px 6px; border: 1px solid var(--ui-line, #E8E1D6); border-radius: 14px; background: #fff; }
+.ssk-hd { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.ssk-hd b { font-size: 13.5px; color: #2B2320; }
+.ssk-hd small { font-size: 11px; color: #8A847B; }
+.ssk-all { margin-left: auto; border: 1px solid var(--ui-line, #E5DED3); background: var(--ui-tint, #FAF7F2); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 11px; font-weight: 700; color: #6B6259; cursor: pointer; }
+.ssk-all:hover { border-color: #2B2320; color: #2B2320; }
+.ssk-lab { font-size: 11.5px; font-weight: 700; color: #6B6259; margin: 8px 0 5px; }
+.ssk-lab small { font-weight: 500; color: #A39A8F; margin-left: 2px; }
+.ssk-row { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 2px 8px; scrollbar-width: thin; }
+.ssk-row::-webkit-scrollbar { height: 5px; } .ssk-row::-webkit-scrollbar-thumb { background: #DDD5C9; border-radius: 9px; }
+.ssk-sep { flex: none; width: 1px; margin: 4px 2px 22px; background: var(--ui-line, #E5DED3); }
+.ssk-c { flex: none; width: 92px; scroll-snap-align: start; cursor: pointer; display: flex; flex-direction: column; gap: 4px; outline: none; }
+.ssk-c b { font-size: 10.5px; font-weight: 600; color: #6B6259; line-height: 1.25; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: keep-all; }
+.ssk-c.on b { color: #2B2320; font-weight: 800; }
+.ssk-th { position: relative; display: block; width: 92px; height: 120px; border-radius: 10px; overflow: hidden; background: var(--ui-tint, #F6F2EC); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.ssk-c:hover .ssk-th { box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+.ssk-c:focus-visible .ssk-th, .ssk-c.on .ssk-th { box-shadow: 0 0 0 2px #2B2320; }
+.ssk-c.on .ssk-th::after { content: '✓'; position: absolute; right: 5px; top: 5px; z-index: 5; width: 18px; height: 18px; border-radius: 50%; background: #2B2320; color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; }
+.ssk-ld { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%) 0 0 / 200% 100%; animation: sskLd 1.1s linear infinite; }
+@keyframes sskLd { to { background-position: -200% 0; } }
+.ssk-th > .ssk-iv { display: block; position: absolute; left: 0; top: 0; width: 390px; min-height: 0 !important; border-radius: 0 !important; transform: scale(.2359); transform-origin: 0 0; pointer-events: none; padding-top: 4px; overflow: hidden; }
+.ssk-iv .col { padding-top: 18px; padding-bottom: 18px; }
+.ssk-iv * { animation-play-state: paused !important; }
+.ssk-iv .reveal-up, .ssk-iv [class*="reveal-"] { opacity: 1 !important; transform: none !important; }
+@media (prefers-reduced-motion: reduce) { .ssk-ld { animation: none; } }
 .skp-row { display: flex; flex-wrap: wrap; gap: 6px; }
 .skp-b { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 6px; border-radius: 999px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 12.5px; font-weight: 600; color: #4A443C; cursor: pointer; }
 .skp-b i { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--b) 55%, var(--a) 55%); box-shadow: inset 0 0 0 1.5px var(--l, rgba(0,0,0,.1)); }
@@ -6516,7 +6542,7 @@ const templates = {
             </div>
         `).join('');
         const imgHtml = f.image ? `<div class="iv-photo"><img src="${esc(f.image)}" alt=""></div>` : '';
-        return `<div class="blk-interview" style="position:relative;">${InviteBlocks.titleLayer(f.title, f, 'title', '', 18, 48)}${imgHtml}${qas}</div>`;
+        return `<div class="blk-interview${InviteBlocks.ivCls ? InviteBlocks.ivCls(f) : ''}" style="position:relative;">${InviteBlocks.titleLayer(f.title, f, 'title', '', 18, 48)}${imgHtml}${qas}</div>`;
     }
 };
 
@@ -8787,14 +8813,11 @@ function appendSectionSpacingControls(wrap, block) {
         <div class="cpk-line"><small>바탕</small>${cpkHtml('secBoxBg', block.boxBg || secBoxDef().bg, !block.boxBg && !block.boxInk, 'secBoxReset')}</div>
         <div class="cpk-line"><small>글자</small>${cpkHtml('secBoxInk', block.boxInk || secBoxDef().ink, !block.boxBg && !block.boxInk, null, CPK_INK)}</div>
         <p class="field-hint" style="margin-top:4px;">${block.boxBg || block.boxInk ? '직접 고른 색을 쓰는 중이에요.' : '지금은 테마 기본 색이에요. 색을 고르면 이 섹션 안의 창들이 바뀌어요.'}</p>` : ''}
-        ${SKIN_NO.includes(block.id) ? '' : `<label style="margin-top:14px;">섹션 테마 <span style="font-weight:400;opacity:.65;">(이 섹션만 다른 모양으로)</span></label>
-        ${skinPickHtml(InviteBlocks.skinOf(block), block.skinPal, InviteBlocks.SKIN_HAS_VINTAGE.includes(block.id))}
-        <button type="button" class="pill" data-skp-all style="margin-top:8px;">모든 섹션에 같게</button>`}
+        ${SKIN_NO.includes(block.id) ? '' : `<p class="field-hint" style="margin-top:12px;">섹션 모양·꾸밈(스킨)은 편집창 맨 위 <b>섹션 스킨</b>에서 골라요.</p>`}
     `;
     wrap.appendChild(box);
     bindCpk(box);
-    bindSkinPick(box, (k, pal) => { skinApply(block, k, pal); renderFieldEditor(); renderPreview(); scheduleSnapshot(); });
-    box.querySelector('[data-skp-all]')?.addEventListener('click', () => { const k = InviteBlocks.skinOf(block), pal = block.skinPal; state.blocks.forEach(b => { if (!SKIN_NO.includes(b.id)) { if (pal) { delete b.skin; delete b.skinPal; if (b.fields) delete b.fields.skin; b.skinPal = Object.assign({}, pal); } else skinApply(b, k, ''); } }); renderPreview(); scheduleSnapshot(); showServerNotice('모든 섹션을 같은 테마로 바꿨어요.'); });
+    if (!SKIN_NO.includes(block.id) && (() => { try { return spOpt('flow', 'sskin'); } catch (e) { return true; } })()) try { sskMount(wrap, block); } catch (e) { console.warn(e); } // 섹션 스킨 (편집창 맨 위, 관리자 손쉬운 제작 → 간편 만들기 전체 flow.sskin)
     const pdSet = (id, v, fromLink) => {
         v = Math.max(0, Math.min(120, v));
         const inp = document.getElementById(id); if (inp && +inp.value !== v) inp.value = v;
@@ -9319,10 +9342,16 @@ function renderInterviewEditor(wrap, block) {
             ${f.image ? `<button type="button" class="pill" id="ivRemoveImg">삭제</button>` : ''}
             <input type="file" id="ivFileInput" accept="image/*" style="display:none;">
         </div>
+        <div class="field"><label>모양</label><div class="width-row">${(InviteBlocks.IV_STYLES || []).map(([v, l]) => `<button type="button" class="width-btn ${(f.style || '') === v ? 'active' : ''}" data-iv-style="${v}">${esc(l)}</button>`).join('')}</div></div>
         <div class="mini-label" style="margin-top:10px;">질문들</div>
         <div id="ivQaList"></div>
         <button type="button" class="pill pill-primary-outline" id="ivAddQa" style="margin-top:8px;">+ 질문 추가</button>`;
     document.getElementById('ivTitle').addEventListener('input', e => { f.title = e.target.value; renderPreview(); });
+    wrap.querySelectorAll('[data-iv-style]').forEach(btn => btn.addEventListener('click', () => { // 인터뷰 모양 (이름표 · 채팅 말풍선 · 질문 카드 · 매거진 · 마주 보기)
+        f.style = btn.dataset.ivStyle; scheduleSnapshot();
+        if (wrap.id === 'fieldEditor') renderFieldEditor(); else wrap.querySelectorAll('[data-iv-style]').forEach(x => x.classList.toggle('active', x === btn));
+        renderPreview();
+    }));
     document.getElementById('ivUploadImg').addEventListener('click', () => document.getElementById('ivFileInput').click());
     document.getElementById('ivFileInput').addEventListener('change', async e => {
         const file = e.target.files[0];
@@ -16278,24 +16307,161 @@ let spDesignOpen = false;
 //  디자인 따라 · 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 + 다른 디자인(20개) 색 → block.skin / block.skinPal (InviteBlocks.boxColAttrs가 .col에)
 const SKIN_NO = ['hero', 'heroVideo'];
 const SKIN_PV = { vintage: ['#F7EFDF', '#A4524F', '#CDB27A'], night: ['#141936', '#E2C98E', '#353C6A'], mist: ['#222C36', '#A9C1D6', '#3A4754'], webtoon: ['#FFFFFF', '#FFD93D', '#1B1B1F'] };
-function skinPalOf(p) { const k = skins[p.__base || p.id]; return k && k.bg && k.ink ? { bg: k.bg, ink: k.ink, accent: k.accent, line: k.line, muted: k.muted } : null; }
+// 디자인 테마 스킨 = 그 디자인의 색·글꼴·모서리·종이 + 꾸밈(InviteBlocks.THEME_LOOKS 또는 preset.json sectionLook) + 그 디자인의 섹션 모양 값
+function themeLookOf(p) { const L = (window.InviteBlocks && InviteBlocks.THEME_LOOKS) || {}; return (p && (p.sectionLook || L[p.__base] || L[p.id])) || 'soft'; }
+function skinPalOf(p) {
+    const k = skins[p.__base || p.id]; if (!(k && k.bg && k.ink)) return null;
+    const fo = p.font ? fontOptions.find(f => f.id === p.font && f.family) : null;
+    const PP = (window.InviteBlocks && InviteBlocks.BG_PAPERS) || {}, pap = p.paper && PP[p.paper] ? p.paper : '';
+    const look = themeLookOf(p);
+    return { bg: pap ? PP[pap].bg : k.bg, ink: k.ink, accent: k.accent, line: k.line, muted: k.muted,
+        hf: fo ? fo.family : (k.headFont || ''), bf: fo ? fo.family : (k.bodyFont || ''), hw: String((fo && fo.weight) || k.headWeight || ''), r: k.radius || '',
+        paper: pap, font: fo ? fo.id : '', deco: look.charAt(0) === '@' ? '' : look, id: p.id };
+}
+const SKIN_STYLE_KEYS = ['layoutType', 'calendarStyle', 'counterStyle', 'accStyle', 'contactStyle', 'style'];
+function skinDesignOf(b) { return (b && (b.skinDesign || (b.skinPal && b.skinPal.id))) || ''; }
+// 디자인 스킨을 입힐 때 바꾼 모양 값은 skinPrev {키: [원래 값, 바꾼 값]}에 두고, '디자인 따라'로 돌아오면 (그 뒤 직접 안 바꿨으면) 원래 값으로
+function skinRestorePrev(b) {
+    if (!b.skinPrev) return;
+    Object.entries(b.skinPrev).forEach(([k, v]) => { if (!Array.isArray(v) || !b.fields || b.fields[k] !== v[1]) return; if (v[0] == null) delete b.fields[k]; else b.fields[k] = v[0]; });
+    delete b.skinPrev;
+}
+function themeApply(b, pid) {
+    const p = PRESETS.find(x => x.id === pid); if (!p) return;
+    skinRestorePrev(b);
+    const look = themeLookOf(p), bf = (p.blockFields || {})[b.id] || {};
+    b.fields = b.fields || {};
+    const prev = {};
+    SKIN_STYLE_KEYS.forEach(k => { const v = bf[k]; if (typeof v !== 'string' || !v || b.fields[k] === v) return; prev[k] = [b.fields[k] ?? null, v]; b.fields[k] = v; });
+    if (Object.keys(prev).length) b.skinPrev = prev;
+    delete b.skin; delete b.skinPal; delete b.fields.skin;
+    const sp = look.charAt(0) === '@' ? look.slice(1) : '';
+    if (sp && !(sp === 'vintage' && InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id))) b.skin = sp;
+    else { const pl = skinPalOf(p); if (pl) { if (sp) pl.deco = 'cupid'; b.skinPal = pl; } }
+    b.skinDesign = p.id;
+}
 function skinPickHtml(cur, curPal, noVintage) {
     const SK = ((window.InviteBlocks && InviteBlocks.SECTION_SKINS) || []).filter(([k]) => !(noVintage && k === 'vintage'));
     const chip = ([k, l]) => { const c = SKIN_PV[k], on = k ? cur === k : !cur && !curPal;
         return `<button type="button" class="skp-b${on ? ' on' : ''}" data-skp="${k}">${c ? `<i style="--b:${c[0]};--a:${c[1]};--l:${c[2]}"></i>` : '<i class="d"></i>'}${esc(l)}</button>`; };
-    const pals = PRESETS.map(p => { const pl = skinPalOf(p); if (!pl) return ''; const on = !cur && curPal && curPal.bg === pl.bg && curPal.accent === pl.accent;
-        return `<button type="button" class="skp-p${on ? ' on' : ''}" data-skp-pal="${esc(p.id)}" title="${esc(p.label)} 색으로" style="--b:${pl.bg};--a:${pl.accent};--k:${pl.ink}"><i></i><span>${esc(p.label)}</span></button>`; }).join('');
-    return `<div class="skp"><div class="skp-row">${SK.map(chip).join('')}</div><div class="skp-lab">다른 디자인 색으로</div><div class="skp-pals">${pals}</div></div>`;
+    const pals = PRESETS.map(p => { const pl = skinPalOf(p); if (!pl) return ''; const on = !cur && curPal && (curPal.id ? curPal.id === p.id : curPal.bg === pl.bg && curPal.accent === pl.accent);
+        return `<button type="button" class="skp-p${on ? ' on' : ''}" data-skp-pal="${esc(p.id)}" title="${esc(p.label)} 스킨으로" style="--b:${pl.bg};--a:${pl.accent};--k:${pl.ink}"><i></i><span>${esc(p.label)}</span></button>`; }).join('');
+    return `<div class="skp"><div class="skp-row">${SK.map(chip).join('')}</div><div class="skp-lab">디자인 스킨 (그 디자인의 색·글꼴·꾸밈)</div><div class="skp-pals">${pals}</div></div>`;
+}
+// 지금 디자인이 그 섹션에 정해 둔 섹션 테마 (웹툰 디자인 = 모든 섹션 웹툰 컷 등) - '디자인 따라'는 이것으로
+function designSkinOf(b) {
+    try { const p = PRESETS.find(x => x.id === state.presetId), v = p && p.blockFields && p.blockFields[b.id] && p.blockFields[b.id].skin;
+        return InviteBlocks.SECTION_SKINS.some(x => x[0] === v && v) ? v : ''; } catch (e) { return ''; }
 }
 function skinApply(b, k, palId) {
-    delete b.skin; delete b.skinPal; if (b.fields) delete b.fields.skin;
-    if (palId) { const p = PRESETS.find(x => x.id === palId), pl = p && skinPalOf(p); if (pl) b.skinPal = pl; return; }
-    if (!k) return;
+    if (palId) { themeApply(b, palId); return; }
+    delete b.skin; delete b.skinPal; delete b.skinDesign; if (b.fields) delete b.fields.skin;
+    if (!k) { skinRestorePrev(b); const ds = designSkinOf(b); if (ds) (b.fields = b.fields || {}).skin = ds; return; } // 디자인 따라: 디자인 스킨이 바꿔 둔 모양 값도 원래대로 + 디자인이 정한 섹션 테마
     if (k === 'vintage' && InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id)) { // 원래 빈티지 모양이 있는 섹션은 그 모양으로
         if (b.id === 'contact') b.fields.contactStyle = 'vintage'; else if (b.id === 'account') b.fields.accStyle = 'vintage';
         return;
     }
     b.skin = k;
+}
+// ===== 섹션 스킨 (전문가 모드 편집창 맨 위 · 첫 화면 빼고 모든 섹션) =====
+//  ① 모양 = 그 섹션의 원래 모양들 (방명록 카드·줄글, 달력·카운트, 계좌, 연락처, 안내, 갤러리, 감사 인사, 인터뷰) ② 스킨 = 디자인 따라 · 빈티지 · 밤하늘 · 안개 + 디자인 21개
+//  카드마다 그 섹션을 진짜로 그려 작게 보여 줌 (sskThumb: renderBlockHtml + boxColAttrs, 보이는 카드만 한가할 때 하나씩 · 같은 내용이면 다시 안 그림)
+const SSK_LOOKS = {
+    guestbook: [['style', '방명록 모양', () => [['card', '카드'], ['line', '줄글']]]],
+    notice: [['style', '안내 모양', () => InviteBlocks.NOTICE_STYLES]],
+    thanks: [['style', '감사 인사 모양', () => [['card', '카드'], ['letter', '편지지'], ['photo', '사진 위 글자'], ['plain', '깔끔하게']]]],
+    account: [['accStyle', '계좌 모양', () => InviteBlocks.ACC_STYLES]],
+    contact: [['contactStyle', '연락처 모양', () => InviteBlocks.CONTACT_STYLES]],
+    gallery: [['layoutType', '갤러리 모양', () => InviteBlocks.GALLERY_TYPES]],
+    dday: [['calendarStyle', '달력 모양', () => InviteBlocks.CAL_STYLES], ['counterStyle', '카운트 모양', () => InviteBlocks.DDAY_STYLES]],
+    interview: [['style', '인터뷰 모양', () => InviteBlocks.IV_STYLES || []]],
+};
+const SSK_FOCUS = { counterStyle: '.dday-countdown' };
+const SSK = { cache: new Map(), io: null };
+function sskSkins(b) {
+    const sk = [['', '디자인 따라'], ...((InviteBlocks.SECTION_SKINS || []).filter(([k]) => k && k !== 'webtoon' && !(k === 'vintage' && InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id))))];
+    return { base: sk, designs: PRESETS.filter(p => skins[p.__base || p.id]) };
+}
+function sskCur(b) { const d = skinDesignOf(b); if (d) return 'd:' + d; const k = InviteBlocks.skinOf(b); return 's:' + (k && k === designSkinOf(b) && !b.skin ? '' : k); }
+function sskMut(spec) { // 'l:키:값' 모양 · 's:스킨' · 'd:디자인 id'
+    const [t, a, v] = spec.split(':');
+    if (t === 'l') return c => { c.fields[a] = v; };
+    if (t === 'd') return c => themeApply(c, a);
+    return c => skinApply(c, a, '');
+}
+function sskThumb(b, spec) {
+    const c = JSON.parse(JSON.stringify(b)); c.fields = c.fields || {};
+    try { sskMut(spec)(c); } catch (e) {}
+    let html = ''; try { html = renderBlockHtml(c); } catch (e) {}
+    const a = InviteBlocks.boxColAttrs(c);
+    const t = document.createElement('template'); t.innerHTML = dpkClean(html);
+    t.content.querySelectorAll('script, iframe, video, input, textarea, select').forEach(e => e.remove());
+    t.content.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+    t.content.querySelectorAll('[class*="reveal-"], .rv-arm').forEach(e => e.classList.add('in-view'));
+    return `<div class="row-flex" style="grid-template-columns:100%"><div class="col${a.cls}" data-ssk-col="${esc(c.id)}"${a.style ? ` style="${a.style}"` : ''}>${t.innerHTML}</div></div>`;
+}
+function sskCard(spec, label, on, sub) {
+    return `<div class="ssk-c${on ? ' on' : ''}" role="button" tabindex="0" data-ssk="${esc(spec)}" title="${esc(label)}"><span class="ssk-th"><span class="ssk-ld"></span></span><b>${esc(label)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</div>`;
+}
+function sskHtml(b) {
+    const looks = (SSK_LOOKS[b.id] || []).map(([key, lab, fn]) => { const list = (fn() || []).filter(x => x && x[0] != null); if (list.length < 2) return '';
+        const cur = b.fields && b.fields[key] != null && b.fields[key] !== '' ? b.fields[key] : list[0][0];
+        return `<div class="ssk-lab">${esc(lab)} <small>${list.length}가지</small></div><div class="ssk-row">${list.map(([v, l]) => sskCard(`l:${key}:${v}`, l, String(cur) === String(v))).join('')}</div>`; }).join('');
+    const S = sskSkins(b), cur = sskCur(b);
+    const base = S.base.map(([k, l]) => sskCard('s:' + k, l, cur === 's:' + k)).join('');
+    const des = S.designs.map(p => sskCard('d:' + p.id, p.label, cur === 'd:' + p.id)).join('');
+    return `<div class="pz-gen ssk" data-ssk-for="${esc(b.id)}"><div class="ssk-hd"><b>섹션 스킨</b><small>이 섹션만 다른 모양 · 다른 디자인 느낌으로</small><button type="button" class="ssk-all" data-ssk-all>모든 섹션에 같은 스킨</button></div>
+        ${looks}<div class="ssk-lab">스킨 <small>기본 ${S.base.length} · 디자인 ${S.designs.length}가지</small></div><div class="ssk-row ssk-skins">${base}<i class="ssk-sep"></i>${des}</div></div>`;
+}
+function sskFill(card, b) {
+    const th = card.querySelector('.ssk-th'); if (!th || th.dataset.done) return;
+    const r = document.getElementById('previewRoot'); if (!r) return;
+    const rs = (r.getAttribute('style') || '').split(';').filter(d => /^\s*--/.test(d)).join(';'), rc = (r.className || '').split(/\s+/).filter(c => /^(invite-preview|ib-dark|dividers-on)$/.test(c)).join(' ') || 'invite-preview';
+    const key = card.dataset.ssk + '|' + JSON.stringify(b) + '|' + rs + '|' + rc;
+    let html = SSK.cache.get(key);
+    if (!html) { html = sskThumb(b, card.dataset.ssk); if (SSK.cache.size > 240) SSK.cache.clear(); SSK.cache.set(key, html); }
+    th.innerHTML = `<span class="ssk-iv ${esc(rc)}" style="${esc(rs)}">${html}</span>`;
+    th.dataset.done = '1';
+    const iv = th.firstElementChild;
+    iv.querySelectorAll('.dday-countdown[data-dday-target]').forEach(el => { try { InviteBlocks.ddayTick(el)(); } catch (e) {} }); // 남은 날짜 숫자 (00 대신)
+    const fsel = SSK_FOCUS[card.dataset.ssk.split(':')[1]], ft = fsel && iv.querySelector(fsel); // 카운트 모양처럼 섹션 아래쪽이 바뀌는 건 그 부분을 보여 줌
+    if (ft) { const r = ft.getBoundingClientRect(), y = r.top - iv.getBoundingClientRect().top; iv.style.top = Math.min(0, -(y - Math.max(6, (th.clientHeight - r.height) / 2))) + 'px'; }
+}
+function sskMount(wrap, b) {
+    wrap.querySelector(':scope > .ssk')?.remove();
+    const h3 = wrap.querySelector(':scope > h3');
+    const el = document.createElement('div'); el.innerHTML = sskHtml(b); const box = el.firstElementChild;
+    if (h3) h3.after(box); else wrap.prepend(box);
+    const pick = spec => {
+        const [t, a, v] = spec.split(':');
+        if (t === 'l') { b.fields[a] = v; if (b.skinPrev && b.skinPrev[a]) delete b.skinPrev[a]; } // 직접 고른 모양은 '디자인 따라'로 돌아와도 그대로
+        else if (t === 'd') themeApply(b, a); else skinApply(b, a, '');
+        const sc = [...box.querySelectorAll('.ssk-row')].map(x => x.scrollLeft);
+        renderFieldEditor(); renderPreview(); scheduleSnapshot();
+        const nb = document.querySelector(`#fieldEditor .ssk[data-ssk-for="${b.id}"]`); if (nb) nb.querySelectorAll('.ssk-row').forEach((x, i) => { x.scrollLeft = sc[i] || 0; });
+        if (b.id === 'gallery' && t === 'l') try { galleryRevealDemo(); } catch (e) {}
+    };
+    box.addEventListener('click', e => {
+        const c = e.target.closest('[data-ssk]'); if (c) { pick(c.dataset.ssk); return; }
+        if (e.target.closest('[data-ssk-all]')) {
+            const d = skinDesignOf(b), k = InviteBlocks.skinOf(b), pal = !d && b.skinPal ? b.skinPal : null;
+            state.blocks.forEach(x => { if (SKIN_NO.includes(x.id) || x === b) return; if (d) themeApply(x, d); else if (pal) { skinApply(x, '', ''); x.skinPal = Object.assign({}, pal); } else skinApply(x, k, ''); });
+            renderPreview(); scheduleSnapshot(); showServerNotice('모든 섹션에 같은 스킨을 입혔어요.');
+        }
+    });
+    box.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-ssk]')) { e.preventDefault(); pick(e.target.dataset.ssk); } });
+    // 보이는 카드만 한가할 때 그림
+    const cards = [...box.querySelectorAll('.ssk-c')];
+    const q = []; let busy = false;
+    const run = () => { if (busy) return; busy = true; const step = dl => { while (q.length && (!dl || dl.timeRemaining() > 4)) { const c = q.shift(); if (c.isConnected) sskFill(c, b); } if (q.length) (window.requestIdleCallback || (f => setTimeout(() => f(null), 16)))(step); else busy = false; }; (window.requestIdleCallback || (f => setTimeout(() => f(null), 16)))(step); };
+    if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(es => { es.forEach(en => { if (en.isIntersecting) { io.unobserve(en.target); q.push(en.target); } }); run(); }, { root: null, rootMargin: '0px 240px' });
+        cards.forEach(c => io.observe(c));
+    } else { q.push(...cards); run(); }
+    // 고른 카드가 보이게
+    requestAnimationFrame(() => box.querySelectorAll('.ssk-row').forEach(row => { const on = row.querySelector('.ssk-c.on'); if (on && row.scrollLeft === 0 && on.offsetLeft > row.clientWidth - 60) row.scrollLeft = on.offsetLeft - 24; }));
+    // PC: 마우스 휠로 옆으로
+    box.querySelectorAll('.ssk-row').forEach(row => row.addEventListener('wheel', e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && row.scrollWidth > row.clientWidth) { row.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false }));
 }
 function bindSkinPick(box, onPick) {
     box.querySelectorAll('[data-skp]').forEach(x => x.addEventListener('click', () => onPick(x.dataset.skp, '')));
@@ -18286,7 +18452,7 @@ const LDH_EASY = [
     { t: '질문에 처음부터 다시 답하기', d: '이름부터 한 번 더 차례로', when: c => c.view === 'list' && spOpt('flow', 'ask') && !spInPlace, steps: ['목록 화면 맨 아래 [질문에 처음부터 다시 답하기]를 눌러요.', '적어 둔 내용은 그대로 있어요. 바꿀 곳만 고치고 [다음]을 누르면 돼요.'], go: ['처음부터 답하기', () => { const b = document.getElementById('spAskAgain'); if (b) b.click(); }] },
     { t: '질문을 건너뛰고 싶어요', d: '나중에 해도 돼요', when: c => c.view === 'quick' && spOpt('flow', 'skip'), steps: ['질문 위쪽 [나중에 할게요]를 누르면 그 질문을 건너뛰어요.', '건너뛴 것은 질문을 다 마친 뒤 목록 화면에서 채울 수 있어요.'], show: () => [{ el: () => ldhFirst('#spSkip'), t: '나중에 할게요', x: '이 질문은 건너뛰고 다음 질문으로 가요.' }] },
     { t: '디자인 바꾸기', d: '적은 내용은 그대로 두고 모양만', when: () => spOpt('theme', 'design') && !spInPlace, steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 위 [디자인 바꾸기]가 열려요.', '마음에 드는 디자인을 누르면 이름·사진·글·계좌는 그대로 두고 모양만 바뀌어요.', '처음 디자인을 고를 때는 아래 [내 사진으로 보기]로 내 사진을 넣어 미리 볼 수도 있어요.'], go: ['그 칸으로 가기', () => { spDesignOpen = true; ldhEasyGo('', 'theme'); }] },
-    { t: '칸 모양 바꾸기 (빈티지 · 밤하늘)', d: '인사말·방명록 같은 칸을 다른 모양으로', when: () => spOpt('theme', 'sskin'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'섹션 꾸밈\'에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 중 하나를 눌러요.', '다른 디자인의 색이 좋으면 아래 \'다른 디자인 색으로\'에서 골라요. 처음처럼 하려면 [디자인 따라]를 눌러요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
+    { t: '칸 모양 바꾸기 (빈티지 · 다른 디자인 스킨)', d: '인사말·방명록 같은 칸을 다른 모양으로', when: () => spOpt('theme', 'sskin'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'섹션 꾸밈\'에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 중 하나를 눌러요.', '아래 \'디자인 스킨\'에서 다른 디자인(가든 · 필름 · 스크랩북 …)을 누르면 그 디자인의 색 · 글꼴 · 꾸밈이 모든 칸에 입혀져요. 처음처럼 하려면 [디자인 따라]를 눌러요.', '칸마다 따로 바꾸려면 전문가 모드의 \'섹션 스킨\'에서 해요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', when: () => spOpt('gallery', 'reveal'), steps: ['아래 [그 칸으로 가기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 위(옆) 청첩장에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요. [한 번에]를 누르면 예전처럼 바로 보여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'gallery')] },
     { t: '인트로 배경에 사진 · 영상 넣기', d: '청첩장을 열 때 뒤에 깔리는 화면', when: () => spOpt('finish', 'intro') && spOpt('finish', 'introFx') && spOpt('finish', 'introMedia'), steps: ['아래 [그 칸으로 가기]를 누르면 \'마무리\' 칸이 열려요. 인트로 스위치를 켜요.', '\'인트로 배경\'에서 [사진]을 누르면 앨범이 열려요. 한 장 고르면 인트로 뒤에 깔려요.', '[유튜브 영상]을 누르고 유튜브 주소를 붙여 넣으면 영상이 소리 없이 뒤에서 흘러가요.', '[▶ 인트로 보기]를 누르면 하객이 보는 그대로 확인할 수 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'finish')] },
     { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 스티커', steps: ['디자인을 고를 때(또는 \'색·글꼴\' 칸 [디자인 바꾸기]) \'웹툰 · 우리 결혼해요\'를 고르면 한 번에 웹툰 모양이 돼요.', '지금 디자인 그대로 두고 싶으면 첫 화면 꾸미기에서 \'웹툰 표지\'·\'웹툰 말풍선\' 레이아웃을, \'색·글꼴\' 칸 \'섹션 꾸밈\'에서 \'웹툰 컷\'을 골라요.', '\'스티커 꾸미기\'의 \'웹툰 첫 화\'·\'두근두근 말풍선\' 세트로 웹툰 스티커를 한 번에 붙여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
@@ -18299,9 +18465,9 @@ const LDH_EASY = [
 ];
 const LDH_EXPERT = [
     { t: '스티커 붙이기', d: '하트 · 꽃 · 별 · 움직이는 그림', steps: ['위쪽 웃는 얼굴 버튼(스티커 넣기)을 눌러요.', '[추천]에는 지금 디자인에 어울리는 그림이 먼저 나와요. [테마]에서 로맨틱 · 별·우주 · 비 오는 날 … 을 골라 볼 수도 있어요.', '찾기 칸에 하트, 꽃, 비처럼 적거나 [움직임]을 누르면 움직이는 스티커만 모아 봐요 (초록 점 = 움직여요).', '스티커를 누르면 청첩장에 붙어요. 끌어서 옮기고, 모서리를 끌어 크기를 바꿔요.', '[세트]를 누르면 \'웹툰 첫 화\'·\'리본과 하트\' 같은 세트가 첫 화면·인사말·갤러리 쪽에 한 번에 붙어요.'], show: () => [{ el: () => ldhFirst('#stickerAddBtn', '[data-act="sticker"]'), t: '스티커 넣기', x: '이 버튼을 누르면 스티커 창이 열려요.' }], go: ['스티커 창 열기', () => { closeLdh(); setTimeout(() => document.getElementById('stickerAddBtn')?.click(), 50); }] },
-    { t: '섹션 하나만 다른 모양으로', d: '빈티지 · 밤하늘 · 다른 디자인 색', steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요.', '아래쪽 [섹션 테마]에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 · 다른 디자인 색 중 하나를 눌러요.', '[모든 섹션에 같게]를 누르면 모든 섹션이 같은 모양이 돼요.'] },
+    { t: '섹션 하나만 다른 모양으로 (섹션 스킨)', d: '모양 · 디자인 21가지 스킨', when: () => spOpt('flow', 'sskin'), steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요. 편집창 맨 위에 \'섹션 스킨\'이 있어요.', '\'모양\' 줄(방명록 카드·줄글, 달력·카운트, 계좌, 인터뷰 …)에서 그림을 누르면 그 모양으로 바뀌어요.', '\'스킨\' 줄에서 빈티지 · 밤하늘 · 안개 또는 다른 디자인(클래식 · 가든 · 필름 · 웹툰 …) 그림을 누르면 그 디자인의 색 · 글꼴 · 꾸밈이 이 섹션에만 입혀져요. 옆으로 밀면 21가지가 다 나와요.', '[모든 섹션에 같은 스킨]을 누르면 모든 섹션이 같은 스킨이 돼요. 처음처럼 하려면 [디자인 따라]를 눌러요.'], go: ['방명록 열어 보기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'guestbook' && b.enabled) ? 'guestbook' : (state.blocks.find(b => b.enabled && !SKIN_NO.includes(b.id)) || {}).id)] },
     { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', steps: ['아래 [바로 열기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 미리보기에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요.'], go: ['바로 열기', () => ldhExpertOpen('gallery')] },
-    { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 컷', steps: ['메인 사진 칸 맨 위 \'메인 레이아웃\'에서 \'웹툰 표지\'나 \'웹툰 말풍선\'을 골라요.', '글 칸 오른쪽 [효과 ▾] → \'글자 상자\'에서 말풍선 · 노랑 상자 · 효과음 · 꼬리표를 골라 어느 글자든 웹툰처럼 바꿔요.', '섹션을 열어 [섹션 테마] → \'웹툰 컷\'을 고르고 [모든 섹션에 같게]를 눌러요.', '스티커 창 [테마] → \'웹툰\'에서 말풍선·효과음 스티커를 붙여요.'], go: ['메인 사진 칸 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
+    { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 컷', steps: ['메인 사진 칸 맨 위 \'메인 레이아웃\'에서 \'웹툰 표지\'나 \'웹툰 말풍선\'을 골라요.', '글 칸 오른쪽 [효과 ▾] → \'글자 상자\'에서 말풍선 · 노랑 상자 · 효과음 · 꼬리표를 골라 어느 글자든 웹툰처럼 바꿔요.', '섹션을 열어 맨 위 \'섹션 스킨\' → \'웹툰 · 우리 결혼해요\'를 고르고 [모든 섹션에 같은 스킨]을 눌러요.', '스티커 창 [테마] → \'웹툰\'에서 말풍선·효과음 스티커를 붙여요.'], go: ['메인 사진 칸 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
     { t: '섹션 안 카드 색 바꾸기', d: '방명록 · 안내 · 계좌 칸과 팝업 창 색', steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요 (방명록 · 안내 말씀 · 마음 전하실 곳 · 연락하기 …).', '아래쪽 \'섹션 여백 · 배경색\' 밑 \'안쪽 창 색\'에서 바탕과 글자 색을 골라요. 그 섹션의 카드와 팝업 창이 같이 바뀌어요.', '바탕만 골라도 글자는 잘 보이는 색으로 저절로 맞춰져요. 처음 색으로 하려면 맨 앞 동그라미(테마 기본 색)를 눌러요.'] },
     { t: '글자 내용 바꾸기', d: '청첩장의 글자를 고쳐요', steps: ['청첩장에서 바꿀 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.', '다 적었으면 글자 바깥 빈 곳을 눌러요.'], show: () => [{ el: ldhTextEl, t: '두 번 누르기', x: '이 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.' }] },
     { t: '글자 크기 · 색 · 글꼴 바꾸기', d: '글자를 한 번 눌러요', steps: ['글자를 한 번 누르면 크기·색·글꼴을 바꾸는 작은 창이 떠요.', '[−] [+]로 크기를, 동그라미를 눌러 색을 바꿔요.'], show: () => [{ el: ldhTextEl, t: '한 번 누르기', x: '글자를 한 번 누르면 크기·색 창이 떠요.' }] },

@@ -836,7 +836,7 @@ const templates = {
             </div>
         `).join('');
         const imgHtml = f.image ? `<div class="iv-photo"><img loading="lazy" decoding="async" src="${esc(f.image)}" alt=""></div>` : '';
-        return `<div class="blk-interview" style="position:relative;">${InviteBlocks.titleLayer(f.title, f, 'title', '', 18, 48)}${imgHtml}${qas}</div>`;
+        return `<div class="blk-interview${InviteBlocks.ivCls ? InviteBlocks.ivCls(f) : ''}" style="position:relative;">${InviteBlocks.titleLayer(f.title, f, 'title', '', 18, 48)}${imgHtml}${qas}</div>`;
     }
 };
 
