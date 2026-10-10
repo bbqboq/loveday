@@ -518,6 +518,16 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .spq-add-g { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
 .spq-add-c { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--wz-line); background: #fff; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--wz-ink); text-align: left; cursor: pointer; word-break: keep-all; transition: border-color .15s, background .15s; }
 .spq-add-c i { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--ui-soft, #F3EFE8); color: var(--wz-ink); font-style: normal; font-size: 13px; font-weight: 700; }
+/* 스티커 한 번에 꾸미기 (stkSetHtml) */
+#spStkSets { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--wz-line, #E6E0D8); }
+.stks-g { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.stks { border: 1.5px solid var(--wz-line, #E6E0D8); border-radius: 13px; background: #fff; padding: 8px 4px 7px; font: inherit; color: var(--wz-ink, #2B2B2B); cursor: pointer; text-align: center; transition: border-color .15s, background .15s; }
+.stks .pv { display: flex; justify-content: center; align-items: center; gap: 1px; height: 30px; }
+.stks .pv img { width: 26px; height: 26px; object-fit: contain; }
+.stks b { display: block; font-size: 11.5px; font-weight: 700; margin-top: 3px; word-break: keep-all; line-height: 1.3; }
+.stks.on { border-color: var(--ui-point, #B08A5A); background: var(--ui-pointsoft, #F5EDE2); }
+.stks:hover { border-color: var(--wz-line2, #D6CEC3); }
+.stks-row { display: flex; gap: 14px; margin-top: 8px; }
 .spq-add-c:hover { border-color: var(--wz-line2); background: var(--ui-tint, #FBF9F6); }
 .spq-add-all { width: 100%; min-height: 46px; border-radius: 12px; border: 1px solid var(--wz-ink); background: #fff; font: inherit; font-size: 14px; font-weight: 700; color: var(--wz-ink); cursor: pointer; }
 .spq-add-all:hover { background: var(--wz-ink); color: #fff; }
@@ -1053,7 +1063,16 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
 .dpk[hidden], #startPick.dpk-on #featuredGrid, #startPick.dpk-on #fpMore, #startPick.dpk-on #fpAll { display: none !important; }
 #startPick.dpk-on { max-width: 1120px; }
 #startPick.dpk-on .wizard-sub { margin-bottom: 14px; }
-.dpk { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'chips' 'stage' 'info' 'strip' 'foot'; }
+.dpk { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'chips' 'stage' 'info' 'strip' 'my' 'foot'; }
+/* 내 사진으로 보기 (DPK.my - 이 기기에서만 먼저 보여 주고, 디자인을 고르면 메인 사진으로 올림) */
+.dpk-my { grid-area: my; position: relative; display: flex; align-items: center; gap: 10px; border: 1.5px dashed var(--ui-point, #B8925A); border-radius: 14px; background: #fff; padding: 9px 12px; margin: 0 0 6px; cursor: pointer; }
+.dpk-my[hidden] { display: none; }
+.dpk-my .ph { width: 40px; height: 40px; border-radius: 10px; background: var(--ui-tint, #F1ECE4) center / cover no-repeat; display: grid; place-items: center; color: var(--ui-point, #B8925A); font-size: 20px; flex: none; }
+.dpk-my .tx { flex: 1; min-width: 0; } .dpk-my b { display: block; font-size: 14px; } .dpk-my small { display: block; font-size: 12px; color: #8A847B; line-height: 1.4; }
+.dpk-my.on { border-style: solid; background: var(--ui-soft, #FBF8F3); }
+.dpk-my .x { width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--ui-tint, #F1ECE4); color: #6F6A63; font-size: 12px; cursor: pointer; flex: none; }
+.dpk-my input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.dpk-my:focus-within { outline: 2px solid var(--ui-point, #B8925A); outline-offset: 2px; }
 .dpk-chips { grid-area: chips; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 6px; }
 .dpk-chips::-webkit-scrollbar, .dpk-car::-webkit-scrollbar, .dpk-strip::-webkit-scrollbar { display: none; }
 .dpk-chips button { flex: none; border: 1px solid var(--ui-line, #E5DED3); background: #fff; border-radius: 99px; font: inherit; font-size: 12.5px; font-weight: 600; padding: 6px 13px; cursor: pointer; color: #6F6A63; white-space: nowrap; }
@@ -2283,6 +2302,47 @@ body.tippick-on, body.tippick-on * { cursor: crosshair !important; }
 .palette-vintage-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .palette-vintage-grid button { background: #FBF7F0; }
 .palette-personal-grid .empty-hint { grid-column: 1 / -1; font-size: 11px; color: var(--muted); padding: 6px 2px; }
+/* 발행 전 마지막 점검 (pubCheckThen) - 휴대폰 아래 시트 / PC 가운데 창 */
+.pubchk { position: fixed; inset: 0; z-index: 9500; display: flex; align-items: center; justify-content: center; }
+.pubchk .pc-dim { position: absolute; inset: 0; background: rgba(24, 18, 12, .42); animation: pcFade .2s ease; }
+.pubchk .pc-box { position: relative; width: min(440px, calc(100vw - 32px)); max-height: min(86vh, 720px); display: flex; flex-direction: column; background: var(--panel, #fff); color: var(--ink, #2B2B2B); border-radius: 20px; box-shadow: 0 24px 60px rgba(20, 14, 8, .28); padding: 16px 18px 16px; animation: pcUp .25s cubic-bezier(.2, .8, .3, 1); }
+@keyframes pcFade { from { opacity: 0; } } @keyframes pcUp { from { transform: translateY(24px); opacity: 0; } }
+.pubchk .pc-grab { display: none; }
+.pubchk .pc-h { display: flex; align-items: center; justify-content: space-between; }
+.pubchk .pc-h b { font-size: 17px; }
+.pubchk .pc-x { width: 32px; height: 32px; border: 0; border-radius: 50%; background: none; color: var(--muted, #8A847B); font-size: 14px; cursor: pointer; }
+.pubchk .pc-x:hover { background: var(--ui-soft, #F6F3EE); }
+.pubchk .pc-sum { margin: 2px 0 8px; font-size: 13px; color: var(--muted, #8A847B); }
+.pubchk .pc-sum em { font-style: normal; color: #A8643C; font-weight: 700; }
+.pubchk .pc-prog { height: 5px; border-radius: 3px; background: var(--ui-line, #E6E0D8); overflow: hidden; margin-bottom: 6px; flex: none; }
+.pubchk .pc-prog i { display: block; height: 100%; background: #6F9068; border-radius: 3px; }
+.pubchk .pc-list, .pubchk .pc-kk { overflow-y: auto; min-height: 0; flex: 1; overscroll-behavior: contain; }
+.pubchk .pc-list[hidden], .pubchk .pc-kk[hidden] { display: none; }
+.pubchk .pc-row { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; border-top: 1px solid var(--ui-line, #EEE8E0); background: none; padding: 11px 2px; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.pubchk .pc-row:first-child { border-top: 0; }
+.pubchk .pc-row.ok { cursor: default; }
+.pubchk .pc-row:not(.ok):hover { background: var(--ui-soft, #F8F5F0); }
+.pubchk .pc-ic { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; flex: none; }
+.pubchk .ok .pc-ic { background: #E4EEDF; color: #5E7D5A; }
+.pubchk .bad .pc-ic { background: #F6E7DB; color: #A8643C; }
+.pubchk .info .pc-ic { background: var(--ui-soft, #F1EEE8); color: var(--muted, #8A847B); font-style: italic; font-family: Georgia, serif; }
+.pubchk .pc-tx { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; line-height: 1.4; }
+.pubchk .pc-tx small { display: block; font-size: 12px; font-weight: 400; color: var(--muted, #8A847B); margin-top: 1px; overflow-wrap: anywhere; }
+.pubchk .ok .pc-tx { font-weight: 500; }
+.pubchk .pc-go { font-size: 12.5px; font-weight: 700; color: var(--ui-point, #B08A5A); white-space: nowrap; }
+.pubchk .ok .pc-go { color: #5E7D5A; font-weight: 600; }
+.pubchk .pc-kk { padding: 6px 0 4px; }
+.pubchk .pc-foot { display: flex; gap: 8px; margin-top: 12px; flex: none; }
+.pubchk .pc-b { flex: 1; height: 46px; border-radius: 13px; border: 1px solid var(--ui-line, #E6E0D8); background: var(--panel, #fff); color: var(--ink, #2B2B2B); font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+.pubchk .pc-b.pri { background: var(--ink, #2B2B2B); border-color: var(--ink, #2B2B2B); color: #fff; }
+.pubchk button:focus-visible { outline: 2px solid var(--ui-point, #B08A5A); outline-offset: 2px; }
+@media (max-width: 860px) {
+    .pubchk { align-items: flex-end; }
+    .pubchk .pc-box { width: 100%; max-height: 84vh; border-radius: 22px 22px 0 0; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); animation-name: pcSheet; }
+    .pubchk .pc-grab { display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--ui-line, #D9D0C3); margin: -6px auto 10px; }
+    @keyframes pcSheet { from { transform: translateY(100%); } }
+}
+@media (prefers-reduced-motion: reduce) { .pubchk .pc-box, .pubchk .pc-dim { animation: none; } }
 /* 스티커 고르기 (A+D안) - 찾기 · 빠른 찾기 · 탭 · 테마 칩 · 묶음별 칸 (stkMount). 휴대폰은 아래에서 올라오는 시트 */
 .sticker-palette.stk2 { display: none; grid-template-columns: none; width: 340px; padding: 0; max-height: min(74vh, 640px); overflow: hidden; flex-direction: column; border-radius: 16px; }
 .sticker-palette.stk2.open { display: flex; }
@@ -4599,6 +4659,7 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
                 <div class="dpk-info" id="dpkInfo"></div>
                 <span class="dpk-lbl">이 디자인의 색</span><div class="dpk-pal" id="dpkPal"></div>
                 <span class="dpk-lbl">이렇게 꾸며져 있어요</span><ul class="dpk-feat" id="dpkFeat"></ul>
+                <label class="dpk-my" id="dpkMy" for="dpkMyIn" hidden><span class="ph" id="dpkMyPh" aria-hidden="true">＋</span><span class="tx"><b id="dpkMyT">내 사진으로 보기</b><small id="dpkMyS">사진 한 장을 고르면 모든 디자인에 넣어 보여 줘요</small></span><button type="button" class="x" id="dpkMyX" hidden aria-label="예시 사진으로 되돌리기" title="예시 사진으로 되돌리기">✕</button><input type="file" id="dpkMyIn" accept="image/*"></label>
                 <span class="grow"></span>
                 <div class="dpk-foot"><button type="button" class="dpk-view" id="dpkView" title="이 디자인을 화면 가득 보기">크게 보기</button><button type="button" class="dpk-go" id="dpkGo" title="이 디자인으로 청첩장 만들기 시작">이 디자인으로 시작</button></div>
                 <p class="note">고른 뒤에도 색·글꼴·사진은 다 바꿀 수 있어요</p>
@@ -14063,6 +14124,7 @@ function dpkRender(id, design) {
         state.sampleId = id;
         try { applyWizardDataToBlocks(); } catch (e) {}
         try { spNewLook(); } catch (e) {}
+        dpkMyPut();
         selectedId = null;
         window.__dpkWant = false;
         renderPreviewNow(); // (계좌 자동 정렬 등이 다시 그려 달라고 하면 한 번만 더)
@@ -14104,6 +14166,28 @@ function dpkShot(id) {
         const s = dpkRender(id, d); if (s) DPK.shots[id] = s;
         return s;
     }).catch(() => null));
+}
+// 내 사진으로 보기: 고른 사진을 사진으로 시작하는 디자인의 첫 화면에 넣음 (영상으로 시작하는 디자인은 그대로)
+function dpkMyOn() { try { return dpkOn() && spOpt('flow', 'myphoto'); } catch (e) { return false; } }
+function dpkMyPut() {
+    if (!DPK.my || !dpkMyOn() || spHeroKind() === 'video') return false;
+    const hb = state.blocks.find(b => b.id === 'hero'); if (!hb) return false;
+    hb.fields.heroImage = DPK.my.url; delete hb.fields.heroFocus;
+    if (state.imgFocus) delete state.imgFocus[DPK.my.url]; if (state.imgZoom) delete state.imgZoom[DPK.my.url];
+    return true;
+}
+function dpkMySet(file) {
+    if (DPK.my) { try { URL.revokeObjectURL(DPK.my.url); } catch (e) {} }
+    DPK.my = file ? { file, url: URL.createObjectURL(file) } : null;
+    const lb = document.getElementById('dpkMy'), ph = document.getElementById('dpkMyPh');
+    lb.classList.toggle('on', !!DPK.my); document.getElementById('dpkMyX').hidden = !DPK.my;
+    ph.style.backgroundImage = DPK.my ? `url("${DPK.my.url}")` : ''; ph.textContent = DPK.my ? '' : '＋';
+    document.getElementById('dpkMyT').textContent = DPK.my ? '내 사진으로 보는 중' : '내 사진으로 보기';
+    document.getElementById('dpkMyS').textContent = DPK.my ? '디자인을 고르면 이 사진이 첫 화면에 들어가요 (영상으로 시작하는 디자인은 영상 그대로) · 눌러서 바꾸기' : '사진 한 장을 고르면 모든 디자인에 넣어 보여 줘요';
+    // 그려 둔 휴대폰을 비우고 가운데부터 다시
+    DPK.shots = {}; DPK.todo = []; DPK.key += '|my';
+    document.querySelectorAll('#dpkCar .dpk-sl[data-filled]').forEach(sl => { sl.querySelector('.dpk-ph').innerHTML = dpkSkHtml(sl.dataset.id); delete sl.dataset.filled; sl.classList.remove('run'); });
+    DPK.busy = false; dpkMark(DPK.cur);
 }
 function dpkIvEl(s) { const el = document.createElement('div'); el.className = s.cls + ' dpk-iv'; el.setAttribute('style', s.style); el.innerHTML = s.html; return el; }
 function dpkWx(el, s) { if (s && s.fx && s.fx.ambient === 'weather' && InviteBlocks.mountAmbient) { el.querySelectorAll('.ib-wx-tint, .ib-wx-badge').forEach(n => n.remove()); InviteBlocks.mountAmbient(el, s.fx, { weatherDemo: true }); } } // 날씨 따라 디자인: 비 → 눈 → 맑음 (붙인 뒤에)
@@ -14233,10 +14317,11 @@ function dpkSettle() {
 function dpkTouched() { if (DPK.touched) return; DPK.touched = true; document.getElementById('dpkHint').classList.add('gone'); }
 function dpkStep(k) { const v = dpkVis(), n = v.indexOf(DPK.cur), id = v[Math.max(0, Math.min(v.length - 1, n + k))]; dpkTouched(); dpkGo(id); }
 function dpkBuild(list) {
-    const key = JSON.stringify([Object.keys(SAMPLE_LIST).map(k => [k, SAMPLE_LIST[k].updated || SAMPLE_LIST[k].updated_at || '']), EASY_HERO_SAMPLE, EASY_HERO_POS, list.map(p => p.id)]);
+    const key = JSON.stringify([Object.keys(SAMPLE_LIST).map(k => [k, SAMPLE_LIST[k].updated || SAMPLE_LIST[k].updated_at || '']), EASY_HERO_SAMPLE, EASY_HERO_POS, list.map(p => p.id)]) + (DPK.my ? '|my' : '');
     if (key !== DPK.key) { DPK.key = key; DPK.shots = {}; DPK.todo = []; }
     DPK.ids = list.map(p => p.id);
     DPK.off = false;
+    document.getElementById('dpkMy').hidden = !dpkMyOn(); // 관리자 손쉬운 제작 → 간편 만들기 전체 'myphoto'
     if (!DPK.ids.includes(DPK.cur)) DPK.cur = DPK.ids[0];
     const cnt = f => DPK.ids.filter(id => dpkFit(id, f)).length;
     const chips = DPK_CHIPS.filter(([f]) => f === 'all' || (cnt(f) > 0 && cnt(f) < DPK.ids.length));
@@ -14285,6 +14370,8 @@ function dpkBind() {
     car.addEventListener('click', e => { if (moved) return; const sl = e.target.closest('.dpk-sl'); if (!sl) return; if (sl.dataset.id === DPK.cur) dpkOvOpen(); else { dpkTouched(); dpkGo(sl.dataset.id); } });
     document.getElementById('dpkView').addEventListener('click', dpkOvOpen);
     document.getElementById('dpkGo').addEventListener('click', () => { if (DPK.cur) startWithPreset(DPK.cur); });
+    document.getElementById('dpkMyIn').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f && /^image\//.test(f.type)) dpkMySet(f); });
+    document.getElementById('dpkMyX').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); dpkMySet(null); });
     document.addEventListener('keydown', e => {
         if (!document.getElementById('screenDesign').classList.contains('active') || document.getElementById('dpk').hidden || /INPUT|TEXTAREA|SELECT/.test((e.target && e.target.tagName) || '')) return;
         const ov = document.getElementById('dpkOv');
@@ -14392,6 +14479,15 @@ async function startWithPreset(presetId) {
         spRenderAll();
         onboardingActive = false;
         openSimpleEditor(0);
+        const myPrev = ((spBlock('hero') || {}).fields || {}).heroImage;
+        if (DPK.my && dpkMyPut()) { // 디자인 고르기에서 '내 사진으로 보기'로 고른 사진 → 메인 사진으로 올림 (올리는 동안은 이 기기 사진을 보여 줌)
+            const my = DPK.my;
+            renderPreview(); try { spRender(); } catch (e) {}
+            const url = EDIT_TOKEN ? await uploadPhotoToServer(my.file) : null;
+            const hb = spBlock('hero');
+            if (hb && hb.fields.heroImage === my.url) { if (url) hb.fields.heroImage = url; else hb.fields.heroImage = myPrev; } // 못 올리면 원래 사진으로
+            renderPreview(); try { spRender(); } catch (e) {}
+        }
         lastSnapshotJSON = JSON.stringify(state); undoStack = []; redoStack = []; updateHistoryButtons();
         if (EDIT_TOKEN) saveToServer(false, true);
         return;
@@ -14513,11 +14609,13 @@ function spClosePreview() {
 document.getElementById('spPvBack').addEventListener('click', spClosePreview);
 document.getElementById('spPvOpen').addEventListener('click', () => { if (EDIT_TOKEN) window.open(`invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}`, '_blank', 'noopener'); }); // (창 안에 못 띄울 때 - 하객이 보는 화면을 새 창으로)
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('sp-pv')) spClosePreview(); });
-document.getElementById('spPvPub').addEventListener('click', async e => {
+document.getElementById('spPvPub').addEventListener('click', e => {
     const b = e.currentTarget; if (b.disabled) return;
-    b.disabled = true; b.textContent = '발행 중…';
-    let ok = false; try { ok = await saveToServer(true); } finally { b.disabled = false; b.textContent = '발행하기'; }
-    if (ok) spClosePreview();
+    pubCheckThen(async () => { // 빠진 것이 있으면 먼저 '발행 전에 확인해요'
+        b.disabled = true; b.textContent = '발행 중…';
+        let ok = false; try { ok = await saveToServer(true); } finally { b.disabled = false; b.textContent = '발행하기'; }
+        if (ok) spClosePreview();
+    });
 });
 // "간편 만들기" 버튼: 디자인(템플릿)을 골라 만든 청첩장의 전문가 모드 화면에서만
 function syncSimpleBtn() { const b = document.getElementById('tbToSimple'); if (b) b.hidden = !!SAMPLE_ID || state.mode === 'simple' || !(state.presetId || state.sampleId); }
@@ -15335,12 +15433,14 @@ function spAddable() {
     return spSteps().filter(st => { if (SP_LIST_NOSW.includes(st.k)) return false; const ids = (st.s || []).filter(id => spHas(id)); return ids.length === 1 && !spBlock(ids[0]).enabled; });
 }
 function spAddMoreHtml() {
-    const list = spAddable().slice(0, 8);
+    const stk = spOpt('flow', 'stkset') && !stkSetCur() && spSteps().some(x => x.k === 'theme') && stkSetList().length > 0; // 스티커 한 번에 꾸미기 (색·글꼴 칸 안)
+    const list = spAddable().slice(0, stk ? 7 : 8);
     return `<div class="spq-add"><div class="spq-add-h"><b>기능 더 넣기</b><small>${list.length ? '누르면 청첩장에 바로 넣고, 내용을 채우는 칸이 열려요.' : '사진·글을 더 고치거나 섹션 순서를 바꿔요.'}</small></div>
-        ${list.length ? `<div class="spq-add-g">${list.map(st => `<button type="button" class="spq-add-c" data-sp-add="${esc(st.k)}"><i aria-hidden="true">＋</i>${esc(st.t)}</button>`).join('')}</div>` : ''}
+        ${list.length || stk ? `<div class="spq-add-g">${list.map(st => `<button type="button" class="spq-add-c" data-sp-add="${esc(st.k)}"><i aria-hidden="true">＋</i>${esc(st.t)}</button>`).join('')}${stk ? '<button type="button" class="spq-add-c" data-sp-add="#stk"><i aria-hidden="true">＋</i>스티커 꾸미기</button>' : ''}</div>` : ''}
         <button type="button" class="spq-add-all" id="spAskList">모든 칸 보며 더 꾸미기 <span aria-hidden="true">→</span></button></div>`;
 }
 function spAddGo(k) {
+    if (k === '#stk') { state.spView = 'list'; spOpenSet = new Set(['theme']); spRender(); setTimeout(() => { const el = document.getElementById('spStkSets'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 140); return; }
     const st = spSteps().find(x => x.k === k); if (!st) return;
     const id = (st.s || []).find(x => spHas(x)), blk = id && spBlock(id); if (!blk) return;
     blk.enabled = true; try { renderBlockList(); } catch (e) {}
@@ -16094,7 +16194,9 @@ function spTheme(box) {
         (O('sskin') ? (() => { const fb = state.blocks.find(b => b.enabled && !SKIN_NO.includes(b.id) && !InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id)) || {};
             return `<div class="wz-field"><div class="wz-lab">섹션 꾸밈 <small>인사말·갤러리·방명록 같은 칸 모양 (모든 칸 같이)</small></div>${skinPickHtml(InviteBlocks.skinOf(fb), fb.skinPal, false)}</div>`; })() : '') +
         (O('reset') && (state.customBg || state.customAccent || state.customFont || state.paper) ? `<button type="button" class="sp-link" id="spThReset">따로 바꾼 바탕색·포인트색·글꼴·종이를 테마 기본으로 되돌리기</button>` : '') +
-        '<p class="wz-hint">더 자세한 색 조정은 <b>전문가 모드</b>의 화면 설정에서 할 수 있어요.</p>';
+        '<p class="wz-hint">더 자세한 색 조정은 <b>전문가 모드</b>의 화면 설정에서 할 수 있어요.</p>' +
+        (spOpt('flow', 'stkset') ? stkSetHtml() : ''); // 스티커 한 번에 꾸미기
+    stkSetBind(box);
     if (O('font')) try { loadAllFontCss(); } catch (e) {}
     const after = () => { try { renderSkinPicker(); renderFontBgPickers(); } catch (e) {} spChanged(); scheduleSnapshot(); spRender(); };
     box.querySelectorAll('[data-sp-skin]').forEach(b => b.addEventListener('click', () => { state.skin = b.dataset.spSkin; after(); }));
@@ -16107,6 +16209,57 @@ function spTheme(box) {
     bindSkinPick(box, (k, pal) => { state.blocks.forEach(b => { if (!SKIN_NO.includes(b.id)) skinApply(b, k, pal); }); renderPreview(); after(); }); // 섹션 꾸밈: 모든 칸 같이
     const rs = box.querySelector('#spThReset');
     if (rs) rs.addEventListener('click', () => { state.customBg = null; state.customAccent = null; state.customFont = null; state.paper = null; delete state.bgBeforePaper; after(); });
+}
+// ---------------------------------------------------------------- 스티커 한 번에 꾸미기 (간편 만들기 '색·글꼴' 칸 맨 아래 · 정리 화면 '기능 더 넣기')
+// 세트를 누르면 정해 둔 자리(첫 화면·인사말·갤러리·오시는 길 모서리)에 붙음. 붙인 스티커엔 set: 세트 id → 다른 세트/다 빼기는 그것만 바꿈 (직접 붙인 스티커는 그대로)
+// 항목: [그림(테마/이름), 자리(H 첫 화면 · G 인사말 쪽 · P 갤러리 쪽 · L 오시는 길 쪽), 가로 0~1, 't' 위 / 'b' 아래 기준, 그 끝에서 떨어진 거리(폭 대비), 크기, 기울기]
+const STK_SET_SEC = { G: ['greeting', 'family', 'dday', 'profile'], P: ['gallery', 'dday', 'location', 'account'], L: ['location', 'transport', 'account', 'rsvp', 'guestbook'] };
+const STK_SETS = [
+    { id: 'rom-bow', th: 'romantic', n: '리본과 하트', it: [['romantic/heart-bow', 'H', .86, 't', .1, 70, 12], ['romantic/love-letter', 'G', .12, 't', .05, 52, -10], ['romantic/petals', 'P', .9, 't', .01, 56, 0], ['romantic/twin-hearts', 'L', .1, 'b', -.09, 48, -8]] },
+    { id: 'rom-gar', th: 'romantic', n: '하트 가랜드', it: [['romantic/heart-garland', 'H', .5, 't', .07, 120, 0], ['romantic/winged-heart', 'G', .88, 't', .05, 56, 8], ['romantic/beat-heart', 'P', .9, 'b', -.07, 44, 0], ['romantic/heart-sparkle', 'L', .1, 't', .04, 46, 0]] },
+    { id: 'cos-night', th: 'cosmos', n: '별빛 밤', it: [['cosmos/hanging-stars', 'H', .16, 't', .03, 80, 0], ['cosmos/crescent-star', 'H', .86, 't', .1, 60, 8], ['cosmos/twinkle', 'G', .88, 't', .04, 46, 0], ['cosmos/comet', 'P', .12, 't', .02, 56, 0]] },
+    { id: 'cos-trip', th: 'cosmos', n: '행성 여행', it: [['cosmos/planets', 'H', .85, 't', .1, 70, 0], ['cosmos/sleepy-moon', 'G', .12, 't', .05, 56, -6], ['cosmos/north-star', 'P', .9, 't', .01, 46, 0], ['cosmos/meteor-shower', 'L', .1, 'b', -.1, 60, 0]] },
+    { id: 'rain-day', th: 'rain', n: '비 오는 날', it: [['rain/rain-anim', 'H', .84, 't', .09, 70, 0], ['rain/two-umbrellas', 'G', .12, 't', .04, 60, -6], ['rain/hydrangea', 'P', .9, 't', .01, 54, 0], ['rain/boots', 'L', .1, 'b', -.08, 48, -6]] },
+    { id: 'rain-warm', th: 'rain', n: '따뜻한 오후', it: [['rain/cloud-sun', 'H', .85, 't', .09, 64, 0], ['rain/cocoa', 'G', .88, 't', .04, 52, 6], ['rain/leaf-drop', 'P', .1, 't', .01, 48, -10], ['rain/frog', 'L', .9, 'b', -.08, 48, 0]] },
+    { id: 'gar-crown', th: 'garden', n: '꽃 화관', it: [['garden/flower-crown', 'H', .5, 't', .05, 120, 0], ['garden/butterfly-flap', 'G', .88, 't', .05, 48, 10], ['garden/tulip-bunch', 'P', .1, 't', .01, 56, -8], ['garden/leaf-garland', 'L', .5, 'b', -.06, 120, 0]] },
+    { id: 'gar-spring', th: 'garden', n: '봄 정원', it: [['garden/bird-branch', 'H', .82, 't', .1, 76, 0], ['garden/flower-sway', 'G', .1, 't', .04, 50, 0], ['garden/bee', 'P', .9, 't', .01, 40, 0], ['garden/sunflower', 'L', .88, 'b', -.08, 50, 6]] },
+    { id: 'cls-gold', th: 'classic', n: '금빛 예식', it: [['classic/chandelier', 'H', .5, 't', .03, 72, 0], ['classic/ring-shine', 'G', .88, 't', .04, 50, 0], ['classic/bubbles', 'P', .1, 't', .01, 50, -6], ['classic/gold-letter', 'L', .9, 'b', -.08, 52, 6]] },
+    { id: 'cls-dress', th: 'classic', n: '드레스와 턱시도', it: [['classic/laurel', 'H', .5, 't', .06, 90, 0], ['classic/dress', 'G', .1, 't', .04, 56, -4], ['classic/bowtie', 'G', .9, 't', .06, 48, 6], ['classic/ring-box', 'L', .1, 'b', -.08, 52, 0]] },
+    { id: 'pty-party', th: 'party', n: '축하 파티', it: [['party/confetti-fall', 'H', .5, 't', .07, 140, 0], ['party/balloon-float', 'G', .88, 't', .03, 56, 0], ['party/star-garland', 'P', .5, 't', -.01, 120, 0], ['party/gift-open', 'L', .1, 'b', -.08, 52, 0]] },
+    { id: 'pty-cake', th: 'party', n: '케이크와 음악', it: [['party/burst', 'H', .85, 't', .09, 64, 0], ['party/cake-candles', 'G', .12, 't', .04, 56, -4], ['party/notes', 'P', .9, 't', .01, 48, 0], ['party/pennant', 'L', .88, 'b', -.08, 48, 6]] },
+    { id: 'sea-spring', th: 'season', n: '봄날', it: [['season/petal-fall', 'H', .5, 't', .06, 140, 0], ['season/tulip-pot', 'G', .1, 't', .04, 52, 0], ['season/chick', 'P', .9, 't', .01, 46, 0], ['season/kite', 'L', .88, 'b', -.1, 56, 0]] },
+    { id: 'sea-fall', th: 'season', n: '가을과 겨울', it: [['season/leaves-fall', 'H', .5, 't', .06, 140, 0], ['season/acorn', 'G', .1, 't', .04, 40, -8], ['season/snow-fall', 'P', .5, 't', -.01, 120, 0], ['season/mitten', 'L', .9, 'b', -.08, 46, 10]] },
+];
+const stkSetCur = () => ((state.stickers || []).find(s => s.set) || {}).set || '';
+function stkSetList() { // 추천 테마 세트 먼저, 꺼 둔 테마·숨긴 그림만 남은 세트는 빼기
+    const live = stkThemeList().map(t => t.id), rec = stkRecThemes();
+    return STK_SETS.filter(s => live.includes(s.th) && s.it.filter(x => stkShown('a:' + x[0])).length >= 2)
+        .sort((a, b) => (rec.indexOf(a.th) < 0 ? 9 : rec.indexOf(a.th)) - (rec.indexOf(b.th) < 0 ? 9 : rec.indexOf(b.th)));
+}
+function stkSetApply(id) {
+    state.stickers = (state.stickers || []).filter(s => !s.set);
+    const set = STK_SETS.find(s => s.id === id), heroId = spHeroKind() === 'video' ? 'heroVideo' : 'hero';
+    const onB = x => { const b = state.blocks.find(y => y.id === x); return b && b.enabled; };
+    if (set) set.it.forEach(([k, g, rx, edge, off, size, rot], i) => {
+        if (!stkShown('a:' + k)) return;
+        const sec = g === 'H' ? (onB(heroId) ? heroId : null) : (STK_SET_SEC[g] || []).find(onB);
+        if (!sec) return;
+        const half = size / 780 + .012; off = edge === 'b' ? Math.min(off, -half) : Math.max(off, half); // 칸 밖으로 잘리지 않게 (크기는 폭 390 기준)
+        state.stickers.push({ id: 'sk' + Date.now().toString(36) + i + Math.random().toString(36).slice(2, 5), image: '/invite/assets/stickers/' + k + '.svg', size, rotation: rot, sectionId: sec, relX: rx, relY: edge === 'b' ? 1 : 0, edgeY: edge, offY: off, effect: 'pop', delay: Math.min(2, i * .2), set: set.id });
+    });
+    renderPreview(); scheduleSnapshot(); try { spAutoSaveSoon(); } catch (e) {}
+}
+function stkSetHtml() {
+    const list = stkSetList(), cur = stkSetCur(); if (!list.length) return '';
+    const nSelf = (state.stickers || []).filter(s => !s.set).length;
+    return `<div class="wz-field" id="spStkSets"><div class="wz-lab">스티커 꾸미기 <small>세트를 누르면 어울리는 자리에 붙어요</small></div>
+        <div class="stks-g">${list.map(s => `<button type="button" class="stks${s.id === cur ? ' on' : ''}" data-stkset="${s.id}" aria-pressed="${s.id === cur}"><span class="pv">${s.it.filter(x => stkShown('a:' + x[0])).slice(0, 3).map(x => `<img src="assets/stickers/${x[0]}.svg" alt="" loading="lazy">`).join('')}</span><b>${esc(s.n)}</b></button>`).join('')}</div>
+        ${cur ? `<div class="stks-row"><button type="button" class="sp-link" data-stkset-next>다른 세트로</button><button type="button" class="sp-link" data-stkset="">스티커 다 빼기</button></div>` : ''}
+        <p class="wz-hint">${nSelf ? `직접 붙인 스티커 ${nSelf}개는 그대로 있어요. ` : ''}스티커 하나씩 옮기거나 지우려면 <b>전문가 모드</b>에서 해요.</p></div>`;
+}
+function stkSetBind(box) {
+    box.querySelectorAll('[data-stkset]').forEach(b => b.addEventListener('click', () => { stkSetApply(b.dataset.stkset); spRender(); if (b.dataset.stkset) spScrollPreview([spHeroKind() === 'video' ? 'heroVideo' : 'hero']); }));
+    box.querySelector('[data-stkset-next]')?.addEventListener('click', () => { const l = stkSetList(), i = l.findIndex(s => s.id === stkSetCur()); stkSetApply((l[(i + 1) % l.length] || {}).id); spRender(); });
 }
 // 간편 만들기 중 디자인 바꾸기: 적은 내용(이름·날짜·사진·글·계좌·음악)은 옮기고 디자인은 새로 (첫 화면에서 고르는 것과 같은 값)
 async function spChangeDesign(id) {
@@ -17242,7 +17395,103 @@ async function saveToServer(publish, silent) {
 }
 
 document.getElementById('saveDraftBtn')?.addEventListener('click', () => saveToServer(false));
-document.getElementById('publishBtn')?.addEventListener('click', () => saveToServer(true));
+document.getElementById('publishBtn')?.addEventListener('click', () => pubCheckThen(() => saveToServer(true))); // 빠진 것이 있으면 먼저 '발행 전에 확인해요'
+// ---------------------------------------------------------------- 발행 전 마지막 점검
+// [발행하기]를 누르면 빠진 것이 있을 때만 한 장으로 보여 줌 (줄을 누르면 그 칸이 열림 · [그래도 발행하기]) - 관리자 손쉬운 제작 → 간편 만들기 전체 'precheck'
+// 줄: ok = 괜찮아요 / bad = 고치면 좋아요 / info = 알아 두세요 (발행은 막지 않음)
+function pubChecks() {
+    const out = [], wi = weddingInfo(), on = id => { const b = state.blocks.find(x => x.id === id); return !!(b && b.enabled); }, F = id => (state.blocks.find(x => x.id === id) || {}).fields || {};
+    const easy = document.documentElement.classList.contains('simple-mode');
+    out.push(wi.groom && wi.bride ? { id: 'names', ok: 1, t: '두 분 이름', s: `${wi.groom} · ${wi.bride}` } : { id: 'names', t: '두 분 이름이 비어 있어요', s: '청첩장 맨 앞과 카카오톡 제목에 들어가요', go: '이름 적기' });
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    if (wi.undecided || state.dateTbd) out.push({ id: 'date', t: "예식 날짜가 아직 '미정'이에요", s: '날짜를 정했으면 적어 주세요 · 디데이·달력이 저절로 만들어져요', go: '날짜 적기' });
+    else if (!wi.date) out.push({ id: 'date', t: '예식 날짜가 비어 있어요', s: '날짜를 적으면 디데이·달력이 저절로 만들어져요', go: '날짜 적기' });
+    else if (new Date(wi.date + 'T00:00:00') < today) out.push({ id: 'date', t: '예식 날짜가 이미 지났어요', s: dtDateText(wi.date) + ' · 날짜를 다시 확인해 주세요', go: '날짜 고치기' });
+    else out.push({ id: 'date', ok: 1, t: '예식 날짜', s: dtDateText(wi.date) + (wi.time ? ' ' + wi.time : '') });
+    if (on('location')) {
+        const f = F('location'), vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {};
+        if (vd.v || vd.a) out.push({ id: 'venue', t: '예식장이 디자인 예시 그대로예요', s: (f.venue || f.address || '') + ' · 우리 예식장으로 바꿔 주세요', go: '예식장 찾기' });
+        else if (!(f.venue || f.address)) out.push({ id: 'venue', t: '예식장이 비어 있어요', s: '찾아 고르면 지도와 길찾기 버튼이 들어가요', go: '예식장 찾기' });
+        else out.push({ id: 'venue', ok: 1, t: '예식장', s: [f.venue, f.address].filter(Boolean).join(' · ') });
+    }
+    const hk = spHeroKind();
+    if (hk === 'video') { const f = F('heroVideo'); out.push(f.youtubeId ? { id: 'hero', ok: 1, t: '첫 화면 영상', s: '유튜브 영상' } : { id: 'hero', t: '첫 화면 영상 주소가 없어요', s: '유튜브 주소를 넣거나 사진으로 바꿔 주세요', go: '영상 넣기' }); }
+    else if (on('hero')) { const f = F('hero'); out.push(spIsReal(f.heroImage) ? { id: 'hero', ok: 1, t: '첫 화면 사진', s: '두 분 사진' } : { id: 'hero', t: f.heroImage ? '첫 화면 사진이 아직 예시 사진이에요' : '첫 화면 사진이 없어요', s: '두 분 사진으로 바꾸면 훨씬 좋아요', go: '사진 넣기' }); }
+    if (on('gallery')) { const im = F('gallery').images || [], n = im.filter(x => spIsReal(x)).length; out.push(n ? { id: 'gallery', ok: 1, t: '갤러리', s: `사진 ${n}장` } : { id: 'gallery', t: im.length ? '갤러리가 예시 사진 그대로예요' : '갤러리에 사진이 없어요', s: '사진을 넣거나 갤러리를 빼 주세요', go: '사진 넣기' }); }
+    if (on('greeting')) { const t = String(F('greeting').text || '').replace(/<[^>]+>/g, '').trim(); if (!t) out.push({ id: 'greet', t: '인사말이 비어 있어요', s: '예시 문구에서 골라도 돼요', go: '인사말 쓰기' }); else if (state.spAsk && state.spAsk.greet === 'ex') out.push({ id: 'greet', info: 1, t: '인사말은 디자인 예시 문구예요', s: '그대로 써도 괜찮아요 · 바꾸려면 눌러요', go: '보기' }); }
+    if (on('account')) {
+        const f = F('account'), probs = [];
+        let n = 0;
+        ACCOUNT_ROLES.forEach(r => { const v = String(f[r.key] || '').trim(); if (!v) return;
+            const a = parseAccountString(v);
+            if (/^[0\-\s]*$/.test(a.number || 'x') && /\d/.test(v)) { probs.push(`${r.label}: 디자인 예시 계좌예요`); return; }
+            n++;
+            const miss = [!a.bank && '은행', !a.number && '계좌번호', !a.holder && '예금주'].filter(Boolean);
+            if (miss.length) probs.push(`${r.label}: ${miss.join('·')}가 빠졌어요`); });
+        out.push(probs.length ? { id: 'account', t: '계좌를 다시 봐 주세요', s: probs.slice(0, 2).join(' · ') + (probs.length > 2 ? ` 외 ${probs.length - 2}개` : ''), go: '계좌 고치기' }
+            : n ? { id: 'account', ok: 1, t: '마음 전하실 곳', s: `계좌 ${n}개` } : { id: 'account', t: '계좌가 비어 있어요', s: '적거나 이 칸을 빼 주세요', go: '계좌 적기' });
+    }
+    if (on('contact')) {
+        const f = F('contact'), ks = Object.keys(f).filter(k => /Phone$/.test(k) && String(f[k] || '').trim());
+        const bad = ks.filter(k => !/^0\d{1,2}-?\d{3,4}-?\d{4}$/.test(String(f[k]).replace(/\s/g, '')));
+        if (bad.length) out.push({ id: 'contact', t: '연락처 번호 모양이 이상해요', s: bad.map(k => String(f[k])).slice(0, 2).join(', ') + ' · 010-1234-5678처럼 적어요', go: '번호 고치기' });
+        else if (!ks.length) out.push({ id: 'contact', t: '연락처가 비어 있어요', s: '번호를 적거나 연락하기 칸을 빼 주세요', go: '번호 적기' });
+        else out.push({ id: 'contact', ok: 1, t: '연락처', s: `번호 ${ks.length}개` });
+    }
+    out.forEach(c => { c.easy = easy; });
+    return out;
+}
+const PUB_GO = { // 줄을 누르면 열 곳: [간편 만들기 질문 id, 간편 목록 칸, 전문가 섹션]
+    names: ['names:name', 'names', '#info'], date: ['names:date', 'names', '#info'], venue: ['venue', 'venue', 'location'], hero: ['hero:media', 'hero', null],
+    gallery: ['', 'gallery', 'gallery'], greet: ['greet', 'greet', 'greeting'], account: ['account', 'account', 'account'], contact: ['', 'family', 'contact'],
+};
+function pubGo(id) {
+    pubClose();
+    const g = PUB_GO[id]; if (!g) return;
+    if (document.documentElement.classList.contains('simple-mode')) {
+        if (document.documentElement.classList.contains('sp-pv')) spClosePreview();
+        if (state.spView === 'quick') state.spView = 'list';
+        setTimeout(() => ldhEasyGo(g[0], g[1]), 60); return;
+    }
+    if (g[2] === '#info') { // 전문가 모드: 섹션 목록 맨 위 💍 예식 정보 칸을 펼침
+        if (window.innerWidth <= 860) openSectionsSheet();
+        const c = document.getElementById('wiCard'); if (c && c._wiSetOpen) { c._wiSetOpen(true); setTimeout(() => { c.scrollIntoView({ block: 'center', behavior: 'smooth' }); const i = c.querySelector(id === 'date' ? '[data-wi-dt="date"], [data-wi="date"]' : '[data-wi="groom"]'); if (i) i.focus({ preventScroll: true }); }, 320); }
+        return;
+    }
+    ldhExpertOpen(g[2] || (spHeroKind() === 'video' ? 'heroVideo' : 'hero'));
+}
+function pubClose() { const el = document.getElementById('pubChk'); if (el) el.remove(); }
+function pubKakaoHtml() { // 카카오톡 미리보기 (설명을 따로 안 적었으면 예식 정보로)
+    const sh = state.share = state.share || {}, keep = sh.kakaoDesc, wi = weddingInfo(), vf = (state.blocks.find(b => b.id === 'location') || {}).fields || {}, vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(vf) : {};
+    if (!keep) sh.kakaoDesc = [wi.date ? dtDateText(wi.date) + (wi.time ? ' ' + wi.time : '') : '', vd.v ? '' : vf.venue || ''].filter(Boolean).join('\n') || ' ';
+    let h = ''; try { h = sharePreviewHtml('kakao'); } finally { sh.kakaoDesc = keep; if (keep === undefined) delete sh.kakaoDesc; }
+    return h.replace('<b class="kk-hint">끌어서 맞추기</b>', '');
+}
+function pubCheckThen(go) {
+    if (SAMPLE_ID || !spOpt('flow', 'precheck')) return go();
+    let list; try { list = pubChecks(); } catch (e) { return go(); }
+    const bad = list.filter(c => !c.ok && !c.info);
+    if (!bad.length) return go(); // 다 괜찮으면 바로 발행
+    pubClose();
+    const n = list.filter(c => c.ok).length, all = list.filter(c => !c.info).length;
+    const el = document.createElement('div'); el.id = 'pubChk'; el.className = 'pubchk';
+    el.innerHTML = `<div class="pc-dim" data-pc-x></div><div class="pc-box" role="dialog" aria-modal="true" aria-labelledby="pcTitle"><div class="pc-grab"></div>
+        <div class="pc-h"><b id="pcTitle">발행 전에 확인해요</b><button type="button" class="pc-x" data-pc-x aria-label="닫기">✕</button></div>
+        <p class="pc-sum">${all}개 중 ${n}개는 괜찮아요 · <em>${bad.length}개</em>를 보면 좋아요</p><div class="pc-prog"><i style="width:${Math.round(n / all * 100)}%"></i></div>
+        <div class="pc-list">${list.sort((a, b) => (a.ok ? 2 : a.info ? 1 : 0) - (b.ok ? 2 : b.info ? 1 : 0)).map(c => `<button type="button" class="pc-row ${c.ok ? 'ok' : c.info ? 'info' : 'bad'}" data-pc-go="${c.id}"><span class="pc-ic">${c.ok ? '✓' : c.info ? 'i' : '!'}</span><span class="pc-tx">${esc(c.t)}<small>${esc(c.s || '')}</small></span><span class="pc-go">${c.ok ? '확인' : esc(c.go || '보기') + ' ›'}</span></button>`).join('')}</div>
+        <div class="pc-kk" hidden>${pubKakaoHtml()}</div>
+        <div class="pc-foot"><button type="button" class="pc-b" data-pc-kk>카톡 미리보기</button><button type="button" class="pc-b pri" data-pc-pub>그래도 발행하기</button></div></div>`;
+    document.body.appendChild(el);
+    try { kkApplyCrop(); } catch (e) {}
+    el.addEventListener('click', e => {
+        if (e.target.closest('[data-pc-x]')) { pubClose(); return; }
+        const r = e.target.closest('[data-pc-go]'); if (r) { if (!r.classList.contains('ok')) pubGo(r.dataset.pcGo); return; }
+        const k = e.target.closest('[data-pc-kk]'); if (k) { const kk = el.querySelector('.pc-kk'), ls = el.querySelector('.pc-list'), show = kk.hidden; kk.hidden = !show; ls.hidden = show; k.textContent = show ? '점검 목록 보기' : '카톡 미리보기'; return; }
+        if (e.target.closest('[data-pc-pub]')) { pubClose(); go(); }
+    });
+    el.querySelector('[data-pc-pub]').focus({ preventScroll: true });
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('pubChk')) { e.stopPropagation(); pubClose(); } }, true);
 document.getElementById('previewBtn')?.addEventListener('click', () => {
     // 새 탭 이동(기본 링크 동작)은 그대로 두고, 최신 상태 반영을 위해 조용히 임시저장도 같이 보냄
     if (EDIT_TOKEN) saveToServer(false, true);
@@ -17874,6 +18123,8 @@ const ldhUndoEl = () => ldhFirst('#spUndo', '#udUndo', '#undoTab');
 const ldhTextEl = () => ldhFirst('#previewRoot .col[data-block-id="hero"] .drag-part', '#previewRoot .col[data-block-id="heroVideo"] .drag-part', '#previewRoot .drag-part');
 // 할 일 목록 - t: 제목, d: 한 줄 설명, steps: 순서 설명, show: 보여주기 단계 [{el, t, x}], go: [버튼 이름, 함수], when: 이 화면에서만
 const LDH_EASY = [
+    { t: '스티커 한 번에 꾸미기', d: '하트·꽃·별 스티커를 세트로', steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 아래 \'스티커 꾸미기\'가 보여요.', '마음에 드는 세트를 누르면 첫 화면·인사말·갤러리 모서리에 어울리게 붙어요.', '[다른 세트로]로 바꾸거나 [스티커 다 빼기]로 모두 뺄 수 있어요.'], go: ['그 칸으로 가기', () => { closeLdh(); spAddGo('#stk'); }], when: () => spOpt('flow', 'stkset') },
+    { t: '발행하기 전에 확인하기', d: '빠진 것이 있으면 알려 줘요', steps: ['[발행하기]를 누르면 예시 사진·빈 계좌·미정 날짜처럼 빠진 것이 있을 때 \'발행 전에 확인해요\' 창이 떠요.', '줄을 누르면 그 칸이 바로 열려요. 다 고치지 않아도 [그래도 발행하기]로 발행할 수 있어요.', '[카톡 미리보기]로 카카오톡에서 어떻게 보일지도 봐요.'] },
     { t: '칸 모양 바꾸기 (빈티지 · 밤하늘)', d: '인사말·방명록 같은 칸을 다른 모양으로', steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'섹션 꾸밈\'에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 중 하나를 눌러요.', '다른 디자인의 색이 좋으면 아래 \'다른 디자인 색으로\'에서 골라요. 처음처럼 하려면 [디자인 따라]를 눌러요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '내 청첩장 전체 보기', d: '하객이 보는 모습 그대로 봐요', steps: ['아래 버튼을 누르면 하객이 보는 화면이 떠요.', '다 보고 닫으면 다시 고칠 수 있어요.'], go: ['지금 보기', () => spOpenPreview(false)] },
     { t: '이름 · 날짜 · 예식장 바꾸기', d: '틀린 글자를 고쳐요', steps: ['아래 [그 칸으로 가기]를 누르면 바로 그 칸이 열려요.', '칸에 적으면 청첩장에 바로 바뀌어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('names:name', 'names')] },
@@ -17898,7 +18149,7 @@ const LDH_EXPERT = [
     { t: '섹션 켜고 끄기 · 순서 바꾸기', d: '갤러리·지도 같은 칸을 넣고 빼요', steps: ['섹션 목록에서 오른쪽 스위치를 켜면 청첩장에 들어가고, 끄면 빠져요.', '왼쪽 ⠿ 를 꾹 눌러 끌면 순서가 바뀌어요.'], show: () => [{ el: () => ldhFirst('#sectionsFabBtn', '#sectionsSheet'), t: '섹션 목록', x: '여기서 켜고 끄고, ⠿ 를 끌어 순서를 바꿔요.' }] },
     { t: '위쪽 작은 그림 버튼은 뭐예요?', d: '버튼 이름을 하나씩 알려 드려요', icons: true },
     { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },
-    { t: '저장 · 발행하기', d: '저장하고 하객에게 보이게 해요', steps: ['[임시저장]은 지금까지 고친 걸 저장해요. 발행 전이면 하객에게는 안 보여요.', '[발행하기]를 눌러야 하객이 볼 수 있어요.', '이미 발행했다면 저장할 때마다 하객 화면도 바로 바뀌어요.'], show: () => [{ el: () => ldhFirst('#saveDraftBtn'), t: '임시저장', x: '고친 걸 저장해요.' }, { el: () => ldhFirst('#publishBtn'), t: '발행하기', x: '이걸 눌러야 하객이 청첩장을 볼 수 있어요.' }] },
+    { t: '저장 · 발행하기', d: '저장하고 하객에게 보이게 해요', steps: ['[임시저장]은 지금까지 고친 걸 저장해요. 발행 전이면 하객에게는 안 보여요.', '[발행하기]를 눌러야 하객이 볼 수 있어요. 예시 사진·빈 계좌처럼 빠진 것이 있으면 먼저 \'발행 전에 확인해요\' 창이 떠요 (줄을 누르면 그 칸이 열려요).', '이미 발행했다면 저장할 때마다 하객 화면도 바로 바뀌어요.'], show: () => [{ el: () => ldhFirst('#saveDraftBtn'), t: '임시저장', x: '고친 걸 저장해요.' }, { el: () => ldhFirst('#publishBtn'), t: '발행하기', x: '이걸 눌러야 하객이 청첩장을 볼 수 있어요.' }] },
     { t: '하객 화면으로 보기', d: '실제로 어떻게 보이는지 봐요', steps: ['[미리보기]를 누르면 하객이 보는 화면이 떠요.'], show: () => [{ el: () => ldhFirst('#previewBtn'), t: '미리보기', x: '하객이 보는 모습 그대로 봐요.' }] },
     { t: '화면이 너무 작아요 / 커요', d: '보는 크기만 바꿔요', steps: ['[표준] [좁게] [확대] 버튼은 보는 크기만 바꿔요. 청첩장 모양은 그대로예요.', '[테두리]는 휴대폰 테두리를 보이거나 숨겨요.'], show: () => [{ el: () => ldhFirst('#pWidthNormal', '#mWidthNormal'), t: '화면 크기', x: '보는 크기만 바뀌어요. 하객 화면엔 영향이 없어요.' }] },
     { t: '간편 만들기로 돌아가기', d: '질문에 답하는 쉬운 화면으로', when: () => { const b = ldh$('#tbToSimple'); return !!(b && !b.hidden); }, steps: ['아래 버튼을 누르면 간편 만들기로 돌아가요.', '이름·날짜·사진·글·계좌는 그대로 옮겨져요.'], go: ['간편 만들기로', () => { closeLdh(); fullToSimple(); }] },
