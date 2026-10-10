@@ -94,6 +94,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (Throwable $e) {
             echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit;
         }
+    } elseif ($act === 'easy_video') {
+        // 메인 영상 예시: 유튜브 주소나 영상 ID를 넣으면 바로 저장, 지우면 에디터 기본 예시 영상으로
+        $vid = !empty($_POST['remove']) ? '' : section_youtube_id((string) ($_POST['url'] ?? ''));
+        if (empty($_POST['remove']) && $vid === '') { echo json_encode(['ok' => false, 'error' => '유튜브 주소를 알아보지 못했어요. 영상 주소를 그대로 붙여 넣어 주세요.'], JSON_UNESCAPED_UNICODE); exit; }
+        if (section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['videoSample' => $vid])) { echo json_encode(['ok' => true, 'id' => $vid], JSON_UNESCAPED_UNICODE); exit; }
+        $ok = false;
     } elseif ($act === 'easy_mview') {
         // 휴대폰 간편 만들기 보기 방식 (① 반반 화면 / ② 떠 있는 돋보기 창 / 질문만) - 누르면 바로 저장
         $v = (string) ($_POST['view'] ?? '');
@@ -135,7 +141,7 @@ $easyNow = section_defaults_easy();
 $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
-$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview();
+$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyVideo = section_defaults_easy_video();
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
 $easyInfo = [
@@ -664,6 +670,9 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-hero-f { display: flex; justify-content: space-between; align-items: center; min-height: 16px; font-size: 11px; } .ez-hero-f b { font-weight: 600; color: #6B645B; } .ez-hero-f b[hidden] { display: none; }
 .ez-hero-rs { margin-left: auto; border: 0; background: none; padding: 0; font-size: 11px; color: #8A8278; text-decoration: underline; cursor: pointer; }
 .ez-hero-rs[hidden] { display: none; }
+.ez-vid-pic { position: relative; width: 124px; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: var(--ui-soft, #F3EFE8); display: grid; place-items: center; font-size: 10.5px; color: #A29C94; text-align: center; }
+.ez-vid-pic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.ez-vid-in { display: flex; margin-top: 6px; } .ez-vid-in input { flex: 1; min-width: 0; height: 36px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--ui-line, #E5DED3); font: inherit; font-size: 13px; background: #fff; }
 .ez-mview { margin: 0 0 14px; padding: 14px; border-radius: 16px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; }
 .ez-mview-h { display: flex; flex-direction: column; gap: 3px; margin-bottom: 12px; } .ez-mview-h b { font-size: 14px; } .ez-mview-h small { font-size: 12px; color: #8A8278; line-height: 1.5; }
 .ez-mview-g { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
@@ -731,6 +740,12 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
                 <div class="ez-hero-t"><b>메인 사진 예시</b><small>고객이 간편 만들기에서 메인 사진을 고르기 전까지 첫 화면에 이 사진이 보여요. 세로로 긴 사진이 좋아요. 올리면 바로 저장돼요.<br>왼쪽 사진을 <b>끌어서 보일 부분</b>을 옮기고, 아래 막대로 확대해요. 고친 위치도 바로 저장돼요. (휴대폰마다 화면 길이가 달라서 위아래가 조금 더 보이거나 잘릴 수 있어요)</small>
                     <span class="ez-hero-b"><button type="button" class="gp-save" id="ezHeroUp"><?= $easyHero ? '사진 바꾸기' : '사진 올리기' ?></button><button type="button" class="gp-undo" id="ezHeroDel"<?= $easyHero ? '' : ' hidden' ?>>지우기</button></span>
                     <input type="file" id="ezHeroIn" accept="image/jpeg,image/png,image/webp" hidden></div>
+            </div>
+            <div class="ez-hero ez-video" id="ezVid">
+                <div class="ez-hero-l"><div class="ez-vid-pic" id="ezVidPic"><?= $easyVideo ? '<img src="https://i.ytimg.com/vi/' . $h($easyVideo) . '/hqdefault.jpg" alt="" loading="lazy">' : '<span>기본 예시 영상</span>' ?></div></div>
+                <div class="ez-hero-t"><b>메인 영상 예시</b><small>영상으로 시작하는 디자인에서 고객이 영상 주소를 넣기 전까지 첫 화면에 이 유튜브 영상이 보여요. 유튜브 주소를 그대로 붙여 넣고 [저장]을 누르면 바로 저장돼요. 비워 두면 기본 예시 영상이 보여요.</small>
+                    <span class="ez-vid-in"><input type="text" id="ezVidUrl" inputmode="url" autocomplete="off" placeholder="https://youtu.be/…" value="<?= $easyVideo ? 'https://youtu.be/' . $h($easyVideo) : '' ?>" aria-label="메인 영상 예시 유튜브 주소"></span>
+                    <span class="ez-hero-b"><button type="button" class="gp-save" id="ezVidSave">저장</button><button type="button" class="gp-undo" id="ezVidDel"<?= $easyVideo ? '' : ' hidden' ?>>지우기</button></span></div>
             </div>
             <div class="ez-mview" id="ezMv">
                 <div class="ez-mview-h"><b>휴대폰 보기 방식</b><small>휴대폰에서 간편 만들기를 할 때 청첩장을 어떻게 보여줄지 골라요. 누르면 바로 저장돼요. (PC는 늘 왼쪽에 청첩장이 보여요)</small></div>
@@ -1602,6 +1617,16 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
     });
     ezRender();
     // 메인 사진 예시 올리기 · 지우기 (바로 저장)
+    (function ezVidBox() { // 메인 영상 예시 (유튜브 주소 → 바로 저장)
+        const inp = document.getElementById('ezVidUrl'), sv = document.getElementById('ezVidSave'), del = document.getElementById('ezVidDel'), pic = document.getElementById('ezVidPic');
+        if (!inp) return;
+        if (readonly) { inp.disabled = sv.disabled = true; del.hidden = true; return; }
+        const show = id => { pic.innerHTML = id ? `<img src="https://i.ytimg.com/vi/${ezEsc(id)}/hqdefault.jpg" alt="">` : '<span>기본 예시 영상</span>'; inp.value = id ? 'https://youtu.be/' + id : ''; del.hidden = !id; };
+        const save = () => { if (!inp.value.trim()) return say('유튜브 주소를 붙여 넣어 주세요.'); sv.disabled = true; post({ act: 'easy_video', url: inp.value.trim() }).then(j => { show(j.id); toast('메인 영상 예시를 저장했어요'); }).catch(err => { say(err.message); }).finally(() => { sv.disabled = false; }); };
+        sv.addEventListener('click', save);
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save(); } });
+        del.addEventListener('click', () => LD.confirm('메인 영상 예시를 지울까요?', { message: '지우면 고객 화면엔 기본 예시 영상이 보여요.' }).then(ok => { if (!ok) return; post({ act: 'easy_video', remove: '1' }).then(() => { show(''); toast('메인 영상 예시를 지웠어요'); }).catch(err => say(err.message)); }));
+    })();
     (function ezMvBox() { // 휴대폰 보기 방식
         const box = document.getElementById('ezMv'); if (!box) return;
         box.querySelectorAll('[data-mview]').forEach(b => b.addEventListener('click', () => {

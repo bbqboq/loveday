@@ -20,6 +20,7 @@
  *                heroSample : 메인 사진 예시 '/invite/uploads/site/….webp' (고객이 사진을 고르기 전까지 간편 만들기 첫 화면에 보임)
  *                mobileView : 휴대폰 간편 만들기 보기 방식 'split'(① 반반 화면, 기본) | 'lens'(② 떠 있는 돋보기 창) | 'off'(질문만)
  *                heroPos    : 그 예시 사진에서 보일 부분·확대 {focus:'x% y%', zoom:1~4} (관리자가 끌어서 정함, 고객 화면 state.imgFocus/imgZoom으로 들어감)
+ *                videoSample: 메인 영상 예시 유튜브 영상 ID 11자 (고객이 영상 주소를 넣기 전까지 영상으로 시작하는 첫 화면에 보임, 없으면 에디터 기본 예시)
  *                단계 순서와 켜기/끄기. names(두 사람)는 늘 켜짐, finish(마무리)는 늘 맨 끝. 정한 적 없으면 기본 순서·모두 켜짐
  *   prefs      : 세부 모양 {heroPicker: old|A~E, videoPicker: old|A~E, photoField: old|P1~P4, guideStyle: old|G1~G8, overToggle: old|T1|T2|T3|T4|T7|T8, nextPicker: old|N5|N6, toggleChip: old|K1~K5, feAnim: old|none|F1~F8, jumpFix: old|S1|S2|S3|S4|S6, menuStyle: old|M1~M6, menuStylePc: old|M1~M6, sheetStyle: old|S1~S10, setStyle: old|D1~D8|A3|A7|A8, setInner: old|B4|B5, s10Add: old|C4|C5|C6}
  *
@@ -371,6 +372,25 @@ function section_defaults_easy_hero_pos(): array
     return section_easy_hero_pos_clean(is_array($j) ? ($j['easy']['heroPos'] ?? []) : []);
 }
 
+/** 메인 영상 예시 (유튜브 영상 ID 11자) - 없으면 '' (에디터 기본 예시 영상) */
+const SECTION_YT_ID_RE = '/^[A-Za-z0-9_-]{11}$/';
+function section_defaults_easy_video(): string
+{
+    $f = section_defaults_file();
+    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return '';
+    $j = json_decode((string) file_get_contents($f), true);
+    $v = is_array($j) ? (string) ($j['easy']['videoSample'] ?? '') : '';
+    return preg_match(SECTION_YT_ID_RE, $v) ? $v : '';
+}
+/** 유튜브 주소(youtu.be/… · watch?v=… · shorts/… · embed/… · live/…) 또는 영상 ID → ID 11자, 못 알아보면 '' */
+function section_youtube_id(string $in): string
+{
+    $in = trim($in);
+    if (preg_match(SECTION_YT_ID_RE, $in)) return $in;
+    if (preg_match('#(?:youtu\.be/|[?&]v=|/(?:shorts|embed|live|v)/)([A-Za-z0-9_-]{11})(?![A-Za-z0-9_-])#', $in, $m)) return $m[1];
+    return '';
+}
+
 const SECTION_EASY_MVIEWS = ['split', 'lens', 'off'];
 /** 휴대폰 간편 만들기 보기 방식 (기본 'split') */
 function section_defaults_easy_mview(): string
@@ -420,6 +440,8 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     $easyMview = ($easyMore !== null && array_key_exists('mobileView', $easyMore)) ? (string) $easyMore['mobileView'] : section_defaults_easy_mview(); // 휴대폰 보기 방식
     if (!in_array($easyMview, SECTION_EASY_MVIEWS, true)) $easyMview = 'split';
     $easyMviewSet = $easyMview !== 'split';
+    $easyVideo = ($easyMore !== null && array_key_exists('videoSample', $easyMore)) ? (string) $easyMore['videoSample'] : section_defaults_easy_video(); // 메인 영상 예시
+    if (!preg_match(SECTION_YT_ID_RE, $easyVideo)) $easyVideo = '';
     // $easyOff: null = 저장된 값 그대로, [] = 모두 켬, {step:[key]} = 새로 저장
     $easyOff = $easyOff === null ? section_defaults_easy_off() : section_easy_off_clean($easyOff);
     // $easy: null = 저장된 단계 그대로, [] = 기본으로, [[id,on], ...] = 새로 저장 (기본과 같으면 안 적음)
@@ -441,7 +463,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     $hid = [];
     foreach ($hidden as $id) if (is_string($id) && preg_match(SECTION_ID_RE, $id) && !in_array($id, $hid, true)) $hid[] = $id;
     $f = section_defaults_file();
-    if (!$clean && !$hid && !$groups && !$labels && !$start && !$easy && !$easyOff && !$easyAsk && !$easyShowOff && $easyHero === '' && !$easyMviewSet && $panel === SECTION_PANEL_DEFAULT && $prefs === SECTION_PREF_DEFAULTS) return !is_file($f) || @unlink($f);
+    if (!$clean && !$hid && !$groups && !$labels && !$start && !$easy && !$easyOff && !$easyAsk && !$easyShowOff && $easyHero === '' && $easyVideo === '' && !$easyMviewSet && $panel === SECTION_PANEL_DEFAULT && $prefs === SECTION_PREF_DEFAULTS) return !is_file($f) || @unlink($f);
     $dir = dirname($f);
     if (!is_dir($dir) && !@mkdir($dir, 0755, true)) return false;
     $tmp = $f . '.' . bin2hex(random_bytes(4)) . '.tmp';
@@ -449,7 +471,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if ($groups) { $data['groups'] = $groups['groups']; $data['groupEtc'] = $groups['etc']; }
     if ($labels) $data['labels'] = $labels;
     if ($start) $data['start'] = $start;
-    if ($easy || $easyOff || $easyAsk || $easyShowOff || $easyHero !== '' || $easyMviewSet) $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []) + ($easyHero !== '' ? ['heroSample' => $easyHero] : []) + ($easyHeroPos ? ['heroPos' => $easyHeroPos] : []) + ($easyMviewSet ? ['mobileView' => $easyMview] : []);
+    if ($easy || $easyOff || $easyAsk || $easyShowOff || $easyHero !== '' || $easyVideo !== '' || $easyMviewSet) $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []) + ($easyHero !== '' ? ['heroSample' => $easyHero] : []) + ($easyHeroPos ? ['heroPos' => $easyHeroPos] : []) + ($easyMviewSet ? ['mobileView' => $easyMview] : []) + ($easyVideo !== '' ? ['videoSample' => $easyVideo] : []);
     $data['updated_at'] = date('c');
     $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     if (@file_put_contents($tmp, $json, LOCK_EX) === false) return false;
@@ -462,5 +484,5 @@ if (realpath((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
     header('Cache-Control: no-store');
     header('X-Content-Type-Options: nosniff');
     $grp = section_defaults_groups();
-    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos(), 'mobileView' => section_defaults_easy_mview()]], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos(), 'mobileView' => section_defaults_easy_mview(), 'videoSample' => section_defaults_easy_video()]], JSON_UNESCAPED_UNICODE);
 }

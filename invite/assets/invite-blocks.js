@@ -175,6 +175,7 @@
     function boxColAttrs(b) {
         const bg = b && HEX_RE.test(b.boxBg || '') ? b.boxBg : '', ink = b && HEX_RE.test(b.boxInk || '') ? b.boxInk : '';
         let cls = (bg ? ' ib-box-bg' : '') + (ink ? ' ib-box-ink' : '');
+        if (bg && !ink) cls += hexDark(bg) ? ' ib-box-dk' : ' ib-box-lt'; // 창 색만 골랐을 때: 디자인 바탕과 반대 밝기면 CSS가 글자색을 알아서 (어두운 디자인 + 흰 창 → 글자가 안 보이던 것)
         const st = [bg ? `--box-bg:${bg}` : '', ink ? `--box-ink:${ink}` : ''];
         const sk = skinOf(b), pal = b && b.skinPal && typeof b.skinPal === 'object' ? b.skinPal : null;
         if (sk) cls += ` ib-sk ib-sk-${sk}${SKIN_DARK.includes(sk) ? ' ib-sk-dark' : ''}`;
@@ -2830,6 +2831,10 @@
             const boxBg = wrap.style.getPropertyValue('--box-bg').trim();
             const dark = boxBg ? hexDark(boxBg) : (hexDark(wrap.style.getPropertyValue('--p-bg')) || !!(vf.closest && vf.closest('.ib-dark, .ib-sk-dark')));
             wrap.classList.toggle('ib-dark', !!dark);
+            const pInk = wrap.style.getPropertyValue('--p-ink').trim();
+            if (boxBg && !wrap.style.getPropertyValue('--box-ink').trim() && pInk && hexDark(pInk) === !!dark) { // 창 색만 정했고 글자가 창과 같은 밝기면 (어두운 디자인 + 흰 창) 글자색을 반대로
+                wrap.style.setProperty('--box-ink', dark ? '#F3EFE9' : '#2B2320'); wrap.classList.add('ib-box-ink');
+            }
         }
         document.body.appendChild(wrap);
         const prevOverflow = document.documentElement.style.overflow;

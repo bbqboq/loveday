@@ -808,6 +808,9 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-box-ink .ib-lot-me, .ib-box-ink .ib-lot-round, .ib-box-ink .ib-thanks, .ib-box-ink .ib-share-btn:not(.ib-kakao),
 .ib-modal.ib-box-ink .ib-modal-box { --p-ink: var(--box-ink); --p-muted: color-mix(in srgb, var(--box-ink) 64%, transparent); color: var(--box-ink) !important; }
 .ib-modal-snap.ib-box-bg .ib-modal-box { background: var(--box-bg) !important; }
+/* 창 색만 고르고 글자색은 안 골랐을 때 (boxColAttrs가 ib-box-lt 밝은 창 / ib-box-dk 어두운 창): 디자인 바탕과 밝기가 반대면 글자색을 알아서 */
+:is(.ib-box-lt:not(.ib-sk-light):is(.ib-dark *), .ib-box-lt.ib-sk-dark) :is(.ib-contact-side, .ib-notice-card .ib-notice-item, .ib-notice-box .ib-notice-item, .ib-acc-side, .ib-gb-card .ib-gb-item, .ib-gb-more, .ib-day-item, .ib-trip-post, .ib-lot-prizes, .ib-lot-me, .ib-lot-round, .ib-thanks, .ib-share-btn:not(.ib-kakao), .ib-copy-btn) { --p-ink: #2B2320; --p-muted: #7A6F66; --p-line: rgba(43, 35, 32, .16); color: #2B2320 !important; }
+:is(.ib-box-dk:not(.ib-sk-dark):not(.ib-dark *), .ib-box-dk.ib-sk-light) :is(.ib-contact-side, .ib-notice-card .ib-notice-item, .ib-notice-box .ib-notice-item, .ib-acc-side, .ib-gb-card .ib-gb-item, .ib-gb-more, .ib-day-item, .ib-trip-post, .ib-lot-prizes, .ib-lot-me, .ib-lot-round, .ib-thanks, .ib-share-btn:not(.ib-kakao), .ib-copy-btn) { --p-ink: #F3EFE9; --p-muted: #BDB4AA; --p-line: rgba(243, 239, 233, .2); color: #F3EFE9 !important; }
 
 /* ===== 게스트스냅 사진 올리기 팝업 (snap.php를 안에 띄움) ===== */
 .ib-modal-snap .ib-modal-box { max-width: 460px; height: min(86vh, 820px); max-height: calc(100vh - 32px); padding: 0; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
@@ -1250,6 +1253,9 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 /* ===== 어두운 디자인(.ib-dark, 청첩장 바탕이 어두우면 저절로) · 어두운 섹션 테마(.ib-sk-dark): 섹션 안 흰 카드·창을 어둡게 =====
    흰 카드 + 밝은 글자(어두운 디자인 글자색)라 글이 안 보이던 것 (방명록·안내·계좌·연락처·감사 인사 …) */
 :is(.ib-dark, .ib-sk-dark) { --ib-card: color-mix(in srgb, var(--p-ink) 8%, var(--p-bg)); --ib-card2: color-mix(in srgb, var(--p-ink) 14%, var(--p-bg)); --ib-cline: color-mix(in srgb, var(--p-ink) 18%, transparent); }
+@supports not (color: color-mix(in srgb, red, blue)) { /* color-mix를 모르는 옛 브라우저 (삼성 인터넷 21 이하 등): 카드가 흰색으로 남지 않게 반투명 흰색으로 */
+    :is(.ib-dark, .ib-sk-dark) { --ib-card: rgba(255, 255, 255, .08); --ib-card2: rgba(255, 255, 255, .14); --ib-cline: rgba(255, 255, 255, .18); }
+}
 :is(.ib-dark, .ib-sk-dark) :is(.ib-contact-side, .ib-notice-item, .ib-acc-side, .ib-gb-item, .ib-gb-more, .ib-day-item, .ib-trip-post, .ib-lot-prizes, .ib-lot-me, .ib-lot-round,
     .ib-thanks, .ib-ty-card .ib-ty-in, .ib-ty-letter .ib-ty-in, .ib-nt-card, .ib-cal-opt, .dd-tk-r, .ib-icon-btn, .ib-copy-btn, .ib-share-btn:not(.ib-kakao), .ib-cal-btn, .ib-anniv) {
     background: var(--ib-card); border-color: var(--ib-cline); color: var(--p-ink); box-shadow: none; }
