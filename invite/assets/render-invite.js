@@ -427,8 +427,10 @@ function pixelsFromAnchor(root, item) {
 // 위한 안전망. 에디터의 resolveAnchorContainer/groupAnchoredItems와 동일한 로직.
 function resolveAnchorContainer(root, item) {
     if (item.sectionId) {
-        const sectionEl = findSectionEl(root, item.sectionId);
+        // 메인 사진 ↔ 메인 영상을 바꿨으면 지금 켜진 쪽에 (같은 첫 화면 자리)
+        const sectionEl = findSectionEl(root, item.sectionId) || ((item.sectionId === 'hero' || item.sectionId === 'heroVideo') ? findSectionEl(root, item.sectionId === 'hero' ? 'heroVideo' : 'hero') : null);
         if (sectionEl) return { container: sectionEl, relX: item.relX ?? 0.5, relY: item.relY ?? 0.5, edgeY: item.edgeY, offY: item.offY };
+        return null; // 붙은 섹션이 꺼져 있으면 안 그림 (예전엔 청첩장 한가운데로 몰려 첫 화면 글자를 가렸음 - 섹션을 켜면 다시 나옴)
     }
     return { container: root, relX: (item.x ?? 50) / 100, relY: (item.y ?? 50) / 100, edgeY: undefined, offY: undefined };
 }
@@ -439,11 +441,13 @@ function groupAnchoredItems(root, stickers, customTexts) {
         groups.get(key)[kind].push(resolved);
     };
     (stickers || []).forEach(st => {
-        const { container, relX, relY, edgeY, offY } = resolveAnchorContainer(root, st);
+        const r = resolveAnchorContainer(root, st); if (!r) return;
+        const { container, relX, relY, edgeY, offY } = r;
         pushInto(container, 'stickers', { ...st, relX, relY, edgeY, offY });
     });
     (customTexts || []).forEach(ct => {
-        const { container, relX, relY, edgeY, offY } = resolveAnchorContainer(root, ct);
+        const r = resolveAnchorContainer(root, ct); if (!r) return;
+        const { container, relX, relY, edgeY, offY } = r;
         pushInto(container, 'customTexts', { ...ct, relX, relY, edgeY, offY });
     });
     return groups;

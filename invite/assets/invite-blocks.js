@@ -529,11 +529,13 @@
     function heroVideoBox(f, iframeHtml) {
         if (!f || f.heightMode !== 'full' || !f.heroBox || typeof f.heroBox !== 'object') return { cls: '', style: '', html: iframeHtml };
         const g = heroBoxGeom(f.heroBox);
-        return { cls: ' hero-boxed', style: g.bg ? `background:${g.bg};` : '', html: `<div class="hero-box hb-fr-${g.fr}" style="${g.style}"><div class="hero-vbox">${iframeHtml}</div></div>` };
+        // '글자 잘 보이게' 그라데이션은 영상 칸 안에만 (칸 밖 바탕까지 어두워지지 않게 - 바깥 것은 CSS로 숨김)
+        return { cls: ' hero-boxed', style: g.bg ? `background:${g.bg};` : '', html: `<div class="hero-box hb-fr-${g.fr}" style="${g.style}"><div class="hero-vbox">${iframeHtml}${heroTextOn(f, 'video') ? heroShadeHtml(f, 'video') : ''}</div></div>` };
     }
     function heroBoxHtml(f, src, pri) {
         const g = heroBoxGeom(f.heroBox), bg = g.bg ? ` style="background:${g.bg}"` : '', fr = g.fr;
-        return `<div class="hero-photo-wrap hero-full-wrap hero-boxed"${bg}><div class="hero-box hb-fr-${fr}" style="${g.style}"><img${pri} class="hero-photo" src="${src}" alt=""></div>${heroTextOn(f, 'hero') && f.heroShade && f.heroShade !== 'none' ? heroShadeHtml(f, 'hero') : ''}</div>`;
+        // '글자 잘 보이게' 그라데이션은 사진 위에만 (예전엔 첫 화면 전체 = 칸 밖 흰 바탕까지 어두워졌음)
+        return `<div class="hero-photo-wrap hero-full-wrap hero-boxed"${bg}><div class="hero-box hb-fr-${fr}" style="${g.style}"><span class="hb-ph"><img${pri} class="hero-photo" src="${src}" alt="">${heroTextOn(f, 'hero') && f.heroShade && f.heroShade !== 'none' ? heroShadeHtml(f, 'hero') : ''}</span></div></div>`;
     }
     function heroPhotoHtml(f, opts) {
         if (!f || !f.heroImage) return '';
