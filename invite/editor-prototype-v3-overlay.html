@@ -760,6 +760,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .hl-m-box .hl-mb { position: absolute; overflow: hidden; display: block; } .hl-m-box .hl-mb em { position: absolute; inset: 0; background: center / cover no-repeat; }
 /* 웹툰 레이아웃 작은 그림: 웹툰 컷 틀 · 글자 상자 (실제 모양은 invite-blocks.css .hl-d-*) */
 .hl-m-box .hl-mb.hb-fr-comic { border: 1.5px solid #1B1B1F; box-shadow: 2px 2px 0 #1B1B1F; box-sizing: border-box; }
+.hl-m-box .hl-mb.hb-fr-baroque { border: 1.5px solid #C49A4C; outline: 1px solid #D9B66B; outline-offset: 1.5px; box-sizing: border-box; }
 .hl-m span.hl-d-caption, .hl-m span.hl-d-caption-w { background: #FFD93D; border: 1px solid #1B1B1F; box-shadow: 1px 1px 0 #1B1B1F; padding: .35em .6em .25em; line-height: 1.3; text-shadow: none; font-weight: 700; }
 .hl-m span.hl-d-caption-w { background: #fff; }
 .hl-m span.hl-d-bubble { background: #fff; border: 1.2px solid #1B1B1F; border-radius: 50% / 46%; padding: .6em .9em .5em; line-height: 1.2; text-shadow: none; }
@@ -4652,14 +4653,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018v">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018v">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018w">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018w">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018v"></script>
-<script src="assets/tip-demos.js?v=1018v"></script>
-<script src="assets/ld-dialog.js?v=1018v"></script>
+<script src="assets/invite-blocks.js?v=1018w"></script>
+<script src="assets/tip-demos.js?v=1018w"></script>
+<script src="assets/ld-dialog.js?v=1018w"></script>
 </head>
 <body>
 
@@ -9793,7 +9794,7 @@ const STK_THEMES = [
     { id: 'vintage', name: '빈티지 그림 전체', vin: Object.keys(STK_VIN), emo: [] },
 ];
 // 디자인마다 먼저 보여줄 테마 (디자인 폴더 preset.json의 stickerThemes가 있으면 그게 먼저)
-const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] , 'p-webtoon': ['webtoon', 'party'] };
+const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] , 'p-webtoon': ['webtoon', 'party'], 'p-angel': ['romantic', 'classic'] };
 // 관리자 → 스티커 (sticker_settings.php): 테마 순서·끈 테마·숨긴 그림·디자인별 추천. 못 받으면 아래 기본대로
 let STK_CFG = { order: null, off: [], hide: [], rec: {} };
 fetch('sticker_settings.php', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
@@ -16170,7 +16171,9 @@ function spHeroLayoutHtml(hb, kind) {
     const tip = '{신랑} {신부} {날짜:영문} 처럼 적으면 이름·날짜로 바뀌어요.';
     const replay = anyAnim ? '<button type="button" class="hl-play" data-hl-replay>▶ 다시 보기</button>' : '';
     if (adv) { // 전문가 모드: 편집창의 다른 칸과 같은 모양 (label · mini-label · field-hint)
-        return `<label>메인 레이아웃 <small style="font-weight:400;opacity:.7">(글자 모양·자리를 한 번에)</small></label><div class="hl-row">${cards}</div>
+        const fr = f.heroBox && typeof f.heroBox === 'object' ? (f.heroBox.frame || 'none') : null; // 사진 칸 레이아웃이면 칸 테두리 고르기 (금테 액자 · 폴라로이드 · 웹툰 컷 …)
+        const frRow = fr !== null && InviteBlocks.HERO_BOX_FRAMES ? `<div class="hl-all hl-frs"><span>사진 칸 테두리</span>${InviteBlocks.HERO_BOX_FRAMES.map(([v, l]) => `<button type="button" class="${fr === v ? 'on' : ''}" data-hb-fr="${esc(v)}">${esc(l)}</button>`).join('')}</div>` : '';
+        return `<label>메인 레이아웃 <small style="font-weight:400;opacity:.7">(글자 모양·자리를 한 번에)</small></label><div class="hl-row">${cards}</div>${frRow}
             ${keys.length ? `<div class="hl-xh"><div class="mini-label hl-xl">글자 · 효과</div>${replay}</div><div class="hl-lines">${lines}</div>${all}<p class="field-hint" style="margin-top:6px">${tip}</p>` : ''}`;
     }
     return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div><div class="hl-row">${cards}</div></div>
@@ -16209,6 +16212,10 @@ function spBindHeroLayout(box, hb, after) {
         if (!was) spHeroPhase = 'pick'; // 레이아웃은 바로 전체화면이 되니 스크롤 버튼 화면으로 접지 않음
         renderPreview(); scheduleSnapshot(); after();
         if ((lay.layers || []).some(L => L.anim)) setTimeout(() => InviteBlocks.playHeroAnimsTwice(document.getElementById('previewRoot')), 300); // 레이아웃 효과 미리 보기 (한 번 → 1.3초 뒤 한 번 더)
+    }));
+    box.querySelectorAll('[data-hb-fr]').forEach(b => b.addEventListener('click', () => { // 사진 칸 테두리 (전문가 모드)
+        if (!hb.fields.heroBox || typeof hb.fields.heroBox !== 'object') return;
+        hb.fields.heroBox.frame = b.dataset.hbFr; renderPreview(); scheduleSnapshot(); after();
     }));
     const playTwice = () => { spScrollPreview([hb.id]); setTimeout(() => InviteBlocks.playHeroAnimsTwice(document.getElementById('previewRoot')), 250); };
     const lays = () => (hb.fields.heroLayers || []).map(k => hb.fields.layout[k]).filter(Boolean);
@@ -18533,6 +18540,7 @@ const LDH_EASY = [
     { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', when: () => spOpt('gallery', 'reveal'), steps: ['아래 [그 칸으로 가기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 위(옆) 청첩장에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요. [한 번에]를 누르면 예전처럼 바로 보여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'gallery')] },
     { t: '인트로 배경에 사진 · 영상 넣기', d: '청첩장을 열 때 뒤에 깔리는 화면', when: () => spOpt('finish', 'intro') && spOpt('finish', 'introFx') && spOpt('finish', 'introMedia'), steps: ['아래 [그 칸으로 가기]를 누르면 \'마무리\' 칸이 열려요. 인트로 스위치를 켜요.', '\'인트로 배경\'에서 [사진]을 누르면 앨범이 열려요. 한 장 고르면 인트로 뒤에 깔려요.', '[유튜브 영상]을 누르고 유튜브 주소를 붙여 넣으면 영상이 소리 없이 뒤에서 흘러가요.', '[▶ 인트로 보기]를 누르면 하객이 보는 그대로 확인할 수 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'finish')] },
     { t: '꽃잎 효과 · 공유 버튼 · 그림자 · 글꼴 고르기', d: '마무리 칸 \'더 꾸미기\'', when: () => ['ambient', 'scrollFx', 'scrollbar', 'share', 'shadow', 'font'].some(k => spOpt('finish', k)), steps: ['아래 [그 칸으로 가기]를 누르면 \'마무리\' 칸이 열려요. 아래쪽 \'더 꾸미기\'를 봐요.', '장식 효과(꽃잎 · 눈 · 별 …)와 섹션 나타나는 효과를 누르면 위(옆) 청첩장에서 바로 보여 줘요.', '떠 있는 공유 버튼 스위치로 화면 구석 공유 버튼을 켜고, 위치 · 색을 골라요.', 'PC 그림자는 컴퓨터로 볼 때 청첩장 양옆에 은은한 그림자를 넣어요. 글꼴도 여기서 다시 고를 수 있어요.'], go: ['그 칸으로 가기', () => { ldhEasyGo('', 'finish'); setTimeout(() => document.getElementById('spMoreHd')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 450); }] },
+    { t: '중세 유럽 빈티지로 꾸미기 (천사의 편지)', d: '천사 아기 · 하트 · 금테 액자 · 밀랍 도장', steps: ['디자인을 고를 때(또는 \'색·글꼴\' 칸 [디자인 바꾸기]) \'천사의 편지\'를 고르면 금테 액자 첫 화면 · 빈티지 큐피드 달력 · 장미와 천사 스티커까지 한 번에 돼요.', '지금 디자인 그대로 두고 싶으면 첫 화면 꾸미기에서 \'천사의 편지\' 레이아웃을, \'색·글꼴\' 칸 \'섹션 꾸밈\'에서 \'천사의 편지\'를 골라요.', '스티커 창 [테마] → \'빈티지 그림 전체\'에 천사 · 비둘기 · 장미 · 왕관 · 밀랍 도장 그림이 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 스티커', steps: ['디자인을 고를 때(또는 \'색·글꼴\' 칸 [디자인 바꾸기]) \'웹툰 · 우리 결혼해요\'를 고르면 한 번에 웹툰 모양이 돼요.', '지금 디자인 그대로 두고 싶으면 첫 화면 꾸미기에서 \'웹툰 표지\'·\'웹툰 말풍선\' 레이아웃을, \'색·글꼴\' 칸 \'섹션 꾸밈\'에서 \'웹툰 컷\'을 골라요.', '\'스티커 꾸미기\'의 \'웹툰 첫 화\'·\'두근두근 말풍선\' 세트로 웹툰 스티커를 한 번에 붙여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '스티커 한 번에 꾸미기', d: '하트·꽃·별 스티커를 세트로', when: () => spOpt('flow', 'stkset'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 아래 \'스티커 꾸미기\'가 보여요.', '마음에 드는 세트를 누르면 첫 화면·인사말·갤러리 모서리에 어울리게 붙어요.', '[다른 세트로]로 바꾸거나 [스티커 다 빼기]로 모두 뺄 수 있어요. 하나씩 옮기려면 전문가 모드에서 해요.'], go: ['그 칸으로 가기', () => spAddGo('#stk')] },
     { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },
@@ -18546,6 +18554,7 @@ const LDH_EXPERT = [
     { t: '섹션 하나만 다른 모양으로 (섹션 스킨)', d: '모양 · 디자인 21가지 스킨', when: () => spOpt('flow', 'sskin'), steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요. 편집창 맨 위에 \'섹션 스킨\'이 있어요.', '\'모양\' 줄(방명록 카드·줄글, 달력·카운트, 계좌, 인터뷰 …)에서 그림을 누르면 그 모양으로 바뀌어요.', '\'스킨\' 줄에서 빈티지 · 밤하늘 · 안개 또는 다른 디자인(클래식 · 가든 · 필름 · 웹툰 …) 그림을 누르면 그 디자인의 색 · 글꼴 · 꾸밈이 이 섹션에만 입혀져요. 옆으로 밀면 21가지가 다 나와요.', '[모든 섹션에 같은 스킨]을 누르면 모든 섹션이 같은 스킨이 돼요. 처음처럼 하려면 [디자인 따라]를 눌러요.'], go: ['방명록 열어 보기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'guestbook' && b.enabled) ? 'guestbook' : (state.blocks.find(b => b.enabled && !SKIN_NO.includes(b.id)) || {}).id)] },
     { t: '색 바꾸면 달력 · 계좌 꾸밈도 같이', d: '화면 설정 → 색 · 연동 스위치', when: () => colorLinkShown(), steps: ['아래 [바로 열기]를 누르면 화면 설정의 \'색\' 칸이 열려요.', '\'색을 바꾸면 꾸밈도 같이\'가 켜져 있으면 스킨 · 바탕색 · 포인트 색을 바꿀 때 달력 · 디데이 · 계좌 · 방명록 · 참석 버튼 · 교통 안내 꾸밈과 따로 고른 디자인 스킨도 그 색으로 같이 바뀌어요.', '끄면 꾸밈의 포인트 색은 디자인 원래 색 그대로예요. 빈티지 · 밤하늘 · 안개 · 웹툰처럼 직접 고른 섹션 테마는 늘 그 색이에요.'], go: ['바로 열기', () => { closeLdh(); document.getElementById(mmPc() ? 'pcSettingsBtn' : 'controlsFab')?.click(); setTimeout(() => { try { spCur = 'color'; spOpen.__d3 = 1; spOpen.color = 1; spApply(); document.getElementById('colorLinkGroup')?.scrollIntoView({ block: 'center' }); } catch (e) {} }, 150); }] },
     { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', steps: ['아래 [바로 열기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 미리보기에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요.'], go: ['바로 열기', () => ldhExpertOpen('gallery')] },
+    { t: '중세 유럽 빈티지로 꾸미기 (천사의 편지)', d: '천사 아기 · 하트 · 금테 액자 · 밀랍 도장', steps: ['메인 사진 칸 맨 위 \'메인 레이아웃\'에서 \'천사의 편지\'를 고르면 사진이 금테 액자 속으로 들어가요. 아래 \'사진 칸 테두리\'에서 금테 액자 · 폴라로이드 · 아치 …로 바꿀 수 있어요.', '섹션을 열어 맨 위 \'섹션 스킨\' → \'천사의 편지\'를 누르면 그 섹션만, [모든 섹션에 같은 스킨]을 누르면 모든 섹션이 양피지 · 금테 · ❦ 모양이 돼요.', '디데이 섹션 \'모양\' 줄에서 \'빈티지 큐피드\'(원래 큐피드 달력) 또는 \'테마 모양\'(금테 달력 + 천사 · 밀랍 도장)을 골라요.', '스티커 창 [테마] → \'빈티지 그림 전체\'에서 천사 · 비둘기 · 장미 그림을 붙여요.'], go: ['메인 사진 칸 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
     { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 컷', steps: ['메인 사진 칸 맨 위 \'메인 레이아웃\'에서 \'웹툰 표지\'나 \'웹툰 말풍선\'을 골라요.', '글 칸 오른쪽 [효과 ▾] → \'글자 상자\'에서 말풍선 · 노랑 상자 · 효과음 · 꼬리표를 골라 어느 글자든 웹툰처럼 바꿔요.', '섹션을 열어 맨 위 \'섹션 스킨\' → \'웹툰 · 우리 결혼해요\'를 고르고 [모든 섹션에 같은 스킨]을 눌러요.', '스티커 창 [테마] → \'웹툰\'에서 말풍선·효과음 스티커를 붙여요.'], go: ['메인 사진 칸 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
     { t: '섹션 안 카드 색 바꾸기', d: '방명록 · 안내 · 계좌 칸과 팝업 창 색', steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요 (방명록 · 안내 말씀 · 마음 전하실 곳 · 연락하기 …).', '아래쪽 \'섹션 여백 · 배경색\' 밑 \'안쪽 창 색\'에서 바탕과 글자 색을 골라요. 그 섹션의 카드와 팝업 창이 같이 바뀌어요.', '바탕만 골라도 글자는 잘 보이는 색으로 저절로 맞춰져요. 처음 색으로 하려면 맨 앞 동그라미(테마 기본 색)를 눌러요.'] },
     { t: '글자 내용 바꾸기', d: '청첩장의 글자를 고쳐요', steps: ['청첩장에서 바꿀 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.', '다 적었으면 글자 바깥 빈 곳을 눌러요.'], show: () => [{ el: ldhTextEl, t: '두 번 누르기', x: '이 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.' }] },

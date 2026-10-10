@@ -43,11 +43,11 @@ const ALLOWED_STYLE   = [
     'thanks.style'       => ['card', 'letter', 'photo', 'plain'],
 ];
 // 디자인 테마 스킨 꾸밈 (전문가 모드 섹션 스킨에서 이 디자인을 고르면 섹션에 입히는 모양 - InviteBlocks.THEME_DECOS, '@webtoon' 같은 건 섹션 테마)
-const ALLOWED_LOOKS   = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', '@vintage', '@night', '@mist', '@webtoon'];
+const ALLOWED_LOOKS   = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', 'angel', '@vintage', '@night', '@mist', '@webtoon'];
 const ALLOWED_HERO    = ['video', 'photo', 'text'];
 const ALLOWED_FRAMES  = ['none', 'rounded', 'circle', 'pill', 'arch'];
 const ALLOWED_FONTS   = ['', 'pretendard', 'noto-serif-kr', 'gowun-batang', 'nanum-myeongjo', 'gothic-a1', 'song-myung',
-                         'nanum-pen', 'nanum-brush', 'gaegu', 'hi-melody', 'gamja-flower', 'bagel-fat-one', 'black-han-sans'];
+                         'nanum-pen', 'nanum-brush', 'gaegu', 'hi-melody', 'gamja-flower', 'bagel-fat-one', 'black-han-sans', 'pinyon', 'cormorant'];
 const IMAGE_EXTS      = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
 final class PresetError extends Exception {}
@@ -168,9 +168,10 @@ function load_preset(string $folder): array {
             'rotation'  => max(-180, min(180, (int) ($st['rotation'] ?? 0))),
             'effect'    => in_array($st['effect'] ?? 'none', ALLOWED_FX, true) ? ($st['effect'] ?? 'none') : 'none',
         ];
-        if (!empty($st['image']) && preg_match('#^stk:([a-z]+/[a-z0-9-]{1,40})$#', (string) $st['image'], $sm)) { // 스티커 창 그림 (assets/stickers/테마/이름.svg)
-            if (!is_file(__DIR__ . '/assets/stickers/' . $sm[1] . '.svg')) continue;
-            $s['image'] = '/invite/assets/stickers/' . $sm[1] . '.svg';
+        if (!empty($st['image']) && preg_match('#^stk:([a-z]+/[a-z0-9-]{1,40})$#', (string) $st['image'], $sm)) { // 스티커 창 그림 (assets/stickers/테마/이름.svg · 빈티지 그림은 vintage/이름.webp)
+            $ext = is_file(__DIR__ . '/assets/stickers/' . $sm[1] . '.svg') ? 'svg' : (is_file(__DIR__ . '/assets/stickers/' . $sm[1] . '.webp') ? 'webp' : '');
+            if (!$ext) continue;
+            $s['image'] = '/invite/assets/stickers/' . $sm[1] . '.' . $ext;
         }
         elseif (!empty($st['image'])) $s['image'] = preset_asset_url($folder, (string) $st['image']);
         elseif (!empty($st['emoji'])) $s['emoji'] = mb_substr(strip_tags((string) $st['emoji']), 0, 4);

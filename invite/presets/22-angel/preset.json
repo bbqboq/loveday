@@ -1,0 +1,60 @@
+{
+  "id": "p-angel",
+  "no": 22,
+  "group": "mood",
+  "label": "천사의 편지",
+  "desc": "천사 아기·하트·장미·금테 액자. 중세 유럽 빈티지 감성의 청첩장",
+  "tags": ["빈티지", "유럽", "큐피드"],
+  "palette": {
+    "bg": "#F5EBDA",
+    "ink": "#4A3426",
+    "accent": "#9E3B3B",
+    "line": "#CDB27A",
+    "muted": "#8C7660",
+    "radius": "3px"
+  },
+  "font": "nanum-myeongjo",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "angel-letter",
+  "paper": "beige",
+  "sideBg": "#E6D6BC",
+  "shadow": true,
+  "ambient": "petals",
+  "ambientOpacity": 55,
+  "sectionLook": "angel",
+  "sections": ["hero", "greeting", "family", "dday", "gallery", "location", "transport", "contact", "account", "rsvp", "guestbook"],
+  "fx": { "default": "fade", "gallery": "up" },
+  "blockFields": {
+    "greeting": {
+      "text": "천사가 전해 준 작은 편지처럼\n두 사람이 서로에게 닿았습니다.\n사랑을 맹세하는 그날,\n귀한 걸음으로 축복해 주세요."
+    },
+    "dday": { "calendarStyle": "vintage", "showCounter": true, "counterStyle": "theme" },
+    "gallery": { "layoutType": "collage", "images": 6, "reveal": "seq" },
+    "contact": { "contactStyle": "vintage" },
+    "account": { "accStyle": "vintage", "display": "cards", "accCollapse": true },
+    "rsvp": { "btnStyle": "theme" },
+    "guestbook": { "style": "theme" },
+    "transport": { "style": "theme" }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "Lettre d'amour",
+    "font": "pinyon",
+    "bg": "#F5EBDA",
+    "color": "#9E3B3B",
+    "fontSize": 40,
+    "duration": 2.4
+  },
+  "stickers": [
+    { "sectionId": "hero", "relX": 0.13, "relY": 0.17, "size": 84, "image": "stk:vintage/cupid-bow", "effect": "fade", "rotation": -6 },
+    { "sectionId": "hero", "relX": 0.87, "relY": 0.16, "size": 74, "image": "stk:vintage/dove-letter", "effect": "fade", "rotation": 6 },
+    { "sectionId": "hero", "relX": 0.17, "relY": 0.66, "size": 72, "image": "stk:vintage/rose-spray-white", "effect": "fade", "rotation": -10 },
+    { "sectionId": "greeting", "relX": 0.86, "relY": 0.1, "size": 58, "image": "stk:vintage/heart-bow", "effect": "fade", "rotation": 8 },
+    { "sectionId": "gallery", "relX": 0.12, "relY": 0.04, "size": 64, "image": "stk:vintage/cupid-trumpet", "effect": "fade", "rotation": -6 },
+    { "sectionId": "location", "relX": 0.86, "relY": 0.05, "size": 64, "image": "stk:vintage/carriage", "effect": "fade" },
+    { "sectionId": "guestbook", "relX": 0.87, "relY": 0.05, "size": 64, "image": "stk:vintage/cupid-letter", "effect": "fade", "rotation": 6 }
+  ],
+  "stickerThemes": ["romantic", "classic"],
+  "notes": "원래 빈티지 큐피드 달력(cal-vintage.webp)·계좌·연락처 모양 + 빈티지 그림 스티커 + 꾸밈 angel(양피지·금테·❦·밀랍 도장) + 첫 화면 angel-letter(금테 액자)"
+}

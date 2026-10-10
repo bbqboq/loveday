@@ -165,13 +165,13 @@
     //  b.skinPal = {bg, ink, accent, line, muted, hf(제목 글꼴), bf(본문 글꼴), hw(제목 굵기), r(모서리), paper, font(글꼴 id), deco, id(디자인 id)}
     //  deco = THEME_DECOS 중 하나 → .col.ib-th.ib-th-<deco> (invite-blocks.css '디자인 테마 스킨'). '@vintage' 같은 건 섹션 테마(SECTION_SKINS)를 그대로 씀
     //  디자인 폴더 preset.json에 "sectionLook"을 적으면 그것, 없으면 아래 THEME_LOOKS
-    const THEME_DECOS = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops'];
+    const THEME_DECOS = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', 'angel'];
     const THEME_LOOKS = { classic: 'rule', modern: 'bold', pastel: 'soft', 'p-mono': 'mono', 'p-romantic': 'cupid', 'p-garden': 'leaf', 'p-navy': 'gold',
         'p-earth': 'kraft', 'p-lavender': 'lace', 'p-film': 'film', 'p-cinema': 'cinema', 'p-photos': 'polaroid', 'p-story': 'note', 'p-typo': 'typo',
-        'p-notice': 'board', 'p-scrapbook': 'tape', 'p-cosmos': 'stars', 'p-rain': 'drops', 'p-midnight': 'deco', 'p-weather': 'sky', 'p-webtoon': '@webtoon' };
+        'p-notice': 'board', 'p-scrapbook': 'tape', 'p-cosmos': 'stars', 'p-rain': 'drops', 'p-midnight': 'deco', 'p-weather': 'sky', 'p-webtoon': '@webtoon', 'p-angel': 'angel' };
     const FONT_RE = /^[^<>{};]{1,120}$/;
-    const THEME_FONTS = { tape: 'nanum-pen', note: 'nanum-pen', typo: 'playfair', film: 'cormorant', cinema: 'cormorant', deco: 'cormorant', rule: 'cormorant' }; // 테마 부품에 쓰는 글꼴 (숫자·영문)
-    function themeFonts(k) { if (THEME_FONTS[k]) try { ensureFont(THEME_FONTS[k]); } catch (e) {} }
+    const THEME_FONTS = { tape: 'nanum-pen', note: 'nanum-pen', typo: 'playfair', film: 'cormorant', cinema: 'cormorant', deco: 'cormorant', rule: 'cormorant', angel: 'cormorant' }; // 테마 부품에 쓰는 글꼴 (숫자·영문)
+    function themeFonts(k) { if (THEME_FONTS[k]) try { ensureFont(THEME_FONTS[k]); } catch (e) {} if (k === 'angel') try { ensureCalFonts(); } catch (e) {} } // 천사의 편지: 달 이름·숫자는 Cinzel (빈티지 큐피드 달력과 같은 글꼴)
     // 인터뷰(둘만의 사랑 이야기) 모양 - 에디터·공개 페이지 둘 다 .blk-interview에 iv-st-* (CSS는 invite-blocks.css '인터뷰 모양')
     const IV_STYLES = [['', '이름표'], ['chat', '채팅 말풍선'], ['card', '질문 카드'], ['mag', '매거진'], ['split', '마주 보기']];
     const ivCls = f => { const v = f && f.style; return IV_STYLES.some(x => x[0] === v && v) ? ' iv-st-' + v : ''; };
@@ -556,7 +556,7 @@
     // 가로 100%일 때 heroRatio: auto(원본 비율) · 1/1 · 4/5 · 3/4 · 16/9 · screen(휴대폰 화면 꽉) · px(직접 heroHeightPx)
     const HERO_RATIOS = [['auto', '원본 비율'], ['1/1', '정사각'], ['4/5', '세로 4:5'], ['3/4', '세로 3:4'], ['16/9', '가로 16:9'], ['screen', '전체화면'], ['px', '높이조정']];
     // 사진 칸 모드 (메인 레이아웃): 화면 한 장(바탕색) 위 원하는 자리에 사진을 놓음 - x·y·w·h는 화면 기준 %, frame 모양, fade 아래쪽 흐려짐 %
-    const HERO_BOX_FRAMES = [['none', '사각형'], ['rounded', '둥근 모서리'], ['arch', '아치'], ['polaroid', '폴라로이드'], ['shadow', '그림자'], ['comic', '웹툰 컷']];
+    const HERO_BOX_FRAMES = [['none', '사각형'], ['rounded', '둥근 모서리'], ['arch', '아치'], ['polaroid', '폴라로이드'], ['shadow', '그림자'], ['comic', '웹툰 컷'], ['baroque', '금테 액자']];
     function heroBoxGeom(b) { // 사진 칸(heroBox) 자리·모양 - 사진 히어로와 유튜브 히어로가 같이 씀
         const n = (v, d, mn, mx) => Math.max(mn, Math.min(mx, Number.isFinite(+v) ? +v : d));
         const fr = HERO_BOX_FRAMES.some(x => x[0] === b.frame) ? b.frame : 'none', fade = n(b.fade, 0, 0, 90);
@@ -1380,7 +1380,17 @@
           layers: [{ text: 'EP.01 · 우리 결혼합니다', x: 36, y: 6, fontSize: 12.5, color: '#1B1B1F', rotation: -2, deco: 'caption', anim: 'up' },
                    { text: '두근!', x: 79, y: 15, fontSize: 42, font: 'black-han-sans', color: '#FF7A9C', rotation: 12, deco: 'sfx', anim: 'zoom', animDur: .7, animDelay: .5 },
                    { text: '{신랑} ♥ {신부}\n결혼합니다!', x: 50, y: 76, fontSize: 24, font: 'bagel-fat-one', color: '#1B1B1F', deco: 'bubble', anim: 'zoom', animDur: .8, animDelay: .9 },
-                   { text: '{날짜:점} {요일:영문짧게} {시간}', x: 64, y: 89.5, fontSize: 12.5, color: '#1B1B1F', rotation: 1.5, deco: 'caption-w', anim: 'up', animDelay: 1.3 }] }
+                   { text: '{날짜:점} {요일:영문짧게} {시간}', x: 64, y: 89.5, fontSize: 12.5, color: '#1B1B1F', rotation: 1.5, deco: 'caption-w', anim: 'up', animDelay: 1.3 }] },
+        // 천사의 편지: 양피지 바탕 · 금테 액자 속 사진 (모서리·꼭대기 바로크 장식) · 위 THE WEDDING DAY · 아래 필기체 이름과 날짜
+        { id: 'angel-letter', label: '천사의 편지', desc: '양피지 · 금테 액자 속 사진 · 필기체 이름',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 14, y: 15, w: 72, h: 52, frame: 'baroque' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: '❦  THE WEDDING DAY  ❦', x: 50, y: 6.5, fontSize: 12, font: 'cormorant', color: '#9E3B3B', ls: 260, anim: 'fade', animDur: 1.4 },
+                   { text: 'Lettre d\'amour', x: 50, y: 10.5, fontSize: 15, font: 'pinyon', color: '#8A6A45', anim: 'fade', animDelay: .4 },
+                   { text: '{신랑}  &  {신부}', x: 50, y: 76, fontSize: 34, font: 'pinyon', color: '#4A3426', anim: 'write', animDur: 2.2, animDelay: .6 },
+                   { text: '{날짜:점}  {요일:영문}  {시간}', x: 50, y: 84, fontSize: 12.5, color: '#6B5440', ls: 40, anim: 'up', animDelay: 1.2 },
+                   { text: '{예식장}', x: 50, y: 88, fontSize: 12.5, color: '#6B5440', ls: 20, anim: 'up', animDelay: 1.4 }] }
     ];
     const HL_RESET = { deco: '', font: '', color: '', ls: 0, rotation: 0, align: '', outline: false, shadow: false, glow: '', scaleX: 100, widthAuto: true, width: 80, vertical: '', arc: 0, arcW: 70, anim: '', animDur: 1.8, animDelay: 0 };
     function applyHeroLayout(block, lay) {

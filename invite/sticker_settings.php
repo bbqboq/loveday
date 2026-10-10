@@ -21,7 +21,7 @@ const STICKER_REC_DEFAULT = [
     'p-romantic' => ['romantic', 'garden'], 'p-garden' => ['garden', 'season'], 'p-navy' => ['cosmos', 'classic'], 'p-earth' => ['garden', 'season'],
     'p-lavender' => ['garden', 'romantic'], 'p-film' => ['classic', 'romantic'], 'p-cinema' => ['cosmos', 'classic'], 'p-photos' => ['party', 'romantic'],
     'p-story' => ['romantic', 'season'], 'p-typo' => ['classic', 'party'], 'p-notice' => ['classic', 'garden'], 'p-scrapbook' => ['party', 'romantic'],
-    'p-cosmos' => ['cosmos', 'classic'], 'p-rain' => ['rain', 'garden'], 'p-midnight' => ['cosmos', 'classic'], 'p-weather' => ['rain', 'season'], 'p-webtoon' => ['webtoon', 'party'],
+    'p-cosmos' => ['cosmos', 'classic'], 'p-rain' => ['rain', 'garden'], 'p-midnight' => ['cosmos', 'classic'], 'p-weather' => ['rain', 'season'], 'p-webtoon' => ['webtoon', 'party'], 'p-angel' => ['romantic', 'classic'],
 ];
 const STICKER_FILE_MAX = 65536;
 const STICKER_KEY_RE = '#^(a:(romantic|cosmos|rain|garden|classic|party|season|webtoon)/[a-z0-9-]{1,40}|v:[a-z0-9-]{1,40})$#';
