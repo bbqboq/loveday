@@ -533,7 +533,8 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-bigup.on { border: 0; color: #fff; background: #3F3730 var(--ph) center / cover no-repeat; } .sp-bigup.on::before { content: ''; position: absolute; inset: 0; background: rgba(30,25,20,.55); }
 /* 예식장: 지도 예시 (가로 꽉 채우기·높이가 바로 보이게) */
 .sp-body { --sp-px: 24px; }
-.sp-mapdemo { position: relative; margin: 12px 8px 0; border-radius: 14px; overflow: hidden; background: #E8EBE8; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); transition: margin .38s cubic-bezier(.3,.8,.3,1), border-radius .38s, height .12s ease; }
+.sp-mv-on #spMapDemo { display: none; } /* (반반 화면·돋보기 창은 위에 실제 지도가 보임) */
+.sp-mapdemo { position: relative; isolation: isolate; z-index: 0; margin: 12px 8px 0; border-radius: 14px; overflow: hidden; background: #E8EBE8; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); transition: margin .38s cubic-bezier(.3,.8,.3,1), border-radius .38s, height .12s ease; }
 .sp-mapdemo.full { margin-left: calc(-1 * var(--sp-px)); margin-right: calc(-1 * var(--sp-px)); border-radius: 0; }
 .sp-mapdemo::before { content: ''; position: absolute; left: 8%; top: 10%; width: 26%; height: 26%; border-radius: 6px; background: #D6E5D2; }
 .sp-mapdemo::after { content: ''; position: absolute; right: 6%; bottom: 14%; width: 22%; height: 20%; border-radius: 6px; background: #DCE3EA; }
@@ -618,7 +619,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-body { padding: 18px 24px 8px; flex: 1; animation: wzIn .3s ease; }
 .sp-body .wz-h { font-size: 21px; }
 .sp-body .wz-lead { margin-bottom: 22px; font-size: 13.5px; }
-.sp-nav { position: sticky; bottom: 0; display: flex; gap: 10px; padding: 12px 24px 16px; background: linear-gradient(rgba(246,244,241,0), var(--ui-page, #F6F4F1) 35%); }
+.sp-nav { position: sticky; bottom: 0; z-index: 6; display: flex; gap: 10px; padding: 12px 24px 16px; background: linear-gradient(rgba(246,244,241,0), var(--ui-page, #F6F4F1) 35%); }
 .sp-hero { display: flex; align-items: center; gap: 12px; }
 .sp-hero img, .sp-hero > span { width: 96px; height: 120px; border-radius: 12px; object-fit: cover; background: var(--ui-line, #EDE7DF); display: grid; place-items: center; font-size: 12px; color: var(--wz-mute); flex: none; }
 .sp-gal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -2632,6 +2633,7 @@ body.marquee-on, body.marquee-on * { user-select: none !important; -webkit-user-
     background-size: 2% 2%;
 }
 .drag-part.on-light { color: var(--p-ink); }
+.sp-vph { opacity: .42; font-style: italic; } /* 아직 안 적은 예식장 이름·주소 자리 (에디터에서만) */
 .drag-part.on-dark { color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.55); }
 .drag-part.on-dark:hover { outline-color: rgba(255,255,255,.6); }
 .drag-part.op-datetime { font-size: 12px; letter-spacing: .04em; opacity: .85; }
@@ -4355,14 +4357,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018b">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018b">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018d">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018d">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018b"></script>
-<script src="assets/tip-demos.js?v=1018b"></script>
-<script src="assets/ld-dialog.js?v=1018b"></script>
+<script src="assets/invite-blocks.js?v=1018d"></script>
+<script src="assets/tip-demos.js?v=1018d"></script>
+<script src="assets/ld-dialog.js?v=1018d"></script>
 </head>
 <body>
 
@@ -6140,7 +6142,8 @@ const templates = {
         // 예전엔 주소 뒤에 예식장 이름을 또 붙였는데(주소 검색 결과에 건물명이 이미 포함돼 있는
         // 경우가 많아서) 네이버맵/카카오맵/티맵에 "...웨딩홀 웨딩홀"처럼 이름이 두 번 뜨는 문제가
         // 있었다 - 주소만 그대로 쓴다.
-        const q = encodeURIComponent((f.address || '').trim());
+        const vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; // 디자인 예시 예식장·주소 그대로면 자리 글자만 (고객이 적으면 그대로)
+        const q = vd.a ? '' : encodeURIComponent((f.address || '').trim());
         // 안내전화/지도/지도밑 버튼3개 사이 간격과 지도 높이를 사용자가 조절할 수 있게 인라인 스타일로 반영.
         // 예전에 저장된 디자인엔 이 필드들이 없을 수 있어서 기본값(14px/200px)으로 대체한다.
         const gapCallMap = f.gapCallMap ?? 14;
@@ -6159,7 +6162,7 @@ const templates = {
         // 지도(.location-map)는 overflow:hidden이라 그 안에 손잡이를 넣으면 카카오맵 자체 드래그와
         // 겹치기도 하고 잘려서 안 보일 수 있다 - 바깥 wrap을 하나 더 두고 손잡이는 그 wrap의 형제로 둔다.
         const mapHtml = f.showMap ? `<div class="loc-map-wrap ${mapCls}">
-            <div class="location-map" style="height:${mapHeight}px;" data-address="${esc(f.addressBase || f.address)}"></div>
+            <div class="location-map" style="height:${mapHeight}px;" data-address="${vd.a ? '' : esc(f.addressBase || f.address)}"></div>
             <div class="loc-map-resize-handle" title="드래그해서 지도 높이 조절">${locStep('mapHeight', mapHeight)}</div>
         </div>` : '';
         const appLinksHtml = f.showMap ? `${gapHandleHtml('gapMapLinks')}<div class="loc-applinks">
@@ -6171,8 +6174,8 @@ const templates = {
         <p class="loc-eyebrow">LOCATION</p>
         <div class="free-canvas drag-canvas" style="height:200px;">
         <span class="drag-part on-light op-title" data-part="title" data-drag-el style="${s('title')}" title="${DRAG_HINT}">오시는 길</span>
-        <span class="drag-part on-light" data-part="venue" data-drag-el style="${s('venue')}" title="${DRAG_HINT}">${esc(f.venue)}</span>
-        <span class="drag-part on-light" data-part="address" data-drag-el style="${s('address')}" title="${DRAG_HINT}">${esc(f.address)}</span>
+        <span class="drag-part on-light" data-part="venue" data-drag-el style="${s('venue')}" title="${DRAG_HINT}">${vd.v ? '<span class="sp-vph">예식장 이름</span>' : esc(f.venue)}</span>
+        <span class="drag-part on-light" data-part="address" data-drag-el style="${s('address')}" title="${DRAG_HINT}">${vd.a ? '<span class="sp-vph">주소를 찾아 넣어 주세요</span>' : esc(f.address)}</span>
         </div>
         ${phoneHtml}
         ${mapHtml}
@@ -11453,7 +11456,7 @@ function renderPreviewNow() {
     ensureExtraState();
     if (window.InviteBlocks) { // 명칭·순서·색 (공개페이지와 같은 공용 설정)
         const lab = InviteBlocks.setLabels(state.labels);
-        if (InviteBlocks.setDesign) InviteBlocks.setDesign({ blocks: state.blocks, labels: state.labels, dateTbd: !!state.dateTbd }); // 감사 인사 서명(신랑·신부 이름)용
+        if (InviteBlocks.setDesign) InviteBlocks.setDesign({ blocks: state.blocks, labels: state.labels, dateTbd: !!state.dateTbd, venueDemo: state.venueDemo, venueDemoAddr: state.venueDemoAddr }); // 감사 인사 서명(신랑·신부 이름)용
         const tbn = document.getElementById('tbNames'); if (tbn) { try { const [g, b] = stNames(); tbn.textContent = `${g} ♥ ${b}`; } catch (e) {} }
         root.style.setProperty('--groom-color', lab.groomColor);
         root.style.setProperty('--bride-color', lab.brideColor);
@@ -13724,6 +13727,7 @@ async function startWithPreset(presetId) {
         { const lay = InviteBlocks.HERO_LAYOUTS.find(l => l.id === 'magazine'); ['hero', 'heroVideo'].forEach(id => { const b = state.blocks.find(x => x.id === id); if (b && lay) { InviteBlocks.applyHeroLayout(b, lay); spForceFull(b); } }); } // 처음 만들 때 첫 화면은 매거진 표지
         spMarkDesignOff();
         spApplyHeroSample();
+        { const loc = state.blocks.find(b => b.id === 'location'); state.venueDemo = loc && loc.fields.venue ? loc.fields.venue : undefined; state.venueDemoAddr = loc && loc.fields.address ? loc.fields.address : undefined; } // 디자인 예시 예식장 이름 (고객이 적으면 그 이름으로)
         if (spOpt('flow', 'ask')) spEasyStartOff(); // 질문으로 만들 땐 메인 화면만 켜고 시작 → 질문에 닿을 때 그 섹션을 켬 (미리보기가 아래로 튀지 않게)
         state.spView = spOpt('flow', 'ask') ? 'quick' : 'list'; state.spAsk = {}; // 질문에 하나씩 답하기 → 정리 화면 → 완성본 → 목록 화면 (관리자가 질문을 끄면 바로 목록)
         spRenderAll();
@@ -14365,7 +14369,7 @@ function spMvUi() {
     if (document.getElementById('ldHelpBtn')) tb.insertBefore(document.getElementById('spSplitTg'), document.getElementById('ldHelpBtn')); // ([? 도움말] 왼쪽에)
     lay.insertAdjacentHTML('beforeend', `<div class="sp-split-hd" id="spSplitHd" role="separator" tabindex="0" aria-label="끌어서 청첩장 칸 크기 조절">
         <span class="sp-sh-l" id="spShL">지금 고치는 곳</span><span class="sp-sh-g"><i></i><b id="spShSz">반</b><i></i></span>
-        <button type="button" class="sp-sh-b" id="spShRet" hidden>↺ 고치는 곳</button><button type="button" class="sp-sh-b" id="spShBig">⤢ 크게</button></div>
+        <button type="button" class="sp-sh-b" id="spShRet" hidden>↺ 고치는 곳</button><button type="button" class="sp-sh-b" id="spShBig" title="청첩장을 화면 가득 보기">⤢ 전체</button></div>
         <button type="button" class="sp-split-back" id="spSplitBack">질문으로 돌아가기</button>`);
     document.body.insertAdjacentHTML('beforeend', `<div class="sp-lens-ui" id="spLensUi" role="button" tabindex="0" aria-label="청첩장 크게 보기"><span class="sp-lens-t" id="spLensT">지금 청첩장</span><button type="button" class="sp-lens-z" id="spLensZ" aria-label="창 크기 바꾸기">⤢</button><i class="sp-lens-map"><b id="spLensDot"></b></i><span class="sp-lens-f">누르면 크게 · 끌면 옮겨요</span></div>
         <div class="sp-lens-dock" id="spLensDock"><i data-c="tl"></i><i data-c="tr"></i><i data-c="bl"></i><i data-c="br"></i></div><button type="button" class="sp-lens-tab" id="spLensTab">청첩장 ‹</button>`);
@@ -14385,7 +14389,7 @@ function spMvUi() {
     });
     hd.addEventListener('keydown', e => { const i = SP_MV_SNAP.findIndex(x => x[0] === spMv.h), j = e.key === 'ArrowUp' ? i - 1 : e.key === 'ArrowDown' ? i + 1 : -9; if (SP_MV_SNAP[j]) { e.preventDefault(); spMv.h = SP_MV_SNAP[j][0]; spMvSave(); spSplitSet(spMv.h); } });
     document.getElementById('spShRet').addEventListener('click', spMvRefollow);
-    const big = on => { document.documentElement.classList.toggle('sp-split-big', on); document.getElementById('spShBig').textContent = on ? '↙ 원래대로' : '⤢ 크게'; setTimeout(spMvRefollow, 320); };
+    const big = on => { document.documentElement.classList.toggle('sp-split-big', on); document.getElementById('spShBig').textContent = on ? '↙ 접기' : '⤢ 전체'; setTimeout(spMvRefollow, 320); };
     document.getElementById('spShBig').addEventListener('click', () => big(!document.documentElement.classList.contains('sp-split-big')));
     document.getElementById('spSplitBack').addEventListener('click', () => big(false));
     // 손으로 넘겨 보면 [↺ 고치는 곳] 버튼
@@ -14545,6 +14549,7 @@ let spCurSt = null;
 function spSelectStep(st) { // 눈금자는 고른 섹션(selectedId)에 뜸 → 지금 단계의 켜진 섹션을 고른 것으로
     spCurSt = st;
     try { spMvLabel(st); } catch (e) {}
+    { const hint = !!(st && st.k === 'venue' && state.venueDemo); if (!!window.__ibVenueHint !== hint) { window.__ibVenueHint = hint; setTimeout(() => { try { renderPreview(); } catch (e) {} }, 0); } } // 예식장 질문 동안만 첫 화면에 '예식장 이름' 자리 글자
     const id = (st.s || []).find(x => { const b = spBlock(x); return b && b.enabled && !padHidden(b); }) || null;
     if (selectedId !== id) { selectedId = id; try { updateSectionRuler(); } catch (e) {} }
     spLiveSync();
@@ -14602,9 +14607,9 @@ function spRenderOrder(pane) {
     pane._spKey = 'order';
 }
 // 머리줄 오른쪽 (되돌리기 · 다시하기 · 전문가 모드) - PC는 화면 맨 위 머리줄 오른쪽 끝으로 옮김
-const spUdHtml = () => `<div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div><button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button>`;
+const spUdHtml = noFull => `<div class="sp-ud"><button type="button" id="spUndo" title="되돌리기" aria-label="되돌리기"${undoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button type="button" id="spRedo" title="다시하기" aria-label="다시하기"${redoStack.length ? '' : ' disabled'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div>${noFull ? '' : `<button type="button" class="sp-full" id="spToFull">${spInPlace ? '편집 화면으로 →' : '전문가 모드 →'}</button>`}`;
 function spBindHeadTools(pane) {
-    pane.querySelector('#spToFull').addEventListener('click', () => spInPlace ? spExitInPlace() : simpleToFull());
+    pane.querySelector('#spToFull')?.addEventListener('click', () => spInPlace ? spExitInPlace() : simpleToFull()); // (질문을 다 마치기 전엔 버튼이 없음)
     pane.querySelector('#spUndo').addEventListener('click', () => { scheduleSnapshot(); undoHistory(); });
     pane.querySelector('#spRedo').addEventListener('click', () => redoHistory());
     const topR = document.getElementById('spTopRight');
@@ -14664,7 +14669,7 @@ function spResumeStep() {
     return i >= 0 ? i : 0;
 }
 // 간편 만들기 진행 상태 (질문 화면/목록, 지금 질문, 답, 질문이 켠 섹션, 디자인에서 꺼 둔 섹션, 목록 묶음·순서) - 디자인과 같이 저장
-const SP_KEEP = ['spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom'];
+const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom'];
 // 정리 화면 "기능 더 넣기": 아직 안 넣은 섹션(갤러리·교통 안내·연락처 …)을 누르면 바로 넣고 목록 화면에서 그 칸을 펼침
 //  (예전엔 '하나씩 더 꾸미기' 글자 링크 하나라 잘 안 보였음)
 function spAddable() {
@@ -14744,7 +14749,7 @@ function spRenderAsk(pane) {
     } else if (st.opts) {
         body = spH(esc(st.q), esc(st.sub)) + `<div class="sp-ask-opts">${st.opts.map(([v, t, d]) => `<button type="button" class="sp-ask-o${pick === v ? ' on' : ''}" data-ask="${v}" aria-pressed="${pick === v}"><span><b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ''}</span><i></i></button>`).join('')}</div>${opt && opt[3] ? '<div class="sp-ask-more" id="spAskMore"></div>' : ''}`;
     }
-    pane.innerHTML = `<div class="sp-head sp-ask-head"><button type="button" class="sp-ask-back" id="spBack" aria-label="이전"${spStep === 0 && !scrollPh ? ' disabled' : ''}>${backSvg}</button><b>${done ? '다 됐어요' : `질문 ${spStep + 1} / ${N}`}</b>${spUdHtml()}</div>
+    pane.innerHTML = `<div class="sp-head sp-ask-head"><button type="button" class="sp-ask-back" id="spBack" aria-label="이전"${spStep === 0 && !scrollPh ? ' disabled' : ''}>${backSvg}</button><b>${done ? '다 됐어요' : `질문 ${spStep + 1} / ${N}`}</b>${spUdHtml(!done)}</div>
         <div class="sp-ask-top"><div class="sp-ask-bar" aria-hidden="true"><i style="width:${pct(same || spAskLast < 0 ? spStep : spAskLast)}"></i></div>${done || !spOpt('flow', 'skip') ? '' : `<button type="button" class="sp-ask-skip" id="spSkip">나중에 할게요</button>`}</div>
         ${spOpt('flow', 'now') ? `<div class="sp-now-wrap">${spNowCardHtml()}</div>` : ''}
         <div class="sp-body sp-ask" id="spBody">${body}</div>
@@ -15606,11 +15611,11 @@ function spMusic(box) {
 }
 // 3. 예식장
 function spVenue(box) {
-    const lb = spBlock('location'), f = lb.fields;
+    const lb = spBlock('location'), f = lb.fields, vdm = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; // (디자인 예시 예식장·주소면 칸은 비워서 시작)
     if (!lb.enabled) { box.innerHTML = spH('어디에서 예식을 올리나요?', '주소를 찾으면 지도와 길찾기 버튼이 자동으로 만들어져요.') + spInclHtml('location') + spOffNote(); return; }
     box.innerHTML = spH('어디에서 예식을 올리나요?', '주소를 찾으면 지도와 길찾기 버튼이 자동으로 만들어져요.') + `
-        <div class="wz-field"><div class="wz-lab">예식장 이름</div><input class="wz-inp" data-f="venue" value="${wzEsc(f.venue)}" placeholder="예: 라움아트센터"></div>
-        <div class="wz-field"><div class="wz-lab">주소</div><div class="wz-addr"><input class="wz-inp" data-f="addressBase" value="${wzEsc(f.addressBase || f.address)}" placeholder="주소 찾기를 눌러주세요"><button type="button" class="wz-btn2" id="spAddr">주소 찾기</button></div></div>
+        <div class="wz-field"><div class="wz-lab">예식장 이름</div><input class="wz-inp" data-f="venue" value="${vdm.v ? '' : wzEsc(f.venue)}" placeholder="예: ○○웨딩홀, ○○호텔"></div>
+        <div class="wz-field"><div class="wz-lab">주소</div><div class="wz-addr"><input class="wz-inp" data-f="addressBase" value="${vdm.a ? '' : wzEsc(f.addressBase || f.address)}" placeholder="주소 찾기를 눌러주세요"><button type="button" class="wz-btn2" id="spAddr">주소 찾기</button></div></div>
         ${spOpt('venue', 'detail') ? `<div class="wz-field"><div class="wz-lab">층 · 홀 이름 <small>선택</small></div><input class="wz-inp" data-f="addressDetail" value="${wzEsc(f.addressDetail)}" placeholder="예: 5층 그랜드홀"></div>` : ''}
         ${spOpt('venue', 'phone') ? `<div class="wz-field"><div class="wz-lab">예식장 전화 <small>선택</small></div><input class="wz-inp" data-f="phone" value="${wzEsc(f.phone)}" inputmode="tel" placeholder="02-000-0000"></div>` : ''}
         ${spOpt('venue', 'map') ? `<div class="wz-field"><div class="wz-lab">지도</div>
@@ -15633,7 +15638,7 @@ function spVenue(box) {
         if (typeof daum === 'undefined' || !daum.Postcode) { LD.alert('주소 검색을 불러오지 못했어요', { message: '인터넷 연결을 확인한 뒤 다시 시도해주세요.' }); return; }
         document.getElementById('addrModal').classList.add('active');
         const layer = document.getElementById('addrLayer'); layer.innerHTML = '';
-        new daum.Postcode({ oncomplete: d => { f.addressBase = d.roadAddress || d.jibunAddress; if (!f.venue && d.buildingName) f.venue = d.buildingName; f.address = [f.addressBase, f.addressDetail].filter(Boolean).join(' '); document.getElementById('addrModal').classList.remove('active'); spChanged(['location']); spRender(); }, width: '100%', height: '100%' }).embed(layer);
+        new daum.Postcode({ oncomplete: d => { f.addressBase = d.roadAddress || d.jibunAddress; if ((!f.venue || (InviteBlocks.isVenueDemo && InviteBlocks.isVenueDemo(f).v)) && d.buildingName) f.venue = d.buildingName; f.address = [f.addressBase, f.addressDetail].filter(Boolean).join(' '); document.getElementById('addrModal').classList.remove('active'); spChanged(['location']); spRender(); }, width: '100%', height: '100%' }).embed(layer);
     });
 }
 // 4. 인사말
@@ -17188,7 +17193,7 @@ const LDH_EASY = [
     { t: '작은 청첩장 창 쓰는 법', d: '옮기기 · 크게 보기', when: c => c.mv === 'lens', steps: ['작은 창에 지금 고치는 곳이 크게 보여요.', '창을 끌면 다른 모서리로 옮겨져요. 옆 끝으로 밀면 숨어요.', '창을 누르면 청첩장 전체가 크게 보여요.'], show: () => ldhIntroSteps('easy-lens') },
     { t: '갤러리 · 계좌 같은 칸 더 넣기', d: '넣고 싶은 칸을 켜요', steps: ['질문을 다 하면 [기능 더 넣기]에서 누르기만 하면 들어가요.', '목록 화면에서는 칸 오른쪽 스위치를 켜면 청첩장에 들어가요.'], go: ['목록 화면으로', () => { state.spView = 'list'; spOpenSet = new Set(); spRender(); }], when: c => c.view === 'quick' },
     { t: '갤러리 · 계좌 같은 칸 더 넣기', d: '넣고 싶은 칸을 켜요', steps: ['칸 오른쪽 스위치를 켜면 청첩장에 들어가요.', '칸 이름을 누르면 내용을 적는 곳이 펼쳐져요.'], show: () => [{ el: () => ldhFirst('#simplePane [data-li-sw]'), t: '켜고 끄기', x: '이 스위치를 켜면 그 칸이 청첩장에 들어가요.' }], when: c => c.view === 'list' },
-    { t: '글자 위치 · 스티커까지 바꾸고 싶어요', d: '전문가 모드에서 자세히 꾸며요', steps: ['[전문가 모드]에서는 글자를 끌어서 옮기고, 스티커·섹션 순서까지 바꿀 수 있어요.', '지금 적은 내용은 그대로 옮겨져요. 언제든 간편 만들기로 돌아올 수 있어요.'], go: ['전문가 모드로 가기', () => { const b = ldh$('#spToFull'); if (b) b.click(); }] },
+    { t: '글자 위치 · 스티커까지 바꾸고 싶어요', d: '전문가 모드에서 자세히 꾸며요', steps: ['[전문가 모드]에서는 글자를 끌어서 옮기고, 스티커·섹션 순서까지 바꿀 수 있어요.', '지금 적은 내용은 그대로 옮겨져요. 언제든 간편 만들기로 돌아올 수 있어요.', '[전문가 모드] 버튼은 질문을 다 마치면 위에 나와요. 지금 가려면 아래 버튼을 눌러요.'], go: ['전문가 모드로 가기', () => { closeLdh(); spInPlace ? spExitInPlace() : simpleToFull(); }] },
 ];
 const LDH_EXPERT = [
     { t: '글자 내용 바꾸기', d: '청첩장의 글자를 고쳐요', steps: ['청첩장에서 바꿀 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.', '다 적었으면 글자 바깥 빈 곳을 눌러요.'], show: () => [{ el: ldhTextEl, t: '두 번 누르기', x: '이 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.' }] },

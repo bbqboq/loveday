@@ -714,6 +714,8 @@ const templates = {
         const L = f.layout, s = k => partStyle(L, k);
         // 예전엔 주소 뒤에 예식장 이름을 또 붙였는데(주소 검색 결과에 건물명이 이미 포함돼 있는
         // 경우가 많아서) 네이버맵/카카오맵/티맵에 이름이 두 번 뜨는 문제가 있었다 - 주소만 그대로 쓴다.
+        const vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; // 디자인 예시 예식장·주소 그대로면 하객에게 안 보이게 (다른 예식장으로 오해)
+        if (vd.v || vd.a) f = Object.assign({}, f, vd.v ? { venue: '' } : {}, vd.a ? { address: '', addressBase: '' } : {});
         const q = encodeURIComponent((f.address || '').trim());
         // 안내전화/지도/지도밑 버튼3개 사이 간격과 지도 높이 - 에디터에서 조절한 값을 그대로 반영.
         // 예전에 저장된 디자인엔 이 필드들이 없을 수 있어서 기본값(14px/200px)으로 대체한다.

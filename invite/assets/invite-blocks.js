@@ -1035,12 +1035,21 @@
         { id: 'cr6', label: 'Directed by', text: '{신랑}, {신부}' }, { id: 'cr7', label: 'Special Thanks to', text: 'Everyone for Your Love, Blessings' },
         { id: 'cr8', label: 'Forever with', text: 'Love & Happiness' }
     ];
+    // {예식장}: 간편 만들기에서 고객이 아직 예식장을 안 적었으면(디자인 예시 이름 그대로 = design.venueDemo) 비워 둠
+    //  - "나 라움아트센터 아닌데?" 하지 않게. 예식장 질문을 하는 동안만 에디터가 옅은 '예식장 이름' 자리 글자를 보여줌(__ibVenueHint)
+    function venueOf(loc) {
+        const v = loc.venue || '', demo = CUR_DESIGN && CUR_DESIGN.venueDemo;
+        if (demo && v === demo) return (typeof window !== 'undefined' && window.__ibVenueHint) ? '예식장 이름' : '';
+        return v;
+    }
+    // 오시는 길: 예식장 이름·주소가 디자인 예시 그대로인지 (간편 만들기로 시작했을 때 design.venueDemo·venueDemoAddr)
+    function isVenueDemo(f) { const d = CUR_DESIGN || {}; f = f || {}; return { v: !!(d.venueDemo && (f.venue || '') === d.venueDemo), a: !!(d.venueDemoAddr && (f.address || '') === d.venueDemoAddr) }; }
     function creditVars() {
         const bl = (CUR_DESIGN && CUR_DESIGN.blocks) || [], fd = id => ((bl.find(b => b.id === id && b.enabled !== false) || bl.find(b => b.id === id) || {}).fields) || {};
         const h = Object.assign({}, fd('heroVideo'), fd('hero')), d = fd('dday'), loc = fd('location');
         const hr = Number(d.hour), mi = Number(d.minute) || 0;
         const time = d.hour != null && d.hour !== '' ? `${((hr + 11) % 12) + 1}:${String(mi).padStart(2, '0')} ${hr < 12 ? 'AM' : 'PM'}` : '';
-        return { '신랑': h.groomName || '', '신부': h.brideName || '', '날짜': d.year ? `${d.year}.${d.month}.${d.day}` : '', '시간': time, '예식장': loc.venue || '' };
+        return { '신랑': h.groomName || '', '신부': h.brideName || '', '날짜': d.year ? `${d.year}.${d.month}.${d.day}` : '', '시간': time, '예식장': venueOf(loc) };
     }
     // ---------- 메인 화면 문구 칸 (메인 레이아웃) ----------
     //  메인 사진·영상 위에 이름·날짜 말고도 문구 칸을 더 얹음. 칸 이름(키)은 f.heroLayers, 글은 f[키], 자리·글꼴·색은 f.layout[키]
@@ -3268,5 +3277,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);
