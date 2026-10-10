@@ -36,11 +36,12 @@ const ALLOWED_STYLE   = [
     'contact.contactStyle' => ['basic', 'line', 'soft', 'vintage', 'outline', 'center', 'capsule'],
     'notice.style'       => ['card', 'box', 'slide', 'tabs'],
     'guestbook.style'    => ['card', 'line'],
+    'gallery.reveal'     => ['', 'seq', 'random'], // 사진 나타나는 방식 (차례로 · 무작위로 차라락)
 ];
 const ALLOWED_HERO    = ['video', 'photo', 'text'];
 const ALLOWED_FRAMES  = ['none', 'rounded', 'circle', 'pill', 'arch'];
 const ALLOWED_FONTS   = ['', 'pretendard', 'noto-serif-kr', 'gowun-batang', 'nanum-myeongjo', 'gothic-a1', 'song-myung',
-                         'nanum-pen', 'nanum-brush', 'gaegu', 'hi-melody', 'gamja-flower'];
+                         'nanum-pen', 'nanum-brush', 'gaegu', 'hi-melody', 'gamja-flower', 'bagel-fat-one', 'black-han-sans'];
 const IMAGE_EXTS      = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
 final class PresetError extends Exception {}
@@ -107,7 +108,7 @@ function load_preset(string $folder): array {
     if (isset($p['heroHeight']) && in_array($p['heroHeight'], ['3/4', '4/5', '9/16', 'full'], true)) $out['heroHeight'] = $p['heroHeight'];
     // 첫 화면 레이아웃 (invite-blocks.js HERO_LAYOUTS 또는 관리자가 저장한 레이아웃 id) · 종이 질감 · 장식 효과 범위·진하기
     if (!empty($p['stickerThemes']) && is_array($p['stickerThemes'])) { // 스티커 창 [추천]에 먼저 보일 테마 (에디터 STK_THEMES id)
-        $st = array_values(array_intersect(array_map('strval', $p['stickerThemes']), ['romantic', 'cosmos', 'rain', 'garden', 'classic', 'party', 'season']));
+        $st = array_values(array_intersect(array_map('strval', $p['stickerThemes']), ['romantic', 'cosmos', 'rain', 'garden', 'classic', 'party', 'season', 'webtoon']));
         if ($st) $out['stickerThemes'] = array_slice($st, 0, 2);
     }
     if (isset($p['heroLayout']) && is_string($p['heroLayout']) && preg_match('/^[a-z0-9_-]{1,40}$/', $p['heroLayout'])) $out['heroLayout'] = $p['heroLayout'];
@@ -144,7 +145,7 @@ function load_preset(string $folder): array {
             foreach ($bf[$blockId] as $k => $v) {
                 $sk = $blockId . '.' . $k;
                 if (isset(ALLOWED_STYLE[$sk]) && !in_array($v, ALLOWED_STYLE[$sk], true)) unset($bf[$blockId][$k]);
-                if ($k === 'skin' && !in_array($v, ['', 'vintage', 'night', 'mist'], true)) unset($bf[$blockId][$k]); // 섹션 테마
+                if ($k === 'skin' && !in_array($v, ['', 'vintage', 'night', 'mist', 'webtoon'], true)) unset($bf[$blockId][$k]); // 섹션 테마
             }
         }
         $out['blockFields'] = $bf;
@@ -160,7 +161,11 @@ function load_preset(string $folder): array {
             'rotation'  => max(-180, min(180, (int) ($st['rotation'] ?? 0))),
             'effect'    => in_array($st['effect'] ?? 'none', ALLOWED_FX, true) ? ($st['effect'] ?? 'none') : 'none',
         ];
-        if (!empty($st['image'])) $s['image'] = preset_asset_url($folder, (string) $st['image']);
+        if (!empty($st['image']) && preg_match('#^stk:([a-z]+/[a-z0-9-]{1,40})$#', (string) $st['image'], $sm)) { // 스티커 창 그림 (assets/stickers/테마/이름.svg)
+            if (!is_file(__DIR__ . '/assets/stickers/' . $sm[1] . '.svg')) continue;
+            $s['image'] = '/invite/assets/stickers/' . $sm[1] . '.svg';
+        }
+        elseif (!empty($st['image'])) $s['image'] = preset_asset_url($folder, (string) $st['image']);
         elseif (!empty($st['emoji'])) $s['emoji'] = mb_substr(strip_tags((string) $st['emoji']), 0, 4);
         else continue;
         $stickers[] = $s;

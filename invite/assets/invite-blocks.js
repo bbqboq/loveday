@@ -158,7 +158,7 @@
     // ---------- 섹션 테마 (섹션마다 따로: 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 · 다른 디자인 색) ----------
     //  b.skin = 'vintage' | 'night' | 'mist' (디자인 폴더 blockFields로 줄 땐 fields.skin), b.skinPal = {bg, ink, accent, line, muted} (다른 디자인 색)
     //  연락하기·마음 전하실 곳·디데이는 원래 '빈티지 큐피드' 모양이 있어서 섹션 테마의 빈티지는 안 보여 줌 (SKIN_HAS_VINTAGE)
-    const SECTION_SKINS = [['', '디자인 따라'], ['vintage', '빈티지 큐피드'], ['night', '밤하늘 골드'], ['mist', '안개 유리']];
+    const SECTION_SKINS = [['', '디자인 따라'], ['vintage', '빈티지 큐피드'], ['night', '밤하늘 골드'], ['mist', '안개 유리'], ['webtoon', '웹툰 컷']];
     const SKIN_HAS_VINTAGE = ['contact', 'account', 'dday'];
     const SKIN_DARK = ['night', 'mist'];
     function hexDark(h) { // 바탕색이 어두운지 (밝기 0.45 아래) - #RGB · #RRGGBB · rgb()
@@ -179,6 +179,7 @@
         const st = [bg ? `--box-bg:${bg}` : '', ink ? `--box-ink:${ink}` : ''];
         const sk = skinOf(b), pal = b && b.skinPal && typeof b.skinPal === 'object' ? b.skinPal : null;
         if (sk) cls += ` ib-sk ib-sk-${sk}${SKIN_DARK.includes(sk) ? ' ib-sk-dark' : ''}`;
+        if (sk === 'webtoon') ensureFont('black-han-sans'); // 웹툰 컷 말풍선 제목 글꼴
         else if (pal && HEX_RE.test(pal.bg || '') && HEX_RE.test(pal.ink || '')) { // 다른 디자인 색으로
             cls += ' ib-sk ib-sk-pal' + (hexDark(pal.bg) ? ' ib-sk-dark' : ' ib-sk-light');
             [['bg', 'p-bg'], ['ink', 'p-ink'], ['accent', 'p-accent'], ['line', 'p-line'], ['muted', 'p-muted']].forEach(([k, v]) => { if (HEX_RE.test(pal[k] || '')) st.push(`--${v}:${pal[k]}`); });
@@ -517,7 +518,7 @@
     // 가로 100%일 때 heroRatio: auto(원본 비율) · 1/1 · 4/5 · 3/4 · 16/9 · screen(휴대폰 화면 꽉) · px(직접 heroHeightPx)
     const HERO_RATIOS = [['auto', '원본 비율'], ['1/1', '정사각'], ['4/5', '세로 4:5'], ['3/4', '세로 3:4'], ['16/9', '가로 16:9'], ['screen', '전체화면'], ['px', '높이조정']];
     // 사진 칸 모드 (메인 레이아웃): 화면 한 장(바탕색) 위 원하는 자리에 사진을 놓음 - x·y·w·h는 화면 기준 %, frame 모양, fade 아래쪽 흐려짐 %
-    const HERO_BOX_FRAMES = [['none', '사각형'], ['rounded', '둥근 모서리'], ['arch', '아치'], ['polaroid', '폴라로이드'], ['shadow', '그림자']];
+    const HERO_BOX_FRAMES = [['none', '사각형'], ['rounded', '둥근 모서리'], ['arch', '아치'], ['polaroid', '폴라로이드'], ['shadow', '그림자'], ['comic', '웹툰 컷']];
     function heroBoxGeom(b) { // 사진 칸(heroBox) 자리·모양 - 사진 히어로와 유튜브 히어로가 같이 씀
         const n = (v, d, mn, mx) => Math.max(mn, Math.min(mx, Number.isFinite(+v) ? +v : d));
         const fr = HERO_BOX_FRAMES.some(x => x[0] === b.frame) ? b.frame : 'none', fade = n(b.fade, 0, 0, 90);
@@ -565,6 +566,9 @@
         'nanum-myeongjo': { family: '"Nanum Myeongjo", serif', url: 'https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap', label: '나눔명조' },
         'gothic-a1':      { family: '"Gothic A1", sans-serif', url: 'https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;700&display=swap', label: '고딕 A1' },
         'song-myung':     { family: '"Song Myung", serif', url: 'https://fonts.googleapis.com/css2?family=Song+Myung&display=swap', label: '송명체' },
+        'bagel-fat-one':  { family: '"Bagel Fat One", sans-serif', url: 'https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap', label: '배글 팻 원' },
+        'black-han-sans': { family: '"Black Han Sans", sans-serif', url: 'https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap', label: '검은고딕' },
+        'bangers': { family: '"Bangers", sans-serif', url: 'https://fonts.googleapis.com/css2?family=Bangers&display=swap', label: 'Bangers' },
         'great-vibes': { family: '"Great Vibes", cursive', url: 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap', label: 'Great Vibes' },
         'pinyon': { family: '"Pinyon Script", cursive', url: 'https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap', label: 'Pinyon Script' },
         'parisienne': { family: '"Parisienne", cursive', url: 'https://fonts.googleapis.com/css2?family=Parisienne&display=swap', label: 'Parisienne' },
@@ -1172,7 +1176,9 @@
         if (document.fonts) { document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', fitSoon); document.fonts.ready && document.fonts.ready.then(fitSoon); }
     }
     function heroLayerInner(text, L) { return L && Number(L.arc) ? heroArcSvg(text, L) : nl2br(text); }
-    function heroLayerCls(L) { return (L.vertical ? ' hl-vert' + (L.vertical === 'side' ? ' hl-vert-side' : '') : '') + (L.anim && HL_ANIMS.some(x => x[0] === L.anim) ? ` hl-anim hl-a-${L.anim}` : '') + (Number(L.arc) ? ' hl-curve' : ''); }
+    // 문구 칸 글자 상자 (웹툰): 말풍선 · 나레이션 박스(노랑/흰색) · 효과음 글자(굵은 먹선) · 꼬리표(빨간 알약)
+    const HL_DECOS = [['', '없음'], ['bubble', '말풍선'], ['caption', '나레이션 (노랑)'], ['caption-w', '나레이션 (흰색)'], ['sfx', '효과음 글자'], ['tag', '꼬리표']];
+    function heroLayerCls(L) { return (L.deco && HL_DECOS.some(x => x[0] === L.deco && x[0]) ? ` hl-deco hl-d-${L.deco}` : '') + (L.vertical ? ' hl-vert' + (L.vertical === 'side' ? ' hl-vert-side' : '') : '') + (L.anim && HL_ANIMS.some(x => x[0] === L.anim) ? ` hl-anim hl-a-${L.anim}` : '') + (Number(L.arc) ? ' hl-curve' : ''); }
     function heroLayerCss(L) { return (Number(L.arc) ? `width:${Math.max(10, Math.min(100, Number(L.arcW) || 70))}%;` : '') + (L.anim ? `--hl-dur:${Math.max(.3, Math.min(8, Number(L.animDur) || 1.8))}s;--hl-delay:${Math.max(0, Math.min(8, Number(L.animDelay) || 0))}s;` : ''); }
     function heroLayersHtml(f, ink, styleOf, editor) {
         return ((f && f.heroLayers) || []).filter(k => f.layout && f.layout[k]).map(k => { const L = f.layout[k];
@@ -1316,9 +1322,27 @@
           layers: [{ text: '{년:2}\n{월}\n{일}', x: 21, y: 27, fontSize: 70, font: 'playfair', color: '#FFFFFF', ls: -10, anim: 'up', animDur: 1.6 },
                    { text: '{요일:영문}', x: 21, y: 47.5, fontSize: 11, font: 'cormorant', color: '#FFFFFF', ls: 300, anim: 'fade', animDelay: .8 },
                    { text: '{신랑} · {신부}', x: 72, y: 87.5, fontSize: 16, color: '#FFFFFF', ls: 40, anim: 'fade', animDelay: 1.1 },
-                   { text: '{예식장}  {시간}', x: 72, y: 91.5, fontSize: 11, color: '#FFFFFF', ls: 20, anim: 'fade', animDelay: 1.3 }] }
+                   { text: '{예식장}  {시간}', x: 72, y: 91.5, fontSize: 11, color: '#FFFFFF', ls: 20, anim: 'fade', animDelay: 1.3 }] },
+        // 웹툰 1. 표지: 위 NEW 꼬리표 · 효과음 제목 · 기울어진 웹툰 컷 속 사진 · 아래 나레이션 박스와 '글·그림'
+        { id: 'webtoon-cover', label: '웹툰 표지', desc: '효과음 제목 · 웹툰 컷 속 사진 · 나레이션 박스',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 6, y: 23, w: 88, h: 53, frame: 'comic' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'NEW', x: 19, y: 6, fontSize: 13, font: 'bangers', color: '#FFFFFF', ls: 60, deco: 'tag', anim: 'zoom', animDur: .7 },
+                   { text: '{날짜:점} 첫 화 공개', x: 58, y: 6, fontSize: 12, color: '#1B1B1F', ls: 10 },
+                   { text: '우리\n결혼해요!', x: 50, y: 14.5, fontSize: 42, font: 'bagel-fat-one', color: '#FF7A9C', rotation: -3, deco: 'sfx', anim: 'zoom', animDur: .9, animDelay: .2 },
+                   { text: 'EP.01 · {날짜:점} {시간}\n{예식장}', x: 38, y: 78.5, fontSize: 12, color: '#1B1B1F', rotation: -2, deco: 'caption', anim: 'up', animDelay: .7 },
+                   { text: '글·그림  {신랑} ♥ {신부}', x: 50, y: 87.5, fontSize: 12, color: '#6F6A73', ls: 20, anim: 'fade', animDelay: 1 }] },
+        // 웹툰 2. 말풍선 컷: 사진 가득 · 위 나레이션 · 옆 효과음 '두근!' · 아래 큰 말풍선과 날짜 나레이션
+        { id: 'webtoon-bubble', label: '웹툰 말풍선', desc: '사진 가득 · 위 나레이션 · 아래 큰 말풍선',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'none' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'EP.01 · 우리 결혼합니다', x: 36, y: 6, fontSize: 12.5, color: '#1B1B1F', rotation: -2, deco: 'caption', anim: 'up' },
+                   { text: '두근!', x: 79, y: 15, fontSize: 42, font: 'black-han-sans', color: '#FF7A9C', rotation: 12, deco: 'sfx', anim: 'zoom', animDur: .7, animDelay: .5 },
+                   { text: '{신랑} ♥ {신부}\n결혼합니다!', x: 50, y: 76, fontSize: 24, font: 'bagel-fat-one', color: '#1B1B1F', deco: 'bubble', anim: 'zoom', animDur: .8, animDelay: .9 },
+                   { text: '{날짜:점} {요일:영문짧게} {시간}', x: 64, y: 89.5, fontSize: 12.5, color: '#1B1B1F', rotation: 1.5, deco: 'caption-w', anim: 'up', animDelay: 1.3 }] }
     ];
-    const HL_RESET = { font: '', color: '', ls: 0, rotation: 0, align: '', outline: false, shadow: false, glow: '', scaleX: 100, widthAuto: true, width: 80, vertical: '', arc: 0, arcW: 70, anim: '', animDur: 1.8, animDelay: 0 };
+    const HL_RESET = { deco: '', font: '', color: '', ls: 0, rotation: 0, align: '', outline: false, shadow: false, glow: '', scaleX: 100, widthAuto: true, width: 80, vertical: '', arc: 0, arcW: 70, anim: '', animDur: 1.8, animDelay: 0 };
     function applyHeroLayout(block, lay) {
         if (!block || !lay) return;
         const f = block.fields = block.fields || {}, isV = block.id === 'heroVideo';
@@ -2474,7 +2498,40 @@
     // ---------- 갤러리 모양 6종 ----------
     // grid(정사각 그리드)는 예전 마크업과 완전히 같게 둬서, 기존 청첩장은 모양이 하나도 바뀌지 않는다.
     const GALLERY_TYPES = [['grid', '정사각 그리드'], ['tall', '세로 그리드'], ['collage', '콜라주'], ['wide', '가로형 콜라주'], ['circle', '써클'], ['slide', '슬라이드'], ['pages', '넘기는 콜라주']];
+    // 사진 나타나는 방식 (스크롤로 갤러리에 닿으면): '' 한 번에 · seq 차례로 · random 무작위로 차라락
+    const GALLERY_REVEALS = [['', '한 번에'], ['seq', '차례로'], ['random', '무작위로 차라락']];
     function galleryHtml(f, width, opts) {
+        const h = galleryHtml0(f, width, opts), rv = f && (f.reveal === 'seq' || f.reveal === 'random') ? f.reveal : '';
+        return rv ? h.replace('<div class="blk-gallery', `<div data-ib-reveal="${rv}" class="blk-gallery`) : h;
+    }
+    // 갤러리 차라락: 사진마다 나타날 차례(--rv-d)·기울기(--rv-r)를 정함 → 재생 길이(초)
+    function galleryRevealPrep(g) {
+        const imgs = [...g.querySelectorAll('.grid img')], n = imgs.length; if (!n) return 0;
+        const order = imgs.map((_, i) => i);
+        if (g.dataset.ibReveal === 'random') for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+        const step = Math.max(.045, Math.min(.1, 1.6 / n));
+        order.forEach((ix, k) => { const im = imgs[ix]; im.style.setProperty('--rv-d', (k * step).toFixed(3) + 's'); im.style.setProperty('--rv-r', g.dataset.ibReveal === 'random' ? (Math.random() * 14 - 7).toFixed(1) + 'deg' : '0deg'); });
+        return (n - 1) * step + .6;
+    }
+    function galleryRevealRun(g, total) {
+        g.classList.add('rv-arm'); void g.offsetWidth;
+        requestAnimationFrame(() => requestAnimationFrame(() => g.classList.add('rv-run')));
+        clearTimeout(g._rvT); g._rvT = setTimeout(() => g.classList.remove('rv-arm', 'rv-run'), (total + .35) * 1000); // 끝나면 원래 모양으로 (넘기기·확대 등)
+    }
+    // 공개 페이지: 하객이 스크롤해서 갤러리가 보이면 한 번 (인트로가 떠 있으면 끝난 뒤)
+    function armGalleryReveal(root) {
+        if (!root || typeof IntersectionObserver === 'undefined' || hlReduced()) return;
+        const gs = [...root.querySelectorAll('.blk-gallery[data-ib-reveal]:not(.rv-armed)')]; if (!gs.length) return;
+        const tot = new Map(); gs.forEach(g => { tot.set(g, galleryRevealPrep(g)); g.classList.add('rv-armed', 'rv-arm'); });
+        const io = new IntersectionObserver(es => es.forEach(en => {
+            if (!en.isIntersecting) return; io.unobserve(en.target); const g = en.target;
+            (function wait() { if (document.querySelector('.intro-overlay')) return setTimeout(wait, 200); galleryRevealRun(g, tot.get(g)); })();
+        }), { threshold: .18 });
+        gs.forEach(g => io.observe(g));
+    }
+    // 에디터: 고를 때 바로 한 번 보여 줌 (평소 미리보기는 다 나온 모습)
+    function playGalleryReveal(root) { if (!root || hlReduced()) return; root.querySelectorAll('.blk-gallery[data-ib-reveal]').forEach(g => galleryRevealRun(g, galleryRevealPrep(g))); }
+    function galleryHtml0(f, width, opts) {
         const o = opts || {};
         const images = (f.images && f.images.length) ? f.images : (o.defaultImages ? o.defaultImages() : []);
         const scale = f.resScale || 1;
@@ -3350,5 +3407,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { SECTION_SKINS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { SECTION_SKINS, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

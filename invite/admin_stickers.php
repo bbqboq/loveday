@@ -149,7 +149,7 @@ $csrf = csrf_token();
 <div class="st-toast" id="stToast"></div>
 <script>
 const NAMES = <?= json_encode(STICKER_THEMES, JSON_UNESCAPED_UNICODE) ?>;
-const ICON = { romantic: 'a:romantic/heart-bow', cosmos: 'a:cosmos/moon', rain: 'a:rain/umbrella', garden: 'a:garden/daisy', classic: 'a:classic/diamond', party: 'a:party/balloons3', season: 'a:season/cherry', vintage: 'v:cupid-heart' }; // 테마 칸 앞 그림
+const ICON = { romantic: 'a:romantic/heart-bow', cosmos: 'a:cosmos/moon', rain: 'a:rain/umbrella', garden: 'a:garden/daisy', classic: 'a:classic/diamond', party: 'a:party/balloons3', webtoon: 'a:webtoon/sfx-dugeun', season: 'a:season/cherry', vintage: 'v:cupid-heart' }; // 테마 칸 앞 그림
 const FILES = <?= json_encode($files, JSON_UNESCAPED_UNICODE) ?>;
 const DESIGNS = <?= json_encode($designs, JSON_UNESCAPED_UNICODE) ?>;
 const CSRF = <?= json_encode($csrf) ?>;

@@ -751,6 +751,13 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .hl-chips button { border: 0; background: none; border-radius: 99px; padding: 4px 9px; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--wz-sub); cursor: pointer; white-space: nowrap; }
 .hl-chips button.on { background: #fff; color: var(--wz-ink); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
 .hl-m-box .hl-mb { position: absolute; overflow: hidden; display: block; } .hl-m-box .hl-mb em { position: absolute; inset: 0; background: center / cover no-repeat; }
+/* 웹툰 레이아웃 작은 그림: 웹툰 컷 틀 · 글자 상자 (실제 모양은 invite-blocks.css .hl-d-*) */
+.hl-m-box .hl-mb.hb-fr-comic { border: 1.5px solid #1B1B1F; box-shadow: 2px 2px 0 #1B1B1F; box-sizing: border-box; }
+.hl-m span.hl-d-caption, .hl-m span.hl-d-caption-w { background: #FFD93D; border: 1px solid #1B1B1F; box-shadow: 1px 1px 0 #1B1B1F; padding: .35em .6em .25em; line-height: 1.3; text-shadow: none; font-weight: 700; }
+.hl-m span.hl-d-caption-w { background: #fff; }
+.hl-m span.hl-d-bubble { background: #fff; border: 1.2px solid #1B1B1F; border-radius: 50% / 46%; padding: .6em .9em .5em; line-height: 1.2; text-shadow: none; }
+.hl-m span.hl-d-sfx { -webkit-text-stroke: .08em #1B1B1F; paint-order: stroke fill; text-shadow: .06em .06em 0 #1B1B1F; }
+.hl-m span.hl-d-tag { background: #F0445A; border: 1px solid #1B1B1F; border-radius: 99px; padding: .25em .6em .12em; text-shadow: none; }
 .hl-m-box .hb-fr-rounded { border-radius: 5px; } .hl-m-box .hb-fr-arch { border-radius: 999px 999px 0 0; } .hl-m-box .hb-fr-shadow { box-shadow: 0 4px 10px rgba(0,0,0,.2); }
 .hl-m-box .hb-fr-polaroid { background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.15); } .hl-m-box .hb-fr-polaroid em { inset: 5% 5% 26% 5%; }
 .hl-m-box span { text-shadow: none; }
@@ -4611,14 +4618,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018p">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018p">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018q">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018q">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018p"></script>
-<script src="assets/tip-demos.js?v=1018p"></script>
-<script src="assets/ld-dialog.js?v=1018p"></script>
+<script src="assets/invite-blocks.js?v=1018q"></script>
+<script src="assets/tip-demos.js?v=1018q"></script>
+<script src="assets/ld-dialog.js?v=1018q"></script>
 </head>
 <body>
 
@@ -5519,12 +5526,15 @@ const fontOptions = [
     { id:'gaegu',          label:'개구체 (귀여운 손글씨)', family:'"Gaegu", cursive', weight:'700', cssUrl:'https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap' },
     { id:'hi-melody',      label:'하이멜로디 (손글씨)', family:'"Hi Melody", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Hi+Melody&display=swap' },
     { id:'gamja-flower',   label:'감자꽃 (손글씨)', family:'"Gamja Flower", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap' },
+    { id:'bagel-fat-one',  label:'배글 팻 원 (웹툰 제목)', family:'"Bagel Fat One", sans-serif', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap' },
+    { id:'black-han-sans', label:'검은고딕 (웹툰 효과음)', family:'"Black Han Sans", sans-serif', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap' },
     // 영문 글꼴 (en: 한글이 없어서 청첩장 전체 글꼴로는 안 보여주고, 문구 하나하나·인트로에서만 고름)
     { id:'great-vibes', label:'Great Vibes (영문 필기체)', family:'"Great Vibes", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap', en:true },
     { id:'pinyon', label:'Pinyon Script (영문 필기체)', family:'"Pinyon Script", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap', en:true },
     { id:'parisienne', label:'Parisienne (영문 필기체)', family:'"Parisienne", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Parisienne&display=swap', en:true },
     { id:'alex-brush', label:'Alex Brush (영문 필기체)', family:'"Alex Brush", cursive', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap', en:true },
     { id:'cormorant', label:'Cormorant (영문 세리프)', family:'"Cormorant Garamond", serif', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap', en:true },
+    { id:'bangers', label:'Bangers (영문 웹툰)', family:'"Bangers", sans-serif', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Bangers&display=swap', en:true },
     { id:'playfair', label:'Playfair (영문 세리프)', family:'"Playfair Display", serif', weight:'400', cssUrl:'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap', en:true },
 ];
 function loadFontCss(fontId) {
@@ -9323,6 +9333,12 @@ function renderInterviewEditor(wrap, block) {
         renderPreview();
     });
 }
+// 갤러리 '사진 나타나는 방식'을 고르면 미리보기에서 한 번 보여 줌 (공개 페이지는 하객이 스크롤해서 갤러리에 닿을 때)
+function galleryRevealDemo() {
+    clearTimeout(galleryRevealDemo.t);
+    galleryRevealDemo.t = setTimeout(() => { const g = document.querySelector('#previewRoot .col[data-block-id="gallery"]'); if (!g) return;
+        try { InviteBlocks.playGalleryReveal(g); } catch (e) {} }, 420);
+}
 function renderGalleryEditor(wrap, block) {
     const f = block.fields;
     if (!Array.isArray(f.images) || !f.images.length) f.images = defaultGalleryImages();
@@ -9341,6 +9357,10 @@ function renderGalleryEditor(wrap, block) {
         <div class="mini-label">갤러리 타입</div>
         <div class="width-row">
             ${InviteBlocks.GALLERY_TYPES.map(([val,lbl]) => `<button type="button" class="width-btn ${(f.layoutType||'grid')===val?'active':''}" data-gtype="${val}">${lbl}</button>`).join('')}
+        </div>
+        <div class="mini-label" style="margin-top:10px;">사진 나타나는 방식 <span style="font-weight:400;opacity:.7">(하객이 스크롤해서 갤러리에 닿을 때)</span></div>
+        <div class="width-row">
+            ${InviteBlocks.GALLERY_REVEALS.map(([val, lbl]) => `<button type="button" class="width-btn ${(f.reveal || '') === val ? 'active' : ''}" data-greveal="${val}">${lbl}</button>`).join('')}
         </div>
         ${(f.layoutType === 'slide' || f.layoutType === 'pages') ? `<div class="mini-label" style="margin-top:10px;">하단 진행바</div>
         <div class="width-row">
@@ -9382,6 +9402,10 @@ function renderGalleryEditor(wrap, block) {
     wrap.querySelector('#gTitleGap').addEventListener('change', () => scheduleSnapshot());
     wrap.querySelectorAll('[data-gtype]').forEach(btn => btn.addEventListener('click', () => {
         f.layoutType = btn.dataset.gtype; renderGalleryEditor(wrap, block); appendSectionSpacingControls(wrap, block); renderPreview(); scheduleSnapshot();
+    }));
+    wrap.querySelectorAll('[data-greveal]').forEach(btn => btn.addEventListener('click', () => {
+        f.reveal = btn.dataset.greveal || undefined; renderGalleryEditor(wrap, block); appendSectionSpacingControls(wrap, block); renderPreviewNow(); scheduleSnapshot();
+        galleryRevealDemo();
     }));
     wrap.querySelectorAll('[data-gprog]').forEach(btn => btn.addEventListener('click', () => {
         f.slideProgress = btn.dataset.gprog === '1'; renderGalleryEditor(wrap, block); appendSectionSpacingControls(wrap, block); renderPreview(); scheduleSnapshot();
@@ -9655,7 +9679,7 @@ document.addEventListener('click', e => {
 // 그림 스티커 = assets/stickers/<테마>/<이름>.svg (SVG 안 CSS로 움직이는 것도 있음 - 휴대폰 '동작 줄이기'면 멈춤)
 // 빈티지 = assets/stickers/vintage/<이름>.webp. 목록을 바꾸면 이 STK_* 만 고치면 됨 (파일을 넣고 여기 한 줄).
 // 항목 키: 'a:테마/이름'(그림) · 'v:이름'(빈티지) · 'e:이모지' · 'i:라인 아이콘' · 'p:주소'(내가 올린 것)
-const STK_ART = {"romantic":[["heart-bow","리본 하트","하트 리본"],["letter","러브레터","편지 하트"],["rings","두 반지","반지"],["rose","장미 한 송이","꽃 장미"],["balloons","하트 풍선","하트 풍선 축하"],["arrow-heart","화살 하트","하트 큐피드"],["beat-heart","콩닥 하트","하트",1],["hearts-rise","떠오르는 하트","하트",1],["winged-heart","날개 하트","하트 큐피드 천사",1],["heart-lock","하트 자물쇠","하트 자물쇠"],["heart-key","하트 열쇠","하트 열쇠"],["bouquet","부케","꽃 부케"],["bow","분홍 리본","리본"],["heart-frame","하트 테두리","하트 액자 틀"],["petals","장미 꽃잎","꽃 장미 꽃잎",1],["heart-garland","하트 가랜드","하트 가랜드"],["twin-hearts","두 하트","하트"],["heart-sparkle","반짝 하트","하트 반짝 별",1],["love-letter","하트 편지","편지 하트",1],["cupid-arrow","큐피드 화살","하트 큐피드 화살"]],"cosmos":[["moon","초승달","달 별"],["planet","고리 행성","별 우주 행성"],["shooting","별똥별","별"],["constellation","별자리 하트","별 하트"],["sparkles","반짝임","별 반짝"],["moon-cloud","달과 구름","달 구름 별"],["twinkle","반짝이는 별","별 반짝",1],["orbit","돌고 있는 달","달 별 우주",1],["comet","날아가는 별똥별","별 별똥별",1],["phases","달의 모양","달"],["galaxy","은하수","별 우주 은하"],["telescope","망원경","별 망원경"],["star-jar","별 유리병","별 병"],["north-star","북극성","별 반짝"],["hanging-stars","매달린 별","별",1],["planets","행성 셋","별 우주 행성"],["sleepy-moon","구름 베개 달","달 구름"],["star-badge","별 배지","별"],["crescent-star","초승달과 별","달 별"],["meteor-shower","별똥별 비","별 별똥별",1]],"rain":[["umbrella","우산","비 우산"],["rain-cloud","비구름","비 구름"],["drop","빗방울","비 물방울"],["rainbow","무지개","비 무지개 구름"],["window","비 오는 창","비 창문"],["tea","따뜻한 차","차 컵"],["rain-anim","비 내리는 구름","비 구름",1],["umbrella-sway","흔들리는 우산","비 우산",1],["ripple","물결 동그라미","비 물방울",1],["two-umbrellas","두 우산","비 우산 하트"],["boots","장화","비 장화"],["snail","달팽이","비 달팽이"],["cloud-sun","비 갠 하늘","비 구름 해"],["candle","흔들리는 촛불","초 촛불",1],["teapot","찻주전자","차 주전자"],["book","책 한 권","책"],["hydrangea","수국","꽃 수국"],["leaf-drop","잎에 맺힌 물방울","비 잎 물방울",1],["cocoa","따뜻한 코코아","차 컵 코코아 겨울",1],["frog","개구리","비 개구리"]],"garden":[["tulips","튤립 다발","꽃 튤립"],["sprig","올리브 가지","잎 가지 올리브"],["daisy","데이지","꽃 데이지"],["butterfly","나비","나비 봄"],["wreath","잎 화관","꽃 잎 화관"],["lavender","라벤더","꽃 라벤더"],["butterfly-flap","날갯짓 나비","나비 봄",1],["flower-sway","흔들리는 꽃","꽃",1],["bee","꿀벌","벌 봄",1],["rose-bush","장미 덤불","꽃 장미"],["peony","작약","꽃 작약"],["sunflower","해바라기","꽃 해바라기 여름"],["clover","네잎클로버","잎 클로버 행운"],["can","물뿌리개","꽃 물뿌리개",1],["bird-branch","가지 위 새","새 가지"],["flower-crown","꽃 화관","꽃 화관"],["sprout","새싹 화분","잎 새싹 화분"],["leaf-garland","잎 가랜드","잎 가랜드"],["tulip-bunch","튤립 다발","꽃 튤립 부케 리본"],["dandelion","민들레 홀씨","꽃 민들레 봄",1]],"classic":[["cheers","건배","축하 건배 잔"],["cake","웨딩 케이크","축하 케이크"],["laurel","월계관","월계관 잎"],["dove","비둘기","새 비둘기"],["diamond","다이아 반지","반지 다이아"],["bells","웨딩 벨","종 리본"],["ring-shine","빛나는 반지","반지 다이아",1],["bubbles","샴페인 거품","축하 건배 잔 샴페인",1],["candles","촛대","초 촛대",1],["bowtie","나비넥타이","리본 나비넥타이 신랑"],["dress","웨딩드레스","드레스 신부"],["tophat","신사 모자","모자 신랑"],["crown","왕관","왕관"],["seal","밀랍 도장","편지 도장 하트"],["banner","리본 띠","리본 띠"],["ornate-frame","금테 액자","액자 틀"],["chandelier","샹들리에","샹들리에 반짝",1],["gold-letter","금빛 초대장","편지 초대장"],["ring-box","반지 상자","반지 상자 프러포즈"],["pearls","진주 목걸이","진주 목걸이 신부"]],"party":[["popper","폭죽","축하 폭죽"],["balloons3","풍선 다발","축하 풍선"],["gift","선물 상자","선물 리본 축하"],["bunting","가랜드","축하 가랜드"],["cupcake","컵케이크","케이크 축하"],["firework","불꽃","축하 불꽃 별"],["confetti-fall","떨어지는 꽃가루","축하 꽃가루",1],["balloon-float","둥실 풍선","축하 풍선",1],["burst","펑 불꽃","축하 불꽃",1],["party-hat","파티 모자","축하 모자"],["cake-candles","초 켠 케이크","축하 케이크 초",1],["star-garland","별 가랜드","별 축하 가랜드"],["streamer","종이 테이프","축하 테이프"],["gift-open","열린 선물","축하 선물 리본",1],["sparkler","불꽃막대","축하 불꽃 반짝",1],["confetti-pile","꽃가루","축하 꽃가루"],["pennant","작은 깃발","축하 깃발 하트"],["notes","음표","음악 음표",1],["disco-ball","반짝 미러볼","축하 미러볼 반짝",1],["macarons","마카롱","축하 마카롱 디저트"]],"season":[["cherry","벚꽃 가지","꽃 벚꽃 봄"],["shell","조개","여름 조개 바다"],["sun","여름 해","여름 해 바다"],["maple","단풍잎","가을 단풍 낙엽"],["snowflake","눈송이","겨울 눈"],["snowman","눈사람","겨울 눈사람"],["petal-fall","흩날리는 벚꽃","꽃 벚꽃 봄",1],["tulip-pot","튤립 화분","꽃 튤립 봄 화분"],["chick","병아리","새 병아리 봄"],["wave","출렁이는 파도","여름 바다 파도",1],["watermelon","수박","여름 수박"],["palm","야자수","여름 바다 야자수"],["icecream","아이스크림","여름 아이스크림"],["leaves-fall","떨어지는 낙엽","가을 낙엽 단풍",1],["acorn","도토리","가을 도토리"],["snow-fall","내리는 눈","겨울 눈",1],["mitten","벙어리장갑","겨울 장갑"],["xmas-tree","트리","겨울 트리 크리스마스"],["kite","하늘 연","봄 연 하늘",1],["pumpkin","호박","가을 호박"]]}; // {테마: [[이름, 보이는 이름, 찾기 말, 움직이면 1]]}
+const STK_ART = {"romantic":[["heart-bow","리본 하트","하트 리본"],["letter","러브레터","편지 하트"],["rings","두 반지","반지"],["rose","장미 한 송이","꽃 장미"],["balloons","하트 풍선","하트 풍선 축하"],["arrow-heart","화살 하트","하트 큐피드"],["beat-heart","콩닥 하트","하트",1],["hearts-rise","떠오르는 하트","하트",1],["winged-heart","날개 하트","하트 큐피드 천사",1],["heart-lock","하트 자물쇠","하트 자물쇠"],["heart-key","하트 열쇠","하트 열쇠"],["bouquet","부케","꽃 부케"],["bow","분홍 리본","리본"],["heart-frame","하트 테두리","하트 액자 틀"],["petals","장미 꽃잎","꽃 장미 꽃잎",1],["heart-garland","하트 가랜드","하트 가랜드"],["twin-hearts","두 하트","하트"],["heart-sparkle","반짝 하트","하트 반짝 별",1],["love-letter","하트 편지","편지 하트",1],["cupid-arrow","큐피드 화살","하트 큐피드 화살"]],"cosmos":[["moon","초승달","달 별"],["planet","고리 행성","별 우주 행성"],["shooting","별똥별","별"],["constellation","별자리 하트","별 하트"],["sparkles","반짝임","별 반짝"],["moon-cloud","달과 구름","달 구름 별"],["twinkle","반짝이는 별","별 반짝",1],["orbit","돌고 있는 달","달 별 우주",1],["comet","날아가는 별똥별","별 별똥별",1],["phases","달의 모양","달"],["galaxy","은하수","별 우주 은하"],["telescope","망원경","별 망원경"],["star-jar","별 유리병","별 병"],["north-star","북극성","별 반짝"],["hanging-stars","매달린 별","별",1],["planets","행성 셋","별 우주 행성"],["sleepy-moon","구름 베개 달","달 구름"],["star-badge","별 배지","별"],["crescent-star","초승달과 별","달 별"],["meteor-shower","별똥별 비","별 별똥별",1]],"rain":[["umbrella","우산","비 우산"],["rain-cloud","비구름","비 구름"],["drop","빗방울","비 물방울"],["rainbow","무지개","비 무지개 구름"],["window","비 오는 창","비 창문"],["tea","따뜻한 차","차 컵"],["rain-anim","비 내리는 구름","비 구름",1],["umbrella-sway","흔들리는 우산","비 우산",1],["ripple","물결 동그라미","비 물방울",1],["two-umbrellas","두 우산","비 우산 하트"],["boots","장화","비 장화"],["snail","달팽이","비 달팽이"],["cloud-sun","비 갠 하늘","비 구름 해"],["candle","흔들리는 촛불","초 촛불",1],["teapot","찻주전자","차 주전자"],["book","책 한 권","책"],["hydrangea","수국","꽃 수국"],["leaf-drop","잎에 맺힌 물방울","비 잎 물방울",1],["cocoa","따뜻한 코코아","차 컵 코코아 겨울",1],["frog","개구리","비 개구리"]],"garden":[["tulips","튤립 다발","꽃 튤립"],["sprig","올리브 가지","잎 가지 올리브"],["daisy","데이지","꽃 데이지"],["butterfly","나비","나비 봄"],["wreath","잎 화관","꽃 잎 화관"],["lavender","라벤더","꽃 라벤더"],["butterfly-flap","날갯짓 나비","나비 봄",1],["flower-sway","흔들리는 꽃","꽃",1],["bee","꿀벌","벌 봄",1],["rose-bush","장미 덤불","꽃 장미"],["peony","작약","꽃 작약"],["sunflower","해바라기","꽃 해바라기 여름"],["clover","네잎클로버","잎 클로버 행운"],["can","물뿌리개","꽃 물뿌리개",1],["bird-branch","가지 위 새","새 가지"],["flower-crown","꽃 화관","꽃 화관"],["sprout","새싹 화분","잎 새싹 화분"],["leaf-garland","잎 가랜드","잎 가랜드"],["tulip-bunch","튤립 다발","꽃 튤립 부케 리본"],["dandelion","민들레 홀씨","꽃 민들레 봄",1]],"classic":[["cheers","건배","축하 건배 잔"],["cake","웨딩 케이크","축하 케이크"],["laurel","월계관","월계관 잎"],["dove","비둘기","새 비둘기"],["diamond","다이아 반지","반지 다이아"],["bells","웨딩 벨","종 리본"],["ring-shine","빛나는 반지","반지 다이아",1],["bubbles","샴페인 거품","축하 건배 잔 샴페인",1],["candles","촛대","초 촛대",1],["bowtie","나비넥타이","리본 나비넥타이 신랑"],["dress","웨딩드레스","드레스 신부"],["tophat","신사 모자","모자 신랑"],["crown","왕관","왕관"],["seal","밀랍 도장","편지 도장 하트"],["banner","리본 띠","리본 띠"],["ornate-frame","금테 액자","액자 틀"],["chandelier","샹들리에","샹들리에 반짝",1],["gold-letter","금빛 초대장","편지 초대장"],["ring-box","반지 상자","반지 상자 프러포즈"],["pearls","진주 목걸이","진주 목걸이 신부"]],"party":[["popper","폭죽","축하 폭죽"],["balloons3","풍선 다발","축하 풍선"],["gift","선물 상자","선물 리본 축하"],["bunting","가랜드","축하 가랜드"],["cupcake","컵케이크","케이크 축하"],["firework","불꽃","축하 불꽃 별"],["confetti-fall","떨어지는 꽃가루","축하 꽃가루",1],["balloon-float","둥실 풍선","축하 풍선",1],["burst","펑 불꽃","축하 불꽃",1],["party-hat","파티 모자","축하 모자"],["cake-candles","초 켠 케이크","축하 케이크 초",1],["star-garland","별 가랜드","별 축하 가랜드"],["streamer","종이 테이프","축하 테이프"],["gift-open","열린 선물","축하 선물 리본",1],["sparkler","불꽃막대","축하 불꽃 반짝",1],["confetti-pile","꽃가루","축하 꽃가루"],["pennant","작은 깃발","축하 깃발 하트"],["notes","음표","음악 음표",1],["disco-ball","반짝 미러볼","축하 미러볼 반짝",1],["macarons","마카롱","축하 마카롱 디저트"]],"season":[["cherry","벚꽃 가지","꽃 벚꽃 봄"],["shell","조개","여름 조개 바다"],["sun","여름 해","여름 해 바다"],["maple","단풍잎","가을 단풍 낙엽"],["snowflake","눈송이","겨울 눈"],["snowman","눈사람","겨울 눈사람"],["petal-fall","흩날리는 벚꽃","꽃 벚꽃 봄",1],["tulip-pot","튤립 화분","꽃 튤립 봄 화분"],["chick","병아리","새 병아리 봄"],["wave","출렁이는 파도","여름 바다 파도",1],["watermelon","수박","여름 수박"],["palm","야자수","여름 바다 야자수"],["icecream","아이스크림","여름 아이스크림"],["leaves-fall","떨어지는 낙엽","가을 낙엽 단풍",1],["acorn","도토리","가을 도토리"],["snow-fall","내리는 눈","겨울 눈",1],["mitten","벙어리장갑","겨울 장갑"],["xmas-tree","트리","겨울 트리 크리스마스"],["kite","하늘 연","봄 연 하늘",1],["pumpkin","호박","가을 호박"]],"webtoon":[["bubble-marry","결혼해요 말풍선","웹툰 말풍선 결혼 글"],["bubble-heart","콩닥 하트 말풍선","웹툰 말풍선 하트",1],["bubble-congrats","축하해 외침","웹툰 말풍선 축하 글"],["thought-love","사랑해 생각 구름","웹툰 말풍선 사랑 글 구름"],["sfx-dugeun","두근두근","웹툰 효과음 하트 글",1],["sfx-kung","쿵!","웹툰 효과음 글",1],["sfx-jjan","짠!","웹툰 효과음 축하 글"],["sfx-kyak","꺅!","웹툰 효과음 글 하트"],["sfx-wa","와아!","웹툰 효과음 축하 글"],["sfx-banjjak","반짝","웹툰 효과음 별 글",1],["sfx-ppyong","뿅","웹툰 효과음 하트 글",1],["en-wow","WOW!","웹툰 효과음 영문 글 축하"],["en-love","LOVE!","웹툰 영문 글 하트 사랑"],["happy-end","HAPPY END","웹툰 영문 글 리본 하트"],["the-end","THE END","웹툰 영문 글 엔딩"],["to-be-continued","To be continued","웹툰 영문 글 화살표"],["ep01","EP.01 첫 화","웹툰 영문 글 1화"],["new-badge","NEW 배지","웹툰 영문 글 새 배지",1],["focus-lines","집중선","웹툰 집중선 효과",1],["heart-eyes","하트 눈","웹툰 얼굴 하트 표정",1],["blush","부끄 볼","웹툰 얼굴 볼 부끄 표정"],["sweat","땀방울","웹툰 땀 표정 물방울",1],["anger","분노 마크","웹툰 화 표정",1],["exclaim","느낌표","웹툰 느낌표 놀람",1],["question","?!","웹툰 물음표 느낌표 놀람"],["sparkle-pop","반짝 별","웹툰 별 반짝",1],["hearts-float","하트 뿅뿅","웹툰 하트",1],["ring-shine","반지 반짝","웹툰 반지 반짝",1],["couple-chibi","커플 꼬마","웹툰 신랑 신부 커플 얼굴"],["finger-heart","손하트","웹툰 하트 손"]]}; // {테마: [[이름, 보이는 이름, 찾기 말, 움직이면 1]]}
 const STK_VIN = { 'cupid-bow': ['큐피드 활', '하트 천사 큐피드'], 'cupid-cloud': ['구름 큐피드', '천사 큐피드 구름'], 'cupid-heart': ['하트 큐피드', '하트 천사 큐피드'], 'cupid-trumpet': ['나팔 큐피드', '천사 큐피드 축하'], 'cupid-letter': ['편지 큐피드', '천사 큐피드 편지'],
     dove: ['비둘기', '새 비둘기'], 'dove-letter': ['편지 비둘기', '새 비둘기 편지'], 'dove-sprig': ['가지 문 비둘기', '새 비둘기 잎'], 'butterfly-pink': ['분홍 나비', '나비 봄'], 'butterfly-blue': ['파란 나비', '나비'], 'butterfly-cream': ['크림 나비', '나비'],
     'heart-bow': ['리본 하트', '하트 리본'], 'rose-heart-ribbon': ['장미 하트 리본', '하트 꽃 장미 리본'], 'gold-heart-frame': ['금 하트 액자', '하트 액자 틀'], 'rose-heart-wreath': ['장미 하트 화관', '하트 꽃 장미'], 'heart-wreath': ['하트 화관', '하트 꽃 화관'],
@@ -9666,7 +9690,9 @@ const STK_ICON = { 'heart-line': '하트', rings: '반지', 'laurel-left': '잎 
 const STK_EMO = { '💕': '하트', '💗': '하트', '💞': '하트', '💘': '하트 큐피드', '❤️': '하트', '🫶': '하트', '🥰': '하트', '💌': '편지 하트', '💋': '하트', '🌹': '꽃 장미', '💐': '꽃 부케', '🌸': '꽃 봄 벚꽃', '🌷': '꽃 튤립', '🌼': '꽃', '🌻': '꽃 해바라기', '🪻': '꽃', '🌺': '꽃', '🌿': '잎', '🍀': '잎 행운', '🪴': '화분', '🌱': '잎 새싹', '⭐': '별', '🌟': '별', '✨': '별 반짝', '💫': '별', '🌠': '별 별똥별', '🌙': '달 별', '🌛': '달', '🪐': '별 우주', '☄️': '별', '🌌': '별 우주', '🔭': '별', '🛸': '우주',
     '☔': '비 우산', '🌧️': '비', '💧': '비 물방울', '🌂': '비 우산', '☁️': '구름 비', '🌈': '비 무지개', '🫧': '비 거품', '🍃': '잎', '🐌': '비 달팽이', '🌫️': '비 안개', '🫖': '차', '🕯️': '초 촛불', '🎀': '리본', '🕊️': '새 비둘기', '🦢': '새 백조', '🐣': '새 병아리', '🦋': '나비', '🐝': '벌',
     '💍': '반지', '💎': '반지 보석', '👰': '신부', '🤵': '신랑', '🎩': '모자 신랑', '👑': '왕관', '🎻': '음악', '🏛️': '예식장', '📜': '편지', '🎉': '축하', '🎊': '축하', '🥂': '축하 건배 잔', '🍾': '축하', '🎂': '축하 케이크', '🍰': '케이크', '🧁': '케이크', '🎈': '축하 풍선', '🎁': '축하 선물', '🥳': '축하', '🎆': '축하 불꽃', '🎇': '축하 불꽃', '🪅': '축하',
-    '🌊': '여름 바다', '🐚': '여름 조개 바다', '🍉': '여름 수박', '🍁': '가을 단풍 낙엽', '🍂': '가을 낙엽', '🌰': '가을 도토리', '❄️': '겨울 눈', '⛄': '겨울 눈사람', '🎄': '겨울 트리' };
+    '🌊': '여름 바다', '🐚': '여름 조개 바다', '🍉': '여름 수박', '🍁': '가을 단풍 낙엽', '🍂': '가을 낙엽', '🌰': '가을 도토리', '❄️': '겨울 눈', '⛄': '겨울 눈사람', '🎄': '겨울 트리',
+    '💥': '웹툰 효과음 쾅', '💢': '웹툰 화 표정', '💦': '웹툰 땀 물방울', '💫': '웹툰 별 어지러움', '❗': '웹툰 느낌표', '❓': '웹툰 물음표', '‼️': '웹툰 느낌표', '💬': '웹툰 말풍선', '💭': '웹툰 말풍선 생각', '🗯️': '웹툰 말풍선 외침',
+    '😳': '웹툰 표정 부끄', '😍': '웹툰 표정 하트', '😆': '웹툰 표정 웃음', '🤭': '웹툰 표정 웃음', '😚': '웹툰 표정 뽀뽀', '🫣': '웹툰 표정 부끄', '💓': '하트 두근', '👀': '웹툰 눈', '🎬': '웹툰 영화', '📖': '웹툰 책', '✏️': '웹툰 연필 그림' };
 const STK_THEMES = [
     { id: 'romantic', name: '로맨틱', vin: ['cupid-heart', 'cupid-bow', 'cupid-cloud', 'cupid-letter', 'cupid-trumpet', 'heart-bow', 'rose-heart-ribbon', 'gold-heart-frame', 'rose-heart-wreath', 'heart-wreath', 'pink-bow', 'envelope', 'wax-seal'], emo: ['💕', '💗', '💞', '💘', '❤️', '🌹', '💐', '💌', '🎀', '💋', '🫶', '🥰', '👰', '🤵'] },
     { id: 'cosmos', name: '별·우주', vin: [], emo: ['⭐', '🌙', '✨', '🌟', '🪐', '☄️', '🌌', '💫', '🌠', '🔭', '🌛', '🛸'] },
@@ -9674,11 +9700,12 @@ const STK_THEMES = [
     { id: 'garden', name: '가든·꽃', vin: ['rose-bouquet', 'rose-bouquet-ribbon', 'rose-spray-white', 'rose-spray-peach', 'hydrangea', 'butterfly-pink', 'butterfly-blue', 'butterfly-cream', 'floral-oval-frame', 'rose-heart-wreath', 'dove', 'dove-sprig'], emo: ['🌸', '🌷', '🌿', '🌼', '🌻', '🪻', '🦋', '🍀', '🌺', '🪴', '🐝', '🌱'] },
     { id: 'classic', name: '클래식', vin: ['rings', 'ring-box', 'champagne', 'candelabra', 'carriage', 'crown', 'crown-roses', 'tophat', 'tophat-roses', 'gold-frame', 'ribbon-banner', 'ribbon-swirl', 'bow-cream', 'dove-letter', 'birdcage', 'cake'], icons: Object.keys(STK_ICON), emo: ['💍', '🥂', '🕊️', '🦢', '🎩', '👑', '🕯️', '🎻', '🍾', '💎', '🏛️', '📜'] },
     { id: 'party', name: '축하·파티', vin: ['champagne', 'cake', 'ribbon-banner', 'ribbon-swirl', 'cupid-trumpet'], emo: ['🎉', '🎊', '🎈', '🎁', '🍾', '🥳', '🎆', '🎇', '🪅', '🍰', '🎂', '🧁'] },
+    { id: 'webtoon', name: '웹툰', vin: [], emo: ['💥', '💢', '💦', '💫', '✨', '❗', '❓', '‼️', '💬', '💭', '🗯️', '😳', '😍', '🥰', '😆', '🤭', '😚', '🫣', '💘', '💓', '👀', '🎬', '📖', '✏️'] },
     { id: 'season', name: '봄·여름·가을·겨울', vin: ['butterfly-pink', 'butterfly-blue', 'rose-spray-peach'], emo: ['🌸', '🐝', '🐣', '🌊', '🐚', '🍉', '🍁', '🍂', '🌰', '❄️', '⛄', '🎄'] },
     { id: 'vintage', name: '빈티지 그림 전체', vin: Object.keys(STK_VIN), emo: [] },
 ];
 // 디자인마다 먼저 보여줄 테마 (디자인 폴더 preset.json의 stickerThemes가 있으면 그게 먼저)
-const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] };
+const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] , 'p-webtoon': ['webtoon', 'party'] };
 // 관리자 → 스티커 (sticker_settings.php): 테마 순서·끈 테마·숨긴 그림·디자인별 추천. 못 받으면 아래 기본대로
 let STK_CFG = { order: null, off: [], hide: [], rec: {} };
 fetch('sticker_settings.php', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
@@ -16052,7 +16079,8 @@ function hlPopHtml(L, adv) {
     const SHAPE = [['', '가로'], ['up', '세로'], ['side', '세로 눕힘']], CURVE = [[0, '곧게'], [30, '위로 휘게'], [-30, '아래로 휘게']];
     const curve = [0, 30, -30].includes(Number(L.arc) || 0) ? Number(L.arc) || 0 : (Number(L.arc) > 0 ? 30 : -30);
     const grp = (t, key, opts, cur) => `<div class="hl-pg"><small>${t}</small><div>${opts.map(([v, l]) => `<button type="button" class="${String(cur ?? '') === String(v) ? 'on' : ''}" data-hl-p="${key}" data-v="${esc(String(v))}">${esc(l)}</button>`).join('')}</div></div>`;
-    return grp('효과', 'anim', FX, L.anim || '') + (adv ? grp('방향', 'vertical', SHAPE, L.vertical || '') + grp('휘기', 'arc', CURVE, curve) : '');
+    const DECO = (InviteBlocks.HL_DECOS || []).map(([v, l]) => [v, { '': '없음', bubble: '말풍선', caption: '노랑 상자', 'caption-w': '흰 상자', sfx: '효과음', tag: '꼬리표' }[v] || l]); // 웹툰 글자 상자
+    return grp('효과', 'anim', FX, L.anim || '') + (adv ? grp('방향', 'vertical', SHAPE, L.vertical || '') + grp('휘기', 'arc', CURVE, curve) + (DECO.length ? grp('글자 상자', 'deco', DECO, L.deco || '') : '') : '');
 }
 let hlRowLeft = 0; // 레이아웃 줄의 옆 스크롤 자리 - 고르면 칸을 다시 그려서 맨 앞으로 돌아가던 것 (고른 자리 그대로)
 function spBindHeroLayout(box, hb, after) {
@@ -16209,7 +16237,7 @@ let spDesignOpen = false;
 // ===== 섹션 테마 고르기 (전문가 섹션 옵션 · 간편 만들기 색·글꼴 칸이 같이 씀) =====
 //  디자인 따라 · 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 + 다른 디자인(20개) 색 → block.skin / block.skinPal (InviteBlocks.boxColAttrs가 .col에)
 const SKIN_NO = ['hero', 'heroVideo'];
-const SKIN_PV = { vintage: ['#F7EFDF', '#A4524F', '#CDB27A'], night: ['#141936', '#E2C98E', '#353C6A'], mist: ['#222C36', '#A9C1D6', '#3A4754'] };
+const SKIN_PV = { vintage: ['#F7EFDF', '#A4524F', '#CDB27A'], night: ['#141936', '#E2C98E', '#353C6A'], mist: ['#222C36', '#A9C1D6', '#3A4754'], webtoon: ['#FFFFFF', '#FFD93D', '#1B1B1F'] };
 function skinPalOf(p) { const k = skins[p.__base || p.id]; return k && k.bg && k.ink ? { bg: k.bg, ink: k.ink, accent: k.accent, line: k.line, muted: k.muted } : null; }
 function skinPickHtml(cur, curPal, noVintage) {
     const SK = ((window.InviteBlocks && InviteBlocks.SECTION_SKINS) || []).filter(([k]) => !(noVintage && k === 'vintage'));
@@ -16275,6 +16303,8 @@ const STK_SETS = [
     { id: 'rom-bow', th: 'romantic', n: '리본과 하트', it: [['romantic/heart-bow', 'H', .86, 't', .1, 70, 12], ['romantic/love-letter', 'G', .12, 't', .05, 52, -10], ['romantic/petals', 'P', .9, 't', .01, 56, 0], ['romantic/twin-hearts', 'L', .1, 'b', -.09, 48, -8]] },
     { id: 'rom-gar', th: 'romantic', n: '하트 가랜드', it: [['romantic/heart-garland', 'H', .5, 't', .07, 120, 0], ['romantic/winged-heart', 'G', .88, 't', .05, 56, 8], ['romantic/beat-heart', 'P', .9, 'b', -.07, 44, 0], ['romantic/heart-sparkle', 'L', .1, 't', .04, 46, 0]] },
     { id: 'cos-night', th: 'cosmos', n: '별빛 밤', it: [['cosmos/hanging-stars', 'H', .16, 't', .03, 80, 0], ['cosmos/crescent-star', 'H', .86, 't', .1, 60, 8], ['cosmos/twinkle', 'G', .88, 't', .04, 46, 0], ['cosmos/comet', 'P', .12, 't', .02, 56, 0]] },
+    { id: 'wt-ep', th: 'webtoon', n: '웹툰 첫 화', it: [['webtoon/new-badge', 'H', .14, 't', .05, 56, -8], ['webtoon/sfx-dugeun', 'H', .86, 'b', -.2, 66, 0], ['webtoon/bubble-marry', 'G', .84, 't', .04, 70, 6], ['webtoon/sparkle-pop', 'P', .1, 't', .02, 46, 0], ['webtoon/happy-end', 'L', .5, 'b', -.05, 96, -3]] },
+    { id: 'wt-love', th: 'webtoon', n: '두근두근 말풍선', it: [['webtoon/hearts-float', 'H', .84, 't', .12, 60, 0], ['webtoon/bubble-heart', 'G', .12, 't', .04, 54, -6], ['webtoon/sfx-kyak', 'P', .88, 't', .01, 58, 8], ['webtoon/couple-chibi', 'L', .14, 'b', -.08, 62, 0], ['webtoon/to-be-continued', 'L', .78, 'b', -.03, 86, 0]] },
     { id: 'cos-trip', th: 'cosmos', n: '행성 여행', it: [['cosmos/planets', 'H', .85, 't', .1, 70, 0], ['cosmos/sleepy-moon', 'G', .12, 't', .05, 56, -6], ['cosmos/north-star', 'P', .9, 't', .01, 46, 0], ['cosmos/meteor-shower', 'L', .1, 'b', -.1, 60, 0]] },
     { id: 'rain-day', th: 'rain', n: '비 오는 날', it: [['rain/rain-anim', 'H', .84, 't', .09, 70, 0], ['rain/two-umbrellas', 'G', .12, 't', .04, 60, -6], ['rain/hydrangea', 'P', .9, 't', .01, 54, 0], ['rain/boots', 'L', .1, 'b', -.08, 48, -6]] },
     { id: 'rain-warm', th: 'rain', n: '따뜻한 오후', it: [['rain/cloud-sun', 'H', .85, 't', .09, 64, 0], ['rain/cocoa', 'G', .88, 't', .04, 52, 6], ['rain/leaf-drop', 'P', .1, 't', .01, 48, -10], ['rain/frog', 'L', .9, 'b', -.08, 48, 0]] },
@@ -16352,8 +16382,9 @@ function spGallery(box) {
         <div class="sp-gal">${imgs.map((im, i) => `<div class="sp-g${spIsReal(im) ? '' : ' ex'}"><img src="${esc(InviteBlocks.imgUrl(typeof im === 'string' ? im : im.src))}" alt="" loading="lazy">${spIsReal(im) ? '' : '<em>예시</em>'}<button type="button" data-sp-del="${i}" aria-label="빼기">✕</button></div>`).join('')}
         <button type="button" class="sp-g add" data-sp-up="gallery"><span>＋</span>사진 추가</button></div>
         ${spOpt('gallery', 'clearEx') && imgs.some(im => !spIsReal(im)) ? '<button type="button" class="sp-link" id="spClearEx">예시 사진 모두 빼기</button>' : ''}</div>` +
-        (spOpt('gallery', 'type') ? spChoiceRow('갤러리 모양', 'layoutType', InviteBlocks.GALLERY_TYPES || [], gal.fields.layoutType || 'grid') : '');
-    spBindChoice(box, gal.fields, 'gallery');
+        (spOpt('gallery', 'type') ? spChoiceRow('갤러리 모양', 'layoutType', InviteBlocks.GALLERY_TYPES || [], gal.fields.layoutType || 'grid') : '') +
+        (spOpt('gallery', 'reveal') ? spChoiceRow('사진 나타나는 방식 <small>하객이 갤러리까지 내려오면</small>', 'reveal', InviteBlocks.GALLERY_REVEALS || [], gal.fields.reveal || '') : '');
+    spBindChoice(box, gal.fields, 'gallery', k => { if (k === 'reveal') galleryRevealDemo(); });
     box.querySelector('[data-sp-up="gallery"]').addEventListener('click', () => {
         const input = makeFileInput(); input.multiple = true;
         input.addEventListener('change', async () => {
@@ -18195,6 +18226,8 @@ const LDH_EASY = [
     { t: '질문을 건너뛰고 싶어요', d: '나중에 해도 돼요', when: c => c.view === 'quick' && spOpt('flow', 'skip'), steps: ['질문 위쪽 [나중에 할게요]를 누르면 그 질문을 건너뛰어요.', '건너뛴 것은 질문을 다 마친 뒤 목록 화면에서 채울 수 있어요.'], show: () => [{ el: () => ldhFirst('#spSkip'), t: '나중에 할게요', x: '이 질문은 건너뛰고 다음 질문으로 가요.' }] },
     { t: '디자인 바꾸기', d: '적은 내용은 그대로 두고 모양만', when: () => spOpt('theme', 'design') && !spInPlace, steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 위 [디자인 바꾸기]가 열려요.', '마음에 드는 디자인을 누르면 이름·사진·글·계좌는 그대로 두고 모양만 바뀌어요.', '처음 디자인을 고를 때는 아래 [내 사진으로 보기]로 내 사진을 넣어 미리 볼 수도 있어요.'], go: ['그 칸으로 가기', () => { spDesignOpen = true; ldhEasyGo('', 'theme'); }] },
     { t: '칸 모양 바꾸기 (빈티지 · 밤하늘)', d: '인사말·방명록 같은 칸을 다른 모양으로', when: () => spOpt('theme', 'sskin'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'섹션 꾸밈\'에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 중 하나를 눌러요.', '다른 디자인의 색이 좋으면 아래 \'다른 디자인 색으로\'에서 골라요. 처음처럼 하려면 [디자인 따라]를 눌러요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
+    { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', when: () => spOpt('gallery', 'reveal'), steps: ['아래 [그 칸으로 가기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 위(옆) 청첩장에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요. [한 번에]를 누르면 예전처럼 바로 보여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'gallery')] },
+    { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 스티커', steps: ['디자인을 고를 때(또는 \'색·글꼴\' 칸 [디자인 바꾸기]) \'웹툰 · 우리 결혼해요\'를 고르면 한 번에 웹툰 모양이 돼요.', '지금 디자인 그대로 두고 싶으면 첫 화면 꾸미기에서 \'웹툰 표지\'·\'웹툰 말풍선\' 레이아웃을, \'색·글꼴\' 칸 \'섹션 꾸밈\'에서 \'웹툰 컷\'을 골라요.', '\'스티커 꾸미기\'의 \'웹툰 첫 화\'·\'두근두근 말풍선\' 세트로 웹툰 스티커를 한 번에 붙여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '스티커 한 번에 꾸미기', d: '하트·꽃·별 스티커를 세트로', when: () => spOpt('flow', 'stkset'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 아래 \'스티커 꾸미기\'가 보여요.', '마음에 드는 세트를 누르면 첫 화면·인사말·갤러리 모서리에 어울리게 붙어요.', '[다른 세트로]로 바꾸거나 [스티커 다 빼기]로 모두 뺄 수 있어요. 하나씩 옮기려면 전문가 모드에서 해요.'], go: ['그 칸으로 가기', () => spAddGo('#stk')] },
     { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },
     { t: '저장은 어떻게 하나요?', d: '따로 안 눌러도 저절로 저장돼요', steps: ['고치면 몇 초 뒤 저절로 저장돼요. 질문을 넘길 때도 저장돼요.', '창을 닫았다가 다시 들어와도 하던 질문부터 이어서 해요.', '이미 발행한 청첩장이면 고친 내용이 하객 화면에도 바로 바뀌어요.'] },
@@ -18205,6 +18238,8 @@ const LDH_EASY = [
 const LDH_EXPERT = [
     { t: '스티커 붙이기', d: '하트 · 꽃 · 별 · 움직이는 그림', steps: ['위쪽 웃는 얼굴 버튼(스티커 넣기)을 눌러요.', '[추천]에는 지금 디자인에 어울리는 그림이 먼저 나와요. [테마]에서 로맨틱 · 별·우주 · 비 오는 날 … 을 골라 볼 수도 있어요.', '찾기 칸에 하트, 꽃, 비처럼 적거나 [움직임]을 누르면 움직이는 스티커만 모아 봐요 (초록 점 = 움직여요).', '스티커를 누르면 청첩장에 붙어요. 끌어서 옮기고, 모서리를 끌어 크기를 바꿔요.'], show: () => [{ el: () => ldhFirst('#stickerAddBtn', '[data-act="sticker"]'), t: '스티커 넣기', x: '이 버튼을 누르면 스티커 창이 열려요.' }], go: ['스티커 창 열기', () => { closeLdh(); setTimeout(() => document.getElementById('stickerAddBtn')?.click(), 50); }] },
     { t: '섹션 하나만 다른 모양으로', d: '빈티지 · 밤하늘 · 다른 디자인 색', steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요.', '아래쪽 [섹션 테마]에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 · 다른 디자인 색 중 하나를 눌러요.', '[모든 섹션에 같게]를 누르면 모든 섹션이 같은 모양이 돼요.'] },
+    { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', steps: ['아래 [바로 열기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 미리보기에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요.'], go: ['바로 열기', () => ldhExpertOpen('gallery')] },
+    { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 컷', steps: ['메인 사진 칸 맨 위 \'메인 레이아웃\'에서 \'웹툰 표지\'나 \'웹툰 말풍선\'을 골라요.', '글 칸 오른쪽 [효과 ▾] → \'글자 상자\'에서 말풍선 · 노랑 상자 · 효과음 · 꼬리표를 골라 어느 글자든 웹툰처럼 바꿔요.', '섹션을 열어 [섹션 테마] → \'웹툰 컷\'을 고르고 [모든 섹션에 같게]를 눌러요.', '스티커 창 [테마] → \'웹툰\'에서 말풍선·효과음 스티커를 붙여요.'], go: ['메인 사진 칸 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
     { t: '섹션 안 카드 색 바꾸기', d: '방명록 · 안내 · 계좌 칸과 팝업 창 색', steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요 (방명록 · 안내 말씀 · 마음 전하실 곳 · 연락하기 …).', '아래쪽 \'섹션 여백 · 배경색\' 밑 \'안쪽 창 색\'에서 바탕과 글자 색을 골라요. 그 섹션의 카드와 팝업 창이 같이 바뀌어요.', '바탕만 골라도 글자는 잘 보이는 색으로 저절로 맞춰져요. 처음 색으로 하려면 맨 앞 동그라미(테마 기본 색)를 눌러요.'] },
     { t: '글자 내용 바꾸기', d: '청첩장의 글자를 고쳐요', steps: ['청첩장에서 바꿀 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.', '다 적었으면 글자 바깥 빈 곳을 눌러요.'], show: () => [{ el: ldhTextEl, t: '두 번 누르기', x: '이 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.' }] },
     { t: '글자 크기 · 색 · 글꼴 바꾸기', d: '글자를 한 번 눌러요', steps: ['글자를 한 번 누르면 크기·색·글꼴을 바꾸는 작은 창이 떠요.', '[−] [+]로 크기를, 동그라미를 눌러 색을 바꿔요.'], show: () => [{ el: ldhTextEl, t: '한 번 누르기', x: '글자를 한 번 누르면 크기·색 창이 떠요.' }] },
