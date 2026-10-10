@@ -1013,6 +1013,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .fp-sel { background: #2E2A27; color: #fff; }
 .preset-card .fp-acts > * { height: 32px; font-size: 12px; border-radius: 9px; }
 /* 샘플 미리보기: 디자인 고르기 화면 위에 에디터 미리보기만 화면 가득 + 아래 띠 */
+html.dpk-render #screenEditor { display: block !important; visibility: hidden !important; position: fixed; inset: 0; overflow: hidden; z-index: -1; pointer-events: none; }
 html.pv-sample #screenEditor { display: block !important; visibility: hidden; position: fixed; inset: 0; overflow: hidden; z-index: 900; }
 html.pv-sample #screenEditor .preview-pane { visibility: visible; display: flex !important; position: fixed; inset: 0 0 56px; z-index: 901; background: var(--ui-soft, #EDE9E3); overflow-y: auto; }
 html.pv-sample #previewRoot { pointer-events: none; }
@@ -1032,6 +1033,105 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
 .fp-more { display: flex; align-items: center; gap: 8px; margin: 0 auto 22px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; border-radius: 99px; padding: 11px 20px; font: inherit; font-size: 13.5px; font-weight: 600; color: #6F6A63; cursor: pointer; }
 .fp-more:hover { border-color: #1B1A18; color: #1B1A18; }
 .fp-all[hidden], .fp-grid[hidden] { display: none; }
+/* 디자인 고르기 (간편 만들기): 큰 휴대폰을 옆으로 넘기기 + 아래 색 띠로 바로 가기 (관리자 flow.pick을 끄면 예전 카드 화면)
+   휴대폰 속 청첩장 = 그 디자인을 에디터 미리보기로 실제로 그려서 복사한 것(dpkShot) → 390px 폭 그대로 줄여서 보여 줌 */
+.dpk[hidden], #startPick.dpk-on #featuredGrid, #startPick.dpk-on #fpMore, #startPick.dpk-on #fpAll { display: none !important; }
+#startPick.dpk-on { max-width: 1120px; }
+#startPick.dpk-on .wizard-sub { margin-bottom: 14px; }
+.dpk { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'chips' 'stage' 'info' 'strip' 'foot'; }
+.dpk-chips { grid-area: chips; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 6px; }
+.dpk-chips::-webkit-scrollbar, .dpk-car::-webkit-scrollbar, .dpk-strip::-webkit-scrollbar { display: none; }
+.dpk-chips button { flex: none; border: 1px solid var(--ui-line, #E5DED3); background: #fff; border-radius: 99px; font: inherit; font-size: 12.5px; font-weight: 600; padding: 6px 13px; cursor: pointer; color: #6F6A63; white-space: nowrap; }
+.dpk-chips button.on { background: #2B2320; border-color: #2B2320; color: #fff; }
+.dpk-stage { grid-area: stage; position: relative; height: clamp(300px, calc(100svh - 400px), 640px); margin: 0 -24px; }
+.dpk-car { display: flex; gap: 12px; height: 100%; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; padding: 8px 0 12px; cursor: grab; position: relative; }
+.dpk-car.drag { scroll-snap-type: none; cursor: grabbing; user-select: none; }
+.dpk-car > i { flex: none; }
+.dpk-sl { flex: none; height: 100%; aspect-ratio: 9 / 19.5; scroll-snap-align: center; transform-origin: 50% 55%; will-change: transform; position: relative; border: 0; padding: 0; background: none; font: inherit; }
+.dpk-sl[hidden] { display: none; }
+.dpk-ph { position: absolute; inset: 0; border-radius: 18px; border: 3px solid #1E1B19; overflow: hidden; background: var(--sk-bg, #F4F1EC); }
+.dpk-sl.cur .dpk-ph { cursor: zoom-in; box-shadow: 0 12px 30px rgba(30, 22, 16, .22); }
+.dpk-iv.invite-preview { position: absolute; left: 0; top: 0; width: 390px; min-height: 0; border-radius: 0; transform-origin: 0 0; transform: scale(var(--dpk-k, .4)); pointer-events: none; background-image: var(--p-paper, none); background-size: 300px; background-blend-mode: multiply; }
+.dpk-sl.run .dpk-iv { animation: dpkScroll var(--dpk-dur, 18s) ease-in-out .8s infinite; }
+@keyframes dpkScroll { 0%, 8% { translate: 0 0; } 50%, 58% { translate: 0 var(--dpk-end, 0px); } 100% { translate: 0 0; } }
+.dpk-sk { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--sk-ink, #6F6A63); font-size: 13px; font-weight: 600; text-align: center; padding: 12px; }
+.dpk-sk i { width: 70%; aspect-ratio: 3 / 4; border-radius: 10px; background: linear-gradient(170deg, var(--sk-acc, #CFC6BA), transparent 140%); opacity: .35; animation: dpkPulse 1.2s ease-in-out infinite alternate; }
+@keyframes dpkPulse { to { opacity: .6; } }
+.dpk-arr { position: absolute; top: calc(50% - 20px); z-index: 3; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255,255,255,.95); box-shadow: 0 2px 10px rgba(0,0,0,.16); font-size: 19px; line-height: 1; color: #2B2320; cursor: pointer; }
+.dpk-arr.l { left: 14px; } .dpk-arr.r { right: 14px; }
+.dpk-arr:disabled { opacity: 0; pointer-events: none; }
+.dpk-hint { position: absolute; left: 50%; bottom: 22px; translate: -50% 0; z-index: 3; pointer-events: none; font-size: 12px; font-weight: 700; color: #fff; background: rgba(28, 22, 18, .74); padding: 6px 14px; border-radius: 99px; white-space: nowrap; transition: opacity .4s; animation: dpkNudge 2.4s ease-in-out infinite; }
+.dpk-hint.gone { opacity: 0; }
+@keyframes dpkNudge { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-6px); } 60% { transform: translateX(6px); } }
+.dpk-info { grid-area: info; padding: 4px 2px 8px; min-width: 0; }
+.dpk-info .r1 { display: flex; align-items: baseline; gap: 8px; }
+.dpk-info b { font-size: 17px; letter-spacing: -.01em; }
+.dpk-info .cnt { margin-left: auto; font-size: 12px; color: #8A847B; font-variant-numeric: tabular-nums; flex: none; }
+.dpk-info p { margin: 2px 0 0; font-size: 13px; color: #8A847B; word-break: keep-all; }
+.dpk-info .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; } .dpk-info .tags span { font-size: 11px; font-weight: 600; color: #7A7067; background: var(--ui-tint, #F1ECE4); border-radius: 6px; padding: 2px 8px; }
+.dpk-strip { grid-area: strip; display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 4px 2px 10px; position: relative; }
+.dpk-sw { flex: none; width: 58px; border: 0; background: none; padding: 0; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dpk-sw[hidden] { display: none; }
+.dpk-sw i { width: 50px; height: 50px; border-radius: 15px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); position: relative; overflow: hidden; background: var(--sw-bg); transition: box-shadow .2s, transform .2s; }
+.dpk-sw i::before { content: ''; position: absolute; left: 20%; top: 16%; width: 60%; height: 34%; border-radius: 4px; background: var(--sw-img, linear-gradient(170deg, var(--sw-acc), transparent 160%)); background-size: cover; background-position: center; opacity: .9; }
+.dpk-sw i::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 28%; background: var(--sw-acc); }
+.dpk-sw span { font-size: 10.5px; color: #8A847B; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dpk-sw.on i { box-shadow: 0 0 0 2.5px var(--ui-point, #B8925A); transform: translateY(-2px); } .dpk-sw.on span { color: #2B2320; font-weight: 700; }
+.dpk-foot { grid-area: foot; display: flex; gap: 8px; position: sticky; bottom: 0; z-index: 4; padding: 8px 0 calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(rgba(246,244,241,0), var(--ui-page, #F6F4F1) 30%); }
+.dpk-foot button { height: 50px; border-radius: 13px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.dpk-view { flex: none; width: 104px; border: 1px solid var(--ui-line, #DED8CF); background: #fff; color: #1B1A18; }
+.dpk-go { flex: 1; border: 0; background: #2E2A27; color: #fff; }
+.dpk-pal, .dpk-lbl, .dpk-feat { display: none; }
+@media (min-width: 861px) {
+    .dpk { grid-template-columns: minmax(0, 1fr) 300px; grid-template-areas: 'chips side' 'stage side' 'strip side'; column-gap: 28px; }
+    .dpk-side { grid-area: side; display: flex; flex-direction: column; gap: 12px; background: #fff; border: 1px solid var(--ui-line, #E5DED3); border-radius: 20px; padding: 24px 22px 20px; align-self: stretch; }
+    .dpk-stage { margin: 0; height: clamp(420px, calc(100vh - 330px), 640px); }
+    .dpk-car { gap: 20px; }
+    .dpk-arr { width: 42px; height: 42px; font-size: 21px; }
+    .dpk-strip { justify-content: safe center; }
+    .dpk-info { padding: 0; } .dpk-info b { font-size: 21px; }
+    .dpk-pal { display: flex; gap: 6px; } .dpk-pal i { width: 28px; height: 28px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+    .dpk-lbl { display: block; font-size: 12px; font-weight: 700; color: #8A847B; margin: 4px 0 -4px; }
+    .dpk-feat { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: #6F6A63; } .dpk-feat li::before { content: '· '; color: var(--ui-point, #B8925A); font-weight: 700; }
+    .dpk-side .grow { flex: 1; }
+    .dpk-foot { position: static; flex-direction: column-reverse; padding: 0; background: none; }
+    .dpk-foot button { flex: none; height: 48px; }
+    .dpk-foot .dpk-view { width: 100%; height: 46px; }
+    .dpk-side .note { margin: -2px 0 0; font-size: 12px; color: #8A847B; text-align: center; }
+}
+@media (max-width: 860px) {
+    .dpk-side { display: contents; }
+    .dpk-side .grow, .dpk-side .note { display: none; }
+    #startPick.dpk-on { padding-top: 20px; padding-bottom: 0; }
+    #startPick.dpk-on .onb-steps { margin-bottom: 10px; }
+    #startPick.dpk-on .wizard-title { font-size: 21px; margin-bottom: 2px; }
+    #startPick.dpk-on .sc-back { margin-bottom: 8px; }
+    .dpk-stage { height: clamp(280px, calc(100svh - 430px), 600px); }
+    .dpk-info .tags { display: none; }
+}
+/* 크게 보기 - 화면 가득, 크게 본 채로 옆으로 넘기기 */
+.dpk-ov { position: fixed; inset: 0; z-index: 3000; display: flex; justify-content: center; background: rgba(20, 16, 14, .78); opacity: 0; pointer-events: none; transition: opacity .25s; }
+.dpk-ov.show { opacity: 1; pointer-events: auto; }
+.dpk-ovbox { position: relative; width: min(100vw, 430px); height: 100%; display: flex; flex-direction: column; background: #000; translate: 0 30px; transition: translate .3s cubic-bezier(.3,.8,.3,1); }
+.dpk-ov.show .dpk-ovbox { translate: 0 0; }
+.dpk-ovtop { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 10px; right: 10px; z-index: 2; display: flex; align-items: center; gap: 6px; }
+.dpk-ovbox::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 80px; z-index: 1; pointer-events: none; background: linear-gradient(rgba(0,0,0,.5), transparent); }
+.dpk-ovtop .cap { flex: 1; min-width: 0; text-align: center; font-size: 13px; font-weight: 700; color: #fff; background: rgba(0,0,0,.5); padding: 6px 12px; border-radius: 99px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dpk-ovtop button { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(0,0,0,.5); color: #fff; font-size: 18px; cursor: pointer; }
+.dpk-ovtop button:disabled { opacity: .3; cursor: default; }
+.dpk-vw { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; transition: opacity .18s; } .dpk-vw::-webkit-scrollbar { display: none; }
+.dpk-vw.fade { opacity: 0; }
+.dpk-vw > .invite-preview { width: 100%; min-height: 100%; border-radius: 0; pointer-events: none; background-image: var(--p-paper, none); background-size: 300px; background-blend-mode: multiply; }
+.dpk-vw .dpk-sk { position: static; height: 100%; color: #ccc; }
+.dpk-iv *, .dpk-vw > .invite-preview * { pointer-events: none !important; } .dpk-iv .drag-part, .dpk-vw .drag-part { outline: 0 !important; cursor: default; }
+.dpk-ob { flex: none; display: flex; gap: 8px; padding: 10px 14px calc(14px + env(safe-area-inset-bottom)); background: var(--ui-page, #F6F4F1); }
+.dpk-ob button { height: 48px; border-radius: 12px; font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+.dpk-ob .cl { flex: none; width: 84px; border: 1px solid var(--ui-line, #DED8CF); background: #fff; color: #1B1A18; }
+.dpk-ob .go { flex: 1; border: 0; background: #2E2A27; color: #fff; }
+.dpk-swipe { position: absolute; left: 50%; bottom: 86px; translate: -50% 0; z-index: 2; font-size: 11.5px; font-weight: 700; color: #fff; background: rgba(0,0,0,.55); border-radius: 99px; padding: 4px 12px; pointer-events: none; transition: opacity .4s; white-space: nowrap; }
+.dpk-swipe.gone { opacity: 0; }
+@media (min-width: 861px) { .dpk-swipe { display: none; } .dpk-ovbox { border-left: 10px solid #1C1917; border-right: 10px solid #1C1917; } }
+@media (prefers-reduced-motion: reduce) { .dpk-sl.run .dpk-iv, .dpk-hint { animation: none; } }
 @media (max-width: 860px) { .fp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .fp-card .fp-th .pt { zoom: 1; } .fp-card.fp-base .fp-th { height: 210px; } .fp-card .fp-go { opacity: 1; transform: none; } #startPick .wizard-title { font-size: 22px; } }
 .preset-card.pc-base .pt { display: grid; place-items: center; text-align: center; }
 @media (max-width: 720px) {
@@ -4407,6 +4507,22 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
         <h1 class="wizard-title" id="pickTitle">마음에 드는 디자인 하나만 골라주세요</h1>
         <p class="wizard-sub" id="pickSub">고른 뒤에도 색·글꼴·사진은 전부 바꿀 수 있어요.</p>
         <!-- 추천 디자인(관리자 → 추천 디자인에서 정함)만 크게. 나머지는 "더 보기"를 눌러야 펼쳐짐 -->
+        <!-- 간편 만들기: 큰 휴대폰을 옆으로 넘기기 + 아래 색 띠 (dpk*) -->
+        <div class="dpk" id="dpk" hidden>
+            <div class="dpk-chips" id="dpkChips"></div>
+            <div class="dpk-stage"><div class="dpk-car" id="dpkCar"></div>
+                <button type="button" class="dpk-arr l" id="dpkL" aria-label="이전 디자인" title="이전 디자인">‹</button><button type="button" class="dpk-arr r" id="dpkR" aria-label="다음 디자인" title="다음 디자인">›</button>
+                <span class="dpk-hint" id="dpkHint">← 옆으로 밀어 보세요 →</span></div>
+            <div class="dpk-strip" id="dpkStrip"></div>
+            <div class="dpk-side">
+                <div class="dpk-info" id="dpkInfo"></div>
+                <span class="dpk-lbl">이 디자인의 색</span><div class="dpk-pal" id="dpkPal"></div>
+                <span class="dpk-lbl">이렇게 꾸며져 있어요</span><ul class="dpk-feat" id="dpkFeat"></ul>
+                <span class="grow"></span>
+                <div class="dpk-foot"><button type="button" class="dpk-view" id="dpkView" title="이 디자인을 화면 가득 보기">크게 보기</button><button type="button" class="dpk-go" id="dpkGo" title="이 디자인으로 청첩장 만들기 시작">이 디자인으로 시작</button></div>
+                <p class="note">고른 뒤에도 색·글꼴·사진은 다 바꿀 수 있어요</p>
+            </div>
+        </div>
         <div class="fp-grid" id="featuredGrid"></div>
         <button type="button" class="fp-more" id="fpMore" hidden></button>
         <div class="fp-all" id="fpAll">
@@ -5095,6 +5211,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy) EASY_SHOWOFF = !!j.easy.showOff;
     if (j && j.easy && ['split', 'lens', 'off'].includes(j.easy.mobileView)) { EASY_MOBILE_VIEW = j.easy.mobileView; try { spMvApply(); } catch (e) {} } // 휴대폰 보기 방식 (관리자 손쉬운 제작)
     if (j && j.easy) { EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; EASY_HERO_POS = j.easy.heroPos && typeof j.easy.heroPos === 'object' ? j.easy.heroPos : {}; } // 메인 사진 예시 + 보일 부분·확대 (관리자 손쉬운 제작)
+    if (j && j.easy) { try { if (startTrack === 'simple' && document.getElementById('screenDesign').classList.contains('active')) renderDesignScreen(); } catch (e) {} } // 디자인 고르기 (flow.pick · 메인 사진 예시)
     if (j && j.easy && Array.isArray(j.easy.steps)) { EASY_STEPS = j.easy.steps; try { if (document.documentElement.classList.contains('simple-mode')) { if (spApplyEasyOrder()) renderPreview(); spRender(); } } catch (e) {} } // 손쉬운 제작 단계
     // 편집창 모양 (관리자 → 섹션 순서 → 편집창 모양). 주소에 ?panel= 이 있으면 그게 우선
     if (j && typeof j.panelStyle === 'string' && !PZ_URL) {
@@ -13639,6 +13756,17 @@ function renderDesignScreen() {
     // 추천 디자인만 크게 (관리자가 하나도 안 골랐으면 예전처럼 전체 목록만)
     const ALL = allDesigns();
     const feat = (FEATURED_IDS || []).map(id => ALL.find(p => p.id === id)).filter(Boolean).slice(0, custom ? 3 : 6); // 직접 만들기는 기본 구성 카드 + 3개 (한 줄)
+    { // 간편 만들기: 큰 휴대폰 넘겨 보기 (추천 디자인 먼저, 나머지 뒤에)
+        const on = dpkOn() && ALL.length > 0, sp = document.getElementById('startPick');
+        sp.classList.toggle('dpk-on', on); document.getElementById('dpk').hidden = !on;
+        if (on) {
+            document.getElementById('pickTitle').textContent = '마음에 드는 디자인을 골라주세요';
+            document.getElementById('pickSub').textContent = '옆으로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요';
+            const fids = (FEATURED_IDS || []).filter(id => ALL.some(p => p.id === id));
+            dpkBuild(fids.map(id => ALL.find(p => p.id === id)).concat(ALL.filter(p => !fids.includes(p.id))));
+            return;
+        }
+    }
     const fg = document.getElementById('featuredGrid'), more = document.getElementById('fpMore'), all = document.getElementById('fpAll');
     const baseId = PRESETS[0] ? PRESETS[0].id : 'classic';
     const cards = (custom ? [`<button type="button" class="fp-card fp-base" data-design="${baseId}"><div class="fp-th"><span>＋</span></div>
@@ -13679,6 +13807,264 @@ function bindDesignCards(box) {
         card.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === card) { e.preventDefault(); card.click(); } });
     });
     box.querySelectorAll('[data-pv-design]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openSamplePreview(b.dataset.pvDesign); }));
+}
+// ===== 디자인 고르기 (간편 만들기): 큰 휴대폰을 옆으로 넘기기 + 아래 색 띠로 바로 가기 =====
+//  휴대폰 속 청첩장은 그 디자인을 에디터 미리보기로 정말 그려서(dpkRender) 복사한 것 - 고른 뒤 처음 보일 모습 그대로
+//  (첫 화면 = 매거진 표지 + 메인 사진 예시, 디자인 예시 예식장 이름은 비움). 가운데부터 차례로 하나씩 그려 둠.
+//  관리자 손쉬운 제작 → 간편 만들기 전체 → '디자인 고르기: 큰 휴대폰 넘겨 보기'(flow.pick)를 끄면 예전 카드 화면
+const DPK = { ids: [], cur: '', filt: 'all', shots: {}, samples: {}, q: Promise.resolve(), key: '', touched: false, raf: 0, bound: false, todo: [], ovId: '' };
+function dpkOn() { try { return startTrack === 'simple' && spOpt('flow', 'pick'); } catch (e) { return false; } }
+function dpkMeta(p) {
+    const pal = skins[p.__base || p.id] || skins.classic, sm = SAMPLE_LIST[p.id];
+    const hex = String(pal.bg || '#ffffff').replace('#', ''), n = parseInt(hex.length === 3 ? hex.replace(/./g, c => c + c) : hex, 16) || 0;
+    const lum = (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
+    const fo = p.font ? fontOptions.find(f => f.id === p.font) : null;
+    return { bg: pal.bg, ink: pal.ink, acc: pal.accent, line: pal.line, dark: lum < 0.45, video: p.hero === 'video', cover: (sm && sm.cover) || '', font: (fo && fo.label) || '' };
+}
+const DPK_CHIPS = [['all', '전체'], ['feat', '추천'], ['light', '밝은 색'], ['dark', '어두운 색'], ['video', '영상으로 시작']];
+function dpkFit(id, f) {
+    if (f === 'all') return true;
+    const p = allDesigns().find(x => x.id === id); if (!p) return false;
+    const m = dpkMeta(p);
+    return f === 'feat' ? (FEATURED_IDS || []).includes(id) : f === 'light' ? !m.dark : f === 'dark' ? m.dark : f === 'video' ? m.video : true;
+}
+const dpkVis = () => DPK.ids.filter(id => dpkFit(id, DPK.filt));
+// 샘플 디자인 JSON (관리자가 꾸민 모습) - 한 번만 받아 둠
+function dpkSample(id) {
+    if (!SAMPLE_LIST[id]) return Promise.resolve(null);
+    return DPK.samples[id] || (DPK.samples[id] = fetch(`sample_api.php?a=get&id=${encodeURIComponent(id)}`, { cache: 'no-store' }).then(r => r.json()).then(j => j && j.ok ? j.design : null).catch(() => null));
+}
+// 간편 만들기로 새로 시작할 때 처음 모습 (startWithPreset과 같이 씀)
+function spNewLook() {
+    const lay = InviteBlocks.HERO_LAYOUTS.find(l => l.id === 'magazine');
+    ['hero', 'heroVideo'].forEach(id => { const b = state.blocks.find(x => x.id === id); if (b && lay) { InviteBlocks.applyHeroLayout(b, lay); spForceFull(b); } }); // 처음 만들 때 첫 화면은 매거진 표지
+    spApplyHeroSample();
+    const loc = state.blocks.find(b => b.id === 'location'); state.venueDemo = loc && loc.fields.venue ? loc.fields.venue : undefined; state.venueDemoAddr = loc && loc.fields.address ? loc.fields.address : undefined; // 디자인 예시 예식장 이름 (고객이 적으면 그 이름으로)
+}
+// 그 디자인을 미리보기에 잠깐 그려서 HTML만 가져오고 지금 상태로 되돌림 (되돌리기 기록·자동 저장 안 남김)
+function dpkRender(id, design) {
+    const html = document.documentElement, root = document.getElementById('previewRoot'), pane = document.querySelector('.preview-pane');
+    if (!root || html.classList.contains('pv-sample') || !document.getElementById('screenDesign').classList.contains('active')) return null;
+    const keep = JSON.stringify(state), sel = selectedId, lsj = lastSnapshotJSON, rStyle = root.getAttribute('style'), rCls = root.className, pBg = pane ? pane.style.background : '';
+    isRestoringHistory = true; html.classList.add('dpk-render');
+    try {
+        const sm = SAMPLE_LIST[id];
+        applyPreset(sm && sm.custom ? sm.base : id);
+        if (design) applySampleDesign(design);
+        try { applyWizardDataToBlocks(); } catch (e) {}
+        try { spNewLook(); } catch (e) {}
+        selectedId = null;
+        renderPreviewNow();
+        return { html: dpkClean(root.innerHTML), style: root.getAttribute('style') || '', cls: rCls.replace(/\b(sp-pop|has-desktop-shadow)\b/g, '') + (root.classList.contains('dividers-on') ? ' dividers-on' : '') };
+    } catch (e) { console.warn('[dpk]', e); return null; }
+    finally {
+        state = JSON.parse(keep); selectedId = sel; lastSnapshotJSON = lsj; isRestoringHistory = false; html.classList.remove('dpk-render');
+        root.innerHTML = ''; if (rStyle == null) root.removeAttribute('style'); else root.setAttribute('style', rStyle); root.className = rCls; if (pane) pane.style.background = pBg;
+        if (pvFabEl) { pvFabEl.remove(); pvFabEl = null; pvFabKey = ''; }
+    }
+}
+// 복사본 정리: 편집용 손잡이 빼기, 유튜브는 썸네일로, 등장 효과는 다 보인 상태로
+function dpkClean(h) {
+    const t = document.createElement('template'); t.innerHTML = h; const c = t.content;
+    c.querySelectorAll('.section-ruler, .hb-area, .hb-handle, .hb-ok, .hh-group, .ib-fab, .video-fullscreen-btn').forEach(e => e.remove());
+    c.querySelectorAll('iframe').forEach(f => {
+        const m = (f.getAttribute('src') || f.getAttribute('data-src') || '').match(/embed\/([\w-]{6,})/);
+        const im = document.createElement(m ? 'img' : 'div');
+        if (m) { im.setAttribute('src', `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`); im.setAttribute('alt', ''); }
+        im.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:' + (m ? '#111' : 'rgba(0,0,0,.06)'));
+        f.replaceWith(im);
+    });
+    c.querySelectorAll('video').forEach(v => { v.removeAttribute('autoplay'); v.setAttribute('preload', 'metadata'); });
+    c.querySelectorAll('[class*="reveal-"]').forEach(el => { el.classList.add('in-view'); el.style.transition = 'none'; el.style.animation = 'none'; });
+    c.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    c.querySelectorAll('.selected, .sp-live, .sp-glow, .marquee-hover, .is-dragging, .ph-target').forEach(el => el.classList.remove('selected', 'sp-live', 'sp-glow', 'marquee-hover', 'is-dragging', 'ph-target')); // 편집 중 표시(점선 등)는 빼기
+    c.querySelectorAll('img[loading="lazy"]').forEach(el => el.removeAttribute('loading'));
+    return t.innerHTML;
+}
+function dpkShot(id) {
+    if (DPK.shots[id]) return Promise.resolve(DPK.shots[id]);
+    const key = DPK.key;
+    return (DPK.q = DPK.q.then(async () => {
+        if (DPK.shots[id]) return DPK.shots[id];
+        const d = await dpkSample(id);
+        if (key !== DPK.key) return null;
+        const s = dpkRender(id, d); if (s) DPK.shots[id] = s;
+        return s;
+    }).catch(() => null));
+}
+function dpkIvEl(s) { const el = document.createElement('div'); el.className = s.cls + ' dpk-iv'; el.setAttribute('style', s.style); el.innerHTML = s.html; return el; }
+function dpkFill(id) {
+    const sl = document.querySelector(`#dpkCar .dpk-sl[data-id="${CSS.escape(id)}"]`), s = DPK.shots[id];
+    if (!sl || !s || sl.dataset.filled) return;
+    const ph = sl.querySelector('.dpk-ph'); ph.innerHTML = ''; ph.appendChild(dpkIvEl(s)); sl.dataset.filled = '1';
+    if (id === DPK.cur) dpkRun();
+}
+// 가운데부터 바깥으로 하나씩 그려 둠 (화면이 안 멈추게 틈을 두고)
+function dpkQueue() {
+    const v = dpkVis(), i = Math.max(0, v.indexOf(DPK.cur)), order = [];
+    for (let k = 0; k < v.length; k++) { const a = v[i + k], b = v[i - k]; if (a && !order.includes(a)) order.push(a); if (b && !order.includes(b)) order.push(b); }
+    DPK.ids.forEach(id => { if (!order.includes(id)) order.push(id); });
+    DPK.todo = order.filter(id => !DPK.shots[id]);
+    if (DPK.busy) return;
+    const next = () => {
+        if (Date.now() - (DPK.moved || 0) < 450) { DPK.busy = true; setTimeout(next, 250); return; } // 넘기는 동안은 쉬었다가 (끊기지 않게)
+        const id = DPK.todo.shift();
+        if (!id || !document.getElementById('screenDesign').classList.contains('active') || document.getElementById('dpk').hidden) { DPK.busy = false; return; }
+        DPK.busy = true;
+        dpkShot(id).then(() => { dpkFill(id); if (DPK.ovId === id) dpkOvPut(id); setTimeout(next, 60); });
+    };
+    next();
+}
+// 가운데 휴대폰만 위에서 아래로 천천히 흘러감
+function dpkRun() {
+    document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => {
+        const on = sl.dataset.id === DPK.cur, iv = sl.querySelector('.dpk-iv');
+        if (!on || !iv) { sl.classList.remove('run'); return; }
+        const k = parseFloat(getComputedStyle(document.getElementById('dpkCar')).getPropertyValue('--dpk-k')) || .4, ph = sl.querySelector('.dpk-ph');
+        const h = iv.offsetHeight, end = Math.min(0, -(h * k - ph.clientHeight));
+        iv.style.setProperty('--dpk-end', end.toFixed(1) + 'px'); iv.style.setProperty('--dpk-dur', Math.max(14, Math.min(48, h / 260)).toFixed(1) + 's');
+        if (!sl.classList.contains('run')) { void iv.offsetWidth; sl.classList.add('run'); }
+    });
+}
+function dpkSize() {
+    const car = document.getElementById('dpkCar'); if (!car) return;
+    const sl = car.querySelector('.dpk-sl:not([hidden])'); if (!sl) return;
+    const w = sl.offsetWidth, gap = parseFloat(getComputedStyle(car).columnGap) || 12;
+    car.style.setProperty('--dpk-k', ((w - 6) / 390).toFixed(4));
+    car.querySelectorAll(':scope > i').forEach(g => { g.style.width = Math.max(0, (car.clientWidth - w) / 2 - gap) + 'px'; });
+}
+const dpkLeft = sl => sl.offsetLeft + sl.offsetWidth / 2 - document.getElementById('dpkCar').clientWidth / 2;
+function dpkGo(id, inst) { const sl = document.querySelector(`#dpkCar .dpk-sl[data-id="${CSS.escape(id || '')}"]`); if (sl) document.getElementById('dpkCar').scrollTo({ left: dpkLeft(sl), behavior: inst ? 'auto' : 'smooth' }); }
+function dpkMark(id) {
+    const p = allDesigns().find(x => x.id === id); if (!p) return;
+    const v = dpkVis(), n = v.indexOf(id), m = dpkMeta(p);
+    DPK.cur = id;
+    document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => sl.classList.toggle('cur', sl.dataset.id === id));
+    const strip = document.getElementById('dpkStrip'); let sw = null;
+    strip.querySelectorAll('.dpk-sw').forEach(b => { const on = b.dataset.id === id; b.classList.toggle('on', on); if (on) sw = b; });
+    if (sw) strip.scrollTo({ left: sw.offsetLeft - strip.clientWidth / 2 + sw.offsetWidth / 2, behavior: 'smooth' });
+    const tags = (p.tags || []).filter(t => t !== 'BETA').slice(0, 2).map(t => '#' + t);
+    document.getElementById('dpkInfo').innerHTML = `<div class="r1"><b>${esc(p.label)}</b><span class="cnt">${n + 1} / ${v.length}</span></div><p>${esc(p.desc || '')}</p><div class="tags"><span>${m.dark ? '어두운 색' : '밝은 색'}</span><span>${m.video ? '영상으로 시작' : '사진으로 시작'}</span>${tags.map(t => `<span>${esc(t)}</span>`).join('')}</div>`;
+    document.getElementById('dpkPal').innerHTML = [m.bg, m.acc, m.ink, m.line].filter(Boolean).map(c => `<i style="background:${esc(c)}"></i>`).join('');
+    const secs = (p.sections || []).filter(s => s !== 'hero' && s !== 'heroVideo').map(s => (InviteBlocks.BLOCKS[s] && InviteBlocks.BLOCKS[s].label) || blockLabels[s]).filter(Boolean);
+    document.getElementById('dpkFeat').innerHTML = [m.video ? '영상으로 여는 첫 화면' : '사진으로 여는 첫 화면', m.font ? `글꼴 · ${m.font}` : '', secs.length ? secs.slice(0, 5).join(' · ') : '', p.ambient && p.ambient !== 'none' && InviteBlocks.AMBIENT[p.ambient] ? `장식 효과 · ${InviteBlocks.AMBIENT[p.ambient].label || '있음'}` : ''].filter(Boolean).map(t => `<li>${esc(t)}</li>`).join('');
+    document.getElementById('dpkL').disabled = n <= 0; document.getElementById('dpkR').disabled = n >= v.length - 1;
+    dpkRun(); dpkQueue();
+}
+function dpkPaint() {
+    DPK.raf = 0;
+    const car = document.getElementById('dpkCar'); if (!car) return;
+    const mid = car.scrollLeft + car.clientWidth / 2; let best = DPK.cur, bd = 1e9;
+    car.querySelectorAll('.dpk-sl').forEach(sl => {
+        if (sl.hidden) return;
+        const c = sl.offsetLeft + sl.offsetWidth / 2, d = Math.abs(c - mid), r = Math.min(1, d / (sl.offsetWidth + 12));
+        sl.style.transform = `scale(${(1 - r * .13).toFixed(3)})`; sl.style.opacity = (1 - r * .45).toFixed(3);
+        if (d < bd) { bd = d; best = sl.dataset.id; }
+    });
+    if (best !== DPK.cur) dpkMark(best);
+}
+function dpkTouched() { if (DPK.touched) return; DPK.touched = true; document.getElementById('dpkHint').classList.add('gone'); }
+function dpkStep(k) { const v = dpkVis(), n = v.indexOf(DPK.cur), id = v[Math.max(0, Math.min(v.length - 1, n + k))]; dpkTouched(); dpkGo(id); }
+function dpkBuild(list) {
+    const key = JSON.stringify([Object.keys(SAMPLE_LIST).map(k => [k, SAMPLE_LIST[k].updated || SAMPLE_LIST[k].updated_at || '']), EASY_HERO_SAMPLE, EASY_HERO_POS, list.map(p => p.id)]);
+    if (key !== DPK.key) { DPK.key = key; DPK.shots = {}; DPK.todo = []; }
+    DPK.ids = list.map(p => p.id);
+    if (!DPK.ids.includes(DPK.cur)) DPK.cur = DPK.ids[0];
+    const cnt = f => DPK.ids.filter(id => dpkFit(id, f)).length;
+    const chips = DPK_CHIPS.filter(([f]) => f === 'all' || (cnt(f) > 0 && cnt(f) < DPK.ids.length));
+    if (!chips.some(([f]) => f === DPK.filt)) DPK.filt = 'all';
+    document.getElementById('dpkChips').innerHTML = chips.length > 1 ? chips.map(([f, t]) => `<button type="button" data-f="${f}" class="${f === DPK.filt ? 'on' : ''}">${t}</button>`).join('') : '';
+    const car = document.getElementById('dpkCar');
+    car.innerHTML = '<i></i>' + list.map(p => { const m = dpkMeta(p); return `<div class="dpk-sl" data-id="${esc(p.id)}" role="button" tabindex="-1" aria-label="${esc(p.label)}"${dpkFit(p.id, DPK.filt) ? '' : ' hidden'}><div class="dpk-ph" style="--sk-bg:${esc(m.bg)};--sk-ink:${esc(m.ink)};--sk-acc:${esc(m.acc)}"><div class="dpk-sk"><i></i>${esc(p.label)}<br><small style="font-weight:400;opacity:.7">그리는 중…</small></div></div></div>`; }).join('') + '<i></i>';
+    document.getElementById('dpkStrip').innerHTML = list.map(p => { const m = dpkMeta(p); return `<button type="button" class="dpk-sw" data-id="${esc(p.id)}" title="${esc(p.label)}" style="--sw-bg:${esc(m.bg)};--sw-acc:${esc(m.acc)}${m.cover ? `;--sw-img:url('${esc(m.cover)}')` : ''}"${dpkFit(p.id, DPK.filt) ? '' : ' hidden'}><i></i><span>${esc(p.label)}</span></button>`; }).join('');
+    Object.keys(DPK.shots).forEach(dpkFill);
+    dpkBind();
+    requestAnimationFrame(() => { dpkSize(); dpkMark(DPK.cur); dpkGo(DPK.cur, true); dpkPaint(); });
+}
+function dpkBind() {
+    if (DPK.bound) return; DPK.bound = true;
+    const car = document.getElementById('dpkCar'), strip = document.getElementById('dpkStrip');
+    car.addEventListener('scroll', () => { DPK.moved = Date.now(); if (!DPK.raf) DPK.raf = requestAnimationFrame(dpkPaint); }, { passive: true });
+    car.addEventListener('touchstart', dpkTouched, { passive: true });
+    document.getElementById('dpkL').addEventListener('click', () => dpkStep(-1));
+    document.getElementById('dpkR').addEventListener('click', () => dpkStep(1));
+    strip.addEventListener('click', e => { const b = e.target.closest('.dpk-sw'); if (b) { dpkTouched(); dpkGo(b.dataset.id); } });
+    document.getElementById('dpkChips').addEventListener('click', e => {
+        const b = e.target.closest('[data-f]'); if (!b) return;
+        DPK.filt = b.dataset.f;
+        document.querySelectorAll('#dpkChips [data-f]').forEach(x => x.classList.toggle('on', x === b));
+        document.querySelectorAll('#dpkCar .dpk-sl, #dpkStrip .dpk-sw').forEach(el => { el.hidden = !dpkFit(el.dataset.id, DPK.filt); });
+        const v = dpkVis(); if (!v.includes(DPK.cur)) DPK.cur = v[0];
+        dpkSize(); dpkMark(DPK.cur); dpkGo(DPK.cur, true); dpkPaint();
+    });
+    // 마우스로 끌어서 넘기기 (PC)
+    let dn = null, moved = false;
+    car.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' || e.button) return; dn = { x: e.clientX, l: car.scrollLeft }; moved = false; });
+    window.addEventListener('pointermove', e => { if (!dn) return; const dx = e.clientX - dn.x; if (!moved && Math.abs(dx) > 5) { moved = true; car.classList.add('drag'); dpkTouched(); } if (moved) car.scrollLeft = dn.l - dx; });
+    window.addEventListener('pointerup', () => {
+        if (!dn) return; const was = moved; dn = null; if (!was) return;
+        car.classList.remove('drag');
+        const mid = car.scrollLeft + car.clientWidth / 2; let best = DPK.cur, bd = 1e9;
+        car.querySelectorAll('.dpk-sl:not([hidden])').forEach(sl => { const d = Math.abs(sl.offsetLeft + sl.offsetWidth / 2 - mid); if (d < bd) { bd = d; best = sl.dataset.id; } });
+        dpkGo(best); setTimeout(() => { moved = false; }, 0);
+    });
+    car.addEventListener('click', e => { if (moved) return; const sl = e.target.closest('.dpk-sl'); if (!sl) return; if (sl.dataset.id === DPK.cur) dpkOvOpen(); else { dpkTouched(); dpkGo(sl.dataset.id); } });
+    document.getElementById('dpkView').addEventListener('click', dpkOvOpen);
+    document.getElementById('dpkGo').addEventListener('click', () => { if (DPK.cur) startWithPreset(DPK.cur); });
+    document.addEventListener('keydown', e => {
+        if (!document.getElementById('screenDesign').classList.contains('active') || document.getElementById('dpk').hidden || /INPUT|TEXTAREA|SELECT/.test((e.target && e.target.tagName) || '')) return;
+        const ov = document.getElementById('dpkOv');
+        if (ov && ov.classList.contains('show')) { if (e.key === 'Escape') dpkOvClose(); else if (e.key === 'ArrowLeft') dpkOvStep(-1); else if (e.key === 'ArrowRight') dpkOvStep(1); return; }
+        if (e.key === 'ArrowLeft') dpkStep(-1); else if (e.key === 'ArrowRight') dpkStep(1);
+    });
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { if (document.getElementById('dpk').hidden) return; dpkSize(); dpkGo(DPK.cur, true); dpkPaint(); dpkRun(); }).observe(car);
+}
+// 크게 보기: 화면 가득 + 크게 본 채로 옆으로 넘기기
+function dpkOvEl() {
+    let ov = document.getElementById('dpkOv'); if (ov) return ov;
+    ov = document.createElement('div'); ov.className = 'dpk-ov'; ov.id = 'dpkOv';
+    ov.innerHTML = `<div class="dpk-ovbox" role="dialog" aria-modal="true" aria-label="디자인 크게 보기"><div class="dpk-ovtop"><button type="button" class="pv" aria-label="이전 디자인" title="이전 디자인">‹</button><span class="cap"></span><button type="button" class="nv" aria-label="다음 디자인" title="다음 디자인">›</button></div>
+        <div class="dpk-vw"></div><span class="dpk-swipe">옆으로 밀면 다른 디자인</span>
+        <div class="dpk-ob"><button type="button" class="cl" title="닫고 디자인 고르기로">닫기</button><button type="button" class="go" title="이 디자인으로 청첩장 만들기 시작">이 디자인으로 시작</button></div></div>`;
+    document.body.appendChild(ov);
+    ov.addEventListener('click', e => { if (e.target === ov) dpkOvClose(); });
+    ov.querySelector('.pv').addEventListener('click', () => dpkOvStep(-1));
+    ov.querySelector('.nv').addEventListener('click', () => dpkOvStep(1));
+    ov.querySelector('.cl').addEventListener('click', () => dpkOvClose());
+    ov.querySelector('.go').addEventListener('click', () => { const id = DPK.ovId; dpkOvClose(true); if (id) startWithPreset(id); });
+    const vw = ov.querySelector('.dpk-vw'); let ts = null;
+    vw.addEventListener('touchstart', e => { const t = e.touches[0]; ts = { x: t.clientX, y: t.clientY }; }, { passive: true });
+    vw.addEventListener('touchend', e => { if (!ts) return; const t = e.changedTouches[0], dx = t.clientX - ts.x, dy = t.clientY - ts.y; ts = null; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.6) dpkOvStep(dx < 0 ? 1 : -1); }, { passive: true });
+    return ov;
+}
+function dpkOvPut(id, fade) {
+    const ov = dpkOvEl(), vw = ov.querySelector('.dpk-vw'), p = allDesigns().find(x => x.id === id); if (!p) return;
+    const put = () => {
+        DPK.ovId = id;
+        const v = dpkVis(), n = v.indexOf(id), s = DPK.shots[id];
+        ov.querySelector('.cap').textContent = `${p.label} · ${n + 1}/${v.length} · 위아래로 보기`;
+        ov.querySelector('.pv').disabled = n <= 0; ov.querySelector('.nv').disabled = n >= v.length - 1;
+        vw.innerHTML = ''; vw.scrollTop = 0;
+        if (s) { const el = dpkIvEl(s); el.classList.remove('dpk-iv'); vw.appendChild(el); }
+        else { vw.innerHTML = '<div class="dpk-sk">그리는 중…</div>'; dpkShot(id).then(() => { if (DPK.ovId === id && ov.classList.contains('show')) dpkOvPut(id); dpkFill(id); }); }
+        vw.classList.remove('fade');
+    };
+    if (fade) { vw.classList.add('fade'); setTimeout(put, 160); } else put();
+}
+function dpkOvStep(k) { const v = dpkVis(), n = v.indexOf(DPK.ovId), id = v[n + k]; if (!id) return; dpkOvPut(id, true); document.querySelector('#dpkOv .dpk-swipe').classList.add('gone'); }
+function dpkOvOpen() {
+    if (!DPK.cur) return;
+    const ov = dpkOvEl(); dpkOvPut(DPK.cur);
+    ov.querySelector('.dpk-swipe').classList.remove('gone');
+    clearTimeout(DPK.swT); DPK.swT = setTimeout(() => ov.querySelector('.dpk-swipe').classList.add('gone'), 3500);
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => ov.classList.add('show'));
+}
+function dpkOvClose(picking) {
+    const ov = document.getElementById('dpkOv'); if (!ov) return;
+    ov.classList.remove('show'); document.body.style.overflow = '';
+    setTimeout(() => { if (!ov.classList.contains('show')) ov.querySelector('.dpk-vw').innerHTML = ''; }, 300);
+    if (!picking && DPK.ovId && DPK.ovId !== DPK.cur) { dpkMark(DPK.ovId); dpkGo(DPK.ovId, true); dpkPaint(); }
 }
 // 샘플 미리보기: 그 디자인(관리자 샘플이 있으면 샘플 모습)을 잠깐 입혀서 에디터 미리보기를 화면 가득 보여줌
 //  [돌아가기] = 보기 전 상태 그대로 되돌림 / [이 샘플로 선택] = 그 디자인으로 시작 (startWithPreset)
@@ -13724,10 +14110,8 @@ async function startWithPreset(presetId) {
     delete state.simpleSnap; delete state.fullSnap;
     if (startTrack === 'simple') { // 간편 만들기: 기본 정보 단계 없이 바로 칸 채우기 화면 (이름·날짜부터)
         applyWizardDataToBlocks(); // 주문 때 받은 이름·장소가 있으면 미리 채움
-        { const lay = InviteBlocks.HERO_LAYOUTS.find(l => l.id === 'magazine'); ['hero', 'heroVideo'].forEach(id => { const b = state.blocks.find(x => x.id === id); if (b && lay) { InviteBlocks.applyHeroLayout(b, lay); spForceFull(b); } }); } // 처음 만들 때 첫 화면은 매거진 표지
         spMarkDesignOff();
-        spApplyHeroSample();
-        { const loc = state.blocks.find(b => b.id === 'location'); state.venueDemo = loc && loc.fields.venue ? loc.fields.venue : undefined; state.venueDemoAddr = loc && loc.fields.address ? loc.fields.address : undefined; } // 디자인 예시 예식장 이름 (고객이 적으면 그 이름으로)
+        spNewLook(); // 첫 화면 매거진 표지 + 메인 사진 예시 + 디자인 예시 예식장 이름 (디자인 고르기 휴대폰도 같은 모습)
         if (spOpt('flow', 'ask')) spEasyStartOff(); // 질문으로 만들 땐 메인 화면만 켜고 시작 → 질문에 닿을 때 그 섹션을 켬 (미리보기가 아래로 튀지 않게)
         state.spView = spOpt('flow', 'ask') ? 'quick' : 'list'; state.spAsk = {}; // 질문에 하나씩 답하기 → 정리 화면 → 완성본 → 목록 화면 (관리자가 질문을 끄면 바로 목록)
         spRenderAll();
