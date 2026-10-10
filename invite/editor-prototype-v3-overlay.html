@@ -459,6 +459,9 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .simple-mode #previewRoot { pointer-events: none; } /* 미리보기는 보기만 (글자·스티커 옮기기는 전문가 모드에서) */
 /* 단, 지금 단계 섹션의 높이(위·아래 여백 눈금자)와 마음 전하실 곳 계좌 줄 옮기기는 간편 만들기에서도 됨 (spLiveSync) */
 .simple-mode #previewRoot .section-ruler, .simple-mode #previewRoot .col.sp-live { pointer-events: auto; }
+/* 타임라인 글 칸 폭 손잡이(파란 세로선)·글 칸 테두리는 전문가 모드에서만 */
+.simple-mode #previewRoot .tl-resize-handle { display: none !important; }
+.simple-mode #previewRoot .tl-date span[contenteditable], .simple-mode #previewRoot .tl-title b[contenteditable], .simple-mode #previewRoot .tl-desc span[contenteditable] { outline: none !important; background: none !important; }
 .simple-mode #previewRoot .col.sp-flash { animation: spFlash 1.4s ease; }
 #previewRoot.sp-pop { animation: spPop .28s ease; }
 @keyframes spPop { from { opacity: .25; } to { opacity: 1; } }
@@ -639,6 +642,8 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .sp-body .wz-lead { margin-bottom: 22px; font-size: 13.5px; }
 .sp-nav { position: sticky; bottom: 0; z-index: 6; display: flex; gap: 10px; padding: 12px 24px 16px; background: linear-gradient(rgba(246,244,241,0), var(--ui-page, #F6F4F1) 35%); }
 .sp-hero { display: flex; align-items: center; gap: 12px; }
+.sp-hero.sp-ibg-ph { margin-top: 10px; } .sp-hero.sp-ibg-ph img, .sp-hero.sp-ibg-ph > span { width: 72px; height: 104px; }
+#spIbgYt { margin-top: 10px; }
 .sp-hero img, .sp-hero > span { width: 96px; height: 120px; border-radius: 12px; object-fit: cover; background: var(--ui-line, #EDE7DF); display: grid; place-items: center; font-size: 12px; color: var(--wz-mute); flex: none; }
 .sp-gal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .sp-g { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--ui-line, #EDE7DF); }
@@ -15272,9 +15277,11 @@ function spMvLabel(st) {
     if (spMvMode() === 'lens') setTimeout(spLensPlace, 120); // (새 질문의 적는 칸을 가리지 않게)
 }
 // 지금 질문에서 보여줄 자리: 이름·날짜 질문은 첫 화면 안의 그 글자, 그 밖엔 그 섹션
+let spPvHint = null; // 방금 바꾼 옵션이 보이는 자리 {sel, t} (지도 켜기·높이·가로 꽉 → 지도) - 3초 동안
 function spPvTargetEl(st) {
     const root = document.getElementById('previewRoot'); if (!root || !st) return null;
     const col = (st.s || []).map(id => root.querySelector(`.col[data-block-id="${id}"]`)).find(Boolean); if (!col) return null;
+    if (spPvHint && Date.now() - spPvHint.t < 3000) { const h = col.querySelector(spPvHint.sel); if (h && h.offsetWidth) return h; }
     // 지금 적고 있는 칸 (신부 이름을 적는데 신랑 이름이 빛나던 것 - 포커스된 칸 기준으로)
     const act = document.activeElement, inPane = act && act.closest && act.closest('#simplePane');
     const fk = inPane ? (act.dataset.wi || act.dataset.fam || act.dataset.ct || ((act.closest('[data-k]') || {}).dataset || {}).k || '') : '';
@@ -16591,11 +16598,12 @@ function spVenue(box) {
     // 지도 예시: 가로 꽉 채우기·높이를 바꾸면 그 자리에서 바로 (다시 그리지 않고 움직이며)
     const demo = box.querySelector('#spMapDemo');
     box.querySelectorAll('[data-sp-map]').forEach(c => c.addEventListener('change', () => {
+        spPvHint = { sel: '.location-map', t: Date.now() }; // 미리보기는 '오시는 길' 글자 말고 지도로
         f[c.dataset.spMap] = c.checked; spChanged(['location']); scheduleSnapshot();
         if (c.dataset.spMap === 'mapFullWidth' && demo) demo.classList.toggle('full', c.checked); else spRender();
     }));
     const mh = box.querySelector('#spMapH');
-    if (mh) { mh.addEventListener('input', () => { f.mapHeight = parseInt(mh.value, 10) || 200; box.querySelector('#spMapHV').textContent = mh.value + 'px'; if (demo) demo.style.height = Math.round(f.mapHeight * .8) + 'px'; renderPreview(); }); mh.addEventListener('change', () => scheduleSnapshot()); }
+    if (mh) { mh.addEventListener('input', () => { spPvHint = { sel: '.location-map', t: Date.now() }; f.mapHeight = parseInt(mh.value, 10) || 200; box.querySelector('#spMapHV').textContent = mh.value + 'px'; if (demo) demo.style.height = Math.round(f.mapHeight * .8) + 'px'; renderPreview(); clearTimeout(mh._aim); mh._aim = setTimeout(() => spScrollPreview(['location']), 260); }); mh.addEventListener('change', () => scheduleSnapshot()); } // (높이를 바꾸면 지도가 보이게)
     box.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => {
         f[inp.dataset.f] = inp.value; f.address = [f.addressBase, f.addressDetail].filter(Boolean).join(' '); spChanged(['location']);
     }));
@@ -16679,16 +16687,36 @@ function spAccount(box) {
     box.querySelector('#spPar')?.addEventListener('click', e => { const p = box.querySelector('#spParents'), on = !p.classList.contains('on'); p.classList.toggle('on', on); e.currentTarget.textContent = on ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'; });
 }
 // 7. 마무리
+// 간편 인트로 배경 고르기 (전문가 모드 인트로 설정과 같은 값: bgType color·image·video·clear)
+function spIntroBgList() {
+    const media = spOpt('finish', 'introMedia');
+    return [['color', '디자인 색'], ...(media ? [['image', '사진'], ['video', '유튜브 영상']] : []), ['clear', '메인 화면 위 (투명)']];
+}
 function spFinish(box) {
     ensureExtraState();
+    const ibg = spIntroBgList().some(x => x[0] === state.intro.bgType) ? state.intro.bgType : 'color';
     box.innerHTML = spH('거의 다 됐어요', '인트로까지 정했으면 [다음]을 누르세요. 저장하고 완성본을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.') + `
         ${spOpt('finish', 'intro') ? `<label class="sp-sw"><span><b>인트로</b><small>청첩장을 열 때 "${wzEsc(state.intro.text || '우리 결혼합니다')}" 짧은 애니메이션</small></span><input type="checkbox" id="spIntro" ${state.intro.enabled ? 'checked' : ''}><i></i></label>` : ''}
-        ${state.intro.enabled && spOpt('finish', 'introFx') && window.InviteBlocks ? `<div class="wz-field"><div class="wz-lab">인트로 배경</div><div class="sp-chips">${[['color', '디자인 색'], ['clear', '메인 화면 위 (투명)']].map(([v, l]) => `<button type="button" class="${(state.intro.bgType || 'color') === v ? 'on' : ''}" data-sp-ibg="${v}">${l}</button>`).join('')}</div></div>
+        ${state.intro.enabled && spOpt('finish', 'introFx') && window.InviteBlocks ? `<div class="wz-field"><div class="wz-lab">인트로 배경</div><div class="sp-chips">${spIntroBgList().map(([v, l]) => `<button type="button" class="${ibg === v ? 'on' : ''}" data-sp-ibg="${v}">${l}</button>`).join('')}</div>
+            ${ibg === 'image' ? `<div class="sp-hero sp-ibg-ph">${state.intro.bgImage ? `<img src="${esc(InviteBlocks.imgUrl(state.intro.bgImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" id="spIbgUp">${state.intro.bgImage ? '사진 바꾸기' : '사진 올리기'}</button></div>` : ''}
+            ${ibg === 'video' ? `<input class="wz-inp" id="spIbgYt" value="${wzEsc(state.intro.bgYoutubeId || '')}" placeholder="유튜브 주소를 붙여 넣어요 (https://youtu.be/...)" inputmode="url"><p class="wz-hint">영상은 소리 없이 인트로 뒤에서 흘러가요.</p>` : ''}
+            ${ibg === 'clear' ? `<div class="sp-range"><span>뒤 화면 어둡게</span><input type="range" id="spIbgDim" min="0" max="70" step="5" value="${state.intro.clearDim ?? 30}"><span>${state.intro.clearDim ?? 30}%</span></div>` : ''}</div>
             <div class="wz-field"><div class="wz-lab">글자 효과</div><div class="sp-chips">${InviteBlocks.RichText.ANIMS.map(([v, l]) => `<button type="button" class="${(state.intro.anim || 'type') === v ? 'on' : ''}" data-sp-ianim="${v}">${esc(l)}</button>`).join('')}</div>
             <button type="button" class="sp-link" id="spIntroPv">▶ 인트로 보기</button></div>` : ''}
         <p class="wz-hint">글자 위치·스티커·섹션 순서까지 바꾸고 싶으면 위의 <b>전문가 모드</b>를 누르세요. 언제든 간편 만들기로 돌아올 수 있어요.</p>`;
     box.querySelector('#spIntro')?.addEventListener('change', e => { state.intro.enabled = e.target.checked; spChanged(); scheduleSnapshot(); spRender(); });
-    box.querySelectorAll('[data-sp-ibg]').forEach(b => b.addEventListener('click', () => { state.intro.bgType = b.dataset.spIbg; if (b.dataset.spIbg === 'clear' && state.intro.clearDim == null) state.intro.clearDim = 30; scheduleSnapshot(); spRender(); }));
+    const ibgUp = () => { const input = makeFileInput(); input.addEventListener('change', async () => {
+            const file = input.files && input.files[0]; if (!file) return;
+            const btn = box.querySelector('#spIbgUp'); if (btn) { btn.disabled = true; btn.textContent = '올리는 중…'; }
+            const url = await uploadPhotoToServer(file);
+            if (url) { const i = state.intro; i.bgImage = url; i.bgType = 'image'; ['bgW', 'bgH', 'bgRatio', 'bgAspect'].forEach(k => delete i[k]); }
+            scheduleSnapshot(); spRender();
+        }); input.click(); };
+    box.querySelectorAll('[data-sp-ibg]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.spIbg; state.intro.bgType = v; if (v === 'clear' && state.intro.clearDim == null) state.intro.clearDim = 30;
+        scheduleSnapshot(); spRender(); if (v === 'image' && !state.intro.bgImage) ibgUp(); else if (v === 'video' && !state.intro.bgYoutubeId) document.getElementById('spIbgYt')?.focus(); }));
+    box.querySelector('#spIbgUp')?.addEventListener('click', ibgUp);
+    box.querySelector('#spIbgYt')?.addEventListener('change', e => { state.intro.bgYoutubeId = e.target.value.trim(); scheduleSnapshot(); });
+    box.querySelector('#spIbgDim')?.addEventListener('input', e => { state.intro.clearDim = +e.target.value; e.target.nextElementSibling.textContent = e.target.value + '%'; scheduleSnapshot(); });
     box.querySelectorAll('[data-sp-ianim]').forEach(b => b.addEventListener('click', () => { state.intro.anim = b.dataset.spIanim; scheduleSnapshot(); spRender(); }));
     box.querySelector('#spIntroPv')?.addEventListener('click', () => spOpenPreview(false)); // 하객이 보는 실제 화면으로 (인트로부터)
 }
@@ -18260,6 +18288,7 @@ const LDH_EASY = [
     { t: '디자인 바꾸기', d: '적은 내용은 그대로 두고 모양만', when: () => spOpt('theme', 'design') && !spInPlace, steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 위 [디자인 바꾸기]가 열려요.', '마음에 드는 디자인을 누르면 이름·사진·글·계좌는 그대로 두고 모양만 바뀌어요.', '처음 디자인을 고를 때는 아래 [내 사진으로 보기]로 내 사진을 넣어 미리 볼 수도 있어요.'], go: ['그 칸으로 가기', () => { spDesignOpen = true; ldhEasyGo('', 'theme'); }] },
     { t: '칸 모양 바꾸기 (빈티지 · 밤하늘)', d: '인사말·방명록 같은 칸을 다른 모양으로', when: () => spOpt('theme', 'sskin'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'섹션 꾸밈\'에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 중 하나를 눌러요.', '다른 디자인의 색이 좋으면 아래 \'다른 디자인 색으로\'에서 골라요. 처음처럼 하려면 [디자인 따라]를 눌러요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', when: () => spOpt('gallery', 'reveal'), steps: ['아래 [그 칸으로 가기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 위(옆) 청첩장에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요. [한 번에]를 누르면 예전처럼 바로 보여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'gallery')] },
+    { t: '인트로 배경에 사진 · 영상 넣기', d: '청첩장을 열 때 뒤에 깔리는 화면', when: () => spOpt('finish', 'intro') && spOpt('finish', 'introFx') && spOpt('finish', 'introMedia'), steps: ['아래 [그 칸으로 가기]를 누르면 \'마무리\' 칸이 열려요. 인트로 스위치를 켜요.', '\'인트로 배경\'에서 [사진]을 누르면 앨범이 열려요. 한 장 고르면 인트로 뒤에 깔려요.', '[유튜브 영상]을 누르고 유튜브 주소를 붙여 넣으면 영상이 소리 없이 뒤에서 흘러가요.', '[▶ 인트로 보기]를 누르면 하객이 보는 그대로 확인할 수 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'finish')] },
     { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 스티커', steps: ['디자인을 고를 때(또는 \'색·글꼴\' 칸 [디자인 바꾸기]) \'웹툰 · 우리 결혼해요\'를 고르면 한 번에 웹툰 모양이 돼요.', '지금 디자인 그대로 두고 싶으면 첫 화면 꾸미기에서 \'웹툰 표지\'·\'웹툰 말풍선\' 레이아웃을, \'색·글꼴\' 칸 \'섹션 꾸밈\'에서 \'웹툰 컷\'을 골라요.', '\'스티커 꾸미기\'의 \'웹툰 첫 화\'·\'두근두근 말풍선\' 세트로 웹툰 스티커를 한 번에 붙여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '스티커 한 번에 꾸미기', d: '하트·꽃·별 스티커를 세트로', when: () => spOpt('flow', 'stkset'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 아래 \'스티커 꾸미기\'가 보여요.', '마음에 드는 세트를 누르면 첫 화면·인사말·갤러리 모서리에 어울리게 붙어요.', '[다른 세트로]로 바꾸거나 [스티커 다 빼기]로 모두 뺄 수 있어요. 하나씩 옮기려면 전문가 모드에서 해요.'], go: ['그 칸으로 가기', () => spAddGo('#stk')] },
     { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },

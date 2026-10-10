@@ -1359,3 +1359,18 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .col.ib-sk-webtoon .ib-title:not(.ib-title-layer) { display: table; margin-inline: auto; position: relative; }
 .col.ib-sk-webtoon :is(.ib-title, .op-title)::after { content: ''; position: absolute; left: 22px; bottom: -10px; width: 12px; height: 10px; background: #FFFFFF; border-right: 2.5px solid #1B1B1F; border-bottom: 2.5px solid #1B1B1F; transform: skewX(30deg); }
 .col.ib-sk-webtoon .blk-gallery .grid img { border: 2px solid #1B1B1F; box-sizing: border-box; }
+/* 웹툰 컷 방명록 = 페르소나5 말풍선: 기울어진 각진 검은 말풍선 + 흰 테두리 + 빨간 그림자 판, 기울어진 이름표 (짝수 줄은 흰 말풍선·반대쪽) */
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-list { display: flex; flex-direction: column; gap: 14px; padding: 6px 2px 12px; }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-item { position: relative; isolation: isolate; width: auto; max-width: 92%; margin: 0 !important; align-self: flex-start; box-sizing: border-box;
+    background: none !important; border: 0 !important; border-radius: 0; box-shadow: none !important; color: #FFFFFF !important; padding: 22px 26px 30px 24px; transform: rotate(-1.4deg); }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-item::before { content: ''; position: absolute; inset: 9px 0 0 0; z-index: -1; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 72' preserveAspectRatio='none'%3E%3Cpolygon points='8,10 100,3 97,62 62,63 53,72 51,63 4,66' fill='%23F0445A'/%3E%3Cpolygon points='1,5 95,0 92,57 57,58 45,70 46,58 3,60' fill='%231B1B1F' stroke='%23FFFFFF' stroke-width='3' stroke-linejoin='miter' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-item:nth-child(even) { align-self: flex-end; color: #1B1B1F !important; transform: rotate(1.4deg); padding: 22px 24px 30px 26px; }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-item:nth-child(even)::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 72' preserveAspectRatio='none'%3E%3Cpolygon points='0,3 92,10 96,66 49,63 47,72 38,63 3,62' fill='%23F0445A'/%3E%3Cpolygon points='5,0 99,5 97,60 54,58 55,70 43,57 8,57' fill='%23FFFFFF' stroke='%231B1B1F' stroke-width='3' stroke-linejoin='miter' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E"); }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-head { margin: -14px 0 4px -6px; gap: 10px; }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-head b { display: inline-block; padding: 3px 11px 2px; background: #FFFFFF; color: #1B1B1F; font-family: 'Black Han Sans', var(--p-head-font); font-weight: 400; font-size: 14px; letter-spacing: .02em;
+    transform: rotate(-5deg) skewX(-12deg); box-shadow: 3px 3px 0 #F0445A; }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-item:nth-child(even) .ib-gb-head b { background: #1B1B1F; color: #FFFFFF; transform: rotate(4deg) skewX(12deg); }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-head span { color: #F0445A; font-weight: 700; font-style: italic; }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-msg { margin-top: 2px; color: inherit; font-weight: 600; line-height: 1.6; }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-item:not(:nth-child(even)) .ib-gb-del { color: #FFFFFF; }
+.col.ib-sk-webtoon .ib-gb-card .ib-gb-msg [style*="background"] { color: #1B1B1F !important; padding: 0 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
