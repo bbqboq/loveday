@@ -1827,7 +1827,8 @@ body.tippick-on, body.tippick-on * { cursor: crosshair !important; }
 .ldh-btn[hidden] { display: none !important; }
 .ldh-btn .ldh-q { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--wz-ink, #2B2320); color: #fff; font-size: 13px; font-weight: 800; }
 .ldh-btn:hover { border-color: #CFC6BA; } .ldh-btn:focus-visible { outline: 2px solid var(--ui-point, #B8925A); outline-offset: 2px; }
-.simple-mode .topbar .ldh-btn:not(.fab) { margin-left: auto; } .simple-mode .topbar .sp-split-tg:not([hidden]) + .ldh-btn { margin-left: 8px; } /* (전문가 모드는 오른쪽 아이콘 줄 끝에 붙음) */
+.simple-mode .topbar .ldh-btn:not(.fab) { margin-left: auto; } .simple-mode .topbar .sp-split-tg:not([hidden]) + .ldh-btn { margin-left: 8px; }
+@media (min-width: 861px) { .simple-mode .topbar .sp-top-right ~ .ldh-btn:not(.fab) { margin-left: 10px; } } /* PC 간편 만들기: 되돌리기·전문가 모드·도움말을 모두 오른쪽 끝에 (둘 다 margin auto라 가운데로 갔음) */ /* (전문가 모드는 오른쪽 아이콘 줄 끝에 붙음) */
 .ldh-btn.fab { position: fixed; right: 16px; z-index: 820; height: 44px; padding: 0 14px 0 8px; box-shadow: 0 6px 18px rgba(20, 14, 10, .18); }
 .ldh-btn.fab .ldh-q { width: 26px; height: 26px; }
 .ldh-dim { position: fixed; inset: 0; z-index: 4890; background: rgba(20, 16, 12, .42); opacity: 0; pointer-events: none; transition: opacity .2s; }
@@ -4619,14 +4620,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018r">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018r">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018s">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018s">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018r"></script>
-<script src="assets/tip-demos.js?v=1018r"></script>
-<script src="assets/ld-dialog.js?v=1018r"></script>
+<script src="assets/invite-blocks.js?v=1018s"></script>
+<script src="assets/tip-demos.js?v=1018s"></script>
+<script src="assets/ld-dialog.js?v=1018s"></script>
 </head>
 <body>
 
@@ -4749,7 +4750,7 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 
 <div class="topbar">
     <a class="pill topbar-home-btn" id="mainHomeBtnTop" href="dashboard.php" style="display:none;" title="내 청첩장으로" aria-label="내 청첩장으로"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span class="tb-l">내 청첩장</span></a>
-    <button type="button" class="pill topbar-home-btn" id="backToInfo" title="정보 다시 입력" aria-label="정보 다시 입력"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg><span class="tb-l">정보</span></button>
+    <button type="button" class="pill topbar-home-btn" id="backToInfo" title="정보 다시 입력" aria-label="정보 다시 입력" hidden style="display:none !important"><!-- 머리줄 '정보' 버튼은 없앰 (2026-10-10 사용자 요청) - 코드에서 부르는 곳이 있어 요소만 숨김 --><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg><span class="tb-l">정보</span></button>
     <span class="title"><b>청첩장 에디터</b><small id="tbNames"></small></span>
     <button type="button" class="pill tb-to-simple" id="tbToSimple" title="고른 디자인 모양으로 칸만 채우는 간편 만들기로" hidden style="display:none">간편 만들기</button><!-- 머리줄이 좁아져서 숨김 - 도구 메뉴 "간편 만들기로"가 이 버튼을 대신 누름 -->
     <button type="button" class="pc-settings-btn" id="pcSettingsBtn" title="화면 설정"><span class="pc-settings-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span class="pc-settings-label">화면 설정</span></button>
@@ -5816,7 +5817,11 @@ let multiSelectMode = false;
 // 코드 곳곳의 개별 수정 지점을 일일이 손보지 않고도 전체 변경을 추적한다.
 let undoStack = [];
 let redoStack = [];
-let lastSnapshotJSON = JSON.stringify(state);
+// 되돌리기 기록은 내용만 (간편 만들기에서 지금 보는 화면 spView·spAt은 빼고 - 예전엔 목록 화면에서 되돌리기를 누르면 질문 화면으로 튀었음)
+const HIST_UI_KEYS = ['spView', 'spAt'];
+const histJSON = () => JSON.stringify(state, function (k, v) { return this === state && HIST_UI_KEYS.includes(k) ? undefined : v; });
+const histParse = j => { const ui = {}; HIST_UI_KEYS.forEach(k => { if (state && state[k] !== undefined) ui[k] = state[k]; }); return Object.assign(JSON.parse(j), ui); };
+let lastSnapshotJSON = histJSON();
 let isRestoringHistory = false;
 
 // 한 번의 끌기·돌리기·크기 조절(누르고 → 움직이고 → 뗄 때까지)은 되돌리기 기록 하나로 (예전엔 회전 손잡이가 각도마다 기록을 남겼음)
@@ -5833,7 +5838,7 @@ window.addEventListener('blur', histEnd);
 function scheduleSnapshot() {
     if (isRestoringHistory) return;
     if (histHold) { histPend = true; return; }
-    const current = JSON.stringify(state);
+    const current = histJSON();
     if (current === lastSnapshotJSON) return;
     undoStack.push(lastSnapshotJSON);
     if (undoStack.length > 80) undoStack.shift(); // 너무 오래된 기록은 버려서 메모리 아낌
@@ -5850,7 +5855,7 @@ function undoHistory() {
     const prev = undoStack.pop();
     isRestoringHistory = true;
     try {
-        state = JSON.parse(prev);
+        state = histParse(prev);
         lastSnapshotJSON = prev;
         renderSkinPicker(); renderFontBgPickers(); renderBlockList(); renderFieldEditor(); renderPreview();
         spAfterHistory();
@@ -5868,7 +5873,7 @@ function redoHistory() {
     const next = redoStack.pop();
     isRestoringHistory = true;
     try {
-        state = JSON.parse(next);
+        state = histParse(next);
         lastSnapshotJSON = next;
         renderSkinPicker(); renderFontBgPickers(); renderBlockList(); renderFieldEditor(); renderPreview();
         spAfterHistory();
@@ -5896,7 +5901,7 @@ window.__historyDebug = () => console.log({
     undoStackLength: undoStack.length,
     redoStackLength: redoStack.length,
     isRestoringHistory,
-    lastSnapshotMatchesCurrent: lastSnapshotJSON === JSON.stringify(state),
+    lastSnapshotMatchesCurrent: lastSnapshotJSON === histJSON(),
 });
 let selectedParts = new Set(); // "blockId::partKey" 형태로 저장
 let gridSnapEnabled = true;
@@ -7592,7 +7597,7 @@ function edTopMenuSync() {
     }
     edTmWrap.hidden = false;
     const nav = edTmWrap.firstChild, rs = getComputedStyle(root);
-    ['--p-bg', '--p-line', '--p-muted', '--p-accent'].forEach(v => nav.style.setProperty(v, rs.getPropertyValue(v)));
+    ['--p-bg', '--p-line', '--p-muted', '--p-accent', '--p-on-accent'].forEach(v => nav.style.setProperty(v, rs.getPropertyValue(v)));
     nav.innerHTML = cols.map(c => `<button type="button" data-ib-go="${esc(c.dataset.blockId)}">${esc(L[c.dataset.blockId])}</button>`).join('');
     edTopMenuPlace(); edTopMenuScroll();
 }
@@ -11907,6 +11912,7 @@ function renderPreviewNow() {
     root.style.setProperty('--p-ink', s.ink);
     root.classList.toggle('dividers-on', !!(state.extras && state.extras.dividers)); // 섹션 사이 구분선 (기본 꺼짐)
     root.style.setProperty('--p-accent', state.customAccent || s.accent);
+    root.style.setProperty('--p-on-accent', InviteBlocks.onAccent ? InviteBlocks.onAccent(state.customAccent || s.accent) : '#FFFFFF'); // 포인트 색 버튼 글자 (아주 밝은 포인트 색이면 진하게)
     root.style.setProperty('--p-paper', window.InviteBlocks && InviteBlocks.paperCss ? InviteBlocks.paperCss(state.paper) : 'none'); // 종이 질감
     root.style.setProperty('--p-line', s.line);
     root.style.setProperty('--p-muted', s.muted);
@@ -14565,7 +14571,7 @@ async function startWithPreset(presetId) {
             if (hb && hb.fields.heroImage === my.url) { if (url) hb.fields.heroImage = url; else hb.fields.heroImage = myPrev; } // 못 올리면 원래 사진으로
             renderPreview(); try { spRender(); } catch (e) {}
         }
-        lastSnapshotJSON = JSON.stringify(state); undoStack = []; redoStack = []; updateHistoryButtons();
+        lastSnapshotJSON = histJSON(); undoStack = []; redoStack = []; updateHistoryButtons();
         if (EDIT_TOKEN) saveToServer(false, true);
         return;
     }
@@ -17163,7 +17169,7 @@ async function bootstrapFromServer() {
             renderPreview();
             scheduleEdgeAnchorMigration(); // 예전 저장분(섹션 높이 % 위치)을 가장자리 기준 위치로 (사진이 다 뜬 뒤 지금 보이는 자리 그대로)
             // 불러온 디자인을 되돌리기의 "시작점"으로 삼는다 (기본값과 비교돼서 가짜 되돌리기 항목이 안 생기게)
-            lastSnapshotJSON = JSON.stringify(state);
+            lastSnapshotJSON = histJSON();
             undoStack = []; redoStack = [];
             updateHistoryButtons();
             if (state.mode === 'simple') openSimpleEditor(spResumeStep()); else showScreen('editor'); // 간편 만들기: 하던 질문부터 (목록 화면이었으면 목록)
@@ -17172,7 +17178,7 @@ async function bootstrapFromServer() {
             if (SAMPLE_ID) { // 샘플을 처음 꾸미는 경우: 바탕 디자인 그대로 바로 에디터
                 applyPreset(data.sample_base || SAMPLE_ID);
                 renderSkinPicker(); renderFontBgPickers(); renderBlockList(); renderPreview();
-                lastSnapshotJSON = JSON.stringify(state); undoStack = []; redoStack = []; updateHistoryButtons();
+                lastSnapshotJSON = histJSON(); undoStack = []; redoStack = []; updateHistoryButtons();
                 showScreen('editor');
                 return;
             }
@@ -20748,7 +20754,7 @@ function pzTransform(fe) {
         root.addEventListener('click', e => {
             const t = e.target.closest('[data-pz-for]');
             if (t) {
-                const ns = t.closest('[data-ns]').dataset.ns, o = pzMem.open[selectedId] || (pzMem.open[selectedId] = {});
+                const ns = (t.closest('[data-ns]') || {}).dataset?.ns || String(t.dataset.pzFor).split(':')[0], o = pzMem.open[selectedId] || (pzMem.open[selectedId] = {}); // (타일이 칸 밖에 있을 때도 - 이름 앞 'o:'·'d:'로)
                 o[ns] = o[ns] === t.dataset.pzFor ? null : t.dataset.pzFor;
                 if (o[ns]) Object.keys(o).forEach(k => { if (k !== ns) o[k] = null; }); // 작은 창은 한 번에 하나만 (두 개가 겹쳐 뜨지 않게)
                 if (o[ns] && mobLiveOk()) mobLiveEnter(); // 휴대폰: 실제 화면을 보면서 고르기

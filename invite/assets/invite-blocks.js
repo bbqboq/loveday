@@ -168,6 +168,13 @@
         const x = m[1].length === 3 ? m[1].replace(/./g, c => c + c) : m[1], n = parseInt(x, 16);
         return (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255 < 0.45;
     }
+    // 포인트 색 위 글자색: 보통은 흰색, 포인트 색이 아주 밝으면(금색·하늘색 등 - 흰 글자 대비 2.6 아래) 진한 색 → CSS var(--p-on-accent)
+    function onAccent(h) {
+        const s = String(h || '').trim(), rg = s.match(/^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/i), m = s.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+        let c; if (rg) c = [+rg[1], +rg[2], +rg[3]]; else if (m) { const x = m[1].length === 3 ? m[1].replace(/./g, d => d + d) : m[1], n = parseInt(x, 16); c = [n >> 16 & 255, n >> 8 & 255, n & 255]; } else return '#FFFFFF';
+        const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }, L = .2126 * f(c[0]) + .7152 * f(c[1]) + .0722 * f(c[2]);
+        return 1.05 / (L + .05) < 2.6 ? '#231E22' : '#FFFFFF'; // (밝은 디자인 포인트 색은 모두 3.1 넘음, 어두운 디자인 금색·하늘색은 2.3 아래)
+    }
     function skinOf(b) {
         const k = b && (b.skin || (b.fields && b.fields.skin));
         return SECTION_SKINS.some(x => x[0] === k && k) ? k : '';
@@ -183,6 +190,7 @@
         else if (pal && HEX_RE.test(pal.bg || '') && HEX_RE.test(pal.ink || '')) { // 다른 디자인 색으로
             cls += ' ib-sk ib-sk-pal' + (hexDark(pal.bg) ? ' ib-sk-dark' : ' ib-sk-light');
             [['bg', 'p-bg'], ['ink', 'p-ink'], ['accent', 'p-accent'], ['line', 'p-line'], ['muted', 'p-muted']].forEach(([k, v]) => { if (HEX_RE.test(pal[k] || '')) st.push(`--${v}:${pal[k]}`); });
+            if (HEX_RE.test(pal.accent || '')) st.push(`--p-on-accent:${onAccent(pal.accent)}`);
         }
         return { cls, style: st.filter(Boolean).join(';') };
     }
@@ -1237,8 +1245,8 @@
           hide: ['heart', 'datetime'],
           layers: [{ text: 'Groom', x: 15, y: 13, fontSize: 13, font: 'cormorant', color: '#FFFFFF', vertical: 'side', ls: 80 },
                    { text: 'Bride', x: 85, y: 13, fontSize: 13, font: 'cormorant', color: '#FFFFFF', vertical: 'side', ls: 80 },
-                   { text: '{예식장}', x: 7, y: 80, fontSize: 13, color: '#FFFFFF', vertical: 'up', ls: 60 },
-                   { text: '{날짜:점} {시간}', x: 93, y: 80, fontSize: 13, color: '#FFFFFF', vertical: 'side', ls: 60 }] },
+                   { text: '{예식장}', x: 8.5, y: 80, fontSize: 13, color: '#FFFFFF', vertical: 'up', ls: 60 },
+                   { text: '{날짜:점} {시간}', x: 91.5, y: 80, fontSize: 13, color: '#FFFFFF', vertical: 'side', ls: 60 }] },
         // 4. 폴라로이드 + 필기체 + 세로 이름 · 아래 날짜·예식장
         { id: 'polaroid', label: '폴라로이드', desc: '흰 카드 속 사진 · 필기체 · 아래 날짜와 예식장',
           photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
@@ -2756,7 +2764,7 @@
         const nav = document.createElement('nav');
         nav.className = 'ib-topmenu';
         const rs = getComputedStyle(root); // 색 변수는 카드(root)에만 있어서 body에 붙는 메뉴로 복사
-        ['--p-bg', '--p-line', '--p-muted', '--p-accent'].forEach(v => nav.style.setProperty(v, rs.getPropertyValue(v)));
+        ['--p-bg', '--p-line', '--p-muted', '--p-accent', '--p-on-accent'].forEach(v => nav.style.setProperty(v, rs.getPropertyValue(v)));
         nav.innerHTML = cols.map(c => `<button type="button" data-ib-go="${esc(c.dataset.blockId)}">${esc(MENU_LABELS[c.dataset.blockId])}</button>`).join('');
         document.body.appendChild(nav);
         nav.addEventListener('click', e => {
@@ -2808,7 +2816,7 @@
         const wrap = document.createElement('div');
         wrap.className = `ib-fab ib-fab-${o.fabPos === 'left' ? 'left' : 'right'} ib-fab-${o.fabStyle || 'dark'} ib-fab-${o.fabSize || 'normal'}`;
         wrap.style.setProperty('--fab-op', String(Math.max(30, Math.min(100, Number(o.fabOpacity) || 72)) / 100));
-        if (accent) wrap.style.setProperty('--p-accent', accent);
+        if (accent) { wrap.style.setProperty('--p-accent', accent); wrap.style.setProperty('--p-on-accent', onAccent(accent)); }
         const label = String(o.fabLabel || '').trim();
         wrap.innerHTML = `<div class="ib-fab-menu" role="menu">${items.map(([type, icon, name]) =>
                 `<button type="button" data-fab="${type}"><span${type === 'kakao' ? ' class="ib-fab-k"' : ''}>${icon}</span>${esc(name)}</button>`).join('')}</div>
@@ -2865,7 +2873,7 @@
     function copyVars(from, to) {
         if (!from) return;
         const cs = getComputedStyle(from);
-        ['--p-bg', '--p-ink', '--p-accent', '--p-line', '--p-muted', '--p-head-font', '--groom-color', '--bride-color', '--box-bg', '--box-ink'].forEach(v => {
+        ['--p-bg', '--p-ink', '--p-accent', '--p-on-accent', '--p-line', '--p-muted', '--p-head-font', '--groom-color', '--bride-color', '--box-bg', '--box-ink'].forEach(v => {
             const val = cs.getPropertyValue(v); if (val) to.style.setProperty(v, val.trim());
         });
         to.style.fontFamily = cs.fontFamily;
@@ -3409,5 +3417,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { SECTION_SKINS, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { SECTION_SKINS, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

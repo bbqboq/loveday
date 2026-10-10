@@ -1109,6 +1109,7 @@ function renderInviteReadOnly(rootEl, design, masked) {
     if (window.InviteBlocks && InviteBlocks.hexDark) rootEl.classList.toggle('ib-dark', InviteBlocks.hexDark(design.customBg || s.bg)); // 어두운 디자인: 섹션 안 카드·창도 어둡게
     rootEl.style.setProperty('--p-ink', s.ink);
     rootEl.style.setProperty('--p-accent', design.customAccent || s.accent); // 화면 설정 > 강조색
+    if (window.InviteBlocks && InviteBlocks.onAccent) rootEl.style.setProperty('--p-on-accent', InviteBlocks.onAccent(design.customAccent || s.accent)); // 포인트 색 버튼 글자 (아주 밝은 포인트 색이면 진하게)
     rootEl.style.setProperty('--p-paper', window.InviteBlocks && InviteBlocks.paperCss ? InviteBlocks.paperCss(design.paper) : 'none'); // 종이 질감
     rootEl.style.setProperty('--p-line', s.line);
     rootEl.style.setProperty('--p-muted', s.muted);
