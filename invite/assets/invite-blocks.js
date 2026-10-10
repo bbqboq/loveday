@@ -213,6 +213,8 @@
             if (/^\d{1,2}px$/.test(String(pal.r || ''))) st.push(`--p-radius:${pal.r}`);
             if (pal.paper && BG_PAPERS[pal.paper]) st.push(`--sk-paper:${BG_PAPERS[pal.paper].img}`);
         }
+        // 디자인 전체 꾸밈: 디자인을 고르면 그 디자인의 꾸밈(design.sectionLook)이 모든 섹션에 기본으로 (섹션 테마·디자인 스킨을 따로 고른 섹션, 첫 화면, '꾸밈 없이'는 빼고 · 화면 설정 extras.look=false면 끔)
+        else if (!sk && b && b.id !== 'hero' && b.id !== 'heroVideo' && b.skin !== 'plain') { const gl = designLook(); if (gl) cls += ' ib-th ib-th-' + gl; }
         return { cls, style: st.filter(Boolean).join(';') };
     }
 
@@ -2218,6 +2220,7 @@
     };
     let CUR_DESIGN = null; // 서명(신랑·신부 이름)을 쓰려고 지금 그리는 청첩장 - 에디터·공개페이지가 setDesign으로 넘김
     function setDesign(d) { CUR_DESIGN = d || null; }
+    function designLook() { const d = CUR_DESIGN, g = d && d.sectionLook; return g && THEME_DECOS.includes(g) && !(d.extras && d.extras.look === false) ? g : ''; }
     function thanksVisible(show) {
         if (show === 'always') return true;
         if (typeof location !== 'undefined' && /[?&]thankstest=1/.test(location.search)) return true;
@@ -3441,5 +3444,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { SECTION_SKINS, THEME_DECOS, THEME_LOOKS, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

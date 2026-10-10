@@ -4652,14 +4652,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018t">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018t">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018u">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018u">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018t"></script>
-<script src="assets/tip-demos.js?v=1018t"></script>
-<script src="assets/ld-dialog.js?v=1018t"></script>
+<script src="assets/invite-blocks.js?v=1018u"></script>
+<script src="assets/tip-demos.js?v=1018u"></script>
+<script src="assets/ld-dialog.js?v=1018u"></script>
 </head>
 <body>
 
@@ -5409,6 +5409,7 @@ function applyPreset(presetId) {
     const p = PRESETS.find(x => x.id === presetId) || PRESETS[0];
     state.skin = p.id;
     state.presetId = p.id;
+    { const lk = themeLookOf(p); state.sectionLook = lk.charAt(0) === '@' ? '' : lk; } // 디자인 꾸밈 (모든 섹션에 기본으로 - InviteBlocks.designLook)
     state.customFont = p.font || null;
     if (state.customFont) loadFontCss(state.customFont);
     state.customBg = null;
@@ -7427,7 +7428,7 @@ const EXTRA_DEFAULTS = {
              kakaoExtra: 'location', kakaoExtraLabel: '위치 보기', kakaoExtraUrl: '', ogImage: '', ogTitle: '', ogDesc: '',
              kakaoFocusX: 50, kakaoFocusY: 50, kakaoZoom: 100 }, // 카카오 썸네일 보이는 부분(0~100)·확대(%) - share_thumb.php가 이대로 잘라서 보냄
     labels: Object.assign({}, window.InviteBlocks ? InviteBlocks.LABEL_DEFAULTS : {}),
-    extras: { topMenu: false, scrollFx: true, fxType: 'bounce', scrollbar: 'default', dividers: false, calendar: true,
+    extras: { topMenu: false, look: true, scrollFx: true, fxType: 'bounce', scrollbar: 'default', dividers: false, calendar: true,
               thanks: false, thanksTitle: '', thanksText: '' }
 };
 function ensureExtraState() {
@@ -7470,6 +7471,7 @@ const EXTRA_SCHEMA = {
         { key: 'extras.topMenu', type: 'check', checkLabel: '상단 섹션메뉴 (스크롤하면 위에 섹션 이름 메뉴가 떠요)' },
         { key: 'extras.dividers', type: 'check', checkLabel: '섹션 구분선 (섹션 사이에 얇은 가로선)' },
         { key: 'extras.calendar', type: 'check', checkLabel: '캘린더 저장 버튼 (예식일 아래 · 3시간 전 알림)', hint: '교통수단 섹션에 대절버스 출발 시각을 적으면 출발 30분 전 알림도 함께 들어가요. 발행된 청첩장에서만 보여요.' },
+        { key: 'extras.look', type: 'check', checkLabel: '디자인 꾸밈 (디자인마다 다른 제목 장식·카드 모양·배경 무늬)', showIf: st => !!st.sectionLook, hint: '끄면 모든 섹션이 색·글꼴만 남은 기본 모양이 돼요. 섹션 하나만 빼려면 그 섹션의 섹션 스킨에서 \'꾸밈 없이\'를 골라요.' },
         { key: 'extras.scrollFx', type: 'check', checkLabel: '섹션 등장 효과 (끄면 모든 섹션이 바로 보여요)' },
         { key: 'extras.fxType', label: '등장 효과 모두 바꾸기', type: 'choice', desc: '고르면 모든 섹션에 바로 적용', applyAll: true, options: SECTION_FX_OPTIONS.filter(([v]) => v !== 'none'), showIf: st => st.extras.scrollFx !== false }
     ] }
@@ -11960,7 +11962,7 @@ function renderPreviewNow() {
     ensureExtraState();
     if (window.InviteBlocks) { // 명칭·순서·색 (공개페이지와 같은 공용 설정)
         const lab = InviteBlocks.setLabels(state.labels);
-        if (InviteBlocks.setDesign) InviteBlocks.setDesign({ blocks: state.blocks, labels: state.labels, dateTbd: !!state.dateTbd, venueDemo: state.venueDemo, venueDemoAddr: state.venueDemoAddr }); // 감사 인사 서명(신랑·신부 이름)용
+        if (InviteBlocks.setDesign) InviteBlocks.setDesign({ blocks: state.blocks, labels: state.labels, dateTbd: !!state.dateTbd, venueDemo: state.venueDemo, venueDemoAddr: state.venueDemoAddr, sectionLook: state.sectionLook, extras: state.extras }); // 감사 인사 서명(신랑·신부 이름)용
         const tbn = document.getElementById('tbNames'); if (tbn) { try { const [g, b] = stNames(); tbn.textContent = `${g} ♥ ${b}`; } catch (e) {} }
         root.style.setProperty('--groom-color', lab.groomColor);
         root.style.setProperty('--bride-color', lab.brideColor);
@@ -14030,6 +14032,7 @@ function applySampleDesign(d) {
     state.customFont = d.customFont || null;
     state.customBg = d.customBg || null;
     state.paper = d.paper || null;
+    state.sectionLook = d.sectionLook || '';
     state.customAccent = d.customAccent || null;
     state.desktopSideBg = d.desktopSideBg || null;
     state.desktopShadow = !!d.desktopShadow;
@@ -16381,10 +16384,10 @@ const SSK_LOOKS = {
 const SSK_FOCUS = { counterStyle: '.dday-countdown' };
 const SSK = { cache: new Map(), io: null };
 function sskSkins(b) {
-    const sk = [['', '디자인 따라'], ...((InviteBlocks.SECTION_SKINS || []).filter(([k]) => k && k !== 'webtoon' && !(k === 'vintage' && InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id))))];
+    const sk = [['', '디자인 따라'], ...(InviteBlocks.designLook && InviteBlocks.designLook() ? [['plain', '꾸밈 없이']] : []), ...((InviteBlocks.SECTION_SKINS || []).filter(([k]) => k && k !== 'webtoon' && !(k === 'vintage' && InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id))))];
     return { base: sk, designs: PRESETS.filter(p => skins[p.__base || p.id]) };
 }
-function sskCur(b) { const d = skinDesignOf(b); if (d) return 'd:' + d; const k = InviteBlocks.skinOf(b); return 's:' + (k && k === designSkinOf(b) && !b.skin ? '' : k); }
+function sskCur(b) { const d = skinDesignOf(b); if (d) return 'd:' + d; if (b.skin === 'plain') return 's:plain'; const k = InviteBlocks.skinOf(b); return 's:' + (k && k === designSkinOf(b) && !b.skin ? '' : k); }
 function sskMut(spec) { // 'l:키:값' 모양 · 's:스킨' · 'd:디자인 id'
     const [t, a, v] = spec.split(':');
     if (t === 'l') return c => { c.fields[a] = v; };
@@ -17323,6 +17326,7 @@ async function bootstrapFromServer() {
             state.customFont = data.design.customFont || null;
             state.customBg = data.design.customBg || null;
             state.paper = data.design.paper || null;
+            state.sectionLook = data.design.sectionLook || ''; // 디자인 꾸밈 (예전에 저장된 청첩장은 없음 = 꾸밈 없이 예전 그대로)
             state.customAccent = data.design.customAccent || null;
             state.desktopSideBg = data.design.desktopSideBg || null;
             state.desktopShadow = !!data.design.desktopShadow;
@@ -17710,7 +17714,7 @@ async function saveToServer(publish, silent) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 edit_token: EDIT_TOKEN,
-                design: { skin: state.skin, presetId: state.presetId || null, palette: (({ label, ...rest }) => rest)(skins[state.skin] || skins.classic), customFont: state.customFont, customBg: state.customBg, paper: state.paper || undefined, customAccent: state.customAccent || undefined, desktopSideBg: state.desktopSideBg, desktopShadow: state.desktopShadow, effects: state.effects, stickers: state.stickers, customTexts: state.customTexts, intro: state.intro, bgm: state.bgm, share: state.share, labels: state.labels, extras: state.extras, imgFocus: state.imgFocus, imgZoom: state.imgZoom, info: state.info, blocks: state.blocks, mode: state.mode || undefined, ...Object.fromEntries(SP_KEEP.filter(k => state[k] !== undefined && state[k] !== null).map(k => [k, state[k]])), sampleId: state.sampleId || undefined, simpleSnap: state.simpleSnap || undefined, fullSnap: state.fullSnap || undefined },
+                design: { skin: state.skin, presetId: state.presetId || null, palette: (({ label, ...rest }) => rest)(skins[state.skin] || skins.classic), customFont: state.customFont, customBg: state.customBg, paper: state.paper || undefined, sectionLook: state.sectionLook || undefined, customAccent: state.customAccent || undefined, desktopSideBg: state.desktopSideBg, desktopShadow: state.desktopShadow, effects: state.effects, stickers: state.stickers, customTexts: state.customTexts, intro: state.intro, bgm: state.bgm, share: state.share, labels: state.labels, extras: state.extras, imgFocus: state.imgFocus, imgZoom: state.imgZoom, info: state.info, blocks: state.blocks, mode: state.mode || undefined, ...Object.fromEntries(SP_KEEP.filter(k => state[k] !== undefined && state[k] !== null).map(k => [k, state[k]])), sampleId: state.sampleId || undefined, simpleSnap: state.simpleSnap || undefined, fullSnap: state.fullSnap || undefined },
                 // 대시보드·관리자 목록에 쓰는 이름 - 지금 "예식 정보"에 적힌 이름으로 갱신 (비어 있으면 불러온 값 유지)
                 groom_name: (String(weddingInfo().groom || '').split('\n')[0].trim() || lastLoadedMeta.groom_name).slice(0, 50),
                 bride_name: (String(weddingInfo().bride || '').split('\n')[0].trim() || lastLoadedMeta.bride_name).slice(0, 50),
