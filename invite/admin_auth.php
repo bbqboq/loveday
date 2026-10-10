@@ -49,6 +49,7 @@ const ADMIN_PAGE_RULES = [
     'admin_site_settings.php'     => ['site_settings', 'post'],
     'admin_home_images.php'       => ['site_settings', 'post'],   // 홈페이지·로그인 화면 사진
     'admin_sections.php'          => ['site_settings', 'post'],   // 에디터 섹션 기본 순서
+    'admin_stickers.php'          => ['site_settings', 'post'],   // 에디터 스티커 창 설정
     'admin_tips.php'              => ['site_settings', 'post'],   // 에디터 도움말
     'admin_tip_tours.php'         => ['site_settings', 'post'],   // 커스텀 편집팁 (손가락·여기 눌러주세요 안내)
     'admin_designs.php'           => ['site_settings', 'post'],   // 추천 디자인 (간편 템플릿)

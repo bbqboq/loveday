@@ -9604,6 +9604,18 @@ const STK_THEMES = [
 ];
 // 디자인마다 먼저 보여줄 테마 (디자인 폴더 preset.json의 stickerThemes가 있으면 그게 먼저)
 const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] };
+// 관리자 → 스티커 (sticker_settings.php): 테마 순서·끈 테마·숨긴 그림·디자인별 추천. 못 받으면 아래 기본대로
+let STK_CFG = { order: null, off: [], hide: [], rec: {} };
+fetch('sticker_settings.php', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
+    if (!j || typeof j !== 'object') return;
+    STK_CFG = { order: Array.isArray(j.order) ? j.order : null, off: Array.isArray(j.off) ? j.off : [], hide: Array.isArray(j.hide) ? j.hide : [], rec: j.rec && typeof j.rec === 'object' && !Array.isArray(j.rec) ? j.rec : {} };
+    ['stickerPalette', 'introStickerPalette'].forEach(id => { const pal = document.getElementById(id); if (pal && pal._stkDraw) pal._stkDraw(); });
+}).catch(() => {});
+const stkShown = k => !STK_CFG.hide.includes(k);
+const stkThemeList = () => { // 관리자가 정한 순서, 끈 테마는 빼고
+    const ord = STK_CFG.order || [];
+    return STK_THEMES.slice().sort((a, b) => { const i = ord.indexOf(a.id), j = ord.indexOf(b.id); return (i < 0 ? 99 : i) - (j < 0 ? 99 : j); }).filter(t => !STK_CFG.off.includes(t.id));
+};
 const STK_QUICK = ['하트', '꽃', '별', '비', '리본', '새', '반지', '축하', '움직임'];
 const STK_ART_IX = {}; Object.entries(STK_ART).forEach(([t, list]) => list.forEach(([k, l, w, a]) => { STK_ART_IX[t + '/' + k] = { l, w: w + (a ? ' 움직임' : ''), a: !!a }; }));
 const stkUrl = k => k.startsWith('a:') ? 'assets/stickers/' + k.slice(2) + '.svg' : k.startsWith('v:') ? 'assets/stickers/vintage/' + k.slice(2) + '.webp' : k.startsWith('p:') ? k.slice(2) : '';
@@ -9620,13 +9632,16 @@ function stkPayload(k) { // 청첩장에 붙일 데이터
 }
 function stkRecThemes() {
     const p = (typeof PRESETS !== 'undefined' && PRESETS.find(x => x.id === state.presetId)) || {};
-    const own = Array.isArray(p.stickerThemes) ? p.stickerThemes : [];
+    const adm = Array.isArray(STK_CFG.rec[state.presetId]) ? STK_CFG.rec[state.presetId] : []; // 관리자가 이 디자인에 정한 추천
+    const own = adm.concat(Array.isArray(p.stickerThemes) ? p.stickerThemes : []);
     const dark = (() => { try { return InviteBlocks.hexDark(state.customBg || (skins[state.skin] || {}).bg || '#fff'); } catch (e) { return false; } })();
     const base = STK_REC[state.presetId] || (dark ? ['cosmos', 'classic'] : ['romantic', 'garden']);
-    return [...new Set(own.concat(base))].filter(id => STK_THEMES.some(t => t.id === id && id !== 'vintage')).slice(0, 2);
+    const on = stkThemeList().filter(t => t.id !== 'vintage').map(t => t.id);
+    const r = [...new Set(own.concat(base))].filter(id => on.includes(id)).slice(0, 2);
+    return r.length ? r : on.slice(0, 2);
 }
 const STK_RECENT_KEY = 'ld-stk-recent';
-const stkRecent = () => { try { const a = JSON.parse(localStorage.getItem(STK_RECENT_KEY) || '[]'); return Array.isArray(a) ? a.filter(k => typeof k === 'string' && /^[aveip]:/.test(k) && (k[0] !== 'a' || STK_ART_IX[k.slice(2)]) && (k[0] !== 'v' || STK_VIN[k.slice(2)])) : []; } catch (e) { return []; } };
+const stkRecent = () => { try { const a = JSON.parse(localStorage.getItem(STK_RECENT_KEY) || '[]'); return Array.isArray(a) ? a.filter(k => typeof k === 'string' && /^[aveip]:/.test(k) && (k[0] !== 'a' || STK_ART_IX[k.slice(2)]) && (k[0] !== 'v' || STK_VIN[k.slice(2)]) && stkShown(k)) : []; } catch (e) { return []; } };
 const stkRemember = k => { try { localStorage.setItem(STK_RECENT_KEY, JSON.stringify([k].concat(stkRecent().filter(x => x !== k)).slice(0, 18))); } catch (e) {} };
 function stkFace(k) {
     const b = k.slice(2);
@@ -9635,7 +9650,8 @@ function stkFace(k) {
     return `<img src="${esc(stkUrl(k))}" alt="" loading="lazy" draggable="false">`;
 }
 const stkIt = k => `<button type="button" class="stk-it stk-${k[0]}${k[0] === 'a' && STK_ART_IX[k.slice(2)].a ? ' mv' : ''}" data-stk="${esc(k)}" title="${esc(stkName(k) || '')}${k[0] === 'a' && STK_ART_IX[k.slice(2)].a ? ' · 움직여요' : ''}">${stkFace(k)}</button>`;
-const stkArtKeys = id => (STK_ART[id] || []).map(([k]) => 'a:' + id + '/' + k);
+const stkArtKeys = id => (STK_ART[id] || []).map(([k]) => 'a:' + id + '/' + k).filter(stkShown);
+const stkVinKeys = t => t.vin.map(v => 'v:' + v).filter(stkShown);
 function stkMount(pal, onAdd) {
     if (!pal || pal._stk) return;
     const S = pal._stk = { tab: 'rec', pack: '', q: '', more: {} };
@@ -9652,27 +9668,29 @@ function stkMount(pal, onAdd) {
         const open = S.more[key], show = open ? ks : ks.slice(0, n);
         return `<div class="stk-lab">${title} <small>${ks.length}개</small>${ks.length > n && !open ? `<button type="button" class="stk-more" data-more="${key}">더 보기 ›</button>` : ''}</div><div class="${cls}">${show.map(stkIt).join('')}</div>`;
     };
-    const packOf = id => STK_THEMES.find(t => t.id === id) || STK_THEMES[0];
+    const packOf = id => stkThemeList().find(t => t.id === id) || stkThemeList()[0] || STK_THEMES[0];
     const draw = () => {
         const rec = stkRecThemes(), searching = !!S.q;
-        if (!S.pack) S.pack = rec[0] || 'romantic';
+        if (!S.pack || !stkThemeList().some(t => t.id === S.pack)) S.pack = rec[0] || (stkThemeList()[0] || {}).id || 'romantic';
         $('.stk-dn').textContent = (PRESETS.find(x => x.id === state.presetId) || {}).name || '';
         wrap.classList.toggle('searching', searching); $('.stk-srch').classList.toggle('has', searching);
         wrap.querySelectorAll('.stk-q').forEach(c => c.classList.toggle('on', c.dataset.q === S.q));
         const recent = stkRecent();
         $('.stk-tabs').innerHTML = [['rec', '추천'], ['theme', '테마'], ['recent', `최근${recent.length ? `<small>${recent.length}</small>` : ''}`], ['mine', '내 것']].map(([k, l]) => `<button type="button" role="tab" class="stk-tab${S.tab === k ? ' on' : ''}" data-t="${k}" aria-selected="${S.tab === k}">${l}</button>`).join('');
-        const order = rec.map(packOf).concat(STK_THEMES.filter(t => !rec.includes(t.id)));
+        const order = rec.map(packOf).concat(stkThemeList().filter(t => !rec.includes(t.id)));
         $('.stk-themes').hidden = !(S.tab === 'theme' && !searching);
-        $('.stk-themes').innerHTML = order.map(t => { const a = stkArtKeys(t.id)[0], v = t.vin[0]; return `<button type="button" class="stk-chip${t.id === S.pack ? ' on' : ''}" data-p="${t.id}">${a ? `<img src="${stkUrl(a)}" alt="">` : v ? `<img src="${stkUrl('v:' + v)}" alt="">` : ''}${esc(t.name)}${rec[0] === t.id ? ' <span class="stk-rec">추천</span>' : ''}</button>`; }).join('');
+        $('.stk-themes').innerHTML = order.map(t => { const a = stkArtKeys(t.id)[0], v = stkVinKeys(t)[0]; return `<button type="button" class="stk-chip${t.id === S.pack ? ' on' : ''}" data-p="${t.id}">${a ? `<img src="${stkUrl(a)}" alt="">` : v ? `<img src="${stkUrl(v)}" alt="">` : ''}${esc(t.name)}${rec[0] === t.id ? ' <span class="stk-rec">추천</span>' : ''}</button>`; }).join('');
         const isMine = S.tab === 'mine' && !searching;
         body.hidden = isMine; if (mineEl) mineEl.hidden = !isMine;
         if (isMine) return;
         if (searching) {
             const w = S.q;
-            const art = Object.keys(STK_ART_IX).map(k => 'a:' + k).filter(k => stkHit(stkWords(k), w));
-            const vin = Object.keys(STK_VIN).map(k => 'v:' + k).filter(k => stkHit(stkWords(k), w));
+            const live = stkThemeList();
+            const art = live.flatMap(t => stkArtKeys(t.id)).filter(k => stkHit(stkWords(k), w))
+                .sort((a, b) => stkHit(STK_ART_IX[b.slice(2)].w, w) - stkHit(STK_ART_IX[a.slice(2)].w, w)); // 찾기 말에 있는 것 먼저 ('비' → 비 오는 날 그림이 '별똥별 비'보다 앞)
+            const vin = Object.keys(STK_VIN).map(k => 'v:' + k).filter(k => stkShown(k) && stkHit(stkWords(k), w));
             const ic = Object.keys(STK_ICON).map(k => 'i:' + k).filter(k => stkHit(stkWords(k), w));
-            const emo = [...new Set(STK_THEMES.flatMap(t => t.emo))].map(e => 'e:' + e).filter(k => stkHit(stkWords(k), w));
+            const emo = [...new Set(live.flatMap(t => t.emo))].map(e => 'e:' + e).filter(k => stkHit(stkWords(k), w));
             const n = art.length + vin.length + ic.length + emo.length;
             body.innerHTML = n ? `<div class="stk-lab stk-found">'<mark>${esc(w)}</mark>' 찾았어요 <small>${n}개</small></div>${block('그림 스티커', art, 's-a' + w, 'stk-g4', 12)}${block('빈티지 그림', vin, 's-v' + w, 'stk-g4', 8)}${block('라인 아이콘', ic, 's-i' + w, 'stk-g6', 6)}${block('이모지', emo, 's-e' + w, 'stk-g6', 12)}`
                 : `<div class="stk-empty">'${esc(w)}' 스티커가 없어요<br>${STK_QUICK.slice(0, 8).join(' · ')} 로 찾아 보세요</div>`;
@@ -9682,12 +9700,12 @@ function stkMount(pal, onAdd) {
             const ps = rec.map(packOf);
             body.innerHTML = `<div class="stk-lab stk-found"><span class="stk-rec">추천</span> 지금 디자인에 어울려요</div>`
                 + block('그림 스티커', ps.flatMap(t => stkArtKeys(t.id)), 'r-a', 'stk-g4', 12)
-                + block('빈티지 그림', [...new Set(ps.flatMap(t => t.vin))].map(v => 'v:' + v), 'r-v', 'stk-g4', 4)
+                + block('빈티지 그림', [...new Set(ps.flatMap(stkVinKeys))], 'r-v', 'stk-g4', 4)
                 + block('이모지', ps.flatMap(t => t.emo.slice(0, 6)).map(e => 'e:' + e), 'r-e', 'stk-g6', 12);
         } else if (S.tab === 'theme') {
             const t = packOf(S.pack);
             body.innerHTML = block('그림 스티커 <span class="stk-new">새 그림</span>', stkArtKeys(t.id), 't-a' + t.id, 'stk-g4', 12)
-                + block('빈티지 그림', t.vin.map(v => 'v:' + v), 't-v' + t.id, 'stk-g4', t.id === 'vintage' ? 40 : 4)
+                + block('빈티지 그림', stkVinKeys(t), 't-v' + t.id, 'stk-g4', t.id === 'vintage' ? 40 : 4)
                 + block('라인 아이콘', (t.icons || []).map(i => 'i:' + i), 't-i' + t.id, 'stk-g6', 12)
                 + block('이모지', t.emo.map(e => 'e:' + e), 't-e' + t.id, 'stk-g6', 6);
         } else {

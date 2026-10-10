@@ -27,6 +27,7 @@ const ADMIN_MENU = [
     'homeimg'   => ['admin_home_images.php', '홈 이미지'],
     'designs'   => ['admin_designs.php', '추천 디자인'], // 새 청첩장 디자인 고르기 화면에 크게 보일 간편 템플릿
     'sections'  => ['admin_sections.php', '섹션 설정'], // 섹션 순서 · 편집창 모양 · 휴대폰 에디터 메뉴
+    'stickers'  => ['admin_stickers.php', '스티커'],   // 에디터 스티커 창: 테마 순서·켜기, 그림 숨기기, 디자인별 추천
     'tips'      => ['admin_tips.php', '에디터 도움말'],
     'tiptours'  => ['admin_tip_tours.php', '커스텀 편집팁'],
     'trash'     => ['admin_trash.php', '휴지통'],
