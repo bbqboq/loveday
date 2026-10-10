@@ -1662,6 +1662,48 @@ body.tippick-on, body.tippick-on * { cursor: crosshair !important; }
 .ld-tour .lt-btns button { border: 0; border-radius: 10px; padding: 9px 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; background: var(--ui-soft, #F1EEE9); color: #2B2B2B; }
 .ld-tour .lt-btns .lt-skip { background: none; color: #A29C94; font-weight: 600; padding-left: 0; margin-right: auto; }
 .ld-tour .lt-btns .lt-next { background: #2B2320; color: #fff; }
+/* ===== 왕초보 도움말 (ldhInit): [? 도움말] 버튼 · '무엇을 도와드릴까요?' 창 · 화면에서 보여주기 ===== */
+.ldh-btn { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 6px; margin-left: 8px; border: 1px solid var(--ui-line, #E5DED3); border-radius: 99px; background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: var(--wz-ink, #2B2320); cursor: pointer; white-space: nowrap; }
+.ldh-btn[hidden] { display: none !important; }
+.ldh-btn .ldh-q { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--wz-ink, #2B2320); color: #fff; font-size: 13px; font-weight: 800; }
+.ldh-btn:hover { border-color: #CFC6BA; } .ldh-btn:focus-visible { outline: 2px solid var(--ui-point, #B8925A); outline-offset: 2px; }
+.simple-mode .topbar .ldh-btn:not(.fab) { margin-left: auto; } .simple-mode .topbar .sp-split-tg:not([hidden]) + .ldh-btn { margin-left: 8px; } /* (전문가 모드는 오른쪽 아이콘 줄 끝에 붙음) */
+.ldh-btn.fab { position: fixed; right: 16px; z-index: 820; height: 44px; padding: 0 14px 0 8px; box-shadow: 0 6px 18px rgba(20, 14, 10, .18); }
+.ldh-btn.fab .ldh-q { width: 26px; height: 26px; }
+.ldh-dim { position: fixed; inset: 0; z-index: 4890; background: rgba(20, 16, 12, .42); opacity: 0; pointer-events: none; transition: opacity .2s; }
+.ldh-dim.show { opacity: 1; pointer-events: auto; }
+.ldh { position: fixed; z-index: 4900; display: flex; flex-direction: column; background: var(--ui-page, #F6F4F1); color: var(--wz-ink, #2B2320); box-shadow: 0 -10px 40px rgba(0,0,0,.18); visibility: hidden; transition: transform .3s cubic-bezier(.3,.8,.3,1), visibility 0s linear .3s; }
+.ldh.show { visibility: visible; transition: transform .3s cubic-bezier(.3,.8,.3,1); }
+@media (max-width: 860px) { .ldh { left: 0; right: 0; bottom: 0; max-height: 86vh; max-height: 86dvh; border-radius: 22px 22px 0 0; transform: translateY(102%); padding-bottom: env(safe-area-inset-bottom, 0px); } .ldh.show { transform: none; } }
+@media (min-width: 861px) { .ldh { top: 0; right: 0; bottom: 0; width: 400px; transform: translateX(102%); } .ldh.show { transform: none; } }
+.ldh-hd { flex: none; display: flex; align-items: center; gap: 8px; padding: 16px 14px 10px 18px; }
+.ldh-hd b { flex: 1; min-width: 0; font-size: 18px; letter-spacing: -.01em; }
+.ldh-back, .ldh-x { flex: none; width: 36px; height: 36px; border: 0; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 1px var(--ui-line, #E5DED3); font: inherit; font-size: 18px; color: var(--wz-ink, #2B2320); cursor: pointer; }
+.ldh-back[hidden] { display: none; }
+.ldh-bd { flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px 20px; }
+.ldh-lead { margin: 0 2px 12px; font-size: 13.5px; line-height: 1.6; color: var(--wz-sub, #6F665D); word-break: keep-all; }
+.ldh-list { display: grid; gap: 8px; }
+.ldh-it { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 60px; padding: 12px 14px; border: 0; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--ui-line, #E5DED3); font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.ldh-it:hover, .ldh-it:focus-visible { box-shadow: inset 0 0 0 1.5px var(--ui-point, #B8925A); outline: none; }
+.ldh-it span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .ldh-it b { font-size: 15px; word-break: keep-all; } .ldh-it small { font-size: 12.5px; color: var(--wz-sub, #6F665D); word-break: keep-all; }
+.ldh-it i { flex: none; font-style: normal; font-size: 20px; color: #B5ABA0; }
+.ldh-intro { display: block; margin: 16px auto 0; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--wz-sub, #6F665D); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px; }
+.ldh-steps { margin: 4px 0 18px; padding: 0; list-style: none; counter-reset: ldh; display: grid; gap: 10px; }
+.ldh-steps li { counter-increment: ldh; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: start; padding: 12px 14px; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--ui-line, #E5DED3); font-size: 15px; line-height: 1.6; word-break: keep-all; text-wrap: pretty; }
+.ldh-steps li::before { content: counter(ldh); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--wz-ink, #2B2320); color: #fff; font-size: 13px; font-weight: 800; margin-top: 1px; }
+.ldh-acts { display: grid; gap: 8px; }
+.ldh-show, .ldh-go { height: 52px; border-radius: 14px; font: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; }
+.ldh-go { border: 0; background: var(--wz-ink, #2B2320); color: #fff; }
+.ldh-show { border: 1.5px solid var(--wz-ink, #2B2320); background: #fff; color: var(--wz-ink, #2B2320); }
+.ldh-icons { display: grid; gap: 6px; }
+.ldh-ic { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 12px; border: 0; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px var(--ui-line, #E5DED3); font: inherit; font-size: 14px; color: inherit; text-align: left; cursor: pointer; word-break: keep-all; }
+.ldh-ict { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; } .ldh-ict b { font-size: 14px; } .ldh-ict small { font-size: 12px; color: var(--wz-sub, #6F665D); line-height: 1.45; }
+.ldh-ico { flex: none; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--ui-soft, #F1ECE4); }
+.ldh-ico svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ldh-tour .lt-hole { animation: ldhPulse 1.6s ease-in-out infinite; }
+@keyframes ldhPulse { 0%, 100% { box-shadow: 0 0 0 9999px rgba(20,16,12,.58), 0 0 0 3px rgba(255,255,255,.95), 0 0 0 6px rgba(233,201,143,.0); } 50% { box-shadow: 0 0 0 9999px rgba(20,16,12,.58), 0 0 0 3px rgba(255,255,255,.95), 0 0 0 10px rgba(233,201,143,.55); } }
+.ldh-tour .lt-card p { font-size: 15px; line-height: 1.6; word-break: keep-all; }
+@media (prefers-reduced-motion: reduce) { .ldh-tour .lt-hole { animation: none; } .ldh, .ldh-dim { transition: none; } }
 /* 첫 방문 안내 팝업 (editor_tips.php notices) - 모바일: 스크롤은 양 끝에서 · PC: 끌어서 여러 개 고르기 */
 .ld-notice { position: fixed; inset: 0; z-index: 5001; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(20,16,12,.5); animation: ldnFade .2s ease; }
 @keyframes ldnFade { from { opacity: 0; } }
@@ -4308,14 +4350,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017z">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017z">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018a">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018a">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017z"></script>
-<script src="assets/tip-demos.js?v=1017z"></script>
-<script src="assets/ld-dialog.js?v=1017z"></script>
+<script src="assets/invite-blocks.js?v=1018a"></script>
+<script src="assets/tip-demos.js?v=1018a"></script>
+<script src="assets/ld-dialog.js?v=1018a"></script>
 </head>
 <body>
 
@@ -5533,6 +5575,7 @@ function scheduleSnapshot() {
     lastSnapshotJSON = current;
     redoStack = []; // 새 변경이 생기면 이전에 되돌렸던 redo 기록은 의미가 없어짐
     updateHistoryButtons();
+    try { spAutoSaveSoon(); } catch (e) {} // 간편 만들기: 몇 초 뒤 저절로 저장
     console.log('[history] 변경 감지, undoStack 길이:', undoStack.length);
 }
 
@@ -12329,7 +12372,7 @@ function selectPart(el, block, part) {
     box.className = 'text-toolbar intro-tt';
     const isImagePart = IMAGE_PARTS.has(part);
     box.innerHTML = `
-        <div class="itt-head"><b class="itt-title"><i>${isImagePart ? '▣' : 'Aa'}</i>${partLabels[part] || part}</b>${part === 'heart' && (block.id === 'hero' || block.id === 'heroVideo') ? '<button type="button" class="itt-del" data-act="heart-del" title="하트 지우기 (편집창에서 다시 넣을 수 있어요)">🗑 지우기</button>' : ''}<button type="button" class="tt-close" aria-label="닫기">✕</button></div>
+        <div class="itt-head"><b class="itt-title"><i>${isImagePart ? '▣' : 'Aa'}</i>${esc(partLabels[part] || (/^hl_/.test(part) ? '문구 · ' + String(InviteBlocks.heroFill(block.fields[part] || '', block.fields) || '').replace(/\s+/g, ' ').slice(0, 14) : part))}</b>${part === 'heart' && (block.id === 'hero' || block.id === 'heroVideo') ? '<button type="button" class="itt-del" data-act="heart-del" title="하트 지우기 (편집창에서 다시 넣을 수 있어요)">🗑 지우기</button>' : ''}<button type="button" class="tt-close" aria-label="닫기">✕</button></div>
         ${isImagePart ? `
         <div class="itt-row"><small>크기</small><div class="itt-step"><button type="button" data-act="w-dec">−</button><span class="tt-val" data-val="w">${layout.widthAuto ? '자동' : Math.round(layout.width) + '%'}</span><button type="button" data-act="w-inc">+</button></div></div>` : `
         <div class="itt-grid">
@@ -13426,6 +13469,7 @@ function showScreen(name) {
     document.getElementById('screen' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
     if (name !== 'editor') document.documentElement.classList.remove('simple-mode', 'sp-pv', 'sp-pv-real'); // 간편 화면은 에디터 화면 안에서만
     else if (typeof syncSimpleBtn === 'function') { if (state.mode === 'simple') document.documentElement.classList.add('simple-mode'); syncSimpleBtn(); }
+    if (name === 'editor' && typeof ldhMaybeIntro === 'function') { try { ldhPlaceBtn(); ldhMaybeIntro(); } catch (e) {} } // 왕초보 도움말: 처음 한 번 사용법 안내
 }
 
 // ===== 시작 흐름(온보딩) =====
@@ -14215,6 +14259,7 @@ const spOffNote = t => `<p class="sp-off">${t || '이 섹션은 지금 꺼져 �
 function spSetMode(on) {
     document.documentElement.classList.toggle('simple-mode', !!on);
     try { spMvApply(); } catch (e) {}
+    try { if (typeof ldhPlaceBtn === 'function') { ldhPlaceBtn(); ldhMaybeIntro(); } } catch (e) {}
     if (!on) { document.documentElement.classList.remove('sp-pv', 'sp-pv-real'); const bx = document.getElementById('spPvReal'); if (bx) bx.innerHTML = ''; }
 }
 // 간편 화면 열기 (새로 만들 때·저장된 간편 청첩장을 열 때·직접 만들기에서 돌아올 때)
@@ -14312,6 +14357,7 @@ function spMvUi() {
     if (document.getElementById('spSplitHd')) return;
     const tb = document.querySelector('.topbar'), lay = document.querySelector('#screenEditor .layout'); if (!tb || !lay) return;
     tb.insertAdjacentHTML('beforeend', `<button type="button" class="sp-split-tg on" id="spSplitTg" aria-pressed="true" hidden>청첩장 보기 <span class="sw"></span></button>`);
+    if (document.getElementById('ldHelpBtn')) tb.insertBefore(document.getElementById('spSplitTg'), document.getElementById('ldHelpBtn')); // ([? 도움말] 왼쪽에)
     lay.insertAdjacentHTML('beforeend', `<div class="sp-split-hd" id="spSplitHd" role="separator" tabindex="0" aria-label="끌어서 청첩장 칸 크기 조절">
         <span class="sp-sh-l" id="spShL">지금 고치는 곳</span><span class="sp-sh-g"><i></i><b id="spShSz">반</b><i></i></span>
         <button type="button" class="sp-sh-b" id="spShRet" hidden>↺ 고치는 곳</button><button type="button" class="sp-sh-b" id="spShBig">⤢ 크게</button></div>
@@ -15698,7 +15744,7 @@ async function simpleToFull() {
     spRenderAll();
     syncSimpleBtn();
     scheduleSnapshot();
-    showServerNotice('전문가 모드로 왔어요. 도구 → [간편 만들기]로 언제든 돌아갈 수 있어요.');
+    showServerNotice('전문가 모드로 왔어요. 간편 만들기로 돌아가려면 [? 도움말] → \'간편 만들기로 돌아가기\'를 눌러요.');
 }
 async function fullToSimple() {
     if (!state.presetId && !state.sampleId) { LD.alert('간편 만들기로 갈 수 없어요', { message: '디자인(템플릿)을 고르지 않고 만든 청첩장이에요.' }); return; }
@@ -17096,6 +17142,218 @@ if (!TIP_HARVEST) {
         else if (showNotice(true)) { e.stopImmediatePropagation(); document.getElementById('helpPopover')?.classList.remove('open'); }
     }, true);
 }
+// ===== 왕초보 도움말 (간편 만들기 · 전문가 모드 공통) =====
+//  [? 도움말] 버튼 → "무엇을 도와드릴까요?" 창: 지금 화면(간편/전문가 · 휴대폰/PC · 질문/목록)에 맞는 할 일만 쉬운 말로.
+//  할 일을 누르면 1·2·3 순서 설명 + [화면에서 보여주기](진짜 버튼에 구멍을 뚫고 말풍선, 여러 단계) · [바로 하기](대신 열어 줌).
+//  처음 들어온 화면마다 짧은 사용법 안내를 한 번 (ldhIntro, 이 기기 localStorage 'ld-help-seen').
+//  관리자: 손쉬운 제작 탭 → 간편 만들기 전체 → '도움말 버튼'(flow.help) · '처음 한 번 사용법 안내'(flow.helpIntro).
+//  새 기능을 만들면 여기(LDH_EASY / LDH_EXPERT)에도 쉬운 설명을 넣을 것.
+const ldh$ = s => document.querySelector(s);
+const ldhVis = el => !!el && typeof tourVisible === 'function' && tourVisible(el);
+const ldhFirst = (...sels) => sels.map(s => [...document.querySelectorAll(s)].find(ldhVis)).find(Boolean) || null;
+function ldhCtx() {
+    const r = document.documentElement, easy = r.classList.contains('simple-mode');
+    return { easy, mob: window.innerWidth <= 860, view: easy ? spViewNow() : '', mv: easy ? spMvMode() : '' };
+}
+// 간편 만들기: 그 질문으로 가거나(질문 화면) 목록에서 그 칸을 펼침
+function ldhEasyGo(askId, listK) {
+    if (spViewNow() === 'quick') { const i = spAskSteps().findIndex(s => spAskId(s) === askId); if (i >= 0) { spAskLast = spStep; spStep = i; spRender(); return; } }
+    state.spView = 'list'; spOpenSet = new Set([listK]); spRender();
+    setTimeout(() => { const el = ldh$(`#simplePane [data-li="${listK}"]`); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); const st = spSteps().find(x => x.k === listK); if (st) spScrollPreview(st.s || []); }, 140);
+}
+// 전문가 모드: 그 섹션 편집 칸을 열어 줌 (휴대폰은 섹션 목록 창째로)
+function ldhExpertOpen(id) {
+    const b = state.blocks.find(x => x.id === id); if (!b) return;
+    selectedId = id; accOpen = true;
+    try { renderBlockList(); renderFieldEditor(); updateSectionRuler(); } catch (e) {}
+    if (window.innerWidth <= 860) openSectionsSheet();
+    setTimeout(() => { const row = ldh$(`#blockList .block-row[data-id="${id}"]`); if (row) row.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 320);
+}
+const ldhUndoEl = () => ldhFirst('#spUndo', '#udUndo', '#undoTab');
+const ldhTextEl = () => ldhFirst('#previewRoot .col[data-block-id="hero"] .drag-part', '#previewRoot .col[data-block-id="heroVideo"] .drag-part', '#previewRoot .drag-part');
+// 할 일 목록 - t: 제목, d: 한 줄 설명, steps: 순서 설명, show: 보여주기 단계 [{el, t, x}], go: [버튼 이름, 함수], when: 이 화면에서만
+const LDH_EASY = [
+    { t: '내 청첩장 전체 보기', d: '하객이 보는 모습 그대로 봐요', steps: ['아래 버튼을 누르면 하객이 보는 화면이 떠요.', '다 보고 닫으면 다시 고칠 수 있어요.'], go: ['지금 보기', () => spOpenPreview(false)] },
+    { t: '이름 · 날짜 · 예식장 바꾸기', d: '틀린 글자를 고쳐요', steps: ['아래 [그 칸으로 가기]를 누르면 바로 그 칸이 열려요.', '칸에 적으면 청첩장에 바로 바뀌어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('names:name', 'names')] },
+    { t: '사진 바꾸기', d: '첫 화면 사진·영상을 넣거나 바꿔요', steps: ['아래 [그 칸으로 가기]를 눌러요.', '[사진 고르기]를 누르고 휴대폰(컴퓨터)에서 사진을 한 장 골라요.', '사진이 올라가면 청첩장 첫 화면이 바로 바뀌어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('hero:media', 'hero')] },
+    { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },
+    { t: '저장은 어떻게 하나요?', d: '따로 안 눌러도 저절로 저장돼요', steps: ['고치면 몇 초 뒤 저절로 저장돼요. 질문을 넘길 때도 저장돼요.', '창을 닫았다가 다시 들어와도 하던 곳부터 이어서 해요.', '이미 발행한 청첩장이면 고친 내용이 하객 화면에도 바로 바뀌어요.'] },
+    { t: '하객에게 보내기', d: '발행하고 카카오톡으로 보내요', steps: ['아래 [완성본 열기]를 눌러요.', '화면 아래 [발행하기]를 눌러요. 발행해야 하객이 볼 수 있어요.', '발행한 뒤 [내 청첩장] 화면에서 카카오톡 공유나 링크 복사를 눌러 보내요.'], go: ['완성본 열기', () => spOpenPreview(true)] },
+    { t: '위 청첩장 화면 쓰는 법', d: '크기 바꾸기 · 끄고 켜기', when: c => c.mv === 'split', steps: ['위는 내 청첩장, 아래는 적는 곳이에요. 아래에 적으면 위가 바로 바뀌어요.', '가운데 줄을 위아래로 끌면 크기가 바뀌어요.', '맨 위 [청첩장 보기]를 끄면 적는 곳만 크게 보여요.'], show: () => ldhIntroSteps('easy-split') },
+    { t: '작은 청첩장 창 쓰는 법', d: '옮기기 · 크게 보기', when: c => c.mv === 'lens', steps: ['작은 창에 지금 고치는 곳이 크게 보여요.', '창을 끌면 다른 모서리로 옮겨져요. 옆 끝으로 밀면 숨어요.', '창을 누르면 청첩장 전체가 크게 보여요.'], show: () => ldhIntroSteps('easy-lens') },
+    { t: '갤러리 · 계좌 같은 칸 더 넣기', d: '넣고 싶은 칸을 켜요', steps: ['질문을 다 하면 [기능 더 넣기]에서 누르기만 하면 들어가요.', '목록 화면에서는 칸 오른쪽 스위치를 켜면 청첩장에 들어가요.'], go: ['목록 화면으로', () => { state.spView = 'list'; spOpenSet = new Set(); spRender(); }], when: c => c.view === 'quick' },
+    { t: '갤러리 · 계좌 같은 칸 더 넣기', d: '넣고 싶은 칸을 켜요', steps: ['칸 오른쪽 스위치를 켜면 청첩장에 들어가요.', '칸 이름을 누르면 내용을 적는 곳이 펼쳐져요.'], show: () => [{ el: () => ldhFirst('#simplePane [data-li-sw]'), t: '켜고 끄기', x: '이 스위치를 켜면 그 칸이 청첩장에 들어가요.' }], when: c => c.view === 'list' },
+    { t: '글자 위치 · 스티커까지 바꾸고 싶어요', d: '전문가 모드에서 자세히 꾸며요', steps: ['[전문가 모드]에서는 글자를 끌어서 옮기고, 스티커·섹션 순서까지 바꿀 수 있어요.', '지금 적은 내용은 그대로 옮겨져요. 언제든 간편 만들기로 돌아올 수 있어요.'], go: ['전문가 모드로 가기', () => { const b = ldh$('#spToFull'); if (b) b.click(); }] },
+];
+const LDH_EXPERT = [
+    { t: '글자 내용 바꾸기', d: '청첩장의 글자를 고쳐요', steps: ['청첩장에서 바꿀 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.', '다 적었으면 글자 바깥 빈 곳을 눌러요.'], show: () => [{ el: ldhTextEl, t: '두 번 누르기', x: '이 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.' }] },
+    { t: '글자 크기 · 색 · 글꼴 바꾸기', d: '글자를 한 번 눌러요', steps: ['글자를 한 번 누르면 크기·색·글꼴을 바꾸는 작은 창이 떠요.', '[−] [+]로 크기를, 동그라미를 눌러 색을 바꿔요.'], show: () => [{ el: ldhTextEl, t: '한 번 누르기', x: '글자를 한 번 누르면 크기·색 창이 떠요.' }] },
+    { t: '글자 · 사진 옮기기', d: '손가락(마우스)으로 끌어요', steps: ['옮길 글자를 꾹 누른 채로 끌면 옮겨져요.', '휴대폰에서 안 끌리면 위쪽 손바닥 버튼(손가락으로 끌기)이 켜져 있는지 봐요.', '휴대폰에서 위아래로 넘길 때는 화면 양 끝을 밀어요.'], show: () => [{ el: ldhTextEl, t: '끌어서 옮기기', x: '이 글자를 꾹 누른 채로 끌어 보세요.' }, { el: () => ldhFirst('#qtTouchDrag'), t: '손가락으로 끌기', x: '이 버튼이 켜져 있어야 휴대폰에서 글자가 끌려요.' }] },
+    { t: '사진 바꾸기', d: '첫 화면 사진을 바꿔요', steps: ['아래 [바로 열기]를 누르면 메인 사진 칸이 열려요.', '[사진 바꾸기]를 누르고 사진을 한 장 골라요.'], go: ['바로 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
+    { t: '계좌 · 인사말 같은 내용 고치기', d: '섹션 칸을 열어서 적어요', steps: ['섹션 목록에서 고칠 섹션 이름을 누르면 바로 아래에 적는 칸이 열려요.', '휴대폰은 오른쪽 아래 목록 버튼을 먼저 눌러요.'], show: () => [{ el: () => ldhFirst('#sectionsFabBtn', '#sectionsSheet'), t: '섹션 목록', x: '여기서 고칠 섹션 이름을 누르면 적는 칸이 열려요.' }] },
+    { t: '섹션 켜고 끄기 · 순서 바꾸기', d: '갤러리·지도 같은 칸을 넣고 빼요', steps: ['섹션 목록에서 오른쪽 스위치를 켜면 청첩장에 들어가고, 끄면 빠져요.', '왼쪽 ⠿ 를 꾹 눌러 끌면 순서가 바뀌어요.'], show: () => [{ el: () => ldhFirst('#sectionsFabBtn', '#sectionsSheet'), t: '섹션 목록', x: '여기서 켜고 끄고, ⠿ 를 끌어 순서를 바꿔요.' }] },
+    { t: '위쪽 작은 그림 버튼은 뭐예요?', d: '버튼 이름을 하나씩 알려 드려요', icons: true },
+    { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },
+    { t: '저장 · 발행하기', d: '저장하고 하객에게 보이게 해요', steps: ['[임시저장]은 지금까지 고친 걸 저장해요. 발행 전이면 하객에게는 안 보여요.', '[발행하기]를 눌러야 하객이 볼 수 있어요.', '이미 발행했다면 저장할 때마다 하객 화면도 바로 바뀌어요.'], show: () => [{ el: () => ldhFirst('#saveDraftBtn'), t: '임시저장', x: '고친 걸 저장해요.' }, { el: () => ldhFirst('#publishBtn'), t: '발행하기', x: '이걸 눌러야 하객이 청첩장을 볼 수 있어요.' }] },
+    { t: '하객 화면으로 보기', d: '실제로 어떻게 보이는지 봐요', steps: ['[미리보기]를 누르면 하객이 보는 화면이 떠요.'], show: () => [{ el: () => ldhFirst('#previewBtn'), t: '미리보기', x: '하객이 보는 모습 그대로 봐요.' }] },
+    { t: '화면이 너무 작아요 / 커요', d: '보는 크기만 바꿔요', steps: ['[표준] [좁게] [확대] 버튼은 보는 크기만 바꿔요. 청첩장 모양은 그대로예요.', '[테두리]는 휴대폰 테두리를 보이거나 숨겨요.'], show: () => [{ el: () => ldhFirst('#pWidthNormal', '#mWidthNormal'), t: '화면 크기', x: '보는 크기만 바뀌어요. 하객 화면엔 영향이 없어요.' }] },
+    { t: '간편 만들기로 돌아가기', d: '질문에 답하는 쉬운 화면으로', when: () => { const b = ldh$('#tbToSimple'); return !!(b && !b.hidden); }, steps: ['아래 버튼을 누르면 간편 만들기로 돌아가요.', '이름·날짜·사진·글·계좌는 그대로 옮겨져요.'], go: ['간편 만들기로', () => { closeLdh(); fullToSimple(); }] },
+];
+// 작은 그림 버튼 쉬운 이름 + 하는 일 (버튼 id → [이름, 설명]). 여기 없는 버튼은 버튼 설명(title)을 그대로
+const LDH_ICON = {
+    mainHomeBtnTop: ['내 청첩장 목록', '만든 청첩장 목록 화면으로 나가요. 고친 건 저장해 두고 나가세요.'],
+    backToInfo: ['이름 · 날짜 다시 적기', '처음에 적은 두 사람 이름·예식 날짜를 다시 적어요.'],
+    pcSettingsBtn: ['화면 설정', '청첩장 색·글꼴·배경·효과를 바꿔요.'], controlsFab: ['화면 설정', '청첩장 색·글꼴·배경·효과를 바꿔요.'],
+    sectionsFabBtn: ['섹션 목록', '갤러리·계좌·인사말 같은 칸을 열어서 고치고, 켜고 끄고, 순서를 바꿔요.'],
+    pWidthNormal: ['보통 크기로 보기', '휴대폰 크기 그대로 봐요. 보는 크기만 바뀌어요.'], mWidthNormal: ['보통 크기로 보기', '휴대폰 크기 그대로 봐요. 보는 크기만 바뀌어요.'],
+    pWidthNarrow: ['작은 휴대폰으로 보기', '화면이 작은 휴대폰에서 어떻게 보이는지 봐요.'], mWidthNarrow: ['작은 휴대폰으로 보기', '화면이 작은 휴대폰에서 어떻게 보이는지 봐요.'],
+    pWidthFill: ['넓게 보기', '테두리 없이 넓게 봐요. 청첩장 모양은 그대로예요.'], pZoomToggle: ['크게 보기', '누를 때마다 크게 봐요. 청첩장 모양은 그대로예요.'],
+    pShadowToggle: ['양옆 그림자', '컴퓨터로 볼 때 청첩장 양옆에 옅은 그림자를 넣어요.'],
+    pBezelToggle: ['휴대폰 테두리', '미리보기에 휴대폰 테두리를 보이거나 숨겨요.'], mBezelToggle: ['휴대폰 테두리', '미리보기에 휴대폰 테두리를 보이거나 숨겨요.'],
+    qtHelp: ['편집 요령 다시 보기', '처음에 보여 준 편집 요령을 다시 봐요.'],
+    qtMultiSelect: ['여러 개 한꺼번에 고르기', '켜면 글자·스티커 여러 개를 끌어서 한꺼번에 골라 같이 옮겨요.'],
+    qtGridSnap: ['반듯하게 맞추기', '켜면 글자를 옮길 때 격자에 맞춰 반듯하게 놓여요.'],
+    qtTouchDrag: ['손가락으로 끌기', '켜져 있어야 휴대폰에서 글자·사진을 손가락으로 끌어 옮길 수 있어요.'],
+    qtAllRulers: ['위아래 간격 바로 조절', '켜면 섹션을 안 눌러도 미리보기에서 섹션 위아래 간격을 바로 조절해요.'],
+    stickerAddBtn: ['스티커 넣기', '하트·꽃 같은 작은 그림을 청첩장에 붙여요.'],
+    introSettingsBtn: ['인트로 꾸미기', '청첩장을 열 때 처음 나오는 글자 효과를 꾸며요.'],
+};
+const ldhIconOf = e => LDH_ICON[e.id] || (e.matches('[data-autofocus-toggle]') ? ['고른 섹션으로 이동', '켜면 섹션을 고를 때 미리보기가 그 자리로 움직여요.'] : null);
+// 처음 한 번 사용법 안내 (화면마다)
+function ldhIntroSteps(kind) {
+    const help = { el: () => ldh$('#ldHelpBtn'), t: '모르면 도움말', x: '헷갈리면 언제든 여기 [도움말]을 누르세요. 하고 싶은 일을 고르면 알려 드려요.' };
+    if (kind === 'easy-split') return [
+        { el: () => ldh$('#screenEditor .preview-pane'), t: '여기가 내 청첩장', x: '아래에 적으면 여기 청첩장이 바로 바뀌어요. 지금 고치는 곳으로 저절로 움직여요.' },
+        { el: () => ldh$('#spSplitHd'), t: '크기 바꾸기', x: '이 줄을 위아래로 끌면 청첩장 칸이 커지고 작아져요.' },
+        { el: () => ldh$('#spSplitTg'), t: '끄고 켜기', x: '적는 곳만 크게 보고 싶으면 이 스위치를 꺼요.' }, help];
+    if (kind === 'easy-lens') return [
+        { el: () => ldh$('#spLensUi'), t: '작은 청첩장 창', x: '지금 고치는 곳이 여기 크게 보여요. 끌면 옮겨지고, 누르면 전체가 보여요.' }, help];
+    if (kind === 'easy-pc') return [
+        { el: () => ldh$('#phoneFrame'), t: '여기가 내 청첩장', x: '오른쪽에 적으면 여기 청첩장이 바로 바뀌어요.' },
+        { el: ldhUndoEl, t: '잘못 고쳤으면', x: '이 화살표를 누르면 바로 전으로 돌아가요.' }, help];
+    if (kind === 'expert') return [
+        { el: ldhTextEl, t: '글자 고치기', x: '청첩장 글자를 두 번 톡톡 누르면 바로 고쳐요. 한 번 누르면 크기·색을 바꿔요.' },
+        { el: () => ldhFirst('#sectionsFabBtn', '#sectionsSheet'), t: '섹션 목록', x: '사진·계좌·인사말 같은 칸은 여기서 열어서 고쳐요. 스위치로 넣고 빼요.' },
+        { el: () => ldhFirst('.action-bar'), t: '저장 · 발행', x: '[임시저장]으로 저장하고, [발행하기]를 눌러야 하객이 볼 수 있어요.' }, help];
+    return [help];
+}
+let ldhEl = null, ldhTour = null, ldhTourSteps = [], ldhTourI = 0;
+const ldhOn = k => typeof spOpt !== 'function' || spOpt('flow', k);
+function ldhInit() {
+    if (ldh$('#ldHelpBtn')) return;
+    const tb = ldh$('.topbar'); if (!tb) return;
+    tb.insertAdjacentHTML('beforeend', `<button type="button" class="ldh-btn" id="ldHelpBtn" aria-haspopup="dialog"><span class="ldh-q" aria-hidden="true">?</span><b>도움말</b></button>`);
+    const tg = ldh$('#spSplitTg'); if (tg) tb.insertBefore(tg, ldh$('#ldHelpBtn')); // ([청첩장 보기] 스위치 오른쪽에)
+    document.body.insertAdjacentHTML('beforeend', `<div class="ldh-dim" id="ldhDim"></div><div class="ldh" id="ldHelp" role="dialog" aria-modal="true" aria-labelledby="ldhTitle"><div class="ldh-hd"><button type="button" class="ldh-back" id="ldhBack" aria-label="목록으로" hidden>‹</button><b id="ldhTitle">무엇을 도와드릴까요?</b><button type="button" class="ldh-x" id="ldhX" aria-label="닫기">✕</button></div><div class="ldh-bd" id="ldhBd"></div></div>`);
+    ldhEl = ldh$('#ldHelp');
+    ldh$('#ldHelpBtn').addEventListener('click', () => openLdh());
+    ldh$('#ldhX').addEventListener('click', closeLdh); ldh$('#ldhDim').addEventListener('click', closeLdh);
+    ldh$('#ldhBack').addEventListener('click', () => openLdh());
+    document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (ldhTour && ldhTour.classList.contains('on')) ldhTourEnd(); else if (ldhEl.classList.contains('show')) closeLdh(); });
+    window.addEventListener('resize', () => { ldhPlaceBtn(); if (ldhTour && ldhTour.classList.contains('on')) ldhTourPlace(); });
+    ldhPlaceBtn(); setInterval(ldhPlaceBtn, 1200);
+}
+// 버튼 자리: 머리줄 오른쪽 (휴대폰 전문가 모드는 머리줄이 아이콘으로 꽉 차서 → 오른쪽 아래 둥근 버튼들 위에 떠 있게)
+function ldhPlaceBtn() {
+    const b = ldh$('#ldHelpBtn'); if (!b) return;
+    const ed = ldh$('#screenEditor') && ldh$('#screenEditor').classList.contains('active');
+    b.hidden = !ed || !ldhOn('help') || document.documentElement.classList.contains('sp-pv');
+    const fab = window.innerWidth <= 860 && !document.documentElement.classList.contains('simple-mode');
+    b.classList.toggle('fab', fab);
+    if (fab) { const f = ldhFirst('#sectionsFabBtn', '#controlsFab'); b.style.bottom = (f ? window.innerHeight - f.getBoundingClientRect().top + 12 : 300) + 'px'; } else b.style.bottom = '';
+}
+function openLdh(item) {
+    ldhInit(); if (!ldhEl) return;
+    const c = ldhCtx(), list = (c.easy ? LDH_EASY : LDH_EXPERT).filter(x => !x.when || x.when(c)), bd = ldh$('#ldhBd');
+    ldh$('#ldhBack').hidden = !item;
+    if (!item) {
+        ldh$('#ldhTitle').textContent = '무엇을 도와드릴까요?';
+        bd.innerHTML = `<p class="ldh-lead">${c.easy ? '간편 만들기' : '전문가 모드'}에서 자주 묻는 것들이에요. 하고 싶은 일을 눌러 보세요.</p>
+            <div class="ldh-list">${list.map((x, i) => `<button type="button" class="ldh-it" data-i="${i}"><span><b>${esc(x.t)}</b><small>${esc(x.d)}</small></span><i aria-hidden="true">›</i></button>`).join('')}</div>
+            <button type="button" class="ldh-intro" id="ldhIntroAgain">처음 사용법 안내 다시 보기</button>`;
+        bd.querySelectorAll('.ldh-it').forEach(btn => btn.addEventListener('click', () => openLdh(list[+btn.dataset.i])));
+        ldh$('#ldhIntroAgain').addEventListener('click', () => { closeLdh(); setTimeout(() => ldhIntro(true), 260); });
+    } else if (item.icons) {
+        ldh$('#ldhTitle').textContent = item.t;
+        const icons = [...document.querySelectorAll('.topbar button, .topbar a.pill, #sectionsFabBtn, #controlsFab, #widthFabRow button')].filter(e => e.id !== 'ldHelpBtn' && ldhVis(e) && e.querySelector('svg') && (ldhIconOf(e) || e.title || e.getAttribute('aria-label')));
+        const nm = e => ldhIconOf(e) || [(e.title || e.getAttribute('aria-label') || '').replace(/\s*\(.*?\)/g, '').split(' - ')[0].trim(), (e.title || e.getAttribute('aria-label') || '').trim()];
+        bd.innerHTML = `<p class="ldh-lead">누르면 그 버튼이 화면 어디에 있는지 보여 드려요.</p><div class="ldh-icons">${icons.map((e, i) => `<button type="button" class="ldh-ic" data-k="${i}"><span class="ldh-ico">${e.querySelector('svg').outerHTML}</span><span class="ldh-ict"><b>${esc(nm(e)[0])}</b><small>${esc(nm(e)[1])}</small></span></button>`).join('') || '<p class="ldh-lead">지금 화면에는 작은 그림 버튼이 없어요.</p>'}</div>`;
+        bd.querySelectorAll('.ldh-ic').forEach(btn => btn.addEventListener('click', () => { const e = icons[+btn.dataset.k], [t, x] = nm(e); closeLdh(); ldhTourStart([{ el: () => e, t, x }]); }));
+    } else {
+        ldh$('#ldhTitle').textContent = item.t;
+        bd.innerHTML = `<ol class="ldh-steps">${(item.steps || []).map(t => `<li>${esc(t)}</li>`).join('')}</ol>
+            <div class="ldh-acts">${item.show ? '<button type="button" class="ldh-show" id="ldhShow">화면에서 보여주기</button>' : ''}${item.go ? `<button type="button" class="ldh-go" id="ldhGo">${esc(item.go[0])}</button>` : ''}</div>`;
+        const sh = ldh$('#ldhShow'); if (sh) sh.addEventListener('click', () => { closeLdh(); setTimeout(() => ldhTourStart(item.show()), 260); });
+        const go = ldh$('#ldhGo'); if (go) go.addEventListener('click', () => { closeLdh(); setTimeout(() => item.go[1](), 200); });
+    }
+    ldhEl.classList.add('show'); ldh$('#ldhDim').classList.add('show');
+    setTimeout(() => { const f = ldhEl.querySelector('.ldh-it, .ldh-show, .ldh-go, .ldh-ic'); if (f) f.focus({ preventScroll: true }); }, 60);
+}
+function closeLdh() { if (!ldhEl) return; ldhEl.classList.remove('show'); ldh$('#ldhDim').classList.remove('show'); }
+// 화면에서 보여주기: 진짜 버튼 둘레만 밝게 + 말풍선 (전문가 모드 둘러보기와 같은 모양 .ld-tour)
+function ldhTourStart(steps) {
+    ldhTourSteps = (steps || []).filter(Boolean); if (!ldhTourSteps.length) return;
+    if (!ldhTour) {
+        ldhTour = document.createElement('div'); ldhTour.className = 'ld-tour ldh-tour';
+        ldhTour.innerHTML = `<div class="lt-hole"></div><div class="lt-card" role="dialog" aria-modal="true" aria-labelledby="ldhTT"><div class="lt-top"><span class="lt-step"></span><div class="lt-dots"></div></div><h4 id="ldhTT"></h4><p></p><div class="lt-btns"><button type="button" class="lt-skip">그만 보기</button><button type="button" class="lt-prev">이전</button><button type="button" class="lt-next">다음</button></div></div>`;
+        document.body.appendChild(ldhTour);
+        ldhTour.querySelector('.lt-skip').addEventListener('click', ldhTourEnd);
+        ldhTour.querySelector('.lt-prev').addEventListener('click', () => ldhTourShow(ldhTourI - 1));
+        ldhTour.querySelector('.lt-next').addEventListener('click', () => ldhTourI >= ldhTourSteps.length - 1 ? ldhTourEnd() : ldhTourShow(ldhTourI + 1));
+    }
+    ldhTour.classList.add('on'); ldhTourShow(0);
+}
+function ldhTourEnd() { if (ldhTour) ldhTour.classList.remove('on'); }
+function ldhTourShow(i) {
+    ldhTourI = Math.max(0, Math.min(ldhTourSteps.length - 1, i));
+    const s = ldhTourSteps[ldhTourI], card = ldhTour.querySelector('.lt-card'), n = ldhTourSteps.length;
+    const el = typeof s.el === 'function' ? s.el() : s.el;
+    if (el && el.scrollIntoView && !ldhVis(el)) try { el.scrollIntoView({ block: 'center' }); } catch (e) {}
+    card.querySelector('.lt-step').textContent = n > 1 ? `${ldhTourI + 1} / ${n}` : '';
+    card.querySelector('.lt-dots').innerHTML = n > 1 ? ldhTourSteps.map((_, k) => `<i class="${k === ldhTourI ? 'on' : ''}"></i>`).join('') : '';
+    card.querySelector('h4').textContent = s.t;
+    card.querySelector('p').textContent = s.x + (el && ldhVis(el) ? '' : ' (지금 화면에서는 이 버튼이 안 보여요)');
+    card.querySelector('.lt-prev').hidden = ldhTourI === 0;
+    card.querySelector('.lt-skip').hidden = n === 1;
+    card.querySelector('.lt-next').textContent = ldhTourI >= n - 1 ? '알겠어요' : '다음';
+    card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
+    ldhTourCur = el; ldhTourPlace();
+    card.querySelector('.lt-next').focus({ preventScroll: true });
+}
+let ldhTourCur = null;
+function ldhTourPlace() {
+    const hole = ldhTour.querySelector('.lt-hole'), card = ldhTour.querySelector('.lt-card'), W = window.innerWidth, H = window.innerHeight, cw = Math.min(320, W - 24);
+    card.style.width = cw + 'px';
+    const el = ldhTourCur && ldhVis(ldhTourCur) ? ldhTourCur : null;
+    if (!el) { Object.assign(hole.style, { left: W / 2 + 'px', top: H / 2 + 'px', width: '0px', height: '0px' }); card.dataset.arrow = ''; Object.assign(card.style, { left: (W - cw) / 2 + 'px', top: Math.max(16, (H - card.offsetHeight) / 2) + 'px' }); return; }
+    const r = el.getBoundingClientRect(), pad = 8;
+    const hr = { l: Math.max(4, r.left - pad), t: Math.max(4, r.top - pad), r: Math.min(W - 4, r.right + pad), b: Math.min(H - 4, r.bottom + pad) };
+    Object.assign(hole.style, { left: hr.l + 'px', top: hr.t + 'px', width: (hr.r - hr.l) + 'px', height: (hr.b - hr.t) + 'px' });
+    const ch = card.offsetHeight; let top, arrow;
+    if (hr.b + 14 + ch < H - 8) { top = hr.b + 14; arrow = 'up'; } else if (hr.t - 14 - ch > 8) { top = hr.t - 14 - ch; arrow = 'down'; } else { top = Math.max(8, Math.min(H - ch - 8, hr.t + 20)); arrow = ''; }
+    let left = (hr.l + hr.r) / 2 - cw / 2;
+    if (!arrow && hr.r + 14 + cw < W - 8) left = hr.r + 14; else if (!arrow && hr.l - 14 - cw > 8) left = hr.l - 14 - cw;
+    left = Math.max(12, Math.min(W - cw - 12, left));
+    card.dataset.arrow = arrow; card.style.setProperty('--ax', Math.max(18, Math.min(cw - 18, (hr.l + hr.r) / 2 - left)) + 'px');
+    Object.assign(card.style, { left: left + 'px', top: top + 'px' });
+}
+// 처음 들어온 화면마다 한 번 (질문 화면에서 다른 창이 다 닫혀 있을 때)
+function ldhIntroKind() { const c = ldhCtx(); return c.easy ? (c.mv === 'split' ? 'easy-split' : c.mv === 'lens' ? 'easy-lens' : c.mob ? '' : 'easy-pc') : 'expert'; }
+function ldhIntro(force) {
+    const kind = ldhIntroKind(); if (!kind) return false;
+    let seen = {}; try { seen = JSON.parse(localStorage.getItem('ld-help-seen') || '{}'); } catch (e) {}
+    if (!force && (seen[kind] || !ldhOn('helpIntro'))) return false;
+    if (!force && document.querySelector('.ld-dlg.show, .ld-tour.on, .start-guide.open, .field-drawer.popup-open, .sections-sheet.popup-open, .ldh.show') || [...document.querySelectorAll('.ld-notice')].some(ldhVis)) return false;
+    seen[kind] = 1; try { localStorage.setItem('ld-help-seen', JSON.stringify(seen)); } catch (e) {}
+    ldhTourStart(ldhIntroSteps(kind));
+    return true;
+}
+function ldhMaybeIntro() { clearTimeout(ldhMaybeIntro.t); ldhMaybeIntro.t = setTimeout(() => { const ed = ldh$('#screenEditor'); if (ed && ed.classList.contains('active') && !ldhIntro(false)) { let seen = {}; try { seen = JSON.parse(localStorage.getItem('ld-help-seen') || '{}'); } catch (e) {} if (!seen[ldhIntroKind()] && ldhOn('helpIntro')) ldhMaybeIntro(); } }, 1600); }
+// 간편 만들기: 고친 뒤 몇 초 지나면 저절로 저장 (목록 화면에서 고치고 창을 닫아도 남게 - 도움말 '저장은 저절로' 그대로)
+let ldhSaveT = 0;
+function spAutoSaveSoon() { try { if (!EDIT_TOKEN) return; } catch (e) { return; } if (!document.documentElement.classList.contains('simple-mode')) return; /* (불러오기 전엔 EDIT_TOKEN이 아직 없음) */ clearTimeout(ldhSaveT); ldhSaveT = setTimeout(() => { try { saveToServer(false, true); } catch (e) {} }, 4000); }
+
+try { ldhInit(); } catch (e) { console.warn(e); }
 // ===== 커스텀 편집팁 (관리자 → 커스텀 편집팁 admin_tip_tours.php) =====
 //  화면이 어두워지고 눌러야 할 곳만 밝게 + 옆에서 손가락이 위아래로 콕콕 + 둘레에 "여기를 눌러주세요" 물결 + 설명 창
 //  [다음]을 누르면(또는 그곳을 직접 누르면) 다음 자리로. 단계마다 PC·모바일·공통을 정할 수 있고, "먼저 누를 곳"을 정하면 그걸 눌러 열어 둔 뒤 가리킴
