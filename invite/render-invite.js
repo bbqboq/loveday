@@ -1119,6 +1119,10 @@ function renderInviteReadOnly(rootEl, design, masked) {
     rootEl.style.setProperty('--p-head-weight', (customFont && customFont.weight) || s.headWeight);
     rootEl.style.setProperty('--p-radius', s.radius);
     rootEl.classList.toggle('dividers-on', !!(design.extras && design.extras.dividers)); // 섹션 사이 구분선 (기본 꺼짐)
+    if (window.InviteBlocks && InviteBlocks.setColors) { // 색 바꾸면 꾸밈도 같이 (화면 설정 extras.colorLink · design.themePal = 디자인 원래 색)
+        InviteBlocks.setColors({ bg: design.customBg || s.bg, ink: s.ink, accent: design.customAccent || s.accent, line: s.line, muted: s.muted });
+        InviteBlocks.applyColorLink(rootEl);
+    }
 
     const enabled0 = (design.blocks || []).filter(b => b.enabled);
     const enabled = enabled0.filter(b => b.id !== 'share').concat(enabled0.filter(b => b.id === 'share')); // 공유하기는 늘 맨 아래

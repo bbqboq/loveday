@@ -198,13 +198,18 @@
         let cls = (bg ? ' ib-box-bg' : '') + (ink ? ' ib-box-ink' : '');
         if (bg && !ink) cls += hexDark(bg) ? ' ib-box-dk' : ' ib-box-lt'; // 창 색만 골랐을 때: 디자인 바탕과 반대 밝기면 CSS가 글자색을 알아서 (어두운 디자인 + 흰 창 → 글자가 안 보이던 것)
         const st = [bg ? `--box-bg:${bg}` : '', ink ? `--box-ink:${ink}` : ''];
-        const sk = skinOf(b), pal = b && b.skinPal && typeof b.skinPal === 'object' ? b.skinPal : null;
+        let sk = skinOf(b); const pal = b && b.skinPal && typeof b.skinPal === 'object' ? b.skinPal : null;
+        // 색 바꾸면 꾸밈도 같이: 디자인이 정해 둔 섹션 테마(fields.skin - 직접 고른 b.skin은 그대로)는 색을 바꾸면 디자인 꾸밈으로 (웹툰 컷은 그대로)
+        if (sk && sk !== 'webtoon' && !b.skin && colorLinkOn() && colorChanged() && designLook()) sk = '';
+        const palLink = !!(pal && pal.at && CUR_COLORS && colorLinkOn() && pal.at !== colKey(CUR_COLORS)); // 디자인 스킨을 고른 뒤 색을 바꿈 → 모양은 그대로, 색은 지금 색
         if (sk) cls += ` ib-sk ib-sk-${sk}${SKIN_DARK.includes(sk) ? ' ib-sk-dark' : ''}`;
         if (sk === 'webtoon') ensureFont('black-han-sans'); // 웹툰 컷 말풍선 제목 글꼴
         else if (pal && HEX_RE.test(pal.bg || '') && HEX_RE.test(pal.ink || '')) { // 다른 디자인 색으로
-            cls += ' ib-sk ib-sk-pal' + (hexDark(pal.bg) ? ' ib-sk-dark' : ' ib-sk-light');
-            [['bg', 'p-bg'], ['ink', 'p-ink'], ['accent', 'p-accent'], ['line', 'p-line'], ['muted', 'p-muted']].forEach(([k, v]) => { if (HEX_RE.test(pal[k] || '')) st.push(`--${v}:${pal[k]}`); });
-            if (HEX_RE.test(pal.accent || '')) st.push(`--p-on-accent:${onAccent(pal.accent)}`);
+            cls += ' ib-sk ib-sk-pal' + (hexDark(palLink ? CUR_COLORS.bg : pal.bg) ? ' ib-sk-dark' : ' ib-sk-light') + (palLink ? ' ib-sk-link' : '');
+            if (!palLink) {
+                [['bg', 'p-bg'], ['ink', 'p-ink'], ['accent', 'p-accent'], ['line', 'p-line'], ['muted', 'p-muted']].forEach(([k, v]) => { if (HEX_RE.test(pal[k] || '')) st.push(`--${v}:${pal[k]}`); });
+                if (HEX_RE.test(pal.accent || '')) st.push(`--p-on-accent:${onAccent(pal.accent)}`);
+            }
             // 디자인 테마 스킨: 글꼴·모서리·종이 + 꾸밈
             if (THEME_DECOS.includes(pal.deco)) { cls += ' ib-th ib-th-' + pal.deco; themeFonts(pal.deco); }
             if (pal.font && FONT_CSS[pal.font]) ensureFont(pal.font);
@@ -2225,6 +2230,35 @@
     let CUR_DESIGN = null; // 서명(신랑·신부 이름)을 쓰려고 지금 그리는 청첩장 - 에디터·공개페이지가 setDesign으로 넘김
     function setDesign(d) { CUR_DESIGN = d || null; }
     function designLook() { const d = CUR_DESIGN, g = d && d.sectionLook; return g && THEME_DECOS.includes(g) && !(d.extras && d.extras.look === false) ? g : ''; }
+    // ---------- 색 바꾸면 꾸밈도 같이 (화면 설정 extras.colorLink, 기본 켜짐) ----------
+    // design.themePal = 디자인을 고를 때의 원래 색 · setColors = 지금 청첩장 색 (색 묶음·포인트 색·바탕색을 바꾼 뒤)
+    //  켜짐: 디자인 꾸밈·테마 부품은 원래 --p-* 를 따라감 + 디자인이 정해 둔 섹션 테마(빈티지·밤하늘·안개)는 색을 바꾸면 그 디자인 꾸밈으로(지금 색)
+    //        + 따로 고른 디자인 스킨(skinPal)은 고른 뒤 색을 바꾸면 모양은 그대로 지금 색으로 (skinPal.at = 고를 때 색)
+    //  꺼짐: 디자인 꾸밈·테마 부품의 포인트 색·선 색은 디자인 원래 색 그대로 (--tp-a/l/o, 글자·바탕은 지금 색 - 안 보이는 글자가 생기지 않게)
+    let CUR_COLORS = null;
+    function setColors(c) { CUR_COLORS = c && HEX_RE.test(c.bg || '') ? c : null; }
+    const colKey = p => p ? [p.bg, p.ink, p.accent].map(x => String(x || '').toUpperCase()).join('|') : '';
+    function colorLinkOn() { const d = CUR_DESIGN; return !(d && d.extras && d.extras.colorLink === false); }
+    function colorChanged() { const t = CUR_DESIGN && CUR_DESIGN.themePal; return !!(t && CUR_COLORS && HEX_RE.test(t.bg || '') && colKey(t) !== colKey(CUR_COLORS)); }
+    function curColorKey() { return colKey(CUR_COLORS); }
+    // 원래 포인트 색이 바꾼 바탕 위에서 잘 안 보이면(대비 2.4 아래) 지금 글자색 쪽으로 조금씩 섞어서 보이게 (색 느낌은 남김)
+    const rgbOf = h => { let x = String(h || '').replace('#', ''); if (x.length === 3) x = x.replace(/./g, d => d + d); const n = parseInt(x, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+    const lumOf = c => { const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * f(c[0]) + .7152 * f(c[1]) + .0722 * f(c[2]); };
+    function readableOn(a, bg, ink) {
+        if (!HEX_RE.test(bg || '') || !HEX_RE.test(ink || '')) return a;
+        const A = rgbOf(a), K = rgbOf(ink), lb = lumOf(rgbOf(bg)), cr = c => { const l = lumOf(c); return (Math.max(l, lb) + .05) / (Math.min(l, lb) + .05); };
+        if (cr(A) >= 2.4) return a;
+        for (let w = .15; w <= .75; w += .1) { const m = A.map((v, i) => Math.round(v * (1 - w) + K[i] * w)); if (cr(m) >= 2.4 || w > .7) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase(); }
+        return a;
+    }
+    function applyColorLink(el) {
+        if (!el || !el.style) return;
+        ['--tp-a', '--tp-l', '--tp-o'].forEach(v => el.style.removeProperty(v));
+        if (colorLinkOn() || !colorChanged()) return;
+        const t = CUR_DESIGN.themePal;
+        if (HEX_RE.test(t.accent || '')) { const a = readableOn(t.accent, CUR_COLORS.bg, CUR_COLORS.ink); el.style.setProperty('--tp-a', a); el.style.setProperty('--tp-o', onAccent(a)); }
+        if (HEX_RE.test(t.line || '')) el.style.setProperty('--tp-l', t.line);
+    }
     function thanksVisible(show) {
         if (show === 'always') return true;
         if (typeof location !== 'undefined' && /[?&]thankstest=1/.test(location.search)) return true;
@@ -3463,5 +3497,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);
