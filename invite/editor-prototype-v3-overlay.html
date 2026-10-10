@@ -1033,6 +1033,21 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
 .fp-more { display: flex; align-items: center; gap: 8px; margin: 0 auto 22px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; border-radius: 99px; padding: 11px 20px; font: inherit; font-size: 13.5px; font-weight: 600; color: #6F6A63; cursor: pointer; }
 .fp-more:hover { border-color: #1B1A18; color: #1B1A18; }
 .fp-all[hidden], .fp-grid[hidden] { display: none; }
+.skp { display: grid; gap: 8px; }
+.skp-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.skp-b { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 6px; border-radius: 999px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 12.5px; font-weight: 600; color: #4A443C; cursor: pointer; }
+.skp-b i { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--b) 55%, var(--a) 55%); box-shadow: inset 0 0 0 1.5px var(--l, rgba(0,0,0,.1)); }
+.skp-b i.d { background: conic-gradient(#F4EEE4 0 25%, #2B2320 0 50%, #E8D5C8 0 75%, #B8925A 0); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.skp-b.on { border-color: #2B2320; box-shadow: 0 0 0 1px #2B2320; color: #2B2320; }
+.skp-lab { font-size: 11.5px; font-weight: 700; color: #8A847B; margin-top: 2px; }
+.skp-pals { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 2px 4px; }
+.skp-pals::-webkit-scrollbar { display: none; }
+.skp-p { flex: none; width: 56px; border: 0; background: none; padding: 0; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.skp-p i { width: 40px; height: 40px; border-radius: 12px; background: var(--b); position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); }
+.skp-p i::before { content: 'Aa'; position: absolute; left: 0; right: 0; top: 7px; text-align: center; font-size: 12px; font-weight: 700; color: var(--k); }
+.skp-p i::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 28%; background: var(--a); }
+.skp-p span { font-size: 10px; color: #8A847B; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.skp-p.on i { box-shadow: 0 0 0 2.5px var(--ui-point, #B8925A); } .skp-p.on span { color: #2B2320; font-weight: 700; }
 /* 디자인 고르기 (간편 만들기): 큰 휴대폰을 옆으로 넘기기 + 아래 색 띠로 바로 가기 (관리자 flow.pick을 끄면 예전 카드 화면)
    휴대폰 속 청첩장 = 그 디자인을 에디터 미리보기로 실제로 그려서 복사한 것(dpkShot) → 390px 폭 그대로 줄여서 보여 줌 */
 .dpk[hidden], #startPick.dpk-on #featuredGrid, #startPick.dpk-on #fpMore, #startPick.dpk-on #fpAll { display: none !important; }
@@ -4461,14 +4476,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018g">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018g">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018j">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018j">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018g"></script>
-<script src="assets/tip-demos.js?v=1018g"></script>
-<script src="assets/ld-dialog.js?v=1018g"></script>
+<script src="assets/invite-blocks.js?v=1018j"></script>
+<script src="assets/tip-demos.js?v=1018j"></script>
+<script src="assets/ld-dialog.js?v=1018j"></script>
 </head>
 <body>
 
@@ -8644,9 +8659,14 @@ function appendSectionSpacingControls(wrap, block) {
         <div class="cpk-line"><small>바탕</small>${cpkHtml('secBoxBg', block.boxBg || '#FFFFFF', !block.boxBg && !block.boxInk, 'secBoxReset')}</div>
         <div class="cpk-line"><small>글자</small>${cpkHtml('secBoxInk', block.boxInk || '#2B2B2B', !block.boxBg && !block.boxInk, null, CPK_INK)}</div>
         <p class="field-hint" style="margin-top:4px;">${block.boxBg || block.boxInk ? '직접 고른 색을 쓰는 중이에요.' : '지금은 테마 기본 색이에요. 색을 고르면 이 섹션 안의 창들이 바뀌어요.'}</p>` : ''}
+        ${SKIN_NO.includes(block.id) ? '' : `<label style="margin-top:14px;">섹션 테마 <span style="font-weight:400;opacity:.65;">(이 섹션만 다른 모양으로)</span></label>
+        ${skinPickHtml(InviteBlocks.skinOf(block), block.skinPal, InviteBlocks.SKIN_HAS_VINTAGE.includes(block.id))}
+        <button type="button" class="pill" data-skp-all style="margin-top:8px;">모든 섹션에 같게</button>`}
     `;
     wrap.appendChild(box);
     bindCpk(box);
+    bindSkinPick(box, (k, pal) => { skinApply(block, k, pal); renderFieldEditor(); renderPreview(); scheduleSnapshot(); });
+    box.querySelector('[data-skp-all]')?.addEventListener('click', () => { const k = InviteBlocks.skinOf(block), pal = block.skinPal; state.blocks.forEach(b => { if (!SKIN_NO.includes(b.id)) { if (pal) { delete b.skin; delete b.skinPal; if (b.fields) delete b.fields.skin; b.skinPal = Object.assign({}, pal); } else skinApply(b, k, ''); } }); renderPreview(); scheduleSnapshot(); showServerNotice('모든 섹션을 같은 테마로 바꿨어요.'); });
     const pdSet = (id, v, fromLink) => {
         v = Math.max(0, Math.min(120, v));
         const inp = document.getElementById(id); if (inp && +inp.value !== v) inp.value = v;
@@ -11572,6 +11592,7 @@ function renderPreviewNow() {
     document.querySelector('.preview-pane').style.background = state.desktopSideBg || '';
     const s = skins[state.skin];
     root.style.setProperty('--p-bg', state.customBg || s.bg);
+    root.classList.toggle('ib-dark', !!(window.InviteBlocks && InviteBlocks.hexDark && InviteBlocks.hexDark(state.customBg || s.bg))); // 어두운 디자인: 섹션 안 카드·창도 어둡게 (공개 페이지와 같은 규칙)
     root.style.setProperty('--p-ink', s.ink);
     root.classList.toggle('dividers-on', !!(state.extras && state.extras.dividers)); // 섹션 사이 구분선 (기본 꺼짐)
     root.style.setProperty('--p-accent', state.customAccent || s.accent);
@@ -13873,7 +13894,7 @@ function dpkRender(id, design) {
         window.__dpkWant = false;
         renderPreviewNow(); // (계좌 자동 정렬 등이 다시 그려 달라고 하면 한 번만 더)
         if (window.__dpkWant) { window.__dpkWant = false; renderPreviewNow(); }
-        return { fx: JSON.parse(JSON.stringify(state.effects || {})), html: dpkClean(root.innerHTML), style: root.getAttribute('style') || '', cls: rCls.replace(/\b(sp-pop|has-desktop-shadow)\b/g, '') + (root.classList.contains('dividers-on') ? ' dividers-on' : '') };
+        return { fx: JSON.parse(JSON.stringify(state.effects || {})), html: dpkClean(root.innerHTML), style: root.getAttribute('style') || '', cls: root.className.replace(/\b(sp-pop|has-desktop-shadow|sp-[\w-]+)\b/g, '') };
     } catch (e) { console.warn('[dpk]', e); return null; }
     finally {
         window.__dpkBusy = false;
@@ -15855,6 +15876,33 @@ function spHexName(hex, role) {
 const spSkinName = sk => { const a = spHexName(sk.bg, 'bg'), b = spHexName(sk.accent); return a && b ? (a === b ? a : `${a} · ${b}`) : (sk.label || ''); };
 // 색·글꼴: 디자인의 색·글꼴 묶음만 (화면 설정 → 테마와 같은 값). 디자인 자체(섹션 구성·메인·효과)를 바꾸려면 위의 [디자인 바꾸기]
 let spDesignOpen = false;
+// ===== 섹션 테마 고르기 (전문가 섹션 옵션 · 간편 만들기 색·글꼴 칸이 같이 씀) =====
+//  디자인 따라 · 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 + 다른 디자인(20개) 색 → block.skin / block.skinPal (InviteBlocks.boxColAttrs가 .col에)
+const SKIN_NO = ['hero', 'heroVideo'];
+const SKIN_PV = { vintage: ['#F7EFDF', '#A4524F', '#CDB27A'], night: ['#141936', '#E2C98E', '#353C6A'], mist: ['#222C36', '#A9C1D6', '#3A4754'] };
+function skinPalOf(p) { const k = skins[p.__base || p.id]; return k && k.bg && k.ink ? { bg: k.bg, ink: k.ink, accent: k.accent, line: k.line, muted: k.muted } : null; }
+function skinPickHtml(cur, curPal, noVintage) {
+    const SK = ((window.InviteBlocks && InviteBlocks.SECTION_SKINS) || []).filter(([k]) => !(noVintage && k === 'vintage'));
+    const chip = ([k, l]) => { const c = SKIN_PV[k], on = k ? cur === k : !cur && !curPal;
+        return `<button type="button" class="skp-b${on ? ' on' : ''}" data-skp="${k}">${c ? `<i style="--b:${c[0]};--a:${c[1]};--l:${c[2]}"></i>` : '<i class="d"></i>'}${esc(l)}</button>`; };
+    const pals = PRESETS.map(p => { const pl = skinPalOf(p); if (!pl) return ''; const on = !cur && curPal && curPal.bg === pl.bg && curPal.accent === pl.accent;
+        return `<button type="button" class="skp-p${on ? ' on' : ''}" data-skp-pal="${esc(p.id)}" title="${esc(p.label)} 색으로" style="--b:${pl.bg};--a:${pl.accent};--k:${pl.ink}"><i></i><span>${esc(p.label)}</span></button>`; }).join('');
+    return `<div class="skp"><div class="skp-row">${SK.map(chip).join('')}</div><div class="skp-lab">다른 디자인 색으로</div><div class="skp-pals">${pals}</div></div>`;
+}
+function skinApply(b, k, palId) {
+    delete b.skin; delete b.skinPal; if (b.fields) delete b.fields.skin;
+    if (palId) { const p = PRESETS.find(x => x.id === palId), pl = p && skinPalOf(p); if (pl) b.skinPal = pl; return; }
+    if (!k) return;
+    if (k === 'vintage' && InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id)) { // 원래 빈티지 모양이 있는 섹션은 그 모양으로
+        if (b.id === 'contact') b.fields.contactStyle = 'vintage'; else if (b.id === 'account') b.fields.accStyle = 'vintage';
+        return;
+    }
+    b.skin = k;
+}
+function bindSkinPick(box, onPick) {
+    box.querySelectorAll('[data-skp]').forEach(x => x.addEventListener('click', () => onPick(x.dataset.skp, '')));
+    box.querySelectorAll('[data-skp-pal]').forEach(x => x.addEventListener('click', () => onPick('', x.dataset.skpPal)));
+}
 function spTheme(box) {
     const cur = state.skin, O = k => spOpt('theme', k), sk0 = skins[state.skin] || skins.classic;
     const card = ([k, sk]) => `<button type="button" class="sp-th${cur === k ? ' on' : ''}" data-sp-skin="${k}" title="${esc(sk.label || '')} 디자인의 색" style="--b:${sk.bg};--i:${sk.ink};--a:${sk.accent};--l:${sk.line};--f:${String(sk.headFont || 'inherit').replace(/"/g, "'")};--w:${sk.headWeight || 600};--r:${sk.radius || '8px'}">
@@ -15870,6 +15918,8 @@ function spTheme(box) {
         (O('font') ? `<div class="wz-field"><div class="wz-lab">글꼴</div><div class="sp-fonts">${fontOptions.filter(fo => !fo.en).map(fo => `<button type="button" class="${(state.customFont || '') === fo.id ? 'on' : ''}" data-sp-font="${esc(fo.id)}" style="font-family:${String(fo.family || 'inherit').replace(/"/g, "'")}">${esc(fo.id ? fo.label.replace(/\s*\(.*\)\s*$/, '') : '테마 기본')}</button>`).join('')}</div></div>` : '') +
         (O('accent') ? `<div class="wz-field"><div class="wz-lab">포인트 색 <small>하트·버튼·강조 글자</small></div><div class="sp-cols"><button type="button" class="${!state.customAccent ? 'on' : ''}" data-sp-acc="" style="--c:${sk0.accent}" title="테마 기본"></button>${ACCENT_SWATCHES.map(([h, n]) => `<button type="button" class="${String(state.customAccent || '').toUpperCase() === h.toUpperCase() ? 'on' : ''}" data-sp-acc="${h}" style="--c:${h}" title="${n}"></button>`).join('')}<label class="sp-colpick" title="직접 고르기"><input type="color" value="${esc(state.customAccent || sk0.accent)}" data-sp-accpick></label></div></div>` : '') +
         (O('paper') && Object.keys(P).length ? `<div class="wz-field"><div class="wz-lab">종이 질감</div><div class="sp-papers"><button type="button" class="${!state.paper ? 'on' : ''}" data-sp-paper=""><span style="background:${(state.paper ? state.bgBeforePaper : state.customBg) || sk0.bg}"></span>없음</button>${Object.entries(P).map(([k, v]) => `<button type="button" class="${state.paper === k ? 'on' : ''}" data-sp-paper="${k}"><span style="background-color:${v.bg};background-image:${v.img}"></span>${esc(v.label)}</button>`).join('')}</div></div>` : '') +
+        (O('sskin') ? (() => { const fb = state.blocks.find(b => b.enabled && !SKIN_NO.includes(b.id) && !InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id)) || {};
+            return `<div class="wz-field"><div class="wz-lab">섹션 꾸밈 <small>인사말·갤러리·방명록 같은 칸 모양 (모든 칸 같이)</small></div>${skinPickHtml(InviteBlocks.skinOf(fb), fb.skinPal, false)}</div>`; })() : '') +
         (O('reset') && (state.customBg || state.customAccent || state.customFont || state.paper) ? `<button type="button" class="sp-link" id="spThReset">따로 바꾼 바탕색·포인트색·글꼴·종이를 테마 기본으로 되돌리기</button>` : '') +
         '<p class="wz-hint">더 자세한 색 조정은 <b>전문가 모드</b>의 화면 설정에서 할 수 있어요.</p>';
     if (O('font')) try { loadAllFontCss(); } catch (e) {}
@@ -15881,6 +15931,7 @@ function spTheme(box) {
     box.querySelectorAll('[data-sp-acc]').forEach(b => b.addEventListener('click', () => { state.customAccent = b.dataset.spAcc || null; after(); }));
     const ap = box.querySelector('[data-sp-accpick]'); if (ap) { ap.addEventListener('input', () => { state.customAccent = ap.value; renderPreview(); }); ap.addEventListener('change', after); }
     box.querySelectorAll('[data-sp-paper]').forEach(b => b.addEventListener('click', () => { setPaper(b.dataset.spPaper); after(); }));
+    bindSkinPick(box, (k, pal) => { state.blocks.forEach(b => { if (!SKIN_NO.includes(b.id)) skinApply(b, k, pal); }); renderPreview(); after(); }); // 섹션 꾸밈: 모든 칸 같이
     const rs = box.querySelector('#spThReset');
     if (rs) rs.addEventListener('click', () => { state.customBg = null; state.customAccent = null; state.customFont = null; state.paper = null; delete state.bgBeforePaper; after(); });
 }
@@ -17650,6 +17701,7 @@ const ldhUndoEl = () => ldhFirst('#spUndo', '#udUndo', '#undoTab');
 const ldhTextEl = () => ldhFirst('#previewRoot .col[data-block-id="hero"] .drag-part', '#previewRoot .col[data-block-id="heroVideo"] .drag-part', '#previewRoot .drag-part');
 // 할 일 목록 - t: 제목, d: 한 줄 설명, steps: 순서 설명, show: 보여주기 단계 [{el, t, x}], go: [버튼 이름, 함수], when: 이 화면에서만
 const LDH_EASY = [
+    { t: '칸 모양 바꾸기 (빈티지 · 밤하늘)', d: '인사말·방명록 같은 칸을 다른 모양으로', steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'섹션 꾸밈\'에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 중 하나를 눌러요.', '다른 디자인의 색이 좋으면 아래 \'다른 디자인 색으로\'에서 골라요. 처음처럼 하려면 [디자인 따라]를 눌러요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '내 청첩장 전체 보기', d: '하객이 보는 모습 그대로 봐요', steps: ['아래 버튼을 누르면 하객이 보는 화면이 떠요.', '다 보고 닫으면 다시 고칠 수 있어요.'], go: ['지금 보기', () => spOpenPreview(false)] },
     { t: '이름 · 날짜 · 예식장 바꾸기', d: '틀린 글자를 고쳐요', steps: ['아래 [그 칸으로 가기]를 누르면 바로 그 칸이 열려요.', '칸에 적으면 청첩장에 바로 바뀌어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('names:name', 'names')] },
     { t: '사진 바꾸기', d: '첫 화면 사진·영상을 넣거나 바꿔요', steps: ['아래 [그 칸으로 가기]를 눌러요.', '[사진 고르기]를 누르고 휴대폰(컴퓨터)에서 사진을 한 장 골라요.', '사진이 올라가면 청첩장 첫 화면이 바로 바뀌어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('hero:media', 'hero')] },
@@ -17663,6 +17715,7 @@ const LDH_EASY = [
     { t: '글자 위치 · 스티커까지 바꾸고 싶어요', d: '전문가 모드에서 자세히 꾸며요', steps: ['[전문가 모드]에서는 글자를 끌어서 옮기고, 스티커·섹션 순서까지 바꿀 수 있어요.', '지금 적은 내용은 그대로 옮겨져요. 언제든 간편 만들기로 돌아올 수 있어요.', '[전문가 모드] 버튼은 질문을 다 마치면 위에 나와요. 지금 가려면 아래 버튼을 눌러요.'], go: ['전문가 모드로 가기', () => { closeLdh(); spInPlace ? spExitInPlace() : simpleToFull(); }] },
 ];
 const LDH_EXPERT = [
+    { t: '섹션 하나만 다른 모양으로', d: '빈티지 · 밤하늘 · 다른 디자인 색', steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요.', '아래쪽 [섹션 테마]에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 · 다른 디자인 색 중 하나를 눌러요.', '[모든 섹션에 같게]를 누르면 모든 섹션이 같은 모양이 돼요.'] },
     { t: '글자 내용 바꾸기', d: '청첩장의 글자를 고쳐요', steps: ['청첩장에서 바꿀 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.', '다 적었으면 글자 바깥 빈 곳을 눌러요.'], show: () => [{ el: ldhTextEl, t: '두 번 누르기', x: '이 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.' }] },
     { t: '글자 크기 · 색 · 글꼴 바꾸기', d: '글자를 한 번 눌러요', steps: ['글자를 한 번 누르면 크기·색·글꼴을 바꾸는 작은 창이 떠요.', '[−] [+]로 크기를, 동그라미를 눌러 색을 바꿔요.'], show: () => [{ el: ldhTextEl, t: '한 번 누르기', x: '글자를 한 번 누르면 크기·색 창이 떠요.' }] },
     { t: '글자 · 사진 옮기기', d: '손가락(마우스)으로 끌어요', steps: ['옮길 글자를 꾹 누른 채로 끌면 옮겨져요.', '휴대폰에서 안 끌리면 위쪽 손바닥 버튼(손가락으로 끌기)이 켜져 있는지 봐요.', '휴대폰에서 위아래로 넘길 때는 화면 양 끝을 밀어요.'], show: () => [{ el: ldhTextEl, t: '끌어서 옮기기', x: '이 글자를 꾹 누른 채로 끌어 보세요.' }, { el: () => ldhFirst('#qtTouchDrag'), t: '손가락으로 끌기', x: '이 버튼이 켜져 있어야 휴대폰에서 글자가 끌려요.' }] },

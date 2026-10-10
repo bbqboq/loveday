@@ -1246,3 +1246,56 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-wx-badge.ib-wx-in { animation: ibWxIn .6s ease both; }
 @keyframes ibWxIn { from { opacity: 0; transform: translateY(-6px); } }
 .ambient-field.ib-wx-out { transition: opacity .9s ease; opacity: 0 !important; }
+
+/* ===== 어두운 디자인(.ib-dark, 청첩장 바탕이 어두우면 저절로) · 어두운 섹션 테마(.ib-sk-dark): 섹션 안 흰 카드·창을 어둡게 =====
+   흰 카드 + 밝은 글자(어두운 디자인 글자색)라 글이 안 보이던 것 (방명록·안내·계좌·연락처·감사 인사 …) */
+:is(.ib-dark, .ib-sk-dark) { --ib-card: color-mix(in srgb, var(--p-ink) 8%, var(--p-bg)); --ib-card2: color-mix(in srgb, var(--p-ink) 14%, var(--p-bg)); --ib-cline: color-mix(in srgb, var(--p-ink) 18%, transparent); }
+:is(.ib-dark, .ib-sk-dark) :is(.ib-contact-side, .ib-notice-item, .ib-acc-side, .ib-gb-item, .ib-gb-more, .ib-day-item, .ib-trip-post, .ib-lot-prizes, .ib-lot-me, .ib-lot-round,
+    .ib-thanks, .ib-ty-card .ib-ty-in, .ib-ty-letter .ib-ty-in, .ib-nt-card, .ib-cal-opt, .dd-tk-r, .ib-icon-btn, .ib-copy-btn, .ib-share-btn:not(.ib-kakao), .ib-cal-btn, .ib-anniv) {
+    background: var(--ib-card); border-color: var(--ib-cline); color: var(--p-ink); box-shadow: none; }
+:is(.ib-dark, .ib-sk-dark) :is(.ib-icon-btn, .ib-copy-btn, .ib-cal-btn) { background: var(--ib-card2); color: var(--p-accent); }
+:is(.ib-dark, .ib-sk-dark) .dd-bubble .dd-u { background: color-mix(in srgb, var(--p-accent) 18%, var(--p-bg)); }
+:is(.ib-dark, .ib-sk-dark) :is(.ib-thanks h3, .ib-thanks p, .ib-ty-card .ib-ty-in, .ib-ty-letter .ib-ty-in) { color: var(--p-ink); }
+:is(.ib-dark, .ib-sk-dark) :is(.ib-ty-card .ib-ty-sign, .ib-ty-letter .ib-ty-sign, .ib-thanks .ib-thanks-sign) { color: var(--p-muted); }
+:is(.ib-dark, .ib-sk-dark) .ib-ty-letter .ib-ty-in { background-image: repeating-linear-gradient(transparent 0 30px, color-mix(in srgb, var(--p-ink) 9%, transparent) 30px 31px); }
+:is(.ib-dark, .ib-sk-dark) .ib-ty-letter .ib-ty-in::before { border-color: var(--ib-cline); }
+:is(.ib-dark, .ib-sk-dark) .dd-tk-r { border-left-color: var(--ib-cline); }
+:is(.ib-dark, .ib-sk-dark) :is(.ib-gb-item, .ib-notice-item, .ib-nt-card) [style*="background-color"] { color: #2B2320; } /* 형광펜 칠한 글자는 어둡게 */
+/* 밝은 색 섹션 테마(다른 디자인 색)가 어두운 청첩장 안에 있으면 그 칸은 다시 밝게 */
+.ib-sk-light :is(.ib-contact-side, .ib-notice-item, .ib-acc-side, .ib-gb-item, .ib-gb-more, .ib-day-item, .ib-trip-post, .ib-lot-prizes, .ib-lot-me, .ib-lot-round,
+    .ib-thanks, .ib-ty-card .ib-ty-in, .ib-nt-card, .ib-cal-opt, .dd-tk-r, .ib-icon-btn, .ib-copy-btn, .ib-share-btn:not(.ib-kakao), .ib-cal-btn, .ib-anniv) {
+    background: color-mix(in srgb, #fff 82%, var(--p-bg)); border-color: var(--p-line); color: var(--p-ink); }
+
+/* ===== 섹션 테마 (섹션 하나만 다른 모양 · boxColAttrs가 .col에 .ib-sk-*) - 섹션 칸 전체를 가로로 꽉 채운 띠 ===== */
+.col.ib-sk { position: relative; color: var(--p-ink); background: var(--sk-bg, var(--p-bg)); box-shadow: 0 0 0 100vmax var(--sk-bg, var(--p-bg)); clip-path: inset(0 -100vmax); }
+.col.ib-sk-pal { --sk-bg: var(--p-bg); }
+/* 빈티지 큐피드: 양피지 띠 + 금테 + 위 양쪽 모서리 큐피드·비둘기 (디데이 빈티지 달력 그림) + 제목 ❦ */
+.col.ib-sk-vintage { --p-bg: #F7EFDF; --p-ink: #4A3A2A; --p-accent: #A4524F; --p-line: #D9C49A; --p-muted: #8C7A63;
+    --sk-bg: #F7EFDF; font-family: 'Gowun Batang', 'Nanum Myeongjo', 'Noto Serif KR', serif;
+    background-image: radial-gradient(120% 80% at 50% 50%, transparent 60%, rgba(150,110,60,.10)), linear-gradient(#CDB27A, #CDB27A), linear-gradient(#CDB27A, #CDB27A);
+    background-size: 100% 100%, calc(100% - 24px) 1px, calc(100% - 24px) 1px; background-position: center, 12px 10px, 12px calc(100% - 10px); background-repeat: no-repeat; }
+.col.ib-sk-vintage::before, .col.ib-sk-vintage::after { content: ''; position: absolute; z-index: 3; pointer-events: none; top: 2px; background: url('cal-vintage.webp') no-repeat; opacity: .95; }
+.col.ib-sk-vintage::before { left: -6px; width: 64px; height: 54px; background-size: 207px 138px; background-position: -5px -3px; }
+.col.ib-sk-vintage::after { right: -4px; width: 58px; height: 48px; background-size: 210px 140px; background-position: -148px -2px; }
+.col.ib-sk-vintage .ib-title::before, .col.ib-sk-vintage .ib-title::after { content: '❦'; margin: 0 8px; font-size: .62em; color: #CDB27A; vertical-align: .15em; }
+.col.ib-sk-vintage :is(.ib-contact-side, .ib-notice-item, .ib-acc-side, .ib-gb-item, .ib-day-item, .ib-nt-card, .ib-thanks, .ib-ty-card .ib-ty-in, .ib-lot-prizes, .ib-lot-me, .ib-trip-post) {
+    background: #FFFBF2; border: 1px solid #D9C49A; border-radius: 6px; box-shadow: inset 0 0 0 3px #FFFBF2, inset 0 0 0 4px rgba(205,178,122,.5), 0 2px 10px rgba(120,90,50,.08); color: #4A3A2A; }
+.col.ib-sk-vintage :is(.ib-icon-btn, .ib-copy-btn, .ib-gb-more, .ib-share-btn:not(.ib-kakao), .ib-cal-btn) { background: #FFFDF8; border-color: #DDB0AE; color: #A4524F; }
+.col.ib-sk-vintage :is(.ib-gb-item + .ib-gb-item, .ib-notice-item + .ib-notice-item) { margin-top: 10px; }
+/* 밤하늘 골드: 짙은 남색 + 작은 별 + 금빛 테 (별빛 우주·미드나잇 디자인에 어울리게) */
+.col.ib-sk-night { --p-bg: #141936; --p-ink: #EDE9F7; --p-accent: #E2C98E; --p-line: #353C6A; --p-muted: #A9ABCB; --sk-bg: #141936;
+    background-image: radial-gradient(1.2px 1.2px at 12% 18%, rgba(255,255,255,.8), transparent 60%), radial-gradient(1px 1px at 78% 12%, rgba(255,255,255,.7), transparent 60%),
+        radial-gradient(1.4px 1.4px at 64% 72%, rgba(255,236,190,.8), transparent 60%), radial-gradient(1px 1px at 30% 84%, rgba(255,255,255,.6), transparent 60%),
+        radial-gradient(1px 1px at 90% 54%, rgba(255,255,255,.6), transparent 60%), radial-gradient(90% 60% at 50% 0%, rgba(120,110,200,.18), transparent 70%),
+        linear-gradient(180deg, #11163A, #1A1F45); }
+.col.ib-sk-night :is(.ib-contact-side, .ib-notice-item, .ib-acc-side, .ib-gb-item, .ib-day-item, .ib-nt-card, .ib-thanks, .ib-ty-card .ib-ty-in, .ib-lot-prizes, .ib-lot-me, .ib-trip-post) {
+    background: rgba(255,255,255,.05); border: 1px solid rgba(226,201,142,.32); box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 10px 30px rgba(0,0,0,.25); }
+.col.ib-sk-night .ib-title { color: #E2C98E; letter-spacing: .08em; }
+.col.ib-sk-night .ib-title::before, .col.ib-sk-night .ib-title::after { content: '✦'; margin: 0 8px; font-size: .55em; color: #E2C98E; opacity: .8; vertical-align: .2em; }
+/* 안개 유리: 비 오는 창처럼 푸른 회색 + 뿌연 유리 카드 (비 오는 날 디자인에 어울리게) */
+.col.ib-sk-mist { --p-bg: #222C36; --p-ink: #E8EDF2; --p-accent: #A9C1D6; --p-line: #3A4754; --p-muted: #9DAAB6; --sk-bg: #222C36;
+    background-image: radial-gradient(70% 50% at 20% 0%, rgba(180,200,220,.14), transparent 70%), radial-gradient(60% 50% at 90% 100%, rgba(160,180,200,.10), transparent 70%),
+        repeating-linear-gradient(100deg, transparent 0 22px, rgba(255,255,255,.025) 22px 23px), linear-gradient(180deg, #26313C, #1D262F); }
+.col.ib-sk-mist :is(.ib-contact-side, .ib-notice-item, .ib-acc-side, .ib-gb-item, .ib-day-item, .ib-nt-card, .ib-thanks, .ib-ty-card .ib-ty-in, .ib-lot-prizes, .ib-lot-me, .ib-trip-post) {
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.13); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+.col.ib-sk-mist .ib-title { letter-spacing: .1em; font-weight: 500; }

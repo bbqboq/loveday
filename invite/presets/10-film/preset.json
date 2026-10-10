@@ -35,12 +35,25 @@
   "blockFields": {
     "gallery": {
       "cardStyle": true,
-      "colLayout": "2"
+      "colLayout": "2",
+      "skin": "vintage"
     },
     "dday": {
       "calendarStyle": "week",
       "showCounter": true,
       "counterStyle": "sentence"
+    },
+    "greeting": {
+      "skin": "vintage"
+    },
+    "location": {
+      "skin": "vintage"
+    },
+    "account": {
+      "accStyle": "vintage"
+    },
+    "guestbook": {
+      "skin": "vintage"
     }
   },
   "heroLayout": "polaroid",

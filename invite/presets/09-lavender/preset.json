@@ -53,6 +53,12 @@
     },
     "account": {
       "accStyle": "vintage"
+    },
+    "family": {
+      "skin": "vintage"
+    },
+    "rsvp": {
+      "skin": "vintage"
     }
   }
 }

@@ -155,9 +155,32 @@
     // 섹션(block)에 boxBg / boxInk(#색)를 저장 → .col에 --box-bg / --box-ink와 ib-box-bg / ib-box-ink 클래스를 붙인다 (에디터·공개 페이지 공통)
     const BOX_COLOR_SECTIONS = ['contact', 'notice', 'account', 'guestbook', 'rsvp', 'dayinfo', 'trip', 'lottery', 'guestsnap', 'share'];
     const HEX_RE = /^#[0-9a-fA-F]{3,8}$/;
+    // ---------- 섹션 테마 (섹션마다 따로: 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 · 다른 디자인 색) ----------
+    //  b.skin = 'vintage' | 'night' | 'mist' (디자인 폴더 blockFields로 줄 땐 fields.skin), b.skinPal = {bg, ink, accent, line, muted} (다른 디자인 색)
+    //  연락하기·마음 전하실 곳·디데이는 원래 '빈티지 큐피드' 모양이 있어서 섹션 테마의 빈티지는 안 보여 줌 (SKIN_HAS_VINTAGE)
+    const SECTION_SKINS = [['', '디자인 따라'], ['vintage', '빈티지 큐피드'], ['night', '밤하늘 골드'], ['mist', '안개 유리']];
+    const SKIN_HAS_VINTAGE = ['contact', 'account', 'dday'];
+    const SKIN_DARK = ['night', 'mist'];
+    function hexDark(h) { // 바탕색이 어두운지 (밝기 0.45 아래)
+        const m = String(h || '').trim().match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i); if (!m) return false;
+        const x = m[1].length === 3 ? m[1].replace(/./g, c => c + c) : m[1], n = parseInt(x, 16);
+        return (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255 < 0.45;
+    }
+    function skinOf(b) {
+        const k = b && (b.skin || (b.fields && b.fields.skin));
+        return SECTION_SKINS.some(x => x[0] === k && k) ? k : '';
+    }
     function boxColAttrs(b) {
         const bg = b && HEX_RE.test(b.boxBg || '') ? b.boxBg : '', ink = b && HEX_RE.test(b.boxInk || '') ? b.boxInk : '';
-        return { cls: (bg ? ' ib-box-bg' : '') + (ink ? ' ib-box-ink' : ''), style: [bg ? `--box-bg:${bg}` : '', ink ? `--box-ink:${ink}` : ''].filter(Boolean).join(';') };
+        let cls = (bg ? ' ib-box-bg' : '') + (ink ? ' ib-box-ink' : '');
+        const st = [bg ? `--box-bg:${bg}` : '', ink ? `--box-ink:${ink}` : ''];
+        const sk = skinOf(b), pal = b && b.skinPal && typeof b.skinPal === 'object' ? b.skinPal : null;
+        if (sk) cls += ` ib-sk ib-sk-${sk}${SKIN_DARK.includes(sk) ? ' ib-sk-dark' : ''}`;
+        else if (pal && HEX_RE.test(pal.bg || '') && HEX_RE.test(pal.ink || '')) { // 다른 디자인 색으로
+            cls += ' ib-sk ib-sk-pal' + (hexDark(pal.bg) ? ' ib-sk-dark' : ' ib-sk-light');
+            [['bg', 'p-bg'], ['ink', 'p-ink'], ['accent', 'p-accent'], ['line', 'p-line'], ['muted', 'p-muted']].forEach(([k, v]) => { if (HEX_RE.test(pal[k] || '')) st.push(`--${v}:${pal[k]}`); });
+        }
+        return { cls, style: st.filter(Boolean).join(';') };
     }
 
     // ---------- 스티커 반짝이며 등장 · 연기처럼 사라지기 (알갱이 뿌리기) ----------
@@ -3313,5 +3336,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { SECTION_SKINS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, galleryHtml, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

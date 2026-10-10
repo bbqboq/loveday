@@ -51,10 +51,26 @@
     },
     "gallery": {
       "layoutType": "collage",
-      "images": 7
+      "images": 7,
+      "skin": "vintage"
     },
     "account": {
       "accStyle": "vintage"
+    },
+    "greeting": {
+      "skin": "vintage"
+    },
+    "family": {
+      "skin": "vintage"
+    },
+    "location": {
+      "skin": "vintage"
+    },
+    "rsvp": {
+      "skin": "vintage"
+    },
+    "guestbook": {
+      "skin": "vintage"
     }
   }
 }

@@ -140,6 +140,7 @@ function load_preset(string $folder): array {
             foreach ($bf[$blockId] as $k => $v) {
                 $sk = $blockId . '.' . $k;
                 if (isset(ALLOWED_STYLE[$sk]) && !in_array($v, ALLOWED_STYLE[$sk], true)) unset($bf[$blockId][$k]);
+                if ($k === 'skin' && !in_array($v, ['', 'vintage', 'night', 'mist'], true)) unset($bf[$blockId][$k]); // 섹션 테마
             }
         }
         $out['blockFields'] = $bf;

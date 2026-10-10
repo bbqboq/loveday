@@ -41,10 +41,20 @@
     },
     "gallery": {
       "layoutType": "tall",
-      "images": 6
+      "images": 6,
+      "skin": "vintage"
     },
     "account": {
-      "accStyle": "basic"
+      "accStyle": "vintage"
+    },
+    "greeting": {
+      "skin": "vintage"
+    },
+    "location": {
+      "skin": "vintage"
+    },
+    "guestbook": {
+      "skin": "vintage"
     }
   }
 }

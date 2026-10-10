@@ -46,10 +46,30 @@
     },
     "gallery": {
       "layoutType": "circle",
-      "images": 6
+      "images": 6,
+      "skin": "night"
     },
     "account": {
-      "accStyle": "outline"
+      "accStyle": "outline",
+      "skin": "night"
+    },
+    "greeting": {
+      "skin": "night"
+    },
+    "family": {
+      "skin": "night"
+    },
+    "location": {
+      "skin": "night"
+    },
+    "transport": {
+      "skin": "night"
+    },
+    "rsvp": {
+      "skin": "night"
+    },
+    "guestbook": {
+      "skin": "night"
     }
   },
   "intro": {

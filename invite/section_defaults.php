@@ -277,7 +277,7 @@ const SECTION_EASY_OPTS = [
     'names' => ['time' => '예식 시간', 'tbd' => '아직 일정을 잡지 않았어요'],
     'hero' => ['layout' => '레이아웃 고르기', 'lines' => '글자 바꾸기 · 효과', 'kind' => '사진 / 유튜브 고르기', 'crop' => '보일 부분 · 확대', 'shade' => '글자 잘 보이게 (그라데이션)',
                'scroll' => '↓ 스크롤 버튼', 'scrollSize' => '스크롤 버튼 크기', 'scrollCustom' => '스크롤 버튼 직접 꾸미기', 'scrollMotion' => '스크롤 버튼 움직임', 'scrollFx' => '스크롤 버튼 등장 효과', 'scrollOpacity' => '스크롤 버튼 진하기'],
-    'theme' => ['design' => '디자인 바꾸기', 'skin' => '색 묶음', 'font' => '글꼴', 'accent' => '포인트 색', 'paper' => '종이 질감', 'reset' => '따로 바꾼 값 되돌리기'],
+    'theme' => ['design' => '디자인 바꾸기', 'skin' => '색 묶음', 'font' => '글꼴', 'accent' => '포인트 색', 'paper' => '종이 질감', 'sskin' => '섹션 꾸밈 (빈티지·밤하늘·안개 유리·다른 디자인 색)', 'reset' => '따로 바꾼 값 되돌리기'],
     'gallery' => ['type' => '갤러리 모양', 'clearEx' => '예시 사진 모두 빼기'],
     'venue' => ['detail' => '층 · 홀 이름', 'phone' => '예식장 전화', 'map' => '지도 보여주기', 'mapWide' => '지도 가로 꽉 채우기', 'mapHeight' => '지도 높이', 'mapDemo' => '지도 예시 (휴대폰)'],
     'transport' => ['title' => '제목', 'quick' => '버튼으로 칸 추가'],

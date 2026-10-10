@@ -1099,6 +1099,7 @@ function renderInviteReadOnly(rootEl, design, masked) {
     } // PC로 볼 때 좌우 여백 색 - 505px 이하에서는 끄고 가로 100%
     if (design.desktopShadow) rootEl.classList.add('has-desktop-shadow');
     rootEl.style.setProperty('--p-bg', design.customBg || s.bg);
+    if (window.InviteBlocks && InviteBlocks.hexDark) rootEl.classList.toggle('ib-dark', InviteBlocks.hexDark(design.customBg || s.bg)); // 어두운 디자인: 섹션 안 카드·창도 어둡게
     rootEl.style.setProperty('--p-ink', s.ink);
     rootEl.style.setProperty('--p-accent', design.customAccent || s.accent); // 화면 설정 > 강조색
     rootEl.style.setProperty('--p-paper', window.InviteBlocks && InviteBlocks.paperCss ? InviteBlocks.paperCss(design.paper) : 'none'); // 종이 질감
