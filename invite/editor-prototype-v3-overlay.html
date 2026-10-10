@@ -879,7 +879,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 
     /* ① 반반 화면: 위 청첩장 · 손잡이 · 아래 질문 (화면에 보이는 높이 = 키보드가 올라오면 그만큼 줄어듦) */
     html.sp-mv-split:not(.sp-pv) body { overflow: hidden; }
-    html.sp-mv-split:not(.sp-pv) #screenEditor .layout { position: fixed; left: 0; right: 0; top: calc(var(--sp-vvt, 0px) + 50px); height: calc(var(--sp-vvh, 100dvh) - 50px); display: flex; flex-direction: column; overflow: hidden; z-index: 5; }
+    html.sp-mv-split:not(.sp-pv) #screenEditor .layout { position: fixed; left: 0; right: 0; top: calc(var(--sp-vvt, 0px) + 50px); height: calc(var(--sp-vvh, 100dvh) - 50px); display: flex; flex-direction: column; overflow: hidden; overflow: clip; z-index: 5; } /* clip: 칸을 눌러 포커스가 갈 때 브라우저가 이 틀까지 밀어 올려 위 청첩장이 화면 밖으로 나가던 것 (hidden은 밀림) */
     html.sp-mv-split:not(.sp-pv) #screenEditor .preview-pane { display: flex !important; order: 1; flex: none; height: var(--sp-split-h, 45%); min-height: 0; padding: 0 !important; overflow-y: auto; overflow-x: hidden; align-items: flex-start; background: var(--ui-soft, #EDE9E3); transition: height .28s ease; }
     html.sp-split-drag #screenEditor .preview-pane { transition: none !important; }
     html.sp-mv-split:not(.sp-pv) #screenEditor .preview-pane > .phone-frame { margin-bottom: 0; }
@@ -891,6 +891,12 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
     .sp-sh-b { flex: none; border: 1px solid var(--ui-line, #E5DED3); background: #fff; border-radius: 99px; font: inherit; font-size: 11px; font-weight: 700; padding: 4px 9px; color: var(--wz-ink, #2B2320); cursor: pointer; white-space: nowrap; }
     .sp-sh-b[hidden] { display: none; }
     html.sp-mv-split:not(.sp-pv) #simplePane { order: 3; flex: 1; min-height: 0 !important; overflow-y: auto !important; overscroll-behavior: contain; }
+    /* 키보드가 올라오면 (sp-kb): 위 청첩장 26%로 줄이고, [다음] 줄은 따라 붙지 않게 (적는 칸을 가리던 것) · 설명 줄·진행 막대는 잠깐 숨김 */
+    html.sp-mv-split.sp-kb:not(.sp-pv) #simplePane .sp-nav { position: static; padding-top: 6px; padding-bottom: 14px; background: none; }
+    html.sp-mv-split.sp-kb:not(.sp-pv) #simplePane :is(.sp-ask-top, .wz-lead) { display: none; }
+    html.sp-mv-split.sp-kb:not(.sp-pv) #simplePane .sp-body { padding-top: 8px; }
+    html.sp-mv-split.sp-kb:not(.sp-pv) .sp-split-hd { height: 30px; }
+    html.sp-mv-split.sp-kb:not(.sp-pv) .sp-split-hd :is(.sp-sh-g, .sp-sh-b) { display: none; }
     html.sp-mv-split.sp-split-big:not(.sp-pv) #screenEditor .preview-pane { flex: 1; height: auto; }
     html.sp-mv-split.sp-split-big:not(.sp-pv) #simplePane { display: none; }
     html.sp-mv-split.sp-split-big:not(.sp-pv) .sp-split-back { display: block; position: fixed; left: 16px; right: 16px; bottom: 14px; z-index: 30; height: 50px; border: 0; border-radius: 14px; background: var(--wz-ink, #2B2320); color: #fff; font: inherit; font-size: 15px; font-weight: 700; box-shadow: 0 8px 20px rgba(0,0,0,.2); }
@@ -4605,14 +4611,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018j">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018j">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018o">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018o">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018j"></script>
-<script src="assets/tip-demos.js?v=1018j"></script>
-<script src="assets/ld-dialog.js?v=1018j"></script>
+<script src="assets/invite-blocks.js?v=1018o"></script>
+<script src="assets/tip-demos.js?v=1018o"></script>
+<script src="assets/ld-dialog.js?v=1018o"></script>
 </head>
 <body>
 
@@ -15159,13 +15165,15 @@ function spMvUi() {
     // 손으로 넘겨 보면 [↺ 고치는 곳] 버튼
     const pane = document.querySelector('#screenEditor .preview-pane');
     if (pane) pane.addEventListener('scroll', () => { if (spMvMode() === 'split' && Date.now() > spMvAutoUntil) { const b = document.getElementById('spShRet'); if (b) b.hidden = false; } }, { passive: true });
+    lay.addEventListener('scroll', () => { if (lay.scrollTop || lay.scrollLeft) { lay.scrollTop = 0; lay.scrollLeft = 0; } }, { passive: true }); // (overflow: clip을 못 쓰는 브라우저 - 틀이 밀리면 바로 되돌림)
     spLensBind();
     // 키보드: 화면에 보이는 높이(visualViewport)에 맞추고, 올라오면 위 칸을 '작게'로
     const vv = window.visualViewport, fit = () => {
         const root = document.documentElement, H = vv ? vv.height : window.innerHeight;
         root.style.setProperty('--sp-vvh', H + 'px'); root.style.setProperty('--sp-vvt', (vv ? vv.offsetTop : 0) + 'px');
         const kb = H < window.innerHeight * 0.78 && document.activeElement && document.activeElement.matches && document.activeElement.matches('input, textarea, [contenteditable="true"]');
-        if (kb !== root.classList.contains('sp-kb')) { root.classList.toggle('sp-kb', !!kb); if (spMvMode() === 'split') { spSplitSet(kb ? Math.min(30, spMv.h) : spMv.h); setTimeout(spMvRefollow, 320); } if (spMvMode() === 'lens') spLensPlace(); }
+        if (kb !== root.classList.contains('sp-kb')) { root.classList.toggle('sp-kb', !!kb); if (spMvMode() === 'split') { spSplitSet(kb ? Math.min(26, spMv.h) : spMv.h); setTimeout(spMvRefollow, 320); } if (spMvMode() === 'lens') spLensPlace(); }
+        if (kb && spMvMode() === 'split') { clearTimeout(spKbT); spKbT = setTimeout(spKbShowField, 340); } // 키보드가 올라오면 적는 칸이 보이게 (아래 [다음] 줄에 가려지던 것)
     };
     if (vv) { vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); } window.addEventListener('resize', () => { fit(); spMvApply(); });
     document.addEventListener('focusin', () => setTimeout(fit, 350)); document.addEventListener('focusout', () => setTimeout(fit, 350));
@@ -15174,7 +15182,13 @@ function spMvUi() {
     const pr = document.getElementById('previewRoot');
     if (pr) new MutationObserver(() => { if (spMvMode() === 'lens') { clearTimeout(spLensT); spLensT = setTimeout(() => spLensAim(null, true), 60); } }).observe(pr, { childList: true });
 }
-let spMvAutoUntil = 0, spLensT = 0, spLensSc = 0;
+let spMvAutoUntil = 0, spLensT = 0, spLensSc = 0, spKbT = 0;
+function spKbShowField() { // 반반 화면 + 키보드: 지금 적는 칸을 아래 칸 가운데로
+    const a = document.activeElement, pane = document.getElementById('simplePane');
+    if (!a || !pane || !pane.contains(a) || !a.matches('input, textarea')) return;
+    const pr = pane.getBoundingClientRect(), r = a.getBoundingClientRect();
+    if (r.top < pr.top + 8 || r.bottom > pr.bottom - 8) pane.scrollTo({ top: pane.scrollTop + (r.top - pr.top) - Math.max(8, (pane.clientHeight - r.height) / 2), behavior: 'smooth' });
+}
 function spSplitSet(h, instant) {
     const r = document.documentElement; if (instant) r.classList.add('sp-split-drag');
     r.style.setProperty('--sp-split-h', h + '%');
@@ -15191,12 +15205,29 @@ function spMvLabel(st) {
 function spPvTargetEl(st) {
     const root = document.getElementById('previewRoot'); if (!root || !st) return null;
     const col = (st.s || []).map(id => root.querySelector(`.col[data-block-id="${id}"]`)).find(Boolean); if (!col) return null;
-    if (st.k !== 'names') return col;
+    // 지금 적고 있는 칸 (신부 이름을 적는데 신랑 이름이 빛나던 것 - 포커스된 칸 기준으로)
+    const act = document.activeElement, inPane = act && act.closest && act.closest('#simplePane');
+    const fk = inPane ? (act.dataset.wi || act.dataset.fam || act.dataset.ct || ((act.closest('[data-k]') || {}).dataset || {}).k || '') : '';
+    const vis = el => !!(el && el.offsetWidth);
+    if (st.k !== 'names') { const pt = fk && col.querySelector(`.drag-part[data-part="${CSS.escape(fk)}"]`); return vis(pt) ? pt : col; }
     const wi = weddingInfo(), parts = [...col.querySelectorAll('.drag-part')].filter(p => p.offsetWidth);
-    if (st.part === 'date') { const y = String((wi.date || '').match(/\d{4}/) || '20'); // 예식 연도가 들어간 글자 (VOL. 26 · 11.14 같은 꾸밈 글자 말고)
-        return col.querySelector('.drag-part[data-part="datetime"]') || parts.find(p => p.textContent.includes(y)) || parts.find(p => /20\d\d/.test(p.textContent)) || col; }
-    return col.querySelector('.drag-part[data-part="groomName"]') || parts.find(p => wi.groom && p.textContent.includes(wi.groom)) || parts.find(p => wi.bride && p.textContent.includes(wi.bride)) || col;
+    if (st.part === 'date') { // 예식 날짜가 들어간 글자 (2026 · 11.14 · 11월 14일 · NOVEMBER - VOL. 26 같은 꾸밈 글자 말고). 첫 화면에 없으면 디데이·달력
+        const m = String(wi.date || '').match(/(\d{4})-(\d{2})-(\d{2})/), toks = [];
+        if (m) { const mo = +m[2], d = +m[3]; toks.push(m[1], `${mo}.${d}`, `${m[2]}.${m[3]}`, `${mo}월 ${d}일`, `${mo}월`, ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'][mo - 1]); }
+        const dp = col.querySelector('.drag-part[data-part="datetime"]');
+        const score = p => { const t = p.textContent.toUpperCase(); return !m ? (/20\d\d/.test(t) ? 1 : 0) : t.includes(toks[0]) ? 3 : (t.includes(toks[4]) || t.includes(toks[5])) ? 2 : (t.includes(toks[1]) || t.includes(toks[2])) && !/VOL|ISSUE/.test(t) ? 1 : 0; }; // 연도 > 월 > 11.14 (꾸밈 글자 VOL·ISSUE는 빼고)
+        const best = parts.reduce((a, p) => { const sc = score(p); return sc > a[0] ? [sc, p] : a; }, [0, null])[1];
+        const hit = (vis(dp) && dp) || best;
+        if (hit) return hit;
+        const dd = root.querySelector('.col[data-block-id="dday"]'); return dd || col;
+    }
+    const nm = fk === 'bride' ? ['brideName', wi.bride, 'groomName', wi.groom] : ['groomName', wi.groom, 'brideName', wi.bride];
+    const p1 = col.querySelector(`.drag-part[data-part="${nm[0]}"]`), p2 = col.querySelector(`.drag-part[data-part="${nm[2]}"]`);
+    return (vis(p1) && p1) || parts.find(p => nm[1] && p.textContent.includes(nm[1])) || (vis(p2) && p2) || parts.find(p => nm[3] && p.textContent.includes(nm[3])) || col;
 }
+// 질문 칸에서 다른 입력 칸으로 옮기면 (신랑 → 신부 이름 등) 미리보기도 그 글자로
+document.addEventListener('focusin', e => { const t = e.target; if (t && t.closest && t.closest('#simplePane') && t.matches('input, textarea') && spMvMode()) { clearTimeout(spFocT); spFocT = setTimeout(spMvRefollow, 40); } });
+let spFocT = 0;
 function spMvGlow(el) { if (!el || el.classList.contains('col')) return; el.classList.remove('sp-glow'); void el.offsetWidth; el.classList.add('sp-glow'); clearTimeout(el._spG); el._spG = setTimeout(() => el.classList.remove('sp-glow'), 1400); }
 function spMvRefollow() { if (spCurSt) spScrollPreview(spCurSt.s || [], false); }
 // ① 반반 화면: 고치는 자리를 위 칸 가운데쯤으로 (섹션이면 섹션 맨 위)
@@ -15298,7 +15329,7 @@ function spScrollToNextBtn() {
     const top = nb ? r.top - pr.top + pane.scrollTop - pane.clientHeight * 0.62 : (r.bottom - pr.top + pane.scrollTop - pane.clientHeight * 0.8);
     pane.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 }
-function spChanged(ids) { renderPreview(); if (ids) setTimeout(() => spScrollPreview(ids), 60); }
+function spChanged(ids) { renderPreview(); if (ids) setTimeout(() => spScrollPreview(ids), 200); } // (글자를 칠 때 미리보기는 0.14초 뒤 다시 그림 → 그 뒤에 겨눠야 빛나는 표시가 안 사라짐)
 // 간편 만들기 미리보기는 보기만인데, 지금 단계 섹션은 높이(위·아래 여백 눈금자)를 끌어 바꾸고
 // 그 섹션의 글자·계좌 줄도 끌어 옮길 수 있게 (전문가 모드와 같은 값). 다른 섹션은 그대로 보기만
 const SP_DRAG_STEPS = null; // null = 모든 단계 (특정 단계만 열려면 ['account', ...])
@@ -15546,7 +15577,7 @@ const SP_GROUPS = [['must', '꼭 필요한 것', ''], ['more', '채우면 좋은
 const SP_GROUP_OF = { names: 'must', hero: 'must', venue: 'must', theme: 'deco', dday: 'deco', video: 'deco', ending: 'deco', music: 'deco', finish: 'deco' };
 function spMustList() { // 꼭 필요한 4가지 (진행 표시)
     const wi = weddingInfo(), loc = spBlock('location'), { b, kind } = spHeroCur();
-    const media = !!(b && (kind === 'video' ? b.fields.youtubeId : spIsReal(b.fields.heroImage)));
+    const media = !!(b && (kind === 'video' ? spRealYt(b.fields.youtubeId) : spIsReal(b.fields.heroImage)));
     return [['이름', !!(String(wi.groom || '').trim() && String(wi.bride || '').trim())], ['예식 날짜', !!(wi.date || wi.undecided)], ['예식장', !loc || !!(loc.fields.venue || loc.fields.address)], [kind === 'video' ? '메인 영상' : '메인 사진', media]];
 }
 function spSum(st) { // 접힌 칸의 한 줄 요약 [글, 채웠나]
@@ -15556,8 +15587,8 @@ function spSum(st) { // 접힌 칸의 한 줄 요약 [글, 채웠나]
         switch (st.k) {
             case 'names': { const ok = !!(wi.groom && wi.bride && (wi.date || wi.undecided)); return [`${wi.groom || '신랑'} · ${wi.bride || '신부'}${wi.undecided ? ' · 예식 일정 미정' : wi.date ? ' · ' + dtDateText(wi.date) : ' · 날짜를 아직 안 정했어요'}`, ok]; }
             case 'hero': { const { b, kind } = spHeroCur(), f = (b || {}).fields || {}, lay = spHeroLayouts().find(l => l.id === f.heroLayout);
-                const has = kind === 'video' ? !!f.youtubeId : spIsReal(f.heroImage);
-                return [(kind === 'video' ? (has ? '유튜브 영상' : '영상 주소가 아직 없어요') : (has ? '사진 1장' : '사진을 아직 안 넣었어요')) + (lay ? ' · ' + lay.label : ''), has]; }
+                const has = kind === 'video' ? spRealYt(f.youtubeId) : spIsReal(f.heroImage);
+                return [(kind === 'video' ? (has ? '유튜브 영상' : f.youtubeId ? '아직 예시 영상이에요' : '영상 주소가 아직 없어요') : (has ? '사진 1장' : '사진을 아직 안 넣었어요')) + (lay ? ' · ' + lay.label : ''), has]; }
             case 'venue': { const f = F('location'), v = f.venue || f.address; return [v || '예식장을 아직 안 정했어요', !!v]; }
             case 'gallery': { const n = cnt(F('gallery').images, x => spIsReal(x)); return [n ? `사진 ${n}장` : '사진을 아직 안 넣었어요', n > 0]; }
             case 'transport': { const n = cnt(F('transport').items, x => x && String(x.text || '').trim()); return [n ? `안내 ${n}개` : '지하철·버스·주차 안내를 적어요', n > 0]; }
@@ -15784,6 +15815,8 @@ function spSetDateTbd(on) {
     try { renderBlockList(); } catch (e) {}
 }
 // 2. 메인 화면 - ① 사진/유튜브 고르기 ② 사진 올리기(영상 주소) ③ 화면 크기
+const SP_DEMO_YT = ['dQw4w9WgXcQ']; // 디자인 예시로 넣어 둔 유튜브 영상 (고객 영상으로 치지 않음 - 목록·발행 전 점검이 '예시 영상'으로 알려 줌)
+const spRealYt = id => !!id && !SP_DEMO_YT.includes(String(id));
 const spIsReal = src => /uploads\/(?!site\/)/.test(typeof src === 'string' ? src : (src && src.src) || ''); // 고객이 올린 사진 (uploads/site/ = 관리자가 올린 예시 사진은 아님)
 // 간편 만들기: 메인 사진을 아직 안 골랐으면 관리자가 정한 예시 사진을 보여줌 (고객이 사진을 고르면 그 사진으로 바뀜)
 //  관리자가 정한 보일 부분·확대(EASY_HERO_POS)는 그 사진의 state.imgFocus / imgZoom으로 (관리자가 나중에 고쳐도 다시 열면 따라감)
@@ -17416,7 +17449,7 @@ function pubChecks() {
         else out.push({ id: 'venue', ok: 1, t: '예식장', s: [f.venue, f.address].filter(Boolean).join(' · ') });
     }
     const hk = spHeroKind();
-    if (hk === 'video') { const f = F('heroVideo'); out.push(f.youtubeId ? { id: 'hero', ok: 1, t: '첫 화면 영상', s: '유튜브 영상' } : { id: 'hero', t: '첫 화면 영상 주소가 없어요', s: '유튜브 주소를 넣거나 사진으로 바꿔 주세요', go: '영상 넣기' }); }
+    if (hk === 'video') { const f = F('heroVideo'); out.push(spRealYt(f.youtubeId) ? { id: 'hero', ok: 1, t: '첫 화면 영상', s: '유튜브 영상' } : f.youtubeId ? { id: 'hero', t: '첫 화면 영상이 아직 예시 영상이에요', s: '두 분 영상 주소로 바꾸거나 사진으로 바꿔 주세요', go: '영상 넣기' } : { id: 'hero', t: '첫 화면 영상 주소가 없어요', s: '유튜브 주소를 넣거나 사진으로 바꿔 주세요', go: '영상 넣기' }); }
     else if (on('hero')) { const f = F('hero'); out.push(spIsReal(f.heroImage) ? { id: 'hero', ok: 1, t: '첫 화면 사진', s: '두 분 사진' } : { id: 'hero', t: f.heroImage ? '첫 화면 사진이 아직 예시 사진이에요' : '첫 화면 사진이 없어요', s: '두 분 사진으로 바꾸면 훨씬 좋아요', go: '사진 넣기' }); }
     if (on('gallery')) { const im = F('gallery').images || [], n = im.filter(x => spIsReal(x)).length; out.push(n ? { id: 'gallery', ok: 1, t: '갤러리', s: `사진 ${n}장` } : { id: 'gallery', t: im.length ? '갤러리가 예시 사진 그대로예요' : '갤러리에 사진이 없어요', s: '사진을 넣거나 갤러리를 빼 주세요', go: '사진 넣기' }); }
     if (on('greeting')) { const t = String(F('greeting').text || '').replace(/<[^>]+>/g, '').trim(); if (!t) out.push({ id: 'greet', t: '인사말이 비어 있어요', s: '예시 문구에서 골라도 돼요', go: '인사말 쓰기' }); else if (state.spAsk && state.spAsk.greet === 'ex') out.push({ id: 'greet', info: 1, t: '인사말은 디자인 예시 문구예요', s: '그대로 써도 괜찮아요 · 바꾸려면 눌러요', go: '보기' }); }

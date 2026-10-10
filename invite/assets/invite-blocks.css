@@ -1261,6 +1261,28 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 :is(.ib-dark, .ib-sk-dark) .ib-ty-letter .ib-ty-in::before { border-color: var(--ib-cline); }
 :is(.ib-dark, .ib-sk-dark) .dd-tk-r { border-left-color: var(--ib-cline); }
 :is(.ib-dark, .ib-sk-dark) :is(.ib-gb-item, .ib-notice-item, .ib-nt-card) [style*="background-color"] { color: #2B2320; } /* 형광펜 칠한 글자는 어둡게 */
+/* 어두운 디자인: 팝업 창 (참석 여부·방명록 쓰기·캘린더에 저장·링크 복사 …) - openModal이 .ib-modal에 .ib-dark를 붙임 */
+.ib-modal.ib-dark :is(input:not([type=radio]):not([type=checkbox]), textarea, select) { background: var(--ib-card); color: var(--p-ink); border-color: var(--ib-cline); }
+.ib-modal.ib-dark :is(input, textarea)::placeholder { color: var(--p-muted, rgba(255,255,255,.5)); }
+.ib-modal.ib-dark :is(.ib-seg-opt span, .ib-stepper, .ib-f-sub2) { background: var(--ib-card); color: var(--p-ink); border-color: var(--ib-cline); }
+.ib-modal.ib-dark .ib-seg-opt input:checked + span, .ib-modal.ib-dark .ib-f-submit { color: var(--p-bg); } /* 어두운 디자인은 포인트 색이 밝아서 흰 글씨가 안 보임 */
+.ib-modal.ib-dark .rt-wrap { background: var(--ib-card); border-color: var(--ib-cline); }
+.ib-modal.ib-dark .rt-bar { background: var(--ib-card2); border-bottom-color: var(--ib-cline); }
+.ib-modal.ib-dark .rt-b { background: var(--ib-card); color: var(--p-ink); border-color: var(--ib-cline); }
+.ib-modal.ib-dark .rt-b:hover, .ib-modal.ib-dark .rt-item:hover { background: var(--ib-card2); }
+.ib-modal.ib-dark .rt-b.on { background: var(--p-ink); border-color: var(--p-ink); color: var(--p-bg); }
+.ib-modal.ib-dark .rt-pop { background: var(--p-bg); border-color: var(--ib-cline); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.ib-modal.ib-dark .rt-item { color: var(--p-ink); }
+.ib-modal.ib-dark .rt-emo-tab { background: var(--ib-card); color: var(--p-muted); }
+.ib-modal.ib-dark .rt-caret { color: var(--p-muted); }
+/* 어두운 디자인: 섹션 안 나머지 밝은 칸 - 인터뷰 이름표 · 추첨 입력 칸 · 손편지 기본 종이(종이를 따로 고르지 않았을 때) */
+:is(.ib-dark, .ib-sk-dark) .iv-tag.iv-groom { background: rgba(122, 156, 224, .18); color: #AFC5F2; }
+:is(.ib-dark, .ib-sk-dark) .iv-tag.iv-bride { background: rgba(226, 136, 158, .18); color: #F2B8C6; }
+:is(.ib-dark, .ib-sk-dark) .ib-lot-form input { background: var(--ib-card); color: var(--p-ink); border-color: var(--ib-cline); }
+:is(.ib-dark, .ib-sk-dark) .ib-paper.ib-paper-def:not(.ib-paper-white):not(.ib-paper-ivory):not(.ib-paper-kraft) { background-color: var(--ib-card); color: var(--p-ink); box-shadow: none; border: 1px solid var(--ib-cline); }
+/* 어두운 디자인: 공유 버튼을 펼친 메뉴 (body에 붙음 → .ib-fab-ondark) */
+.ib-fab-ondark .ib-fab-menu button { background: rgba(32, 30, 40, .94); color: #EDEAF2; box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+.ib-fab-ondark .ib-fab-menu button > span { background: rgba(255,255,255,.1); }
 /* 밝은 색 섹션 테마(다른 디자인 색)가 어두운 청첩장 안에 있으면 그 칸은 다시 밝게 */
 .ib-sk-light :is(.ib-contact-side, .ib-notice-item, .ib-acc-side, .ib-gb-item, .ib-gb-more, .ib-day-item, .ib-trip-post, .ib-lot-prizes, .ib-lot-me, .ib-lot-round,
     .ib-thanks, .ib-ty-card .ib-ty-in, .ib-nt-card, .ib-cal-opt, .dd-tk-r, .ib-icon-btn, .ib-copy-btn, .ib-share-btn:not(.ib-kakao), .ib-cal-btn, .ib-anniv) {

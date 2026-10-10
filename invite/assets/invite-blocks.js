@@ -161,7 +161,9 @@
     const SECTION_SKINS = [['', '디자인 따라'], ['vintage', '빈티지 큐피드'], ['night', '밤하늘 골드'], ['mist', '안개 유리']];
     const SKIN_HAS_VINTAGE = ['contact', 'account', 'dday'];
     const SKIN_DARK = ['night', 'mist'];
-    function hexDark(h) { // 바탕색이 어두운지 (밝기 0.45 아래)
+    function hexDark(h) { // 바탕색이 어두운지 (밝기 0.45 아래) - #RGB · #RRGGBB · rgb()
+        const rg = String(h || '').trim().match(/^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/i);
+        if (rg) return (0.299 * rg[1] + 0.587 * rg[2] + 0.114 * rg[3]) / 255 < 0.45;
         const m = String(h || '').trim().match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i); if (!m) return false;
         const x = m[1].length === 3 ? m[1].replace(/./g, c => c + c) : m[1], n = parseInt(x, 16);
         return (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255 < 0.45;
@@ -1460,7 +1462,7 @@
                 const ps = Math.max(50, Math.min(400, Number(f.paperScale) || 100)) / 100;
                 // 종이 = 자유 배치 칸 (편지 글을 끌어서 옮기고 크기 조절), 무늬는 배경 패턴 (무늬 크기 조절)
                 const paper = freeCanvas(f, 'paper', 300, [['text', nl2br(f.text), { x: 50, y: 50, fs: Number(f.fontSize) || 22, w: 86, align: 'left', cls: 'ib-letter-text' }]],
-                    `ib-paper ib-paper-${esc(f.paper || 'cotton')}${f.paperFull ? ' ib-paper-full' : ''}`).replace('style="height:', `style="--paper:${esc(f.paperColor || '#FAFAF7')}; --ps:${ps}; font-family:${fam}; height:`);
+                    `ib-paper ib-paper-${esc(f.paper || 'cotton')}${f.paperFull ? ' ib-paper-full' : ''}${String(f.paperColor || '#FAFAF7').toUpperCase() === '#FAFAF7' ? ' ib-paper-def' : ''}`).replace('style="height:', `style="--paper:${esc(f.paperColor || '#FAFAF7')}; --ps:${ps}; font-family:${fam}; height:`); // (ib-paper-def = 종이 색을 따로 안 고름 → 어두운 디자인에선 어두운 종이)
                 return `<div class="ib-block ib-letter">
                     ${f.image ? `<div class="ib-letter-photo"><img loading="lazy" decoding="async" src="${esc(imgUrl(f.image))}" alt=""></div>` : ''}
                     ${paper}
@@ -2766,6 +2768,7 @@
         const o = shareOpts(f);
         const wrap = createShareFab(o, getComputedStyle(root).getPropertyValue('--p-accent').trim(), type => doShare(type, d));
         if (!wrap) return;
+        if (root.classList.contains('ib-dark')) wrap.classList.add('ib-fab-ondark'); // 어두운 디자인: 펼친 공유 메뉴도 어둡게
         document.body.appendChild(wrap);
         document.addEventListener('click', () => wrap._setOpen(false));
 
@@ -2821,7 +2824,13 @@
                 ${title ? `<h4 class="ib-modal-title">${esc(title)}</h4>` : ''}
                 <div class="ib-modal-body">${bodyHtml}</div>
                 ${opts.footer || ''}</div>`;
-        copyVars(varsFrom || document.querySelector('[data-block-id]') || document.body, wrap);
+        const vf = varsFrom || document.querySelector('[data-block-id]') || document.body;
+        copyVars(vf, wrap);
+        { // 어두운 디자인·어두운 섹션 테마면 팝업 안 입력 칸·버튼도 어둡게 (창은 body에 붙어서 청첩장의 .ib-dark를 못 물려받음). 섹션 '안쪽 창 색'을 정했으면 그 색 기준
+            const boxBg = wrap.style.getPropertyValue('--box-bg').trim();
+            const dark = boxBg ? hexDark(boxBg) : (hexDark(wrap.style.getPropertyValue('--p-bg')) || !!(vf.closest && vf.closest('.ib-dark, .ib-sk-dark')));
+            wrap.classList.toggle('ib-dark', !!dark);
+        }
         document.body.appendChild(wrap);
         const prevOverflow = document.documentElement.style.overflow;
         document.documentElement.style.overflow = 'hidden';
