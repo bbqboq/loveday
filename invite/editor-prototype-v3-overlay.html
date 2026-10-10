@@ -2283,6 +2283,68 @@ body.tippick-on, body.tippick-on * { cursor: crosshair !important; }
 .palette-vintage-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .palette-vintage-grid button { background: #FBF7F0; }
 .palette-personal-grid .empty-hint { grid-column: 1 / -1; font-size: 11px; color: var(--muted); padding: 6px 2px; }
+/* 스티커 고르기 (A+D안) - 찾기 · 빠른 찾기 · 탭 · 테마 칩 · 묶음별 칸 (stkMount). 휴대폰은 아래에서 올라오는 시트 */
+.sticker-palette.stk2 { display: none; grid-template-columns: none; width: 340px; padding: 0; max-height: min(74vh, 640px); overflow: hidden; flex-direction: column; border-radius: 16px; }
+.sticker-palette.stk2.open { display: flex; }
+.stk2 > .sgd-guide { margin: 12px 14px 0 !important; }
+.stk2 .stk-wrap { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.stk2 button { font-size: inherit; padding: 0; border-radius: 0; font-family: inherit; }
+.stk2 .stk-grab { display: none; }
+.stk2 .stk-h { display: flex; align-items: center; gap: 8px; padding: 14px 14px 8px; }
+.stk2 .stk-h b { font-size: 15px; color: var(--ink); }
+.stk2 .stk-h small { font-size: 11px; color: var(--muted); margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stk2 .stk-x { width: 28px; height: 28px; border-radius: 50% !important; color: var(--muted); font-size: 13px !important; flex: none; }
+.stk2 .stk-x:hover { background: var(--ui-soft, #F1EEE6); }
+.stk2 .stk-srch { display: flex; align-items: center; gap: 7px; margin: 0 14px; padding: 0 6px 0 11px; height: 38px; border-radius: 12px; background: var(--ui-soft, #F6F3EE); border: 1px solid var(--ui-line, #E6E0D8); }
+.stk2 .stk-srch:focus-within { border-color: var(--ui-point, #B08A5A); background: #fff; }
+.stk2 .stk-srch svg { width: 16px; height: 16px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; flex: none; }
+.stk2 .stk-srch input { flex: 1; min-width: 0; border: 0; background: none; outline: none; font: inherit; font-size: 14px; color: var(--ink); }
+.stk2 .stk-srch input::-webkit-search-cancel-button { display: none; }
+.stk2 .stk-clr { display: none; width: 24px; height: 24px; border-radius: 50% !important; background: var(--ui-line, #E6E0D8) !important; color: var(--ink); font-size: 10px !important; flex: none; }
+.stk2 .stk-srch.has .stk-clr { display: block; }
+.stk2 .stk-themes[hidden], .stk2 .stk-body[hidden] { display: none !important; }
+.stk2 .stk-qs, .stk2 .stk-themes { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 9px 14px 2px; flex: none; }
+.stk2 .stk-qs::-webkit-scrollbar, .stk2 .stk-themes::-webkit-scrollbar { display: none; }
+.stk2 .stk-chip { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 12px !important; border-radius: 999px !important; background: var(--ui-soft, #F6F3EE) !important; border: 1px solid transparent; font-size: 12.5px !important; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.stk2 .stk-chip img { width: 20px; height: 20px; object-fit: contain; margin-left: -4px; }
+.stk2 .stk-chip.on { background: var(--ink) !important; color: var(--panel, #fff); }
+.stk2 .stk-dot, .stk2 .stk-it.mv::after { width: 6px; height: 6px; border-radius: 50%; background: #7FA67A; flex: none; }
+.stk2 .stk-tabs { display: flex; margin: 8px 14px 0; border-bottom: 1px solid var(--line); flex: none; }
+.stk2 .stk-tab { flex: 1; height: 38px; font-size: 13.5px !important; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent !important; margin-bottom: -1px; }
+.stk2 .stk-tab small { font-size: 10px; margin-left: 3px; color: var(--muted); font-weight: 700; }
+.stk2 .stk-tab.on { color: var(--ink); border-bottom-color: var(--ink) !important; }
+.stk2 .stk-wrap.searching .stk-tabs { opacity: .45; }
+.stk2 .stk-body { flex: 1; min-height: 120px; overflow-y: auto; padding: 0 14px 16px; overscroll-behavior: contain; }
+.stk2 .stk-lab { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--ink); margin: 14px 0 7px; }
+.stk2 .stk-lab small { font-size: 11px; color: var(--muted); font-weight: 600; }
+.stk2 .stk-found { margin-top: 12px; font-weight: 600; color: var(--muted); }
+.stk2 .stk-found mark { background: none; color: var(--ui-point, #B08A5A); font-weight: 700; }
+.stk2 .stk-more { margin-left: auto; color: var(--ui-point, #B08A5A); font-size: 11.5px !important; font-weight: 700; background: none !important; }
+.stk2 .stk-new { font-size: 9.5px; font-weight: 700; color: #5E7D5A; background: #E4EEDF; border-radius: 5px; padding: 1px 5px; }
+.stk2 .stk-rec { font-size: 9.5px; font-weight: 700; color: #fff; background: var(--ui-point, #B08A5A); border-radius: 5px; padding: 1px 5px; }
+.stk2 .stk-g4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.stk2 .stk-g6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+.stk2 .stk-it { position: relative; width: 100%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 12px !important; background: var(--ui-soft, #F6F3EE); font-size: 24px !important; line-height: 1; transition: transform .12s; color: var(--ink); }
+.stk2 .stk-it:hover { background: var(--ui-tint, #EFEAE2); }
+.stk2 .stk-it:active { transform: scale(.9); }
+.stk2 .stk-it img { width: 80%; height: 80%; object-fit: contain; pointer-events: none; }
+.stk2 .stk-it.stk-a { background: #fff; box-shadow: inset 0 0 0 1px var(--ui-line, #ECE6DD); }
+.stk2 .stk-it.stk-v { background: #F7F1E6; }
+.stk2 .stk-it.stk-i svg { width: 56%; height: 56%; }
+.stk2 .stk-it.mv::after { content: ''; position: absolute; top: 5px; right: 5px; box-shadow: 0 0 0 2px #fff; }
+.stk2 .stk-empty { text-align: center; color: var(--muted); font-size: 12.5px; padding: 28px 0 8px; line-height: 1.7; }
+.stk2 .stk-mine { padding: 12px 14px 16px; overflow-y: auto; flex: 1; }
+.stk2 .stk-mine[hidden] { display: none; }
+.stk2 .stk-mine-h { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+.stk2 .stk-mine .palette-upload-btn { padding: 5px 10px !important; border-radius: 999px !important; font-size: 11px !important; }
+.stk2 .palette-personal-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.stk2 .palette-personal-grid button { aspect-ratio: 1; padding: 4px !important; border-radius: 12px !important; background: var(--ui-soft, #F6F3EE); }
+@media (max-width: 860px) { /* 휴대폰: 아래에서 올라오는 시트 (청첩장 위쪽은 보이게) */
+    .sticker-palette.stk2 { left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important; transform: none !important; width: auto; max-height: 66vh; height: 66vh; border-radius: 20px 20px 0 0; padding-bottom: env(safe-area-inset-bottom, 0); box-shadow: 0 -10px 34px rgba(0,0,0,.18); }
+    .stk2 .stk-grab { display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--ui-line, #D9D0C3); margin: 8px auto -4px; flex: none; }
+    .stk2 .stk-h { padding-top: 10px; }
+    .stk2 .stk-g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
 
 /* 스티커 선택 시 뜨는 조작 핸들 - 포토샵/캔바처럼 모서리로 크기조절, 위쪽 손잡이로 자유 회전 */
 .sticker-gizmo { position: absolute; pointer-events: none; z-index: 901; }
@@ -4633,35 +4695,13 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
         <button type="button" id="introSettingsBtn" title="인트로 애니메이션 설정"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8.5" width="17" height="12" rx="2"/><path d="M3.5 8.5l2-4.5 15 1.5-1 3"/><path d="M8 4.5l2 4M13 5l2 3.5"/><path d="M10.5 12.5v5l4-2.5z" fill="currentColor" stroke="none"/></svg></button>
         <!-- 게스트스냅 관리(📷)는 에디터에서 빼고 내 청첩장(대시보드)의 "하객 사진"에서 -->
     </div>
-    <div class="sticker-palette" id="stickerPalette">
-        <div class="palette-divider">내 스티커 <button type="button" class="palette-upload-btn" id="stickerUploadBtn">+ PNG 업로드</button></div>
-        <div class="palette-personal-grid" id="stickerPersonalGrid"></div>
-        <input type="file" id="stickerUploadInput" accept="image/png,image/webp" style="display:none;">
-        <div class="palette-divider">빈티지 <small style="font-weight:600;color:#A29C94">40</small></div>
-        <div class="palette-personal-grid palette-vintage-grid"><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cupid-bow.webp"><img src="assets/stickers/vintage/cupid-bow.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cupid-cloud.webp"><img src="assets/stickers/vintage/cupid-cloud.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cupid-heart.webp"><img src="assets/stickers/vintage/cupid-heart.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cupid-trumpet.webp"><img src="assets/stickers/vintage/cupid-trumpet.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cupid-letter.webp"><img src="assets/stickers/vintage/cupid-letter.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/dove.webp"><img src="assets/stickers/vintage/dove.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/dove-letter.webp"><img src="assets/stickers/vintage/dove-letter.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/dove-sprig.webp"><img src="assets/stickers/vintage/dove-sprig.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/butterfly-pink.webp"><img src="assets/stickers/vintage/butterfly-pink.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/butterfly-blue.webp"><img src="assets/stickers/vintage/butterfly-blue.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/butterfly-cream.webp"><img src="assets/stickers/vintage/butterfly-cream.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/heart-bow.webp"><img src="assets/stickers/vintage/heart-bow.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-heart-ribbon.webp"><img src="assets/stickers/vintage/rose-heart-ribbon.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/gold-heart-frame.webp"><img src="assets/stickers/vintage/gold-heart-frame.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-heart-wreath.webp"><img src="assets/stickers/vintage/rose-heart-wreath.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/heart-wreath.webp"><img src="assets/stickers/vintage/heart-wreath.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/floral-oval-frame.webp"><img src="assets/stickers/vintage/floral-oval-frame.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-bouquet.webp"><img src="assets/stickers/vintage/rose-bouquet.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-bouquet-ribbon.webp"><img src="assets/stickers/vintage/rose-bouquet-ribbon.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-spray-white.webp"><img src="assets/stickers/vintage/rose-spray-white.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-spray-peach.webp"><img src="assets/stickers/vintage/rose-spray-peach.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/hydrangea.webp"><img src="assets/stickers/vintage/hydrangea.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/pink-bow.webp"><img src="assets/stickers/vintage/pink-bow.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/bow-cream.webp"><img src="assets/stickers/vintage/bow-cream.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/ribbon-swirl.webp"><img src="assets/stickers/vintage/ribbon-swirl.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/ribbon-banner.webp"><img src="assets/stickers/vintage/ribbon-banner.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/crown.webp"><img src="assets/stickers/vintage/crown.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/crown-roses.webp"><img src="assets/stickers/vintage/crown-roses.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/tophat.webp"><img src="assets/stickers/vintage/tophat.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/tophat-roses.webp"><img src="assets/stickers/vintage/tophat-roses.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rings.webp"><img src="assets/stickers/vintage/rings.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/ring-box.webp"><img src="assets/stickers/vintage/ring-box.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/envelope.webp"><img src="assets/stickers/vintage/envelope.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/wax-seal.webp"><img src="assets/stickers/vintage/wax-seal.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/champagne.webp"><img src="assets/stickers/vintage/champagne.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/candelabra.webp"><img src="assets/stickers/vintage/candelabra.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cake.webp"><img src="assets/stickers/vintage/cake.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/carriage.webp"><img src="assets/stickers/vintage/carriage.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/birdcage.webp"><img src="assets/stickers/vintage/birdcage.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/gold-frame.webp"><img src="assets/stickers/vintage/gold-frame.webp" alt="" loading="lazy"></button></div>
-        <div class="palette-divider">이모지</div>
-        <button type="button" data-emoji="💐">💐</button><button type="button" data-emoji="🌸">🌸</button>
-        <button type="button" data-emoji="🌷">🌷</button><button type="button" data-emoji="🌹">🌹</button>
-        <button type="button" data-emoji="🕊️">🕊️</button><button type="button" data-emoji="🦢">🦢</button>
-        <button type="button" data-emoji="💍">💍</button><button type="button" data-emoji="👰">👰</button>
-        <button type="button" data-emoji="🤵">🤵</button><button type="button" data-emoji="💌">💌</button>
-        <button type="button" data-emoji="✨">✨</button><button type="button" data-emoji="⭐">⭐</button>
-        <button type="button" data-emoji="🎊">🎊</button><button type="button" data-emoji="🎉">🎉</button>
-        <button type="button" data-emoji="🥂">🥂</button><button type="button" data-emoji="🎁">🎁</button>
-        <button type="button" data-emoji="❤️">❤️</button><button type="button" data-emoji="💕">💕</button>
-        <div class="palette-divider">세련된 라인 아이콘</div>
-        <button type="button" class="sticker-icon-btn" data-icon="heart-line"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="rings"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="laurel-left"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="laurel-right"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="flourish"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="star-line"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="sprig"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="dove"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="bow"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="diamond-line"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="glasses"></button>
-        <button type="button" class="sticker-icon-btn" data-icon="envelope"></button>
+    <!-- 스티커 고르기 (A+D안): 찾기 · 빠른 찾기 · 탭(추천/테마/최근/내 것) · 테마 칩 → 그림 스티커 · 빈티지 · 라인 아이콘 · 이모지. 안은 stkMount가 그림 (목록 STK_*) -->
+    <div class="sticker-palette stk2" id="stickerPalette">
+        <div class="stk-mine" hidden>
+            <div class="stk-mine-h">내가 올린 스티커 <button type="button" class="palette-upload-btn" id="stickerUploadBtn">+ 사진 올리기 (PNG)</button></div>
+            <div class="palette-personal-grid" id="stickerPersonalGrid"></div>
+            <input type="file" id="stickerUploadInput" accept="image/png,image/webp" style="display:none;">
+        </div>
     </div>
     <div class="top-controls" id="topControls">
         <button type="button" class="controls-panel-close" id="controlsPanelClose">✕</button>
@@ -5036,36 +5076,12 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
         <button type="button" class="pill-primary" id="introSaveBtn">✓ 저장</button>
     </div>
     <!-- 스티커 팔레트는 액션바 바로 위로 열린다 (position:fixed라 액션바의 overflow에 안 잘리도록 액션바 밖에 둠) -->
-    <div class="sticker-palette" id="introStickerPalette">
-    <div class="palette-divider">내 스티커 <button type="button" class="palette-upload-btn" id="introStickerUploadBtn">+ PNG 업로드</button></div>
-    <div class="palette-personal-grid" id="introStickerPersonalGrid"></div>
-    <input type="file" id="introStickerUploadInput" accept="image/png,image/webp" style="display:none;">
-    <div class="palette-divider">빈티지 <small style="font-weight:600;color:#A29C94">40</small></div>
-    <div class="palette-personal-grid palette-vintage-grid"><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cupid-bow.webp"><img src="assets/stickers/vintage/cupid-bow.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cupid-cloud.webp"><img src="assets/stickers/vintage/cupid-cloud.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cupid-heart.webp"><img src="assets/stickers/vintage/cupid-heart.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cupid-trumpet.webp"><img src="assets/stickers/vintage/cupid-trumpet.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cupid-letter.webp"><img src="assets/stickers/vintage/cupid-letter.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/dove.webp"><img src="assets/stickers/vintage/dove.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/dove-letter.webp"><img src="assets/stickers/vintage/dove-letter.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/dove-sprig.webp"><img src="assets/stickers/vintage/dove-sprig.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/butterfly-pink.webp"><img src="assets/stickers/vintage/butterfly-pink.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/butterfly-blue.webp"><img src="assets/stickers/vintage/butterfly-blue.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/butterfly-cream.webp"><img src="assets/stickers/vintage/butterfly-cream.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/heart-bow.webp"><img src="assets/stickers/vintage/heart-bow.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-heart-ribbon.webp"><img src="assets/stickers/vintage/rose-heart-ribbon.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/gold-heart-frame.webp"><img src="assets/stickers/vintage/gold-heart-frame.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-heart-wreath.webp"><img src="assets/stickers/vintage/rose-heart-wreath.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/heart-wreath.webp"><img src="assets/stickers/vintage/heart-wreath.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/floral-oval-frame.webp"><img src="assets/stickers/vintage/floral-oval-frame.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-bouquet.webp"><img src="assets/stickers/vintage/rose-bouquet.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-bouquet-ribbon.webp"><img src="assets/stickers/vintage/rose-bouquet-ribbon.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-spray-white.webp"><img src="assets/stickers/vintage/rose-spray-white.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rose-spray-peach.webp"><img src="assets/stickers/vintage/rose-spray-peach.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/hydrangea.webp"><img src="assets/stickers/vintage/hydrangea.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/pink-bow.webp"><img src="assets/stickers/vintage/pink-bow.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/bow-cream.webp"><img src="assets/stickers/vintage/bow-cream.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/ribbon-swirl.webp"><img src="assets/stickers/vintage/ribbon-swirl.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/ribbon-banner.webp"><img src="assets/stickers/vintage/ribbon-banner.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/crown.webp"><img src="assets/stickers/vintage/crown.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/crown-roses.webp"><img src="assets/stickers/vintage/crown-roses.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/tophat.webp"><img src="assets/stickers/vintage/tophat.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/tophat-roses.webp"><img src="assets/stickers/vintage/tophat-roses.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/rings.webp"><img src="assets/stickers/vintage/rings.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/ring-box.webp"><img src="assets/stickers/vintage/ring-box.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/envelope.webp"><img src="assets/stickers/vintage/envelope.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/wax-seal.webp"><img src="assets/stickers/vintage/wax-seal.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/champagne.webp"><img src="assets/stickers/vintage/champagne.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/candelabra.webp"><img src="assets/stickers/vintage/candelabra.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/cake.webp"><img src="assets/stickers/vintage/cake.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/carriage.webp"><img src="assets/stickers/vintage/carriage.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/birdcage.webp"><img src="assets/stickers/vintage/birdcage.webp" alt="" loading="lazy"></button><button type="button" data-vintage-sticker="/invite/assets/stickers/vintage/gold-frame.webp"><img src="assets/stickers/vintage/gold-frame.webp" alt="" loading="lazy"></button></div>
-    <div class="palette-divider">이모지</div>
-    <button type="button" data-emoji="💐">💐</button><button type="button" data-emoji="🌸">🌸</button>
-    <button type="button" data-emoji="🌷">🌷</button><button type="button" data-emoji="🌹">🌹</button>
-    <button type="button" data-emoji="🕊️">🕊️</button><button type="button" data-emoji="🦢">🦢</button>
-    <button type="button" data-emoji="💍">💍</button><button type="button" data-emoji="👰">👰</button>
-    <button type="button" data-emoji="🤵">🤵</button><button type="button" data-emoji="💌">💌</button>
-    <button type="button" data-emoji="✨">✨</button><button type="button" data-emoji="⭐">⭐</button>
-    <button type="button" data-emoji="🎊">🎊</button><button type="button" data-emoji="🎉">🎉</button>
-    <button type="button" data-emoji="🥂">🥂</button><button type="button" data-emoji="🎁">🎁</button>
-    <button type="button" data-emoji="❤️">❤️</button><button type="button" data-emoji="💕">💕</button>
-    <div class="palette-divider">세련된 라인 아이콘</div>
-    <button type="button" class="sticker-icon-btn" data-icon="heart-line"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="rings"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="laurel-left"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="laurel-right"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="flourish"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="star-line"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="sprig"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="dove"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="bow"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="diamond-line"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="glasses"></button>
-    <button type="button" class="sticker-icon-btn" data-icon="envelope"></button>
-
+    <div class="sticker-palette stk2" id="introStickerPalette">
+        <div class="stk-mine" hidden>
+            <div class="stk-mine-h">내가 올린 스티커 <button type="button" class="palette-upload-btn" id="introStickerUploadBtn">+ 사진 올리기 (PNG)</button></div>
+            <div class="palette-personal-grid" id="introStickerPersonalGrid"></div>
+            <input type="file" id="introStickerUploadInput" accept="image/png,image/webp" style="display:none;">
+        </div>
     </div>
 </div><!-- /screenIntroSettings -->
 
@@ -9511,10 +9527,11 @@ document.getElementById('stickerAddBtn').addEventListener('click', e => {
     const isOpen = palette.classList.contains('open');
     palette.classList.toggle('open', !isOpen);
     if (!isOpen) {
+        if (palette._stkDraw) palette._stkDraw(); // 디자인을 바꿨으면 추천 테마도 다시
         ensureStickerGuide();
         const r = e.currentTarget.getBoundingClientRect();
         palette.style.top = (r.bottom + 8) + 'px';
-        palette.style.left = Math.max(8, r.right - 260) + 'px';
+        palette.style.left = Math.max(8, Math.min(window.innerWidth - (palette.offsetWidth || 340) - 8, r.right - (palette.offsetWidth || 340))) + 'px';
     }
 });
 function addStickerToBlock(payload) {
@@ -9557,8 +9574,144 @@ document.getElementById('stickerPalette').querySelectorAll('[data-icon]').forEac
 document.querySelectorAll('#stickerPalette [data-vintage-sticker]').forEach(btn => btn.addEventListener('click', () => addStickerToBlock({ image: btn.dataset.vintageSticker, size: 72 })));
 document.querySelectorAll('#introStickerPalette [data-vintage-sticker]').forEach(btn => btn.addEventListener('click', () => addIntroSticker({ image: btn.dataset.vintageSticker, size: 72 })));
 document.addEventListener('click', e => {
-    if (!e.target.closest('#stickerPalette, #stickerAddBtn')) document.getElementById('stickerPalette').classList.remove('open');
+    if (e.target.isConnected && !e.target.closest('#stickerPalette, #stickerAddBtn')) document.getElementById('stickerPalette').classList.remove('open'); // 창 안에서 다시 그려 빠진 버튼(탭·칩)은 바깥 누름이 아님
 });
+// ---------------------------------------------------------------- 스티커 고르기 (A+D안)
+// 그림 스티커 = assets/stickers/<테마>/<이름>.svg (SVG 안 CSS로 움직이는 것도 있음 - 휴대폰 '동작 줄이기'면 멈춤)
+// 빈티지 = assets/stickers/vintage/<이름>.webp. 목록을 바꾸면 이 STK_* 만 고치면 됨 (파일을 넣고 여기 한 줄).
+// 항목 키: 'a:테마/이름'(그림) · 'v:이름'(빈티지) · 'e:이모지' · 'i:라인 아이콘' · 'p:주소'(내가 올린 것)
+const STK_ART = {"romantic":[["heart-bow","리본 하트","하트 리본"],["letter","러브레터","편지 하트"],["rings","두 반지","반지"],["rose","장미 한 송이","꽃 장미"],["balloons","하트 풍선","하트 풍선 축하"],["arrow-heart","화살 하트","하트 큐피드"],["beat-heart","콩닥 하트","하트",1],["hearts-rise","떠오르는 하트","하트",1],["winged-heart","날개 하트","하트 큐피드 천사",1],["heart-lock","하트 자물쇠","하트 자물쇠"],["heart-key","하트 열쇠","하트 열쇠"],["bouquet","부케","꽃 부케"],["bow","분홍 리본","리본"],["heart-frame","하트 테두리","하트 액자 틀"],["petals","장미 꽃잎","꽃 장미 꽃잎",1],["heart-garland","하트 가랜드","하트 가랜드"],["twin-hearts","두 하트","하트"],["heart-sparkle","반짝 하트","하트 반짝 별",1],["love-letter","하트 편지","편지 하트",1],["cupid-arrow","큐피드 화살","하트 큐피드 화살"]],"cosmos":[["moon","초승달","달 별"],["planet","고리 행성","별 우주 행성"],["shooting","별똥별","별"],["constellation","별자리 하트","별 하트"],["sparkles","반짝임","별 반짝"],["moon-cloud","달과 구름","달 구름 별"],["twinkle","반짝이는 별","별 반짝",1],["orbit","돌고 있는 달","달 별 우주",1],["comet","날아가는 별똥별","별 별똥별",1],["phases","달의 모양","달"],["galaxy","은하수","별 우주 은하"],["telescope","망원경","별 망원경"],["star-jar","별 유리병","별 병"],["north-star","북극성","별 반짝"],["hanging-stars","매달린 별","별",1],["planets","행성 셋","별 우주 행성"],["sleepy-moon","구름 베개 달","달 구름"],["star-badge","별 배지","별"],["crescent-star","초승달과 별","달 별"],["meteor-shower","별똥별 비","별 별똥별",1]],"rain":[["umbrella","우산","비 우산"],["rain-cloud","비구름","비 구름"],["drop","빗방울","비 물방울"],["rainbow","무지개","비 무지개 구름"],["window","비 오는 창","비 창문"],["tea","따뜻한 차","차 컵"],["rain-anim","비 내리는 구름","비 구름",1],["umbrella-sway","흔들리는 우산","비 우산",1],["ripple","물결 동그라미","비 물방울",1],["two-umbrellas","두 우산","비 우산 하트"],["boots","장화","비 장화"],["snail","달팽이","비 달팽이"],["cloud-sun","비 갠 하늘","비 구름 해"],["candle","흔들리는 촛불","초 촛불",1],["teapot","찻주전자","차 주전자"],["book","책 한 권","책"],["hydrangea","수국","꽃 수국"],["leaf-drop","잎에 맺힌 물방울","비 잎 물방울",1],["cocoa","따뜻한 코코아","차 컵 코코아 겨울",1],["frog","개구리","비 개구리"]],"garden":[["tulips","튤립 다발","꽃 튤립"],["sprig","올리브 가지","잎 가지 올리브"],["daisy","데이지","꽃 데이지"],["butterfly","나비","나비 봄"],["wreath","잎 화관","꽃 잎 화관"],["lavender","라벤더","꽃 라벤더"],["butterfly-flap","날갯짓 나비","나비 봄",1],["flower-sway","흔들리는 꽃","꽃",1],["bee","꿀벌","벌 봄",1],["rose-bush","장미 덤불","꽃 장미"],["peony","작약","꽃 작약"],["sunflower","해바라기","꽃 해바라기 여름"],["clover","네잎클로버","잎 클로버 행운"],["can","물뿌리개","꽃 물뿌리개",1],["bird-branch","가지 위 새","새 가지"],["flower-crown","꽃 화관","꽃 화관"],["sprout","새싹 화분","잎 새싹 화분"],["leaf-garland","잎 가랜드","잎 가랜드"],["tulip-bunch","튤립 다발","꽃 튤립 부케 리본"],["dandelion","민들레 홀씨","꽃 민들레 봄",1]],"classic":[["cheers","건배","축하 건배 잔"],["cake","웨딩 케이크","축하 케이크"],["laurel","월계관","월계관 잎"],["dove","비둘기","새 비둘기"],["diamond","다이아 반지","반지 다이아"],["bells","웨딩 벨","종 리본"],["ring-shine","빛나는 반지","반지 다이아",1],["bubbles","샴페인 거품","축하 건배 잔 샴페인",1],["candles","촛대","초 촛대",1],["bowtie","나비넥타이","리본 나비넥타이 신랑"],["dress","웨딩드레스","드레스 신부"],["tophat","신사 모자","모자 신랑"],["crown","왕관","왕관"],["seal","밀랍 도장","편지 도장 하트"],["banner","리본 띠","리본 띠"],["ornate-frame","금테 액자","액자 틀"],["chandelier","샹들리에","샹들리에 반짝",1],["gold-letter","금빛 초대장","편지 초대장"],["ring-box","반지 상자","반지 상자 프러포즈"],["pearls","진주 목걸이","진주 목걸이 신부"]],"party":[["popper","폭죽","축하 폭죽"],["balloons3","풍선 다발","축하 풍선"],["gift","선물 상자","선물 리본 축하"],["bunting","가랜드","축하 가랜드"],["cupcake","컵케이크","케이크 축하"],["firework","불꽃","축하 불꽃 별"],["confetti-fall","떨어지는 꽃가루","축하 꽃가루",1],["balloon-float","둥실 풍선","축하 풍선",1],["burst","펑 불꽃","축하 불꽃",1],["party-hat","파티 모자","축하 모자"],["cake-candles","초 켠 케이크","축하 케이크 초",1],["star-garland","별 가랜드","별 축하 가랜드"],["streamer","종이 테이프","축하 테이프"],["gift-open","열린 선물","축하 선물 리본",1],["sparkler","불꽃막대","축하 불꽃 반짝",1],["confetti-pile","꽃가루","축하 꽃가루"],["pennant","작은 깃발","축하 깃발 하트"],["notes","음표","음악 음표",1],["disco-ball","반짝 미러볼","축하 미러볼 반짝",1],["macarons","마카롱","축하 마카롱 디저트"]],"season":[["cherry","벚꽃 가지","꽃 벚꽃 봄"],["shell","조개","여름 조개 바다"],["sun","여름 해","여름 해 바다"],["maple","단풍잎","가을 단풍 낙엽"],["snowflake","눈송이","겨울 눈"],["snowman","눈사람","겨울 눈사람"],["petal-fall","흩날리는 벚꽃","꽃 벚꽃 봄",1],["tulip-pot","튤립 화분","꽃 튤립 봄 화분"],["chick","병아리","새 병아리 봄"],["wave","출렁이는 파도","여름 바다 파도",1],["watermelon","수박","여름 수박"],["palm","야자수","여름 바다 야자수"],["icecream","아이스크림","여름 아이스크림"],["leaves-fall","떨어지는 낙엽","가을 낙엽 단풍",1],["acorn","도토리","가을 도토리"],["snow-fall","내리는 눈","겨울 눈",1],["mitten","벙어리장갑","겨울 장갑"],["xmas-tree","트리","겨울 트리 크리스마스"],["kite","하늘 연","봄 연 하늘",1],["pumpkin","호박","가을 호박"]]}; // {테마: [[이름, 보이는 이름, 찾기 말, 움직이면 1]]}
+const STK_VIN = { 'cupid-bow': ['큐피드 활', '하트 천사 큐피드'], 'cupid-cloud': ['구름 큐피드', '천사 큐피드 구름'], 'cupid-heart': ['하트 큐피드', '하트 천사 큐피드'], 'cupid-trumpet': ['나팔 큐피드', '천사 큐피드 축하'], 'cupid-letter': ['편지 큐피드', '천사 큐피드 편지'],
+    dove: ['비둘기', '새 비둘기'], 'dove-letter': ['편지 비둘기', '새 비둘기 편지'], 'dove-sprig': ['가지 문 비둘기', '새 비둘기 잎'], 'butterfly-pink': ['분홍 나비', '나비 봄'], 'butterfly-blue': ['파란 나비', '나비'], 'butterfly-cream': ['크림 나비', '나비'],
+    'heart-bow': ['리본 하트', '하트 리본'], 'rose-heart-ribbon': ['장미 하트 리본', '하트 꽃 장미 리본'], 'gold-heart-frame': ['금 하트 액자', '하트 액자 틀'], 'rose-heart-wreath': ['장미 하트 화관', '하트 꽃 장미'], 'heart-wreath': ['하트 화관', '하트 꽃 화관'],
+    'floral-oval-frame': ['꽃 액자', '꽃 액자 틀'], 'rose-bouquet': ['장미 다발', '꽃 장미 부케'], 'rose-bouquet-ribbon': ['리본 장미 다발', '꽃 장미 부케 리본'], 'rose-spray-white': ['흰 장미 가지', '꽃 장미'], 'rose-spray-peach': ['살구 장미 가지', '꽃 장미'], hydrangea: ['수국', '꽃 수국'],
+    'pink-bow': ['분홍 리본', '리본'], 'bow-cream': ['크림 리본', '리본'], 'ribbon-swirl': ['흩날리는 리본', '리본'], 'ribbon-banner': ['리본 띠', '리본 글'], crown: ['왕관', '왕관'], 'crown-roses': ['장미 왕관', '왕관 꽃 장미'], tophat: ['신사 모자', '모자 신랑'], 'tophat-roses': ['장미 모자', '모자 꽃 신랑'],
+    rings: ['반지', '반지'], 'ring-box': ['반지 상자', '반지 상자'], envelope: ['봉투', '편지'], 'wax-seal': ['밀랍 도장', '편지 도장'], champagne: ['샴페인', '축하 건배 잔'], candelabra: ['촛대', '초 촛대'], cake: ['케이크', '축하 케이크'], carriage: ['마차', '마차'], birdcage: ['새장', '새 새장'], 'gold-frame': ['금 액자', '액자 틀'] };
+const STK_ICON = { 'heart-line': '하트', rings: '반지', 'laurel-left': '잎 월계관', 'laurel-right': '잎 월계관', flourish: '장식 선', 'star-line': '별', sprig: '잎 가지', dove: '새 비둘기', bow: '리본', 'diamond-line': '반지 다이아', glasses: '축하 건배 잔', envelope: '편지' };
+const STK_EMO = { '💕': '하트', '💗': '하트', '💞': '하트', '💘': '하트 큐피드', '❤️': '하트', '🫶': '하트', '🥰': '하트', '💌': '편지 하트', '💋': '하트', '🌹': '꽃 장미', '💐': '꽃 부케', '🌸': '꽃 봄 벚꽃', '🌷': '꽃 튤립', '🌼': '꽃', '🌻': '꽃 해바라기', '🪻': '꽃', '🌺': '꽃', '🌿': '잎', '🍀': '잎 행운', '🪴': '화분', '🌱': '잎 새싹', '⭐': '별', '🌟': '별', '✨': '별 반짝', '💫': '별', '🌠': '별 별똥별', '🌙': '달 별', '🌛': '달', '🪐': '별 우주', '☄️': '별', '🌌': '별 우주', '🔭': '별', '🛸': '우주',
+    '☔': '비 우산', '🌧️': '비', '💧': '비 물방울', '🌂': '비 우산', '☁️': '구름 비', '🌈': '비 무지개', '🫧': '비 거품', '🍃': '잎', '🐌': '비 달팽이', '🌫️': '비 안개', '🫖': '차', '🕯️': '초 촛불', '🎀': '리본', '🕊️': '새 비둘기', '🦢': '새 백조', '🐣': '새 병아리', '🦋': '나비', '🐝': '벌',
+    '💍': '반지', '💎': '반지 보석', '👰': '신부', '🤵': '신랑', '🎩': '모자 신랑', '👑': '왕관', '🎻': '음악', '🏛️': '예식장', '📜': '편지', '🎉': '축하', '🎊': '축하', '🥂': '축하 건배 잔', '🍾': '축하', '🎂': '축하 케이크', '🍰': '케이크', '🧁': '케이크', '🎈': '축하 풍선', '🎁': '축하 선물', '🥳': '축하', '🎆': '축하 불꽃', '🎇': '축하 불꽃', '🪅': '축하',
+    '🌊': '여름 바다', '🐚': '여름 조개 바다', '🍉': '여름 수박', '🍁': '가을 단풍 낙엽', '🍂': '가을 낙엽', '🌰': '가을 도토리', '❄️': '겨울 눈', '⛄': '겨울 눈사람', '🎄': '겨울 트리' };
+const STK_THEMES = [
+    { id: 'romantic', name: '로맨틱', vin: ['cupid-heart', 'cupid-bow', 'cupid-cloud', 'cupid-letter', 'cupid-trumpet', 'heart-bow', 'rose-heart-ribbon', 'gold-heart-frame', 'rose-heart-wreath', 'heart-wreath', 'pink-bow', 'envelope', 'wax-seal'], emo: ['💕', '💗', '💞', '💘', '❤️', '🌹', '💐', '💌', '🎀', '💋', '🫶', '🥰', '👰', '🤵'] },
+    { id: 'cosmos', name: '별·우주', vin: [], emo: ['⭐', '🌙', '✨', '🌟', '🪐', '☄️', '🌌', '💫', '🌠', '🔭', '🌛', '🛸'] },
+    { id: 'rain', name: '비 오는 날', vin: ['hydrangea', 'dove-sprig'], emo: ['☔', '🌧️', '💧', '☁️', '🌂', '🫧', '🌈', '🍃', '🐌', '🌫️', '🫖', '🕯️'] },
+    { id: 'garden', name: '가든·꽃', vin: ['rose-bouquet', 'rose-bouquet-ribbon', 'rose-spray-white', 'rose-spray-peach', 'hydrangea', 'butterfly-pink', 'butterfly-blue', 'butterfly-cream', 'floral-oval-frame', 'rose-heart-wreath', 'dove', 'dove-sprig'], emo: ['🌸', '🌷', '🌿', '🌼', '🌻', '🪻', '🦋', '🍀', '🌺', '🪴', '🐝', '🌱'] },
+    { id: 'classic', name: '클래식', vin: ['rings', 'ring-box', 'champagne', 'candelabra', 'carriage', 'crown', 'crown-roses', 'tophat', 'tophat-roses', 'gold-frame', 'ribbon-banner', 'ribbon-swirl', 'bow-cream', 'dove-letter', 'birdcage', 'cake'], icons: Object.keys(STK_ICON), emo: ['💍', '🥂', '🕊️', '🦢', '🎩', '👑', '🕯️', '🎻', '🍾', '💎', '🏛️', '📜'] },
+    { id: 'party', name: '축하·파티', vin: ['champagne', 'cake', 'ribbon-banner', 'ribbon-swirl', 'cupid-trumpet'], emo: ['🎉', '🎊', '🎈', '🎁', '🍾', '🥳', '🎆', '🎇', '🪅', '🍰', '🎂', '🧁'] },
+    { id: 'season', name: '봄·여름·가을·겨울', vin: ['butterfly-pink', 'butterfly-blue', 'rose-spray-peach'], emo: ['🌸', '🐝', '🐣', '🌊', '🐚', '🍉', '🍁', '🍂', '🌰', '❄️', '⛄', '🎄'] },
+    { id: 'vintage', name: '빈티지 그림 전체', vin: Object.keys(STK_VIN), emo: [] },
+];
+// 디자인마다 먼저 보여줄 테마 (디자인 폴더 preset.json의 stickerThemes가 있으면 그게 먼저)
+const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] };
+const STK_QUICK = ['하트', '꽃', '별', '비', '리본', '새', '반지', '축하', '움직임'];
+const STK_ART_IX = {}; Object.entries(STK_ART).forEach(([t, list]) => list.forEach(([k, l, w, a]) => { STK_ART_IX[t + '/' + k] = { l, w: w + (a ? ' 움직임' : ''), a: !!a }; }));
+const stkUrl = k => k.startsWith('a:') ? 'assets/stickers/' + k.slice(2) + '.svg' : k.startsWith('v:') ? 'assets/stickers/vintage/' + k.slice(2) + '.webp' : k.startsWith('p:') ? k.slice(2) : '';
+const stkName = k => { const b = k.slice(2); return k[0] === 'a' ? (STK_ART_IX[b] || {}).l : k[0] === 'v' ? (STK_VIN[b] || [])[0] : k[0] === 'i' ? STK_ICON[b] : k[0] === 'e' ? (STK_EMO[b] || '') : '내가 올린 스티커'; };
+const stkWords = k => { const b = k.slice(2); return k[0] === 'a' ? STK_ART_IX[b].l + ' ' + STK_ART_IX[b].w : k[0] === 'v' ? STK_VIN[b].join(' ') : k[0] === 'i' ? STK_ICON[b] : STK_EMO[b] || ''; };
+const stkHit = (text, w) => String(text).split(/\s+/).some(t => t === w || (w.length > 1 && t.startsWith(w))); // 낱말로 찾기 ('비' → 비둘기·나비는 안 나옴)
+function stkPayload(k) { // 청첩장에 붙일 데이터
+    const b = k.slice(2);
+    if (k[0] === 'a') return { image: '/invite/assets/stickers/' + b + '.svg', size: 64 };
+    if (k[0] === 'v') return { image: '/invite/assets/stickers/vintage/' + b + '.webp', size: 72 };
+    if (k[0] === 'i') return { icon: b };
+    if (k[0] === 'p') return { image: b };
+    return { emoji: b };
+}
+function stkRecThemes() {
+    const p = (typeof PRESETS !== 'undefined' && PRESETS.find(x => x.id === state.presetId)) || {};
+    const own = Array.isArray(p.stickerThemes) ? p.stickerThemes : [];
+    const dark = (() => { try { return InviteBlocks.hexDark(state.customBg || (skins[state.skin] || {}).bg || '#fff'); } catch (e) { return false; } })();
+    const base = STK_REC[state.presetId] || (dark ? ['cosmos', 'classic'] : ['romantic', 'garden']);
+    return [...new Set(own.concat(base))].filter(id => STK_THEMES.some(t => t.id === id && id !== 'vintage')).slice(0, 2);
+}
+const STK_RECENT_KEY = 'ld-stk-recent';
+const stkRecent = () => { try { const a = JSON.parse(localStorage.getItem(STK_RECENT_KEY) || '[]'); return Array.isArray(a) ? a.filter(k => typeof k === 'string' && /^[aveip]:/.test(k) && (k[0] !== 'a' || STK_ART_IX[k.slice(2)]) && (k[0] !== 'v' || STK_VIN[k.slice(2)])) : []; } catch (e) { return []; } };
+const stkRemember = k => { try { localStorage.setItem(STK_RECENT_KEY, JSON.stringify([k].concat(stkRecent().filter(x => x !== k)).slice(0, 18))); } catch (e) {} };
+function stkFace(k) {
+    const b = k.slice(2);
+    if (k[0] === 'e') return b;
+    if (k[0] === 'i') return STICKER_ICONS[b] || '';
+    return `<img src="${esc(stkUrl(k))}" alt="" loading="lazy" draggable="false">`;
+}
+const stkIt = k => `<button type="button" class="stk-it stk-${k[0]}${k[0] === 'a' && STK_ART_IX[k.slice(2)].a ? ' mv' : ''}" data-stk="${esc(k)}" title="${esc(stkName(k) || '')}${k[0] === 'a' && STK_ART_IX[k.slice(2)].a ? ' · 움직여요' : ''}">${stkFace(k)}</button>`;
+const stkArtKeys = id => (STK_ART[id] || []).map(([k]) => 'a:' + id + '/' + k);
+function stkMount(pal, onAdd) {
+    if (!pal || pal._stk) return;
+    const S = pal._stk = { tab: 'rec', pack: '', q: '', more: {} };
+    const mineEl = pal.querySelector('.stk-mine');
+    const wrap = document.createElement('div'); wrap.className = 'stk-wrap';
+    wrap.innerHTML = `<div class="stk-grab" aria-hidden="true"></div><div class="stk-h"><b>스티커</b><small class="stk-dn"></small><button type="button" class="stk-x" aria-label="닫기" title="닫기">✕</button></div>
+        <label class="stk-srch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" placeholder="찾기: 하트, 꽃, 별, 비 …" aria-label="스티커 찾기" enterkeyhint="search"><button type="button" class="stk-clr" aria-label="지우기">✕</button></label>
+        <div class="stk-qs">${STK_QUICK.map(w => `<button type="button" class="stk-chip stk-q" data-q="${w}">${w === '움직임' ? '<i class="stk-dot"></i>' : ''}${w}</button>`).join('')}</div>
+        <div class="stk-tabs" role="tablist"></div><div class="stk-themes"></div><div class="stk-body"></div>`;
+    pal.insertBefore(wrap, mineEl);
+    const $ = sel => wrap.querySelector(sel), inp = $('input'), body = $('.stk-body');
+    const block = (title, ks, key, cls, n) => {
+        if (!ks.length) return '';
+        const open = S.more[key], show = open ? ks : ks.slice(0, n);
+        return `<div class="stk-lab">${title} <small>${ks.length}개</small>${ks.length > n && !open ? `<button type="button" class="stk-more" data-more="${key}">더 보기 ›</button>` : ''}</div><div class="${cls}">${show.map(stkIt).join('')}</div>`;
+    };
+    const packOf = id => STK_THEMES.find(t => t.id === id) || STK_THEMES[0];
+    const draw = () => {
+        const rec = stkRecThemes(), searching = !!S.q;
+        if (!S.pack) S.pack = rec[0] || 'romantic';
+        $('.stk-dn').textContent = (PRESETS.find(x => x.id === state.presetId) || {}).name || '';
+        wrap.classList.toggle('searching', searching); $('.stk-srch').classList.toggle('has', searching);
+        wrap.querySelectorAll('.stk-q').forEach(c => c.classList.toggle('on', c.dataset.q === S.q));
+        const recent = stkRecent();
+        $('.stk-tabs').innerHTML = [['rec', '추천'], ['theme', '테마'], ['recent', `최근${recent.length ? `<small>${recent.length}</small>` : ''}`], ['mine', '내 것']].map(([k, l]) => `<button type="button" role="tab" class="stk-tab${S.tab === k ? ' on' : ''}" data-t="${k}" aria-selected="${S.tab === k}">${l}</button>`).join('');
+        const order = rec.map(packOf).concat(STK_THEMES.filter(t => !rec.includes(t.id)));
+        $('.stk-themes').hidden = !(S.tab === 'theme' && !searching);
+        $('.stk-themes').innerHTML = order.map(t => { const a = stkArtKeys(t.id)[0], v = t.vin[0]; return `<button type="button" class="stk-chip${t.id === S.pack ? ' on' : ''}" data-p="${t.id}">${a ? `<img src="${stkUrl(a)}" alt="">` : v ? `<img src="${stkUrl('v:' + v)}" alt="">` : ''}${esc(t.name)}${rec[0] === t.id ? ' <span class="stk-rec">추천</span>' : ''}</button>`; }).join('');
+        const isMine = S.tab === 'mine' && !searching;
+        body.hidden = isMine; if (mineEl) mineEl.hidden = !isMine;
+        if (isMine) return;
+        if (searching) {
+            const w = S.q;
+            const art = Object.keys(STK_ART_IX).map(k => 'a:' + k).filter(k => stkHit(stkWords(k), w));
+            const vin = Object.keys(STK_VIN).map(k => 'v:' + k).filter(k => stkHit(stkWords(k), w));
+            const ic = Object.keys(STK_ICON).map(k => 'i:' + k).filter(k => stkHit(stkWords(k), w));
+            const emo = [...new Set(STK_THEMES.flatMap(t => t.emo))].map(e => 'e:' + e).filter(k => stkHit(stkWords(k), w));
+            const n = art.length + vin.length + ic.length + emo.length;
+            body.innerHTML = n ? `<div class="stk-lab stk-found">'<mark>${esc(w)}</mark>' 찾았어요 <small>${n}개</small></div>${block('그림 스티커', art, 's-a' + w, 'stk-g4', 12)}${block('빈티지 그림', vin, 's-v' + w, 'stk-g4', 8)}${block('라인 아이콘', ic, 's-i' + w, 'stk-g6', 6)}${block('이모지', emo, 's-e' + w, 'stk-g6', 12)}`
+                : `<div class="stk-empty">'${esc(w)}' 스티커가 없어요<br>${STK_QUICK.slice(0, 8).join(' · ')} 로 찾아 보세요</div>`;
+            return;
+        }
+        if (S.tab === 'rec') {
+            const ps = rec.map(packOf);
+            body.innerHTML = `<div class="stk-lab stk-found"><span class="stk-rec">추천</span> 지금 디자인에 어울려요</div>`
+                + block('그림 스티커', ps.flatMap(t => stkArtKeys(t.id)), 'r-a', 'stk-g4', 12)
+                + block('빈티지 그림', [...new Set(ps.flatMap(t => t.vin))].map(v => 'v:' + v), 'r-v', 'stk-g4', 4)
+                + block('이모지', ps.flatMap(t => t.emo.slice(0, 6)).map(e => 'e:' + e), 'r-e', 'stk-g6', 12);
+        } else if (S.tab === 'theme') {
+            const t = packOf(S.pack);
+            body.innerHTML = block('그림 스티커 <span class="stk-new">새 그림</span>', stkArtKeys(t.id), 't-a' + t.id, 'stk-g4', 12)
+                + block('빈티지 그림', t.vin.map(v => 'v:' + v), 't-v' + t.id, 'stk-g4', t.id === 'vintage' ? 40 : 4)
+                + block('라인 아이콘', (t.icons || []).map(i => 'i:' + i), 't-i' + t.id, 'stk-g6', 12)
+                + block('이모지', t.emo.map(e => 'e:' + e), 't-e' + t.id, 'stk-g6', 6);
+        } else {
+            body.innerHTML = recent.length ? `<div class="stk-lab stk-found">최근 쓴 것 <small>이 기기에 기억해요</small></div><div class="stk-g6 stk-rc">${recent.map(stkIt).join('')}</div>` : '<div class="stk-empty">아직 붙인 스티커가 없어요<br>스티커를 누르면 여기에 모여요</div>';
+        }
+    };
+    pal._stkDraw = () => { S.more = {}; draw(); };
+    wrap.addEventListener('click', e => {
+        const t = e.target.closest('.stk-tab'); if (t) { S.tab = t.dataset.t; S.q = ''; inp.value = ''; body.scrollTop = 0; draw(); return; }
+        const c = e.target.closest('[data-p]'); if (c) { S.pack = c.dataset.p; body.scrollTop = 0; draw(); return; }
+        const q = e.target.closest('.stk-q'); if (q) { S.q = S.q === q.dataset.q ? '' : q.dataset.q; inp.value = S.q; body.scrollTop = 0; draw(); return; }
+        if (e.target.closest('.stk-clr')) { S.q = ''; inp.value = ''; draw(); inp.focus(); return; }
+        if (e.target.closest('.stk-x')) { pal.classList.remove('open'); return; }
+        const m = e.target.closest('.stk-more'); if (m) { S.more[m.dataset.more] = true; const st = body.scrollTop; draw(); body.scrollTop = st; return; }
+        const b = e.target.closest('[data-stk]'); if (b) { const k = b.dataset.stk; stkRemember(k); onAdd(stkPayload(k)); }
+    });
+    inp.addEventListener('input', () => { S.q = inp.value.trim(); body.scrollTop = 0; draw(); });
+    // 내가 올린 스티커를 누르면 최근 쓴 것에도
+    if (mineEl) mineEl.addEventListener('click', e => { const b = e.target.closest('[data-personal-sticker]'); if (b) stkRemember('p:' + b.dataset.personalSticker); }, true);
+    draw();
+}
+document.body.appendChild(document.getElementById('stickerPalette')); // 머리줄 안(쌓임 순서가 낮음)에 있으면 휴대폰 아래 시트가 되돌리기 띠·떠 있는 버튼 밑으로 들어감
+stkMount(document.getElementById('stickerPalette'), p => addStickerToBlock(p));
+stkMount(document.getElementById('introStickerPalette'), p => addIntroSticker(p));
 
 // 스티커 선택 시 뜨는 조작 핸들 - 메인 에디터/인트로 화면 둘 다 이 하나의 함수를 같이 쓴다.
 // canvas: 스티커가 들어있는 좌표 기준 컨테이너, sticker: 실제 데이터 객체(참조로 직접 수정),
@@ -11235,7 +11388,9 @@ function selectIntroMainText() {
 
 // 인트로 화면 전용 스티커 - 메인 에디터의 블록 스티커와 데이터가 분리되어 있다 (state.intro.stickers)
 document.getElementById('introStickerAddBtn').addEventListener('click', () => {
-    document.getElementById('introStickerPalette').classList.toggle('open');
+    const ip = document.getElementById('introStickerPalette');
+    if (!ip.classList.contains('open') && ip._stkDraw) ip._stkDraw();
+    ip.classList.toggle('open');
 });
 function addIntroSticker(payload) {
     state.intro.stickers.push(Object.assign({ id: 'sk' + Date.now() + Math.random().toString(36).slice(2, 6), x: 50, y: 25, size: 36, rotation: 0 }, payload));
@@ -11250,7 +11405,7 @@ document.getElementById('introStickerPalette').querySelectorAll('[data-icon]').f
     btn.addEventListener('click', () => addIntroSticker({ icon: btn.dataset.icon }));
 });
 document.addEventListener('click', e => {
-    if (!e.target.closest('#introStickerPalette, #introStickerAddBtn')) document.getElementById('introStickerPalette').classList.remove('open');
+    if (e.target.isConnected && !e.target.closest('#introStickerPalette, #introStickerAddBtn')) document.getElementById('introStickerPalette').classList.remove('open'); // 창 안에서 다시 그려 빠진 버튼(탭·칩)은 바깥 누름이 아님
 });
 
 let selectedIntroStickerId = null;
@@ -17715,6 +17870,7 @@ const LDH_EASY = [
     { t: '글자 위치 · 스티커까지 바꾸고 싶어요', d: '전문가 모드에서 자세히 꾸며요', steps: ['[전문가 모드]에서는 글자를 끌어서 옮기고, 스티커·섹션 순서까지 바꿀 수 있어요.', '지금 적은 내용은 그대로 옮겨져요. 언제든 간편 만들기로 돌아올 수 있어요.', '[전문가 모드] 버튼은 질문을 다 마치면 위에 나와요. 지금 가려면 아래 버튼을 눌러요.'], go: ['전문가 모드로 가기', () => { closeLdh(); spInPlace ? spExitInPlace() : simpleToFull(); }] },
 ];
 const LDH_EXPERT = [
+    { t: '스티커 붙이기', d: '하트 · 꽃 · 별 · 움직이는 그림', steps: ['위쪽 웃는 얼굴 버튼(스티커 넣기)을 눌러요.', '[추천]에는 지금 디자인에 어울리는 그림이 먼저 나와요. [테마]에서 로맨틱 · 별·우주 · 비 오는 날 … 을 골라 볼 수도 있어요.', '찾기 칸에 하트, 꽃, 비처럼 적거나 [움직임]을 누르면 움직이는 스티커만 모아 봐요 (초록 점 = 움직여요).', '스티커를 누르면 청첩장에 붙어요. 끌어서 옮기고, 모서리를 끌어 크기를 바꿔요.'], show: () => [{ el: () => ldhFirst('#stickerAddBtn', '[data-act="sticker"]'), t: '스티커 넣기', x: '이 버튼을 누르면 스티커 창이 열려요.' }], go: ['스티커 창 열기', () => { closeLdh(); setTimeout(() => document.getElementById('stickerAddBtn')?.click(), 50); }] },
     { t: '섹션 하나만 다른 모양으로', d: '빈티지 · 밤하늘 · 다른 디자인 색', steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요.', '아래쪽 [섹션 테마]에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 · 다른 디자인 색 중 하나를 눌러요.', '[모든 섹션에 같게]를 누르면 모든 섹션이 같은 모양이 돼요.'] },
     { t: '글자 내용 바꾸기', d: '청첩장의 글자를 고쳐요', steps: ['청첩장에서 바꿀 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.', '다 적었으면 글자 바깥 빈 곳을 눌러요.'], show: () => [{ el: ldhTextEl, t: '두 번 누르기', x: '이 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.' }] },
     { t: '글자 크기 · 색 · 글꼴 바꾸기', d: '글자를 한 번 눌러요', steps: ['글자를 한 번 누르면 크기·색·글꼴을 바꾸는 작은 창이 떠요.', '[−] [+]로 크기를, 동그라미를 눌러 색을 바꿔요.'], show: () => [{ el: ldhTextEl, t: '한 번 누르기', x: '글자를 한 번 누르면 크기·색 창이 떠요.' }] },
@@ -17756,7 +17912,7 @@ const LDH_ICON = {
     qtGridSnap: ['반듯하게 맞추기', '켜면 글자를 옮길 때 격자에 맞춰 반듯하게 놓여요.'],
     qtTouchDrag: ['손가락으로 끌기', '켜져 있어야 휴대폰에서 글자·사진을 손가락으로 끌어 옮길 수 있어요.'],
     qtAllRulers: ['위아래 간격 바로 조절', '켜면 섹션을 안 눌러도 미리보기에서 섹션 위아래 간격을 바로 조절해요.'],
-    stickerAddBtn: ['스티커 넣기', '하트·꽃 같은 작은 그림을 청첩장에 붙여요.'],
+    stickerAddBtn: ['스티커 넣기', '하트·꽃·별 같은 작은 그림(움직이는 것도 있어요)을 청첩장에 붙여요.'],
     introSettingsBtn: ['인트로 꾸미기', '청첩장을 열 때 처음 나오는 글자 효과를 꾸며요.'],
 };
 const ldhIconOf = e => LDH_ICON[e.id] || (e.matches('[data-autofocus-toggle]') ? ['고른 섹션으로 이동', '켜면 섹션을 고를 때 미리보기가 그 자리로 움직여요.'] : null);

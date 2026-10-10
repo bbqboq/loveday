@@ -75,7 +75,7 @@ if (isset($design['share']) && is_array($design['share'])) $design['share']['fab
 
 // ---------------------------------------------------------------- 사진·스티커·음악을 파일 안에 넣기
 // 디자인 전체를 훑어서 "우리 서버의 파일 주소"인 글자를 찾아 data: 주소로 바꾼다.
-// 이 청첩장 폴더, 이 고객의 스티커 폴더, 기본 제공 음악·프리셋 폴더의 파일만 넣는다 (다른 사람 파일은 절대 안 넣음).
+// 이 청첩장 폴더, 이 고객의 스티커 폴더, 기본 제공 음악·프리셋·스티커 폴더의 파일만 넣는다 (다른 사람 파일은 절대 안 넣음).
 $MIME = ['webp' => 'image/webp', 'png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'gif' => 'image/gif', 'svg' => 'image/svg+xml',
          'mp3' => 'audio/mpeg', 'm4a' => 'audio/mp4'];
 $embedded = []; $totalBytes = 0; $skipped = [];
@@ -86,7 +86,7 @@ $resolve = function (string $url) use ($id, $invite): ?string {
     $u = preg_replace('#^/?(invite/)?#', '', $u); // → uploads/… , music/… , presets/…
     if (preg_match('#^uploads/' . $id . '/([A-Za-z0-9_\-]+\.(webp|png|jpe?g|gif|mp3|m4a))$#i', $u, $m)) return invitation_upload_dir($id) . $m[1];
     if (preg_match('#^uploads/stickers/(\d+)/([A-Za-z0-9_\-]+\.(webp|png))$#i', $u, $m) && $invite['customer_id'] && (int) $m[1] === (int) $invite['customer_id']) return customer_sticker_dir((int) $m[1]) . $m[2];
-    if (preg_match('#^(music|presets)/([^\x00]+\.(mp3|m4a|webp|png|jpe?g|gif|svg))$#i', $u, $m)) {
+    if (preg_match('#^(music|presets|assets/stickers)/([^\x00]+\.(mp3|m4a|webp|png|jpe?g|gif|svg))$#i', $u, $m)) { // 기본 스티커(빈티지·테마 그림)도
         $base = realpath(__DIR__ . '/' . $m[1]);
         $real = realpath(__DIR__ . '/' . $m[1] . '/' . $m[2]);
         if ($base && $real && str_starts_with($real, $base . DIRECTORY_SEPARATOR)) return $real;
@@ -106,7 +106,7 @@ $embed = function (string $url) use (&$embedded, &$totalBytes, &$skipped, $resol
 };
 $walk = function (&$node) use (&$walk, $embed): void {
     if (is_array($node)) { foreach ($node as &$v) $walk($v); unset($v); return; }
-    if (is_string($node) && preg_match('#^(https?://(www\.)?loveday\.kr)?/?(invite/)?(uploads|music|presets)/#i', $node)) $node = $embed($node);
+    if (is_string($node) && preg_match('#^(https?://(www\.)?loveday\.kr)?/?(invite/)?(uploads|music|presets|assets/stickers)/#i', $node)) $node = $embed($node);
 };
 $walk($design);
 

@@ -106,6 +106,10 @@ function load_preset(string $folder): array {
     ];
     if (isset($p['heroHeight']) && in_array($p['heroHeight'], ['3/4', '4/5', '9/16', 'full'], true)) $out['heroHeight'] = $p['heroHeight'];
     // 첫 화면 레이아웃 (invite-blocks.js HERO_LAYOUTS 또는 관리자가 저장한 레이아웃 id) · 종이 질감 · 장식 효과 범위·진하기
+    if (!empty($p['stickerThemes']) && is_array($p['stickerThemes'])) { // 스티커 창 [추천]에 먼저 보일 테마 (에디터 STK_THEMES id)
+        $st = array_values(array_intersect(array_map('strval', $p['stickerThemes']), ['romantic', 'cosmos', 'rain', 'garden', 'classic', 'party', 'season']));
+        if ($st) $out['stickerThemes'] = array_slice($st, 0, 2);
+    }
     if (isset($p['heroLayout']) && is_string($p['heroLayout']) && preg_match('/^[a-z0-9_-]{1,40}$/', $p['heroLayout'])) $out['heroLayout'] = $p['heroLayout'];
     if (isset($p['paper']) && in_array($p['paper'], ALLOWED_PAPER, true)) $out['paper'] = $p['paper'];
     if (($p['ambientScope'] ?? '') === 'hero') $out['ambientScope'] = 'hero';

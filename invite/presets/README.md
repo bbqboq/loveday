@@ -26,6 +26,7 @@
 | ambient | | none, hearts, petals, sparkles, cherry, leaves, autumn, snow, snowflake, rain(빗방울), sunset, fireworks, popper, meteor(별똥별), weather(날씨 따라 - 식장 날씨로 비·눈·햇살 + 첫 화면 색감, 미리보기는 비→눈→맑음 되풀이), confetti, sunshine, stars, daisy, bokeh(빛망울), flash |
 | ambientScope, ambientOpacity | | 장식 효과를 첫 화면에만(`"hero"`) · 진하기 10~100 |
 | heroLayout | | 첫 화면 레이아웃 id: our-wedding-day, getting-married, names-vertical, polaroid, happily-ever-after, happy-wedding-day, save-the-date, arch, fade-date, magazine, minimal-line, arc-top, split-top, big-date (관리자가 저장한 레이아웃 id도 됨). 없으면 간편 만들기는 매거진 표지 |
+| stickerThemes | | 스티커 창 [추천]에 먼저 보일 테마 2개: romantic, cosmos, rain, garden, classic, party, season (없으면 에디터 STK_REC 기본값) |
 | paper | | 종이 질감: beige, white, hanji, linen, kraft |
 | hero.jpg | | 폴더에 hero.jpg/png/webp를 넣으면 그 디자인의 첫 화면 예시 사진 (없으면 관리자 손쉬운 제작의 메인 사진 예시) |
 | sideBg, shadow | | PC 옆 배경색, PC 그림자(true/false) |
