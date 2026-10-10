@@ -1687,6 +1687,11 @@ body.tippick-on, body.tippick-on * { cursor: crosshair !important; }
 .ldh-it:hover, .ldh-it:focus-visible { box-shadow: inset 0 0 0 1.5px var(--ui-point, #B8925A); outline: none; }
 .ldh-it span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .ldh-it b { font-size: 15px; word-break: keep-all; } .ldh-it small { font-size: 12.5px; color: var(--wz-sub, #6F665D); word-break: keep-all; }
 .ldh-it i { flex: none; font-style: normal; font-size: 20px; color: #B5ABA0; }
+.ldh-sub { display: flex; flex-direction: column; gap: 2px; margin: 20px 2px 10px; } .ldh-sub b { font-size: 14.5px; } .ldh-sub small { font-size: 12.5px; color: var(--wz-sub, #6F665D); word-break: keep-all; }
+.ldh-auto { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ldh-a { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 48px; padding: 8px 12px; border: 0; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px var(--ui-line, #E5DED3); font: inherit; font-size: 14px; font-weight: 600; color: inherit; text-align: left; cursor: pointer; word-break: keep-all; }
+.ldh-a span { min-width: 0; } .ldh-a em { flex: none; font-style: normal; font-size: 11px; font-weight: 700; color: var(--ui-point, #A88552); }
+.ldh-a.off em { color: #A29C94; } .ldh-a:hover, .ldh-a:focus-visible { box-shadow: inset 0 0 0 1.5px var(--ui-point, #B8925A); outline: none; }
 .ldh-intro { display: block; margin: 16px auto 0; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--wz-sub, #6F665D); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px; }
 .ldh-steps { margin: 4px 0 18px; padding: 0; list-style: none; counter-reset: ldh; display: grid; gap: 10px; }
 .ldh-steps li { counter-increment: ldh; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: start; padding: 12px 14px; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--ui-line, #E5DED3); font-size: 15px; line-height: 1.6; word-break: keep-all; text-wrap: pretty; }
@@ -4350,14 +4355,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018a">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018a">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018b">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018b">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018a"></script>
-<script src="assets/tip-demos.js?v=1018a"></script>
-<script src="assets/ld-dialog.js?v=1018a"></script>
+<script src="assets/invite-blocks.js?v=1018b"></script>
+<script src="assets/tip-demos.js?v=1018b"></script>
+<script src="assets/ld-dialog.js?v=1018b"></script>
 </head>
 <body>
 
@@ -17199,6 +17204,17 @@ const LDH_EXPERT = [
     { t: '화면이 너무 작아요 / 커요', d: '보는 크기만 바꿔요', steps: ['[표준] [좁게] [확대] 버튼은 보는 크기만 바꿔요. 청첩장 모양은 그대로예요.', '[테두리]는 휴대폰 테두리를 보이거나 숨겨요.'], show: () => [{ el: () => ldhFirst('#pWidthNormal', '#mWidthNormal'), t: '화면 크기', x: '보는 크기만 바뀌어요. 하객 화면엔 영향이 없어요.' }] },
     { t: '간편 만들기로 돌아가기', d: '질문에 답하는 쉬운 화면으로', when: () => { const b = ldh$('#tbToSimple'); return !!(b && !b.hidden); }, steps: ['아래 버튼을 누르면 간편 만들기로 돌아가요.', '이름·날짜·사진·글·계좌는 그대로 옮겨져요.'], go: ['간편 만들기로', () => { closeLdh(); fullToSimple(); }] },
 ];
+// '칸별로 바로 가기' - 손으로 쓴 목록이 아니라 지금 고객에게 보이는 칸(간편: 목록 화면 칸 spSteps / 전문가: 섹션 목록)으로 저절로 만듦
+//  → 관리자가 새 칸을 켜거나 새 섹션·단계를 만들면 따로 손대지 않아도 여기에 바로 나옴 (누르면 그 칸·섹션이 열림)
+const ldhAskIdOf = k => { const a = (typeof spAskSteps === 'function' ? spAskSteps() : []).find(x => x.k === k); return a ? spAskId(a) : ''; };
+function ldhAutoHtml(c) {
+    let rows = [];
+    if (c.easy) rows = spSteps().filter(st => st.k !== 'finish').map(st => { const ids = (st.s || []).filter(id => spHas(id)); return [st.k, st.t, ids.length ? ids.some(id => spBlock(id).enabled) : null]; });
+    else rows = state.blocks.filter(b => b && b.id && (blockLabels[b.id] || (InviteBlocks.BLOCKS[b.id] || {}).label)).map(b => [b.id, blockLabels[b.id] || InviteBlocks.BLOCKS[b.id].label, !!b.enabled]);
+    if (!rows.length) return '';
+    return `<div class="ldh-sub"><b>칸별로 바로 가기</b><small>누르면 그 칸이 바로 열려요${c.easy ? '' : ' (꺼진 섹션은 열고 나서 스위치를 켜요)'}.</small></div>
+        <div class="ldh-auto">${rows.map(([k, t, on]) => `<button type="button" class="ldh-a${on === false ? ' off' : ''}" data-ldh-k="${esc(k)}"><span>${esc(t)}</span>${on === null ? '' : `<em>${on ? '넣음' : '안 넣음'}</em>`}</button>`).join('')}</div>`;
+}
 // 작은 그림 버튼 쉬운 이름 + 하는 일 (버튼 id → [이름, 설명]). 여기 없는 버튼은 버튼 설명(title)을 그대로
 const LDH_ICON = {
     mainHomeBtnTop: ['내 청첩장 목록', '만든 청첩장 목록 화면으로 나가요. 고친 건 저장해 두고 나가세요.'],
@@ -17270,8 +17286,10 @@ function openLdh(item) {
         ldh$('#ldhTitle').textContent = '무엇을 도와드릴까요?';
         bd.innerHTML = `<p class="ldh-lead">${c.easy ? '간편 만들기' : '전문가 모드'}에서 자주 묻는 것들이에요. 하고 싶은 일을 눌러 보세요.</p>
             <div class="ldh-list">${list.map((x, i) => `<button type="button" class="ldh-it" data-i="${i}"><span><b>${esc(x.t)}</b><small>${esc(x.d)}</small></span><i aria-hidden="true">›</i></button>`).join('')}</div>
+            ${ldhAutoHtml(c)}
             <button type="button" class="ldh-intro" id="ldhIntroAgain">처음 사용법 안내 다시 보기</button>`;
         bd.querySelectorAll('.ldh-it').forEach(btn => btn.addEventListener('click', () => openLdh(list[+btn.dataset.i])));
+        bd.querySelectorAll('[data-ldh-k]').forEach(btn => btn.addEventListener('click', () => { const k = btn.dataset.ldhK; closeLdh(); setTimeout(() => c.easy ? ldhEasyGo(ldhAskIdOf(k), k) : ldhExpertOpen(k), 200); }));
         ldh$('#ldhIntroAgain').addEventListener('click', () => { closeLdh(); setTimeout(() => ldhIntro(true), 260); });
     } else if (item.icons) {
         ldh$('#ldhTitle').textContent = item.t;
