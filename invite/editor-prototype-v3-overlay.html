@@ -843,6 +843,64 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
     .sp-row { grid-template-columns: 56px 1fr 1fr; }
 }
 
+/* ===== 휴대폰 간편 만들기: 적으면서 보이는 청첩장 (spMvApply) - ① 반반 화면 sp-mv-split / ② 돋보기 창 sp-mv-lens ===== */
+.sp-split-tg, .sp-split-hd, .sp-split-back, .sp-lens-ui, .sp-lens-dock, .sp-lens-tab { display: none; }
+.sp-glow { outline: 2px solid #E9C98F !important; outline-offset: 4px; box-shadow: 0 0 0 9px rgba(233, 201, 143, .3) !important; border-radius: 6px; transition: outline-color .4s, box-shadow .4s; }
+.simple-mode.sp-pv .preview-pane { left: 0 !important; top: 0 !important; width: auto !important; height: auto !important; } /* (돋보기 창 자리 값이 미리보기 화면에 남지 않게) */
+@media (max-width: 860px) {
+    /* 머리줄 오른쪽 [청첩장 보기] 스위치 */
+    .simple-mode .sp-split-tg:not([hidden]) { display: flex; margin-left: auto; align-items: center; gap: 7px; border: 0; background: var(--ui-soft, #F1ECE4); border-radius: 99px; padding: 5px 6px 5px 12px; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--wz-ink, #2B2320); cursor: pointer; white-space: nowrap; }
+    .sp-split-tg .sw { width: 32px; height: 19px; border-radius: 99px; background: #CFC6BA; position: relative; transition: background .2s; }
+    .sp-split-tg .sw::after { content: ''; position: absolute; left: 2px; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: translate .2s; }
+    .sp-split-tg.on .sw { background: var(--ui-point, #B8925A); } .sp-split-tg.on .sw::after { translate: 13px 0; }
+    .sp-mv-on .sp-now-wrap { display: none; } /* (위 청첩장이 늘 보이니 '지금 청첩장' 카드는 뺌) */
+    /* 휴대폰 위 청첩장은 보기만 (손가락으로 넘겨 볼 때 글자·눈금자가 끌려오지 않게) */
+    html.sp-mv-on:not(.sp-pv) #previewRoot .col { pointer-events: none; }
+    html.sp-mv-on:not(.sp-pv) #previewRoot .section-ruler, html.sp-mv-on:not(.sp-pv) #previewRoot .hb-area, html.sp-mv-on:not(.sp-pv) #previewRoot .hb-handle, html.sp-mv-on:not(.sp-pv) #previewRoot .hb-ok, html.sp-mv-on:not(.sp-pv) #previewRoot .hh-group { display: none !important; }
+    html.sp-mv-on:not(.sp-pv) #previewRoot .col.selected { outline: none !important; box-shadow: none !important; }
+
+    /* ① 반반 화면: 위 청첩장 · 손잡이 · 아래 질문 (화면에 보이는 높이 = 키보드가 올라오면 그만큼 줄어듦) */
+    html.sp-mv-split:not(.sp-pv) body { overflow: hidden; }
+    html.sp-mv-split:not(.sp-pv) #screenEditor .layout { position: fixed; left: 0; right: 0; top: calc(var(--sp-vvt, 0px) + 50px); height: calc(var(--sp-vvh, 100dvh) - 50px); display: flex; flex-direction: column; overflow: hidden; z-index: 5; }
+    html.sp-mv-split:not(.sp-pv) #screenEditor .preview-pane { display: flex !important; order: 1; flex: none; height: var(--sp-split-h, 45%); min-height: 0; padding: 0 !important; overflow-y: auto; overflow-x: hidden; align-items: flex-start; background: var(--ui-soft, #EDE9E3); transition: height .28s ease; }
+    html.sp-split-drag #screenEditor .preview-pane { transition: none !important; }
+    html.sp-mv-split:not(.sp-pv) #screenEditor .preview-pane > .phone-frame { margin-bottom: 0; }
+    html.sp-mv-split:not(.sp-pv) .sp-split-hd { display: flex; order: 2; flex: none; height: 36px; align-items: center; gap: 6px; padding: 0 8px 0 12px; background: var(--ui-page, #F6F4F1); border-top: 1px solid var(--ui-line, #E5DED3); border-bottom: 1px solid var(--ui-line, #E5DED3); touch-action: none; user-select: none; -webkit-user-select: none; cursor: row-resize; box-shadow: 0 -4px 10px rgba(40, 30, 20, .06); }
+    .sp-sh-l { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; font-weight: 700; color: var(--wz-ink, #2B2320); display: flex; align-items: center; gap: 6px; }
+    .sp-sh-l::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 50%; background: #E9C98F; }
+    .sp-sh-g { flex: none; display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--wz-sub, #7A7067); }
+    .sp-sh-g i { width: 22px; height: 4px; border-radius: 99px; background: #BDB3A6; } .sp-sh-g b { font-weight: 700; color: var(--wz-ink, #2B2320); min-width: 2em; text-align: center; }
+    .sp-sh-b { flex: none; border: 1px solid var(--ui-line, #E5DED3); background: #fff; border-radius: 99px; font: inherit; font-size: 11px; font-weight: 700; padding: 4px 9px; color: var(--wz-ink, #2B2320); cursor: pointer; white-space: nowrap; }
+    .sp-sh-b[hidden] { display: none; }
+    html.sp-mv-split:not(.sp-pv) #simplePane { order: 3; flex: 1; min-height: 0 !important; overflow-y: auto !important; overscroll-behavior: contain; }
+    html.sp-mv-split.sp-split-big:not(.sp-pv) #screenEditor .preview-pane { flex: 1; height: auto; }
+    html.sp-mv-split.sp-split-big:not(.sp-pv) #simplePane { display: none; }
+    html.sp-mv-split.sp-split-big:not(.sp-pv) .sp-split-back { display: block; position: fixed; left: 16px; right: 16px; bottom: 14px; z-index: 30; height: 50px; border: 0; border-radius: 14px; background: var(--wz-ink, #2B2320); color: #fff; font: inherit; font-size: 15px; font-weight: 700; box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+
+    /* ② 돋보기 창: 실제 미리보기를 세로로 긴 작은 창에 (확대·이동은 --sp-lens-tf, 자리는 spLensPlace) */
+    html.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane { display: block !important; position: fixed; z-index: 640; overflow: hidden; padding: 0 !important; border-radius: 16px; background: #fff; box-shadow: 0 12px 30px rgba(20, 14, 10, .3); pointer-events: none; transition: left .34s cubic-bezier(.3,.8,.3,1), top .34s cubic-bezier(.3,.8,.3,1), width .3s ease, height .3s ease, opacity .2s; }
+    html.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane > .phone-frame { position: absolute; left: 0; top: 0; width: 100vw !important; max-width: none; margin: 0; transform-origin: 0 0; transform: var(--sp-lens-tf, none); transition: transform .45s cubic-bezier(.3,.8,.3,1); }
+    html.sp-mv-lens #screenEditor .preview-pane > .phone-frame.sp-lens-now, html.sp-lens-drag #screenEditor .preview-pane { transition: none !important; }
+    html.sp-mv-lens:not(.sp-pv) .sp-lens-ui { display: block; position: fixed; z-index: 641; border-radius: 16px; box-shadow: inset 0 0 0 2px #fff; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; transition: left .34s cubic-bezier(.3,.8,.3,1), top .34s cubic-bezier(.3,.8,.3,1), width .3s ease, height .3s ease; }
+    html.sp-lens-drag .sp-lens-ui { transition: none; cursor: grabbing; }
+    .sp-lens-ui.flash { animation: spLensFlash .7s ease; }
+    @keyframes spLensFlash { 0% { box-shadow: inset 0 0 0 2px #fff, 0 0 0 0 rgba(233, 201, 143, .95); } 100% { box-shadow: inset 0 0 0 2px #fff, 0 0 0 12px rgba(233, 201, 143, 0); } }
+    .sp-lens-t { position: absolute; left: 0; right: 0; top: 0; padding: 7px 34px 14px 10px; border-radius: 16px 16px 0 0; background: linear-gradient(rgba(20,14,10,.62), rgba(20,14,10,0)); color: #fff; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; }
+    .sp-lens-t::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 50%; background: #E9C98F; }
+    .sp-lens-z { position: absolute; right: 5px; top: 5px; width: 28px; height: 26px; border: 0; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; font-size: 13px; cursor: pointer; }
+    .sp-lens-map { position: absolute; right: 4px; top: 38px; bottom: 32px; width: 3px; border-radius: 99px; background: rgba(0,0,0,.14); }
+    .sp-lens-map b { position: absolute; left: -2px; width: 7px; height: 16px; margin-top: -8px; border-radius: 99px; background: var(--ui-point, #B8925A); transition: top .45s cubic-bezier(.3,.8,.3,1); }
+    .sp-lens-f { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 6px 6px; border-radius: 0 0 16px 16px; text-align: center; font-size: 10px; font-weight: 700; color: #fff; background: linear-gradient(rgba(20,14,10,0), rgba(20,14,10,.6)); }
+    html.sp-lens-drag .sp-lens-dock { display: block; position: fixed; inset: 0; z-index: 639; pointer-events: none; }
+    .sp-lens-dock i { position: absolute; border-radius: 16px; border: 2px dashed rgba(184, 146, 90, .75); background: rgba(184, 146, 90, .08); }
+    .sp-lens-dock i.near { border-style: solid; background: rgba(184, 146, 90, .2); }
+    html.sp-mv-lens.sp-lens-tucked #screenEditor .preview-pane, html.sp-mv-lens.sp-lens-tucked .sp-lens-ui { opacity: 0; pointer-events: none; }
+    html.sp-mv-lens.sp-lens-tucked:not(.sp-pv) .sp-lens-tab { display: block; position: fixed; z-index: 641; top: 46%; width: 30px; height: 100px; border: 0; background: var(--wz-ink, #2B2320); color: #fff; font: inherit; font-size: 11.5px; font-weight: 700; writing-mode: vertical-rl; letter-spacing: .1em; box-shadow: 0 6px 16px rgba(0,0,0,.2); }
+    html.sp-mv-lens:not(.sp-pv) .sp-body { padding-bottom: calc(40px + var(--sp-lens-pad, 0px)); }
+    .sp-lens-tab.r { right: 0; border-radius: 12px 0 0 12px; } .sp-lens-tab.l { left: 0; border-radius: 0 12px 12px 0; }
+}
+@media (max-width: 860px) and (prefers-reduced-motion: reduce) { html.sp-mv-split #screenEditor .preview-pane, html.sp-mv-lens #screenEditor .preview-pane, html.sp-mv-lens #screenEditor .preview-pane > .phone-frame, .sp-lens-ui { transition: none !important; } }
+
 /* 종이 질감 (청첩장 카드 배경 위에 깔리는 결) */
 #previewRoot.invite-preview { background-image: var(--p-paper, none); background-size: 300px; background-blend-mode: multiply; }
 .pp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -4250,14 +4308,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1017y">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1017y">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1017z">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1017z">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1017y"></script>
-<script src="assets/tip-demos.js?v=1017y"></script>
-<script src="assets/ld-dialog.js?v=1017y"></script>
+<script src="assets/invite-blocks.js?v=1017z"></script>
+<script src="assets/tip-demos.js?v=1017z"></script>
+<script src="assets/ld-dialog.js?v=1017z"></script>
 </head>
 <body>
 
@@ -4986,6 +5044,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy && j.easy.off && typeof j.easy.off === 'object') EASY_OFF = j.easy.off;
     if (j && j.easy && Array.isArray(j.easy.ask)) EASY_ASK = j.easy.ask; // 처음 만들 때 질문 순서·켜기
     if (j && j.easy) EASY_SHOWOFF = !!j.easy.showOff;
+    if (j && j.easy && ['split', 'lens', 'off'].includes(j.easy.mobileView)) { EASY_MOBILE_VIEW = j.easy.mobileView; try { spMvApply(); } catch (e) {} } // 휴대폰 보기 방식 (관리자 손쉬운 제작)
     if (j && j.easy) { EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; EASY_HERO_POS = j.easy.heroPos && typeof j.easy.heroPos === 'object' ? j.easy.heroPos : {}; } // 메인 사진 예시 + 보일 부분·확대 (관리자 손쉬운 제작)
     if (j && j.easy && Array.isArray(j.easy.steps)) { EASY_STEPS = j.easy.steps; try { if (document.documentElement.classList.contains('simple-mode')) { if (spApplyEasyOrder()) renderPreview(); spRender(); } } catch (e) {} } // 손쉬운 제작 단계
     // 편집창 모양 (관리자 → 섹션 순서 → 편집창 모양). 주소에 ?panel= 이 있으면 그게 우선
@@ -14155,6 +14214,7 @@ function spBindIncl(box) {
 const spOffNote = t => `<p class="sp-off">${t || '이 섹션은 지금 꺼져 있어요. 위 스위치를 켜면 적을 칸이 나와요.'}</p>`;
 function spSetMode(on) {
     document.documentElement.classList.toggle('simple-mode', !!on);
+    try { spMvApply(); } catch (e) {}
     if (!on) { document.documentElement.classList.remove('sp-pv', 'sp-pv-real'); const bx = document.getElementById('spPvReal'); if (bx) bx.innerHTML = ''; }
 }
 // 간편 화면 열기 (새로 만들 때·저장된 간편 청첩장을 열 때·직접 만들기에서 돌아올 때)
@@ -14207,11 +14267,207 @@ function spScrollPreview(ids, pop) { // pop: 스크롤하지 않고 그 자리�
     const pane = document.querySelector('.preview-pane'), root = document.getElementById('previewRoot');
     const col = ids.map(id => root.querySelector(`.col[data-block-id="${id}"]`)).find(Boolean);
     if (!pane || !col) return;
+    // 휴대폰 보기(반반 화면·돋보기 창): 지금 질문이면 그 글자 자리(이름·날짜)까지 맞춤
+    const mv = spMvMode(), fine = mv && spCurSt && (spCurSt.s || []).some(id => ids.includes(id)) ? spPvTargetEl(spCurSt) : null;
+    if (mv === 'lens') { spLensAim(fine || col); return; }
+    if (mv === 'split') { spSplitScroll(fine || col, pop); return; }
     const top = Math.max(0, col.getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - 24);
     if (Math.abs(top - pane.scrollTop) < 160) return; // 이미 그 섹션을 보고 있으면 그대로 (글자를 칠 때마다 미리보기가 움찔하지 않게)
     if (pop) { pane.scrollTo({ top, behavior: 'instant' }); root.classList.remove('sp-pop'); void root.offsetWidth; root.classList.add('sp-pop'); return; }
     pane.scrollTo({ top, behavior: 'smooth' });
     col.classList.remove('sp-flash'); void col.offsetWidth; col.classList.add('sp-flash');
+}
+// ===== 휴대폰 간편 만들기: 적으면서 보이는 청첩장 (관리자 손쉬운 제작 → '휴대폰 보기 방식', easy.mobileView) =====
+//  'split' = ① 반반 화면: 위 청첩장(실제 미리보기 .preview-pane) · 가운데 손잡이(작게 30 · 반 45 · 크게 65%, 끌면 가까운 자리에 멈춤) · 아래 질문.
+//            위 머리줄 [청첩장 보기] 스위치로 켜고 끔. 질문·칸을 바꾸면 그 자리(이름·날짜는 글자까지)로 저절로 이동 + 반짝(spScrollPreview).
+//            손으로 넘겨 보면 [↺ 고치는 곳] · [⤢ 크게]는 청첩장을 화면 가득. 키보드가 올라오면 '작게'로 줄었다가 내려가면 원래대로.
+//  'lens'  = ② 떠 있는 돋보기 창: 실제 미리보기를 작은 창(세로로 긴 9:16)에 넣고 지금 고치는 곳을 확대. 네 모서리에 붙고(끌기),
+//            옆 끝으로 밀면 '청첩장' 손잡이로 숨음. 적는 칸을 가리면 비킴. 누르면 완성본 미리보기(spOpenPreview).
+//  'off'   = 예전처럼 질문만 (위 '지금 청첩장' 카드를 눌러 미리보기). 크기·켜고 끔·창 자리는 이 기기에 기억(localStorage).
+let EASY_MOBILE_VIEW = 'split';
+const SP_MV_SNAP = [[30, '작게'], [45, '반'], [65, '크게']];
+let spMv = (() => { try { return Object.assign({ h: 45, off: false, lens: 'br', lz: 's' }, JSON.parse(localStorage.getItem('ld-sp-mv') || '{}')); } catch (e) { return { h: 45, off: false, lens: 'br', lz: 's' }; } })();
+const spMvSave = () => { try { localStorage.setItem('ld-sp-mv', JSON.stringify(spMv)); } catch (e) {} };
+function spMvMode() { // 지금 쓰는 휴대폰 보기 ('split' | 'lens' | '')
+    const r = document.documentElement;
+    if (window.innerWidth > 860 || !r.classList.contains('simple-mode') || r.classList.contains('sp-pv')) return '';
+    if (EASY_MOBILE_VIEW === 'lens') return 'lens';
+    return EASY_MOBILE_VIEW === 'split' && !spMv.off ? 'split' : '';
+}
+function spMvApply() {
+    const r = document.documentElement, mob = window.innerWidth <= 860 && r.classList.contains('simple-mode');
+    const v = mob ? EASY_MOBILE_VIEW : '';
+    r.classList.toggle('sp-mv-split', v === 'split' && !spMv.off);
+    r.classList.toggle('sp-mv-lens', v === 'lens');
+    r.classList.toggle('sp-mv-on', (v === 'split' && !spMv.off) || v === 'lens');
+    if (v !== 'lens') { const pane = document.querySelector('#screenEditor .preview-pane'); if (pane) ['left', 'top', 'width', 'height'].forEach(k => { pane.style[k] = ''; }); r.classList.remove('sp-lens-tucked'); }
+    if (!(v === 'split' && !spMv.off)) r.classList.remove('sp-split-big');
+    spMvUi();
+    const tg = document.getElementById('spSplitTg'); if (tg) { tg.hidden = v !== 'split'; tg.classList.toggle('on', !spMv.off); tg.setAttribute('aria-pressed', String(!spMv.off)); }
+    if (v === 'split' && !spMv.off) spSplitSet(spMv.h, true);
+    if (v === 'lens') requestAnimationFrame(spLensPlace);
+}
+// 화면 부품 (한 번만 만듦): 머리줄 스위치 · 가운데 손잡이 · 돋보기 창 겉모습
+function spMvUi() {
+    if (document.getElementById('spSplitHd')) return;
+    const tb = document.querySelector('.topbar'), lay = document.querySelector('#screenEditor .layout'); if (!tb || !lay) return;
+    tb.insertAdjacentHTML('beforeend', `<button type="button" class="sp-split-tg on" id="spSplitTg" aria-pressed="true" hidden>청첩장 보기 <span class="sw"></span></button>`);
+    lay.insertAdjacentHTML('beforeend', `<div class="sp-split-hd" id="spSplitHd" role="separator" tabindex="0" aria-label="끌어서 청첩장 칸 크기 조절">
+        <span class="sp-sh-l" id="spShL">지금 고치는 곳</span><span class="sp-sh-g"><i></i><b id="spShSz">반</b><i></i></span>
+        <button type="button" class="sp-sh-b" id="spShRet" hidden>↺ 고치는 곳</button><button type="button" class="sp-sh-b" id="spShBig">⤢ 크게</button></div>
+        <button type="button" class="sp-split-back" id="spSplitBack">질문으로 돌아가기</button>`);
+    document.body.insertAdjacentHTML('beforeend', `<div class="sp-lens-ui" id="spLensUi" role="button" tabindex="0" aria-label="청첩장 크게 보기"><span class="sp-lens-t" id="spLensT">지금 청첩장</span><button type="button" class="sp-lens-z" id="spLensZ" aria-label="창 크기 바꾸기">⤢</button><i class="sp-lens-map"><b id="spLensDot"></b></i><span class="sp-lens-f">누르면 크게 · 끌면 옮겨요</span></div>
+        <div class="sp-lens-dock" id="spLensDock"><i data-c="tl"></i><i data-c="tr"></i><i data-c="bl"></i><i data-c="br"></i></div><button type="button" class="sp-lens-tab" id="spLensTab">청첩장 ‹</button>`);
+    const tg = document.getElementById('spSplitTg');
+    tg.addEventListener('click', () => { spMv.off = !spMv.off; spMvSave(); spMvApply(); if (!spMv.off) setTimeout(spMvRefollow, 320); });
+    // 손잡이 끌기 → 가까운 자리(작게·반·크게)에 멈춤
+    const hd = document.getElementById('spSplitHd');
+    hd.addEventListener('pointerdown', e => {
+        if (e.target.closest('button')) return;
+        e.preventDefault(); try { hd.setPointerCapture(e.pointerId); } catch (er) {}
+        const r = lay.getBoundingClientRect(); r.root = document.documentElement; r.root.classList.add('sp-split-drag');
+        let h = spMv.h;
+        const mv = ev => { h = Math.max(18, Math.min(80, (ev.clientY - r.top) / r.height * 100)); r.root.style.setProperty('--sp-split-h', h + '%'); };
+        const up = () => { hd.removeEventListener('pointermove', mv); hd.removeEventListener('pointerup', up); hd.removeEventListener('pointercancel', up); r.root.classList.remove('sp-split-drag');
+            const sn = SP_MV_SNAP.reduce((a, b) => Math.abs(b[0] - h) < Math.abs(a[0] - h) ? b : a); spMv.h = sn[0]; spMvSave(); spSplitSet(sn[0]); setTimeout(spMvRefollow, 300); };
+        hd.addEventListener('pointermove', mv); hd.addEventListener('pointerup', up); hd.addEventListener('pointercancel', up);
+    });
+    hd.addEventListener('keydown', e => { const i = SP_MV_SNAP.findIndex(x => x[0] === spMv.h), j = e.key === 'ArrowUp' ? i - 1 : e.key === 'ArrowDown' ? i + 1 : -9; if (SP_MV_SNAP[j]) { e.preventDefault(); spMv.h = SP_MV_SNAP[j][0]; spMvSave(); spSplitSet(spMv.h); } });
+    document.getElementById('spShRet').addEventListener('click', spMvRefollow);
+    const big = on => { document.documentElement.classList.toggle('sp-split-big', on); document.getElementById('spShBig').textContent = on ? '↙ 원래대로' : '⤢ 크게'; setTimeout(spMvRefollow, 320); };
+    document.getElementById('spShBig').addEventListener('click', () => big(!document.documentElement.classList.contains('sp-split-big')));
+    document.getElementById('spSplitBack').addEventListener('click', () => big(false));
+    // 손으로 넘겨 보면 [↺ 고치는 곳] 버튼
+    const pane = document.querySelector('#screenEditor .preview-pane');
+    if (pane) pane.addEventListener('scroll', () => { if (spMvMode() === 'split' && Date.now() > spMvAutoUntil) { const b = document.getElementById('spShRet'); if (b) b.hidden = false; } }, { passive: true });
+    spLensBind();
+    // 키보드: 화면에 보이는 높이(visualViewport)에 맞추고, 올라오면 위 칸을 '작게'로
+    const vv = window.visualViewport, fit = () => {
+        const root = document.documentElement, H = vv ? vv.height : window.innerHeight;
+        root.style.setProperty('--sp-vvh', H + 'px'); root.style.setProperty('--sp-vvt', (vv ? vv.offsetTop : 0) + 'px');
+        const kb = H < window.innerHeight * 0.78 && document.activeElement && document.activeElement.matches && document.activeElement.matches('input, textarea, [contenteditable="true"]');
+        if (kb !== root.classList.contains('sp-kb')) { root.classList.toggle('sp-kb', !!kb); if (spMvMode() === 'split') { spSplitSet(kb ? Math.min(30, spMv.h) : spMv.h); setTimeout(spMvRefollow, 320); } if (spMvMode() === 'lens') spLensPlace(); }
+    };
+    if (vv) { vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); } window.addEventListener('resize', () => { fit(); spMvApply(); });
+    document.addEventListener('focusin', () => setTimeout(fit, 350)); document.addEventListener('focusout', () => setTimeout(fit, 350));
+    fit();
+    // 미리보기를 다시 그리면(글자를 칠 때마다) 돋보기 창은 같은 자리를 다시 겨눔
+    const pr = document.getElementById('previewRoot');
+    if (pr) new MutationObserver(() => { if (spMvMode() === 'lens') { clearTimeout(spLensT); spLensT = setTimeout(() => spLensAim(null, true), 60); } }).observe(pr, { childList: true });
+}
+let spMvAutoUntil = 0, spLensT = 0, spLensSc = 0;
+function spSplitSet(h, instant) {
+    const r = document.documentElement; if (instant) r.classList.add('sp-split-drag');
+    r.style.setProperty('--sp-split-h', h + '%');
+    const sz = document.getElementById('spShSz'), sn = SP_MV_SNAP.find(x => x[0] === h); if (sz) sz.textContent = sn ? sn[1] : '';
+    if (instant) requestAnimationFrame(() => r.classList.remove('sp-split-drag'));
+}
+function spMvLabel(st) {
+    const t = st ? (st.k === 'names' ? (st.part === 'date' ? '예식 일시' : '이름') : st.k === 'hero' ? '첫 화면' : ((SP_STEP_DEFS[st.k] || {}).t || st.t || '')) : '';
+    const l = document.getElementById('spShL'); if (l) l.textContent = t ? '지금 고치는 곳 · ' + t : '지금 청첩장';
+    const lt = document.getElementById('spLensT'); if (lt) lt.textContent = t || '지금 청첩장';
+    if (spMvMode() === 'lens') setTimeout(spLensPlace, 120); // (새 질문의 적는 칸을 가리지 않게)
+}
+// 지금 질문에서 보여줄 자리: 이름·날짜 질문은 첫 화면 안의 그 글자, 그 밖엔 그 섹션
+function spPvTargetEl(st) {
+    const root = document.getElementById('previewRoot'); if (!root || !st) return null;
+    const col = (st.s || []).map(id => root.querySelector(`.col[data-block-id="${id}"]`)).find(Boolean); if (!col) return null;
+    if (st.k !== 'names') return col;
+    const wi = weddingInfo(), parts = [...col.querySelectorAll('.drag-part')].filter(p => p.offsetWidth);
+    if (st.part === 'date') { const y = String((wi.date || '').match(/\d{4}/) || '20'); // 예식 연도가 들어간 글자 (VOL. 26 · 11.14 같은 꾸밈 글자 말고)
+        return col.querySelector('.drag-part[data-part="datetime"]') || parts.find(p => p.textContent.includes(y)) || parts.find(p => /20\d\d/.test(p.textContent)) || col; }
+    return col.querySelector('.drag-part[data-part="groomName"]') || parts.find(p => wi.groom && p.textContent.includes(wi.groom)) || parts.find(p => wi.bride && p.textContent.includes(wi.bride)) || col;
+}
+function spMvGlow(el) { if (!el || el.classList.contains('col')) return; el.classList.remove('sp-glow'); void el.offsetWidth; el.classList.add('sp-glow'); clearTimeout(el._spG); el._spG = setTimeout(() => el.classList.remove('sp-glow'), 1400); }
+function spMvRefollow() { if (spCurSt) spScrollPreview(spCurSt.s || [], false); }
+// ① 반반 화면: 고치는 자리를 위 칸 가운데쯤으로 (섹션이면 섹션 맨 위)
+function spSplitScroll(el, pop) {
+    const pane = document.querySelector('#screenEditor .preview-pane'); if (!pane || !el) return;
+    const pr = pane.getBoundingClientRect(), r = el.getBoundingClientRect(), isCol = el.classList.contains('col');
+    let top = r.top - pr.top + pane.scrollTop;
+    top = isCol && r.height > pane.clientHeight * 0.6 ? top - 12 : top + r.height / 2 - pane.clientHeight * 0.45;
+    top = Math.max(0, top);
+    const b = document.getElementById('spShRet'); if (b) b.hidden = true;
+    spMvAutoUntil = Date.now() + 900;
+    if (Math.abs(top - pane.scrollTop) > 24) pane.scrollTo({ top, behavior: pop ? 'instant' : 'smooth' });
+    spMvGlow(el); if (isCol) { el.classList.remove('sp-flash'); void el.offsetWidth; el.classList.add('sp-flash'); }
+}
+// ② 돋보기 창
+let spLensEl = null;
+const SP_LENS = { s: [46, 0.62], l: [62, 0.8] }; // [창 폭 %, 창에 보이는 청첩장 폭 비율]
+function spLensBox() {
+    const W = window.innerWidth, H = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sp-vvh')) || window.innerHeight;
+    const kb = document.documentElement.classList.contains('sp-kb'), z = kb ? 's' : spMv.lz;
+    const w = Math.round(W * SP_LENS[z][0] / 100), top = 58 + 8, nav = document.querySelector('#simplePane .sp-nav'), bottom = H - (nav && !kb ? nav.offsetHeight : 0) - 10;
+    const h = Math.round(Math.min(w * 16 / 9, (bottom - top) * (kb ? 0.6 : 0.82)));
+    return { W, w, h, top, bottom, z };
+}
+function spLensXY(c, bx) { return { x: c[1] === 'l' ? 10 : bx.W - bx.w - 10, y: c[0] === 't' ? bx.top : bx.bottom - bx.h }; }
+// 고른 모서리가 지금 질문의 적는 칸을 가리면 가리지 않는 모서리로 (위아래 → 좌우 → 대각선 순서, 다 가리면 고른 그대로)
+function spLensCorner(bx) {
+    const pref = document.documentElement.classList.contains('sp-kb') ? 't' + spMv.lens[1] : spMv.lens;
+    const H = window.innerHeight, fields = [...document.querySelectorAll('#spBody input:not([type="hidden"]):not([type="file"]), #spBody textarea, #spBody select')]
+        .map(e => e.getBoundingClientRect()).filter(r => r.width && r.height && r.bottom > 0 && r.top < H);
+    const hit = c => { const p = spLensXY(c, bx); return fields.some(r => r.right > p.x + 4 && r.left < p.x + bx.w - 4 && r.bottom > p.y + 4 && r.top < p.y + bx.h - 4); };
+    const v = x => (x === 't' ? 'b' : 't'), hz = x => (x === 'l' ? 'r' : 'l');
+    return [pref, v(pref[0]) + pref[1], pref[0] + hz(pref[1]), v(pref[0]) + hz(pref[1])].find(c => !hit(c)) || pref;
+}
+function spLensPlace() {
+    if (spMvMode() !== 'lens') return;
+    const pane = document.querySelector('#screenEditor .preview-pane'), ui = document.getElementById('spLensUi'); if (!pane || !ui) return;
+    const bx = spLensBox(), c = spLensCorner(bx), p = spLensXY(c, bx);
+    document.documentElement.classList.toggle('sp-lens-tucked', !!spMv.tuck);
+    document.documentElement.style.setProperty('--sp-lens-pad', (!spMv.tuck && c[0] === 'b' ? bx.h + 12 : 0) + 'px'); // 창이 아래에 있으면 질문 칸 맨 아래도 창 위로 올려 볼 수 있게
+    [pane, ui].forEach(el => { el.style.left = p.x + 'px'; el.style.top = p.y + 'px'; el.style.width = bx.w + 'px'; el.style.height = bx.h + 'px'; });
+    const tab = document.getElementById('spLensTab'); if (tab) { tab.className = 'sp-lens-tab ' + (spMv.tuck || 'r'); tab.textContent = spMv.tuck === 'l' ? '› 청첩장' : '청첩장 ‹'; }
+    const z = document.getElementById('spLensZ'); if (z) z.textContent = spMv.lz === 's' ? '⤢' : '↙';
+    spLensAim(null, true);
+}
+function spLensAim(el, instant) {
+    if (el) spLensEl = el; else el = spLensEl && spLensEl.isConnected ? spLensEl : (spCurSt && spPvTargetEl(spCurSt));
+    const pane = document.querySelector('#screenEditor .preview-pane'), fr = document.getElementById('phoneFrame'); if (!pane || !fr) return;
+    if (el && !el.isConnected && spCurSt) el = spPvTargetEl(spCurSt);
+    const bx = spLensBox(), FW = fr.offsetWidth || window.innerWidth, FH = fr.offsetHeight || 1, s = bx.w / (FW * SP_LENS[bx.z][1]);
+    let cx = FW / 2, cy = 0;
+    if (el) { const fr0 = fr.getBoundingClientRect(), k = fr0.width / FW || 1, r = el.getBoundingClientRect(); cx = (r.left + r.width / 2 - fr0.left) / k; const isCol = el.classList.contains('col'); cy = isCol && r.height / k > bx.h / s ? (r.top - fr0.top) / k + bx.h / s * 0.4 : (r.top + r.height / 2 - fr0.top) / k; }
+    let tx = bx.w / 2 - cx * s, ty = bx.h / 2 - cy * s;
+    tx = Math.min(0, Math.max(bx.w - FW * s, tx)); ty = Math.min(0, Math.max(bx.h - FH * s, ty));
+    if (instant) fr.classList.add('sp-lens-now');
+    fr.style.setProperty('--sp-lens-tf', `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${s.toFixed(4)})`);
+    if (instant) requestAnimationFrame(() => requestAnimationFrame(() => fr.classList.remove('sp-lens-now')));
+    const dot = document.getElementById('spLensDot'); if (dot) dot.style.top = Math.max(0, Math.min(100, cy / FH * 100)).toFixed(1) + '%';
+    if (!instant && el) { spMvGlow(el); const ui = document.getElementById('spLensUi'); if (ui) { ui.classList.remove('flash'); void ui.offsetWidth; ui.classList.add('flash'); } }
+}
+function spLensBind() {
+    const ui = document.getElementById('spLensUi'), dock = document.getElementById('spLensDock'), tab = document.getElementById('spLensTab'), pane = () => document.querySelector('#screenEditor .preview-pane');
+    document.getElementById('spLensZ').addEventListener('pointerdown', e => e.stopPropagation());
+    document.getElementById('spLensZ').addEventListener('click', e => { e.stopPropagation(); spMv.lz = spMv.lz === 's' ? 'l' : 's'; spMvSave(); spLensPlace(); });
+    ui.addEventListener('pointerdown', e => {
+        if (e.button > 0) return;
+        const bx = spLensBox(), x0 = ui.offsetLeft, y0 = ui.offsetTop, sx = e.clientX, sy = e.clientY, root = document.documentElement; let moved = false;
+        try { ui.setPointerCapture(e.pointerId); } catch (er) {}
+        const dk = [...dock.querySelectorAll('i')];
+        dk.forEach(d => { const p = spLensXY(d.dataset.c, bx); Object.assign(d.style, { left: p.x + 'px', top: p.y + 'px', width: bx.w + 'px', height: bx.h + 'px' }); });
+        const near = (x, y) => dk.reduce((best, d) => { const p = spLensXY(d.dataset.c, bx), dd = Math.hypot(p.x - x, p.y - y); return !best || dd < best[1] ? [d, dd] : best; }, null)[0];
+        const mv = ev => { const dx = ev.clientX - sx, dy = ev.clientY - sy; if (!moved && Math.hypot(dx, dy) < 7) return;
+            if (!moved) { moved = true; root.classList.add('sp-lens-drag'); }
+            const x = x0 + dx, y = Math.max(bx.top - 6, Math.min(bx.bottom - bx.h + 6, y0 + dy));
+            [ui, pane()].forEach(el => { el.style.left = x + 'px'; el.style.top = y + 'px'; });
+            const n = near(x, y); dk.forEach(d => d.classList.toggle('near', d === n)); };
+        const up = () => { ui.removeEventListener('pointermove', mv); ui.removeEventListener('pointerup', up); ui.removeEventListener('pointercancel', up);
+            root.classList.remove('sp-lens-drag');
+            if (!moved) { spOpenPreview(false); return; }
+            const x = ui.offsetLeft;
+            if (x < -bx.w * 0.35 || x + bx.w > bx.W + bx.w * 0.35) spMv.tuck = x < 0 ? 'l' : 'r';
+            else spMv.lens = near(x, ui.offsetTop).dataset.c;
+            spMvSave(); spLensPlace(); };
+        ui.addEventListener('pointermove', mv); ui.addEventListener('pointerup', up); ui.addEventListener('pointercancel', up);
+    });
+    ui.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); spOpenPreview(false); } });
+    tab.addEventListener('click', () => { spMv.tuck = ''; spMvSave(); spLensPlace(); });
+    // 적는 칸을 누르거나 질문 칸을 넘기면 다시 자리 잡기 (적는 칸을 가리지 않게 - spLensCorner)
+    document.addEventListener('focusin', e => { if (spMvMode() === 'lens' && e.target.closest && e.target.closest('#simplePane')) setTimeout(spLensPlace, 380); });
+    window.addEventListener('scroll', () => { if (spMvMode() === 'lens') { clearTimeout(spLensSc); spLensSc = setTimeout(spLensPlace, 160); } }, { passive: true });
 }
 // 미리보기를 ↓ 스크롤 버튼이 보이는 자리로 (버튼 모양을 고를 때 - 맨 위로 올라가 버튼이 안 보이던 문제)
 function spScrollToNextBtn() {
@@ -14237,6 +14493,7 @@ function spLiveSync(root) {
 let spCurSt = null;
 function spSelectStep(st) { // 눈금자는 고른 섹션(selectedId)에 뜸 → 지금 단계의 켜진 섹션을 고른 것으로
     spCurSt = st;
+    try { spMvLabel(st); } catch (e) {}
     const id = (st.s || []).find(x => { const b = spBlock(x); return b && b.enabled && !padHidden(b); }) || null;
     if (selectedId !== id) { selectedId = id; try { updateSectionRuler(); } catch (e) {} }
     spLiveSync();

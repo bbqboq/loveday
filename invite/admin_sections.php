@@ -94,6 +94,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (Throwable $e) {
             echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit;
         }
+    } elseif ($act === 'easy_mview') {
+        // 휴대폰 간편 만들기 보기 방식 (① 반반 화면 / ② 떠 있는 돋보기 창 / 질문만) - 누르면 바로 저장
+        $v = (string) ($_POST['view'] ?? '');
+        $ok = in_array($v, SECTION_EASY_MVIEWS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['mobileView' => $v]);
     } elseif ($act === 'easy_hero_pos') {
         // 메인 사진 예시에서 보일 부분·확대 (끌거나 확대하면 바로 저장)
         $ok = section_defaults_easy_hero() !== '' && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['heroPos' => ['focus' => (string) ($_POST['focus'] ?? ''), 'zoom' => (float) ($_POST['zoom'] ?? 1)]]);
@@ -131,7 +135,7 @@ $easyNow = section_defaults_easy();
 $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
-$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos();
+$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview();
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
 $easyInfo = [
@@ -660,6 +664,20 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-hero-f { display: flex; justify-content: space-between; align-items: center; min-height: 16px; font-size: 11px; } .ez-hero-f b { font-weight: 600; color: #6B645B; } .ez-hero-f b[hidden] { display: none; }
 .ez-hero-rs { margin-left: auto; border: 0; background: none; padding: 0; font-size: 11px; color: #8A8278; text-decoration: underline; cursor: pointer; }
 .ez-hero-rs[hidden] { display: none; }
+.ez-mview { margin: 0 0 14px; padding: 14px; border-radius: 16px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; }
+.ez-mview-h { display: flex; flex-direction: column; gap: 3px; margin-bottom: 12px; } .ez-mview-h b { font-size: 14px; } .ez-mview-h small { font-size: 12px; color: #8A8278; line-height: 1.5; }
+.ez-mview-g { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .ez-mview-g { grid-template-columns: minmax(0, 1fr); } }
+.ez-mview-c { display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 12px; border-radius: 14px; border: 1.5px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s, background .15s; }
+.ez-mview-c:hover { border-color: #CFC6BA; } .ez-mview-c.on { border-color: var(--ui-point, #B8925A); background: var(--ui-tint, #FBF8F3); box-shadow: 0 0 0 1px var(--ui-point, #B8925A) inset; }
+.ez-mview-tx { display: flex; flex-direction: column; gap: 3px; min-width: 0; } .ez-mview-tx b { font-size: 13.5px; } .ez-mview-tx small { font-size: 11.5px; color: #8A8278; line-height: 1.5; word-break: keep-all; }
+.ez-mview-tx em { font-style: normal; font-size: 10.5px; font-weight: 700; color: var(--ui-point, #B8925A); background: var(--ui-soft, #F3EFE8); padding: 1px 6px; border-radius: 99px; margin-left: 4px; vertical-align: 1px; }
+/* 작은 휴대폰 그림: a = 청첩장, b = 손잡이/창, c = 질문 */
+.ez-mview-ph { position: relative; flex: none; width: 44px; height: 80px; border-radius: 9px; border: 2.5px solid #2B2320; background: #F6F3EE; overflow: hidden; }
+.ez-mview-ph i { position: absolute; left: 0; right: 0; }
+.ez-mview-split .a { top: 0; height: 44%; background: linear-gradient(170deg, #C9BFB2, #8F8476); } .ez-mview-split .b { top: 44%; height: 6%; background: #E5DED3; } .ez-mview-split .c { top: 56%; left: 5px; right: 5px; height: 6px; border-radius: 3px; background: #CFC6BA; box-shadow: 0 10px 0 #E5DED3, 0 20px 0 #2B2320; }
+.ez-mview-lens .c { top: 12%; left: 5px; right: 5px; height: 6px; border-radius: 3px; background: #CFC6BA; box-shadow: 0 10px 0 #E5DED3, 0 20px 0 #E5DED3; } .ez-mview-lens .a { display: none; } .ez-mview-lens .b { left: auto; right: 3px; bottom: 4px; width: 50%; height: 52%; border-radius: 5px; background: linear-gradient(170deg, #C9BFB2, #8F8476); box-shadow: 0 2px 5px rgba(0,0,0,.25); }
+.ez-mview-off .a { top: 8%; left: 5px; right: 5px; height: 16%; border-radius: 4px; background: #fff; border: 1px solid #E5DED3; } .ez-mview-off .b { display: none; } .ez-mview-off .c { top: 36%; left: 5px; right: 5px; height: 6px; border-radius: 3px; background: #CFC6BA; box-shadow: 0 10px 0 #E5DED3, 0 20px 0 #E5DED3; }
 .ez-hero-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; } .ez-hero-t b { font-size: 14px; } .ez-hero-t small { font-size: 12px; color: #8A8278; line-height: 1.5; }
 .ez-hero-b { display: flex; gap: 6px; margin-top: 6px; }
 .ez-sws { flex: none; width: 104px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; } /* 오른쪽 버튼 칸은 폭을 고정해서 줄마다 같은 자리에 */
@@ -713,6 +731,17 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
                 <div class="ez-hero-t"><b>메인 사진 예시</b><small>고객이 간편 만들기에서 메인 사진을 고르기 전까지 첫 화면에 이 사진이 보여요. 세로로 긴 사진이 좋아요. 올리면 바로 저장돼요.<br>왼쪽 사진을 <b>끌어서 보일 부분</b>을 옮기고, 아래 막대로 확대해요. 고친 위치도 바로 저장돼요. (휴대폰마다 화면 길이가 달라서 위아래가 조금 더 보이거나 잘릴 수 있어요)</small>
                     <span class="ez-hero-b"><button type="button" class="gp-save" id="ezHeroUp"><?= $easyHero ? '사진 바꾸기' : '사진 올리기' ?></button><button type="button" class="gp-undo" id="ezHeroDel"<?= $easyHero ? '' : ' hidden' ?>>지우기</button></span>
                     <input type="file" id="ezHeroIn" accept="image/jpeg,image/png,image/webp" hidden></div>
+            </div>
+            <div class="ez-mview" id="ezMv">
+                <div class="ez-mview-h"><b>휴대폰 보기 방식</b><small>휴대폰에서 간편 만들기를 할 때 청첩장을 어떻게 보여줄지 골라요. 누르면 바로 저장돼요. (PC는 늘 왼쪽에 청첩장이 보여요)</small></div>
+                <div class="ez-mview-g" role="radiogroup" aria-label="휴대폰 보기 방식">
+                    <?php foreach ([['split', '① 반반 화면', '위는 청첩장, 아래는 질문. 지금 고치는 곳으로 저절로 이동해요. 손잡이로 크기, 위 스위치로 켜고 꺼요.', '추천'], ['lens', '② 떠 있는 돋보기 창', '질문 화면은 그대로, 작은 창에 고치는 곳을 확대해서 보여줘요. 모서리로 옮기고 누르면 크게 봐요.', ''], ['off', '질문만 (예전 방식)', '청첩장은 위 \'지금 청첩장\' 카드를 눌러야 보여요.', '']] as [$mk, $mt, $md, $mb]): ?>
+                    <button type="button" class="ez-mview-c<?= $easyMview === $mk ? ' on' : '' ?>" data-mview="<?= $mk ?>" role="radio" aria-checked="<?= $easyMview === $mk ? 'true' : 'false' ?>">
+                        <span class="ez-mview-ph ez-mview-<?= $mk ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
+                        <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
+                    </button>
+                    <?php endforeach; ?>
+                </div>
             </div>
             <div class="ez-flow" id="ezFlow"></div>
             <div class="ez-grid">
@@ -1573,6 +1602,16 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
     });
     ezRender();
     // 메인 사진 예시 올리기 · 지우기 (바로 저장)
+    (function ezMvBox() { // 휴대폰 보기 방식
+        const box = document.getElementById('ezMv'); if (!box) return;
+        box.querySelectorAll('[data-mview]').forEach(b => b.addEventListener('click', () => {
+            if (readonly) return;
+            const prev = box.querySelector('.ez-mview-c.on');
+            const pick = el => box.querySelectorAll('[data-mview]').forEach(x => { x.classList.toggle('on', x === el); x.setAttribute('aria-checked', String(x === el)); });
+            pick(b);
+            post({ act: 'easy_mview', view: b.dataset.mview }).then(() => toast('휴대폰 보기 방식을 저장했어요')).catch(err => { say(err.message); pick(prev); });
+        }));
+    })();
     (function ezHeroBox() {
         const up = document.getElementById('ezHeroUp'), del = document.getElementById('ezHeroDel'), inp = document.getElementById('ezHeroIn'), pic = document.getElementById('ezHeroPic');
         const zb = document.getElementById('ezHeroZ'), rng = zb.querySelector('input'), zv = document.getElementById('ezHeroZv'), rs = document.getElementById('ezHeroRs');
