@@ -1047,16 +1047,17 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
 .dpk-car { display: flex; gap: 12px; height: 100%; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; padding: 8px 0 12px; cursor: grab; position: relative; }
 .dpk-car.drag { scroll-snap-type: none; cursor: grabbing; user-select: none; }
 .dpk-car > i { flex: none; }
-.dpk-sl { flex: none; height: 100%; aspect-ratio: 9 / 19.5; scroll-snap-align: center; transform-origin: 50% 55%; will-change: transform; position: relative; border: 0; padding: 0; background: none; font: inherit; }
+.dpk-sl { flex: none; height: 100%; aspect-ratio: 9 / 19.5; scroll-snap-align: center; transform-origin: 50% 55%; position: relative; border: 0; padding: 0; background: none; font: inherit; }
 .dpk-sl[hidden] { display: none; }
-.dpk-ph { position: absolute; inset: 0; border-radius: 18px; border: 3px solid #1E1B19; overflow: hidden; background: var(--sk-bg, #F4F1EC); }
+.dpk-ph { position: absolute; inset: 0; border-radius: 18px; border: 3px solid #1E1B19; overflow: hidden; background: var(--sk-bg, #F4F1EC); contain: strict; }
+.dpk-sl:not(.cur) .ambient-field, .dpk-sl:not(.cur) video { display: none !important; } /* 옆 휴대폰은 장식 효과·영상 멈춤 (가볍게) */
+.dpk-sl:not(.cur) .dpk-iv *, #dpkCar.drag .dpk-iv * { animation-play-state: paused !important; }
 .dpk-sl.cur .dpk-ph { cursor: zoom-in; box-shadow: 0 12px 30px rgba(30, 22, 16, .22); }
 .dpk-iv.invite-preview { position: absolute; left: 0; top: 0; width: 390px; min-height: 0; border-radius: 0; transform-origin: 0 0; transform: scale(var(--dpk-k, .4)); pointer-events: none; background-image: var(--p-paper, none); background-size: 300px; background-blend-mode: multiply; }
 .dpk-sl.run .dpk-iv { animation: dpkScroll var(--dpk-dur, 18s) ease-in-out .8s infinite; }
 @keyframes dpkScroll { 0%, 8% { translate: 0 0; } 50%, 58% { translate: 0 var(--dpk-end, 0px); } 100% { translate: 0 0; } }
 .dpk-sk { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--sk-ink, #6F6A63); font-size: 13px; font-weight: 600; text-align: center; padding: 12px; }
-.dpk-sk i { width: 70%; aspect-ratio: 3 / 4; border-radius: 10px; background: linear-gradient(170deg, var(--sk-acc, #CFC6BA), transparent 140%); opacity: .35; animation: dpkPulse 1.2s ease-in-out infinite alternate; }
-@keyframes dpkPulse { to { opacity: .6; } }
+.dpk-sk i { width: 70%; aspect-ratio: 3 / 4; border-radius: 10px; background: linear-gradient(170deg, var(--sk-acc, #CFC6BA), transparent 140%); opacity: .4; }
 .dpk-arr { position: absolute; top: calc(50% - 20px); z-index: 3; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255,255,255,.95); box-shadow: 0 2px 10px rgba(0,0,0,.16); font-size: 19px; line-height: 1; color: #2B2320; cursor: pointer; }
 .dpk-arr.l { left: 14px; } .dpk-arr.r { right: 14px; }
 .dpk-arr:disabled { opacity: 0; pointer-events: none; }
@@ -11544,6 +11545,7 @@ document.getElementById('introPreviewCanvas').addEventListener('pointerdown', e 
 let rpDebT = 0;
 const RP_TEXT_SEL = 'textarea, input:not([type]), input[type="text"], input[type="search"], input[type="number"], input[type="tel"], input[type="url"], input[type="email"], [contenteditable="true"]';
 function renderPreview() {
+    if (window.__dpkBusy) { window.__dpkWant = true; return; } // 디자인 고르기 휴대폰을 그리는 중 (마지막에 한 번만 그림)
     const ev = window.event;
     if (ev && ev.type === 'input' && ev.target && ev.target.matches && ev.target.matches(RP_TEXT_SEL) && !ev.target.closest('#previewRoot')) {
         clearTimeout(rpDebT);
@@ -13846,18 +13848,22 @@ function dpkRender(id, design) {
     const html = document.documentElement, root = document.getElementById('previewRoot'), pane = document.querySelector('.preview-pane');
     if (!root || html.classList.contains('pv-sample') || !document.getElementById('screenDesign').classList.contains('active')) return null;
     const keep = JSON.stringify(state), sel = selectedId, lsj = lastSnapshotJSON, rStyle = root.getAttribute('style'), rCls = root.className, pBg = pane ? pane.style.background : '';
-    isRestoringHistory = true; html.classList.add('dpk-render');
+    isRestoringHistory = true; /* (에디터 화면은 숨긴 채로 그림 - 크게 다시 재지 않게) */
     try {
         const sm = SAMPLE_LIST[id];
+        window.__dpkBusy = true;
         applyPreset(sm && sm.custom ? sm.base : id);
         if (design) applySampleDesign(design);
         try { applyWizardDataToBlocks(); } catch (e) {}
         try { spNewLook(); } catch (e) {}
         selectedId = null;
-        renderPreviewNow();
+        window.__dpkWant = false;
+        renderPreviewNow(); // (계좌 자동 정렬 등이 다시 그려 달라고 하면 한 번만 더)
+        if (window.__dpkWant) { window.__dpkWant = false; renderPreviewNow(); }
         return { html: dpkClean(root.innerHTML), style: root.getAttribute('style') || '', cls: rCls.replace(/\b(sp-pop|has-desktop-shadow)\b/g, '') + (root.classList.contains('dividers-on') ? ' dividers-on' : '') };
     } catch (e) { console.warn('[dpk]', e); return null; }
     finally {
+        window.__dpkBusy = false;
         state = JSON.parse(keep); selectedId = sel; lastSnapshotJSON = lsj; isRestoringHistory = false; html.classList.remove('dpk-render');
         root.innerHTML = ''; if (rStyle == null) root.removeAttribute('style'); else root.setAttribute('style', rStyle); root.className = rCls; if (pane) pane.style.background = pBg;
         if (pvFabEl) { pvFabEl.remove(); pvFabEl = null; pvFabKey = ''; }
@@ -13893,27 +13899,52 @@ function dpkShot(id) {
     }).catch(() => null));
 }
 function dpkIvEl(s) { const el = document.createElement('div'); el.className = s.cls + ' dpk-iv'; el.setAttribute('style', s.style); el.innerHTML = s.html; return el; }
-function dpkFill(id) {
-    const sl = document.querySelector(`#dpkCar .dpk-sl[data-id="${CSS.escape(id)}"]`), s = DPK.shots[id];
-    if (!sl || !s || sl.dataset.filled) return;
-    const ph = sl.querySelector('.dpk-ph'); ph.innerHTML = ''; ph.appendChild(dpkIvEl(s)); sl.dataset.filled = '1';
-    if (id === DPK.cur) dpkRun();
+// 가볍게: 휴대폰은 가운데와 바로 양옆(3대)만 진짜 청첩장을 넣고, 나머지는 색 칸만 (멀어지면 다시 비움)
+const DPK_SLIM_ROWS = 6; // 작은 휴대폰에는 위쪽 섹션 6줄만 (크게 보기는 전체)
+function dpkSlim(s) {
+    if (s.slim) return s.slim;
+    const t = document.createElement('template'); t.innerHTML = s.html; let n = 0;
+    [...t.content.children].forEach(el => { if (el.classList.contains('row-flex') && ++n > DPK_SLIM_ROWS) el.remove(); });
+    return (s.slim = t.innerHTML);
 }
-// 가운데부터 바깥으로 하나씩 그려 둠 (화면이 안 멈추게 틈을 두고)
+function dpkSkHtml(id) {
+    const p = allDesigns().find(x => x.id === id) || {};
+    return `<div class="dpk-sk"><i></i>${esc(p.label || '')}</div>`;
+}
+function dpkNear() { const v = dpkVis(), i = v.indexOf(DPK.cur); return i < 0 ? [] : [v[i], v[i + 1], v[i - 1]].filter(Boolean); }
+function dpkSync() {
+    if (DPK.off) return;
+    const near = dpkNear();
+    document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => {
+        const id = sl.dataset.id, s = DPK.shots[id], ph = sl.querySelector('.dpk-ph');
+        if (near.includes(id) && s) {
+            if (sl.dataset.filled) return;
+            ph.innerHTML = ''; ph.appendChild(dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) })); sl.dataset.filled = '1';
+        } else if (sl.dataset.filled) { ph.innerHTML = dpkSkHtml(id); delete sl.dataset.filled; sl.classList.remove('run'); }
+    });
+    dpkRun();
+}
+function dpkFill() { dpkSync(); }
+// 가운데 → 양옆 순서로, 넘기기가 멈춘 뒤 한가할 때 하나씩 그림
 function dpkQueue() {
-    const v = dpkVis(), i = Math.max(0, v.indexOf(DPK.cur)), order = [];
-    for (let k = 0; k < v.length; k++) { const a = v[i + k], b = v[i - k]; if (a && !order.includes(a)) order.push(a); if (b && !order.includes(b)) order.push(b); }
-    DPK.ids.forEach(id => { if (!order.includes(id)) order.push(id); });
-    DPK.todo = order.filter(id => !DPK.shots[id]);
     if (DPK.busy) return;
+    const idle = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 700 }) : setTimeout(fn, 60));
     const next = () => {
-        if (Date.now() - (DPK.moved || 0) < 450) { DPK.busy = true; setTimeout(next, 250); return; } // 넘기는 동안은 쉬었다가 (끊기지 않게)
+        if (Date.now() - (DPK.moved || 0) < 350) { DPK.busy = true; setTimeout(next, 200); return; } // 넘기는 동안은 쉬었다가 (끊기지 않게)
+        dpkSync(); // 멈춘 뒤에 가운데·양옆만 채우고 먼 것은 비움
+        DPK.todo = dpkNear().filter(id => !DPK.shots[id]); // 그 사이 넘겼으면 새 가운데부터
         const id = DPK.todo.shift();
-        if (!id || !document.getElementById('screenDesign').classList.contains('active') || document.getElementById('dpk').hidden) { DPK.busy = false; return; }
+        if (!id || DPK.off || !document.getElementById('screenDesign').classList.contains('active') || document.getElementById('dpk').hidden) { DPK.busy = false; return; }
         DPK.busy = true;
-        dpkShot(id).then(() => { dpkFill(id); if (DPK.ovId === id) dpkOvPut(id); setTimeout(next, 60); });
+        idle(() => dpkShot(id).then(() => { dpkSync(); if (DPK.ovId === id) dpkOvPut(id); setTimeout(next, 30); }));
     };
     next();
+}
+// 디자인을 고르고 나가면 작은 휴대폰들을 비워서 에디터가 가볍게
+function dpkTeardown() {
+    DPK.off = true; DPK.todo = [];
+    document.querySelectorAll('#dpkCar .dpk-sl[data-filled]').forEach(sl => { sl.querySelector('.dpk-ph').innerHTML = dpkSkHtml(sl.dataset.id); delete sl.dataset.filled; sl.classList.remove('run'); });
+    const ov = document.getElementById('dpkOv'); if (ov) ov.querySelector('.dpk-vw').innerHTML = '';
 }
 // 가운데 휴대폰만 위에서 아래로 천천히 흘러감
 function dpkRun() {
@@ -13969,15 +14000,15 @@ function dpkBuild(list) {
     const key = JSON.stringify([Object.keys(SAMPLE_LIST).map(k => [k, SAMPLE_LIST[k].updated || SAMPLE_LIST[k].updated_at || '']), EASY_HERO_SAMPLE, EASY_HERO_POS, list.map(p => p.id)]);
     if (key !== DPK.key) { DPK.key = key; DPK.shots = {}; DPK.todo = []; }
     DPK.ids = list.map(p => p.id);
+    DPK.off = false;
     if (!DPK.ids.includes(DPK.cur)) DPK.cur = DPK.ids[0];
     const cnt = f => DPK.ids.filter(id => dpkFit(id, f)).length;
     const chips = DPK_CHIPS.filter(([f]) => f === 'all' || (cnt(f) > 0 && cnt(f) < DPK.ids.length));
     if (!chips.some(([f]) => f === DPK.filt)) DPK.filt = 'all';
     document.getElementById('dpkChips').innerHTML = chips.length > 1 ? chips.map(([f, t]) => `<button type="button" data-f="${f}" class="${f === DPK.filt ? 'on' : ''}">${t}</button>`).join('') : '';
     const car = document.getElementById('dpkCar');
-    car.innerHTML = '<i></i>' + list.map(p => { const m = dpkMeta(p); return `<div class="dpk-sl" data-id="${esc(p.id)}" role="button" tabindex="-1" aria-label="${esc(p.label)}"${dpkFit(p.id, DPK.filt) ? '' : ' hidden'}><div class="dpk-ph" style="--sk-bg:${esc(m.bg)};--sk-ink:${esc(m.ink)};--sk-acc:${esc(m.acc)}"><div class="dpk-sk"><i></i>${esc(p.label)}<br><small style="font-weight:400;opacity:.7">그리는 중…</small></div></div></div>`; }).join('') + '<i></i>';
+    car.innerHTML = '<i></i>' + list.map(p => { const m = dpkMeta(p); return `<div class="dpk-sl" data-id="${esc(p.id)}" role="button" tabindex="-1" aria-label="${esc(p.label)}"${dpkFit(p.id, DPK.filt) ? '' : ' hidden'}><div class="dpk-ph" style="--sk-bg:${esc(m.bg)};--sk-ink:${esc(m.ink)};--sk-acc:${esc(m.acc)}">${dpkSkHtml(p.id)}</div></div>`; }).join('') + '<i></i>';
     document.getElementById('dpkStrip').innerHTML = list.map(p => { const m = dpkMeta(p); return `<button type="button" class="dpk-sw" data-id="${esc(p.id)}" title="${esc(p.label)}" style="--sw-bg:${esc(m.bg)};--sw-acc:${esc(m.acc)}${m.cover ? `;--sw-img:url('${esc(m.cover)}')` : ''}"${dpkFit(p.id, DPK.filt) ? '' : ' hidden'}><i></i><span>${esc(p.label)}</span></button>`; }).join('');
-    Object.keys(DPK.shots).forEach(dpkFill);
     dpkBind();
     requestAnimationFrame(() => { dpkSize(); dpkMark(DPK.cur); dpkGo(DPK.cur, true); dpkPaint(); });
 }
@@ -14046,7 +14077,7 @@ function dpkOvPut(id, fade) {
         ov.querySelector('.pv').disabled = n <= 0; ov.querySelector('.nv').disabled = n >= v.length - 1;
         vw.innerHTML = ''; vw.scrollTop = 0;
         if (s) { const el = dpkIvEl(s); el.classList.remove('dpk-iv'); vw.appendChild(el); }
-        else { vw.innerHTML = '<div class="dpk-sk">그리는 중…</div>'; dpkShot(id).then(() => { if (DPK.ovId === id && ov.classList.contains('show')) dpkOvPut(id); dpkFill(id); }); }
+        else { vw.innerHTML = '<div class="dpk-sk">그리는 중…</div>'; dpkShot(id).then(() => { if (DPK.ovId === id && ov.classList.contains('show')) dpkOvPut(id); dpkSync(); }); }
         vw.classList.remove('fade');
     };
     if (fade) { vw.classList.add('fade'); setTimeout(put, 160); } else put();
@@ -14106,6 +14137,7 @@ async function startWithPreset(presetId) {
         try { const j = await fetch(`sample_api.php?a=get&id=${encodeURIComponent(presetId)}`, { cache: 'no-store' }).then(r => r.json()); if (j && j.ok) applySampleDesign(j.design); } catch (e) {}
         state.presetId = sm.custom ? sm.base : presetId;
     }
+    try { dpkTeardown(); } catch (e) {}
     state.sampleId = presetId;
     delete state.simpleSnap; delete state.fullSnap;
     if (startTrack === 'simple') { // 간편 만들기: 기본 정보 단계 없이 바로 칸 채우기 화면 (이름·날짜부터)
