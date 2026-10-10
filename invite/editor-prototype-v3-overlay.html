@@ -4458,14 +4458,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018d">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018d">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018g">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018g">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018d"></script>
-<script src="assets/tip-demos.js?v=1018d"></script>
-<script src="assets/ld-dialog.js?v=1018d"></script>
+<script src="assets/invite-blocks.js?v=1018g"></script>
+<script src="assets/tip-demos.js?v=1018g"></script>
+<script src="assets/ld-dialog.js?v=1018g"></script>
 </head>
 <body>
 
@@ -5303,6 +5303,14 @@ function applyPreset(presetId) {
     }
     const heroVideo = state.blocks.find(b => b.id === 'heroVideo');
     if (heroVideo && p.heroHeight) heroVideo.fields.heightMode = p.heroHeight;
+    if (hero && p.heroImage && p.hero === 'photo') hero.fields.heroImage = p.heroImage; // 디자인 폴더의 hero.jpg (첫 화면 예시 사진)
+    if (p.paper) state.paper = p.paper; // 종이 질감
+    if (p.ambientScope === 'hero') state.effects.ambientScope = 'hero'; else delete state.effects.ambientScope;
+    if (p.ambientOpacity) state.effects.ambientOpacity = p.ambientOpacity; else delete state.effects.ambientOpacity;
+    if (p.heroLayout && p.hero !== 'text') { // 디자인마다 첫 화면 레이아웃 (매거진 표지 · 아치 · 폴라로이드 …)
+        const lay = (typeof spHeroLayouts === 'function' ? spHeroLayouts() : (InviteBlocks.HERO_LAYOUTS || [])).find(l => l.id === p.heroLayout);
+        if (lay) [hero, heroVideo].forEach(b => { if (b) { try { InviteBlocks.applyHeroLayout(b, lay); } catch (e) {} } });
+    }
     (p.stickers || []).forEach((st, i) => {
         state.stickers.push(Object.assign({ id: 'ps' + Date.now().toString(36) + i, rotation: 0, zIndex: 10 }, st));
     });
@@ -11610,7 +11618,7 @@ function renderPreviewNow() {
     root.querySelectorAll('[data-ib-hidecol]').forEach(el => { const c = el.closest('.col'); if (c) c.style.display = 'none'; }); // 칸째 숨기는 섹션 (공유 버튼 끔 등)
     // 장식 효과 (방향·첫 화면에만·진하기까지 - 공개 페이지와 같은 공용 함수)
     let wxUrl = ''; try { wxUrl = EDIT_TOKEN && !SAMPLE_ID ? 'weather.php?t=' + encodeURIComponent(EDIT_TOKEN) : ''; } catch (e) {} // (처음 그릴 때는 아직 토큰 전)
-    if (window.InviteBlocks && InviteBlocks.mountAmbient) InviteBlocks.mountAmbient(root, state.effects || {}, { weatherUrl: wxUrl, onWeather: ambWeatherInfo });
+    if (window.InviteBlocks && InviteBlocks.mountAmbient) InviteBlocks.mountAmbient(root, state.effects || {}, { weatherUrl: wxUrl, onWeather: ambWeatherInfo, weatherDemo: true }); // 날씨 따라: 미리보기는 비 → 눈 → 맑음 되풀이 (실제 청첩장은 그날 날씨)
     else root.insertAdjacentHTML('beforeend', renderAmbientEffectHtml(state.effects && state.effects.ambient));
     initDraggableOverlays();
     // 스티커/커스텀텍스트는 이제 전역 오버레이 레이어가 아니라 각자 앵커된 섹션(.col)의 실제 자식으로
@@ -13838,8 +13846,9 @@ function dpkSample(id) {
 }
 // 간편 만들기로 새로 시작할 때 처음 모습 (startWithPreset과 같이 씀)
 function spNewLook() {
-    const lay = InviteBlocks.HERO_LAYOUTS.find(l => l.id === 'magazine');
-    ['hero', 'heroVideo'].forEach(id => { const b = state.blocks.find(x => x.id === id); if (b && lay) { InviteBlocks.applyHeroLayout(b, lay); spForceFull(b); } }); // 처음 만들 때 첫 화면은 매거진 표지
+    const p = PRESETS.find(x => x.id === state.presetId) || {}, own = !!SAMPLE_LIST[state.sampleId || state.presetId] || !!p.heroLayout || p.hero === 'text'; // 관리자가 꾸민 샘플 · 디자인에 정해 둔 레이아웃이면 그대로
+    const lay = own ? null : InviteBlocks.HERO_LAYOUTS.find(l => l.id === 'magazine');
+    ['hero', 'heroVideo'].forEach(id => { const b = state.blocks.find(x => x.id === id); if (!b) return; if (lay) InviteBlocks.applyHeroLayout(b, lay); spForceFull(b); }); // 정해 둔 게 없으면 첫 화면은 매거진 표지
     spApplyHeroSample();
     const loc = state.blocks.find(b => b.id === 'location'); state.venueDemo = loc && loc.fields.venue ? loc.fields.venue : undefined; state.venueDemoAddr = loc && loc.fields.address ? loc.fields.address : undefined; // 디자인 예시 예식장 이름 (고객이 적으면 그 이름으로)
 }
@@ -13854,18 +13863,19 @@ function dpkRender(id, design) {
         window.__dpkBusy = true;
         applyPreset(sm && sm.custom ? sm.base : id);
         if (design) applySampleDesign(design);
+        state.sampleId = id;
         try { applyWizardDataToBlocks(); } catch (e) {}
         try { spNewLook(); } catch (e) {}
         selectedId = null;
         window.__dpkWant = false;
         renderPreviewNow(); // (계좌 자동 정렬 등이 다시 그려 달라고 하면 한 번만 더)
         if (window.__dpkWant) { window.__dpkWant = false; renderPreviewNow(); }
-        return { html: dpkClean(root.innerHTML), style: root.getAttribute('style') || '', cls: rCls.replace(/\b(sp-pop|has-desktop-shadow)\b/g, '') + (root.classList.contains('dividers-on') ? ' dividers-on' : '') };
+        return { fx: JSON.parse(JSON.stringify(state.effects || {})), html: dpkClean(root.innerHTML), style: root.getAttribute('style') || '', cls: rCls.replace(/\b(sp-pop|has-desktop-shadow)\b/g, '') + (root.classList.contains('dividers-on') ? ' dividers-on' : '') };
     } catch (e) { console.warn('[dpk]', e); return null; }
     finally {
         window.__dpkBusy = false;
         state = JSON.parse(keep); selectedId = sel; lastSnapshotJSON = lsj; isRestoringHistory = false; html.classList.remove('dpk-render');
-        root.innerHTML = ''; if (rStyle == null) root.removeAttribute('style'); else root.setAttribute('style', rStyle); root.className = rCls; if (pane) pane.style.background = pBg;
+        root.innerHTML = ''; try { InviteBlocks.mountAmbient(root, { ambient: 'none' }); } catch (e) {} /* 날씨 따라 되풀이 멈춤 */ if (rStyle == null) root.removeAttribute('style'); else root.setAttribute('style', rStyle); root.className = rCls; if (pane) pane.style.background = pBg;
         if (pvFabEl) { pvFabEl.remove(); pvFabEl = null; pvFabKey = ''; }
     }
 }
@@ -13899,6 +13909,7 @@ function dpkShot(id) {
     }).catch(() => null));
 }
 function dpkIvEl(s) { const el = document.createElement('div'); el.className = s.cls + ' dpk-iv'; el.setAttribute('style', s.style); el.innerHTML = s.html; return el; }
+function dpkWx(el, s) { if (s && s.fx && s.fx.ambient === 'weather' && InviteBlocks.mountAmbient) { el.querySelectorAll('.ib-wx-tint, .ib-wx-badge').forEach(n => n.remove()); InviteBlocks.mountAmbient(el, s.fx, { weatherDemo: true }); } } // 날씨 따라 디자인: 비 → 눈 → 맑음 (붙인 뒤에)
 // 가볍게: 휴대폰은 가운데와 바로 양옆(3대)만 진짜 청첩장을 넣고, 나머지는 색 칸만 (멀어지면 다시 비움)
 const DPK_SLIM_ROWS = 6; // 작은 휴대폰에는 위쪽 섹션 6줄만 (크게 보기는 전체)
 function dpkSlim(s) {
@@ -13919,7 +13930,7 @@ function dpkSync() {
         const id = sl.dataset.id, s = DPK.shots[id], ph = sl.querySelector('.dpk-ph');
         if (near.includes(id) && s) {
             if (sl.dataset.filled) return;
-            ph.innerHTML = ''; ph.appendChild(dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) })); sl.dataset.filled = '1';
+            ph.innerHTML = ''; const el = dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) }); ph.appendChild(el); dpkWx(el, s); sl.dataset.filled = '1';
         } else if (sl.dataset.filled) { ph.innerHTML = dpkSkHtml(id); delete sl.dataset.filled; sl.classList.remove('run'); }
     });
     dpkRun();
@@ -14076,7 +14087,7 @@ function dpkOvPut(id, fade) {
         ov.querySelector('.cap').textContent = `${p.label} · ${n + 1}/${v.length} · 위아래로 보기`;
         ov.querySelector('.pv').disabled = n <= 0; ov.querySelector('.nv').disabled = n >= v.length - 1;
         vw.innerHTML = ''; vw.scrollTop = 0;
-        if (s) { const el = dpkIvEl(s); el.classList.remove('dpk-iv'); vw.appendChild(el); }
+        if (s) { const el = dpkIvEl(s); el.classList.remove('dpk-iv'); vw.appendChild(el); dpkWx(el, s); }
         else { vw.innerHTML = '<div class="dpk-sk">그리는 중…</div>'; dpkShot(id).then(() => { if (DPK.ovId === id && ov.classList.contains('show')) dpkOvPut(id); dpkSync(); }); }
         vw.classList.remove('fade');
     };
@@ -15445,6 +15456,8 @@ const spIsReal = src => /uploads\/(?!site\/)/.test(typeof src === 'string' ? src
 //  관리자가 정한 보일 부분·확대(EASY_HERO_POS)는 그 사진의 state.imgFocus / imgZoom으로 (관리자가 나중에 고쳐도 다시 열면 따라감)
 function spApplyHeroSample() {
     const hp = spBlock('hero'); if (!EASY_HERO_SAMPLE || !hp || spIsReal(hp.fields.heroImage)) return false;
+    if (/\/presets\//.test(hp.fields.heroImage || '')) return false; // 디자인 폴더에 넣어 둔 첫 화면 사진은 그대로
+    { const p = PRESETS.find(x => x.id === state.presetId); if (p && p.hero === 'text' && !hp.fields.heroImage) return false; } // 글자만 있는 첫 화면 디자인
     let ch = false;
     if (hp.fields.heroImage !== EASY_HERO_SAMPLE) { hp.fields.heroImage = EASY_HERO_SAMPLE; delete hp.fields.heroFocus; ch = true; }
     const key = InviteBlocks.imgKey(EASY_HERO_SAMPLE), fo = /^\d{1,3}(\.\d+)?% \d{1,3}(\.\d+)?%$/.test(EASY_HERO_POS.focus || '') ? EASY_HERO_POS.focus : '';

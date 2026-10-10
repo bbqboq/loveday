@@ -23,10 +23,13 @@
   "sections": [
     "hero",
     "greeting",
+    "family",
     "dday",
-    "location",
     "gallery",
-    "account"
+    "location",
+    "account",
+    "rsvp",
+    "guestbook"
   ],
   "fx": {
     "default": "bounce"
@@ -38,5 +41,20 @@
     "bg": "#FDE7EC",
     "color": "#C4506B",
     "fontSize": 34
+  },
+  "heroLayout": "getting-married",
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "heart",
+      "showCounter": true,
+      "counterStyle": "bubble"
+    },
+    "gallery": {
+      "layoutType": "collage",
+      "images": 7
+    },
+    "account": {
+      "accStyle": "vintage"
+    }
   }
 }

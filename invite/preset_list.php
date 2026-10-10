@@ -25,7 +25,18 @@ const MAX_JSON_BYTES  = 65536;
 const ALLOWED_BLOCKS  = ['heroVideo', 'hero', 'greeting', 'location', 'gallery', 'account', 'dday', 'timeline', 'interview',
                          'family', 'profile', 'contact', 'letter', 'video', 'transport', 'notice', 'together', 'ending', 'guestsnap', 'share', 'rsvp', 'guestbook', 'dayinfo'];
 const ALLOWED_FX      = ['none', 'up', 'zoom', 'pop', 'bounce', 'left', 'right', 'fade'];
-const ALLOWED_AMBIENT = ['none', 'hearts', 'petals', 'sparkles', 'cherry', 'leaves', 'autumn', 'snow', 'confetti', 'sunshine', 'stars', 'daisy'];
+const ALLOWED_AMBIENT = ['none', 'hearts', 'petals', 'sparkles', 'cherry', 'leaves', 'autumn', 'snow', 'snowflake', 'rain', 'sunset', 'fireworks', 'popper', 'meteor', 'weather', 'confetti', 'sunshine', 'stars', 'daisy', 'bokeh', 'flash'];
+const ALLOWED_PAPER   = ['beige', 'white', 'hanji', 'linen', 'kraft'];
+// 고를 수 있는 값 (섹션별 모양) - blockFields 안의 이 값들이 목록에 없으면 버림
+const ALLOWED_STYLE   = [
+    'gallery.layoutType' => ['grid', 'tall', 'collage', 'wide', 'circle', 'slide', 'pages'],
+    'dday.calendarStyle' => ['classic', 'vintage', 'minimal', 'week', 'desk', 'night', 'heart', 'planner'],
+    'dday.counterStyle'  => ['classic', 'bigd', 'flip', 'ring', 'sentence', 'line', 'ticket', 'bubble'],
+    'account.accStyle'   => ['basic', 'line', 'outline', 'center', 'vintage'],
+    'contact.contactStyle' => ['basic', 'line', 'soft', 'vintage', 'outline', 'center', 'capsule'],
+    'notice.style'       => ['card', 'box', 'slide', 'tabs'],
+    'guestbook.style'    => ['card', 'line'],
+];
 const ALLOWED_HERO    = ['video', 'photo', 'text'];
 const ALLOWED_FRAMES  = ['none', 'rounded', 'circle', 'pill', 'arch'];
 const ALLOWED_FONTS   = ['', 'pretendard', 'noto-serif-kr', 'gowun-batang', 'nanum-myeongjo', 'gothic-a1', 'song-myung',
@@ -94,6 +105,11 @@ function load_preset(string $folder): array {
         'shadow'   => !empty($p['shadow']),
     ];
     if (isset($p['heroHeight']) && in_array($p['heroHeight'], ['3/4', '4/5', '9/16', 'full'], true)) $out['heroHeight'] = $p['heroHeight'];
+    // 첫 화면 레이아웃 (invite-blocks.js HERO_LAYOUTS 또는 관리자가 저장한 레이아웃 id) · 종이 질감 · 장식 효과 범위·진하기
+    if (isset($p['heroLayout']) && is_string($p['heroLayout']) && preg_match('/^[a-z0-9_-]{1,40}$/', $p['heroLayout'])) $out['heroLayout'] = $p['heroLayout'];
+    if (isset($p['paper']) && in_array($p['paper'], ALLOWED_PAPER, true)) $out['paper'] = $p['paper'];
+    if (($p['ambientScope'] ?? '') === 'hero') $out['ambientScope'] = 'hero';
+    if (isset($p['ambientOpacity'])) $out['ambientOpacity'] = max(10, min(100, (int) $p['ambientOpacity']));
     // 폰트 필드(headFont 등)는 CSS에 그대로 들어가므로 따옴표·세미콜론 같은 위험 문자 제거
     foreach (['headFont', 'bodyFont', 'headWeight', 'radius'] as $k) {
         if (isset($out['palette'][$k])) $out['palette'][$k] = preg_replace('/[^A-Za-z0-9 ",\-.%]/', '', (string) $out['palette'][$k]);
@@ -121,6 +137,10 @@ function load_preset(string $folder): array {
             if (!in_array($blockId, ALLOWED_BLOCKS, true) || !is_array($fields)) continue;
             // 값은 문자열/숫자/불리언만 (객체·스크립트 같은 건 버림). 사진 개수(images)는 숫자만 허용.
             $bf[$blockId] = array_filter($fields, fn($v) => is_scalar($v));
+            foreach ($bf[$blockId] as $k => $v) {
+                $sk = $blockId . '.' . $k;
+                if (isset(ALLOWED_STYLE[$sk]) && !in_array($v, ALLOWED_STYLE[$sk], true)) unset($bf[$blockId][$k]);
+            }
         }
         $out['blockFields'] = $bf;
     }
@@ -141,6 +161,10 @@ function load_preset(string $folder): array {
         $stickers[] = $s;
     }
     if ($stickers) $out['stickers'] = $stickers;
+    // 첫 화면 예시 사진 (폴더에 hero.jpg / hero.png / hero.webp가 있으면 - 없으면 관리자 손쉬운 제작의 메인 사진 예시)
+    foreach (['hero.jpg', 'hero.png', 'hero.webp'] as $t) {
+        if (is_file(PRESET_DIR . '/' . $folder . '/' . $t)) { $out['heroImage'] = preset_asset_url($folder, $t); break; }
+    }
     // 선택 화면 썸네일
     foreach (['thumb.jpg', 'thumb.png', 'thumb.webp'] as $t) {
         if (is_file(PRESET_DIR . '/' . $folder . '/' . $t)) { $out['thumb'] = preset_asset_url($folder, $t); break; }

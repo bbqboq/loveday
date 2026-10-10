@@ -25,9 +25,11 @@
     "heroVideo",
     "greeting",
     "dday",
-    "location",
     "gallery",
-    "account"
+    "location",
+    "transport",
+    "account",
+    "rsvp"
   ],
   "fx": {
     "default": "fade"
@@ -38,5 +40,20 @@
     "bg": "#0C0C10",
     "color": "#D4B98C",
     "fontSize": 28
+  },
+  "heroLayout": "fade-date",
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "night",
+      "showCounter": true,
+      "counterStyle": "flip"
+    },
+    "gallery": {
+      "layoutType": "slide",
+      "images": 8
+    },
+    "account": {
+      "accStyle": "line"
+    }
   }
 }

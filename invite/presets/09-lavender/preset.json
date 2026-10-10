@@ -23,10 +23,12 @@
   "sections": [
     "hero",
     "greeting",
+    "family",
     "dday",
-    "location",
     "gallery",
-    "account"
+    "location",
+    "account",
+    "rsvp"
   ],
   "fx": {
     "default": "pop"
@@ -37,5 +39,20 @@
     "bg": "#EFE8FA",
     "color": "#6E57A8",
     "fontSize": 24
+  },
+  "heroLayout": "arc-top",
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "vintage",
+      "showCounter": true,
+      "counterStyle": "bubble"
+    },
+    "gallery": {
+      "layoutType": "circle",
+      "images": 6
+    },
+    "account": {
+      "accStyle": "vintage"
+    }
   }
 }

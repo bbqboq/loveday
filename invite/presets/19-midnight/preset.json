@@ -1,27 +1,29 @@
 {
-  "id": "p-navy",
-  "no": 7,
+  "id": "p-midnight",
+  "no": 19,
   "group": "mood",
-  "label": "네이비 골드",
-  "desc": "격식 있는 네이비와 골드. 호텔 예식에 어울리게",
+  "label": "미드나잇 골드",
+  "desc": "검정 바탕에 금빛 빛망울이 떠오르는 밤 예식",
   "tags": [
-    "포멀",
+    "다크",
+    "골드",
     "호텔"
   ],
   "palette": {
-    "bg": "#F9F7F2",
-    "ink": "#1E2A44",
-    "accent": "#B08D4B",
-    "line": "#E4DCCB",
-    "muted": "#7D7766",
+    "bg": "#121110",
+    "ink": "#F2EBDD",
+    "accent": "#C8A86B",
+    "line": "#2C2822",
+    "muted": "#ABA290",
     "radius": "2px"
   },
   "font": "noto-serif-kr",
   "hero": "photo",
   "heroFrame": "none",
-  "sideBg": "#1E2A44",
+  "heroLayout": "save-the-date",
+  "sideBg": "#0A0908",
   "shadow": true,
-  "ambient": "sparkles",
+  "ambient": "bokeh",
   "sections": [
     "hero",
     "greeting",
@@ -37,7 +39,6 @@
   "fx": {
     "default": "zoom"
   },
-  "heroLayout": "save-the-date",
   "blockFields": {
     "dday": {
       "calendarStyle": "night",
@@ -45,14 +46,14 @@
       "counterStyle": "flip"
     },
     "gallery": {
-      "layoutType": "slide",
-      "images": 8
+      "layoutType": "pages",
+      "images": 12
     },
     "account": {
-      "accStyle": "outline"
+      "accStyle": "center"
     },
     "notice": {
-      "style": "tabs"
+      "style": "slide"
     }
   }
 }

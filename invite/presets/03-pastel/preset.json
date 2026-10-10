@@ -23,11 +23,29 @@
   "sections": [
     "hero",
     "greeting",
-    "location",
+    "family",
+    "dday",
     "gallery",
-    "account"
+    "location",
+    "account",
+    "guestbook"
   ],
   "fx": {
     "default": "bounce"
+  },
+  "heroLayout": "arch",
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "heart",
+      "showCounter": true,
+      "counterStyle": "bubble"
+    },
+    "gallery": {
+      "layoutType": "collage",
+      "images": 7
+    },
+    "account": {
+      "accStyle": "center"
+    }
   }
 }

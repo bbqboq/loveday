@@ -24,12 +24,37 @@
   "sections": [
     "hero",
     "greeting",
+    "contact",
     "dday",
-    "location",
     "gallery",
-    "account"
+    "location",
+    "transport",
+    "notice",
+    "account",
+    "rsvp"
   ],
   "fx": {
     "default": "up"
+  },
+  "heroLayout": "magazine",
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "minimal",
+      "showCounter": true,
+      "counterStyle": "line"
+    },
+    "gallery": {
+      "layoutType": "wide",
+      "images": 8
+    },
+    "account": {
+      "accStyle": "line"
+    },
+    "contact": {
+      "contactStyle": "line"
+    },
+    "notice": {
+      "style": "box"
+    }
   }
 }

@@ -51,7 +51,10 @@
     },
     "dday": {
       "label": "WEDDING DAY",
-      "showCalendar": true
+      "showCalendar": true,
+      "calendarStyle": "desk",
+      "showCounter": true,
+      "counterStyle": "ticket"
     }
   },
   "intro": {
@@ -144,5 +147,6 @@
     "왁스실(화환 사양) 이미지 카드",
     "계좌: 신랑측/신부측 카드 분리(상단 색띠 #8FA8D9 / #c0392b) + 복사 버튼 + \"복사되었습니다\" 토스트",
     "마무리 인사 블록(해·구름 장식 + \"OOO OOO 올림\" 서명)"
-  ]
+  ],
+  "heroLayout": "polaroid"
 }

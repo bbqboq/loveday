@@ -1,31 +1,35 @@
 {
-  "id": "p-mono",
-  "no": 4,
+  "id": "p-rain",
+  "no": 18,
   "group": "mood",
-  "label": "블랙 & 화이트",
-  "desc": "흑백 미니멀. 넓은 여백과 명조 타이포로 담백하게",
+  "label": "비 오는 날",
+  "desc": "창밖에 비가 내리는 듯 차분하고 운치 있게",
   "tags": [
-    "미니멀",
-    "흑백"
+    "다크",
+    "비",
+    "운치"
   ],
   "palette": {
-    "bg": "#FFFFFF",
-    "ink": "#111111",
-    "accent": "#111111",
-    "line": "#E6E6E6",
-    "muted": "#8A8A8A",
-    "radius": "0px"
+    "bg": "#1C232B",
+    "ink": "#E7EBEF",
+    "accent": "#A9BFD2",
+    "line": "#2E3843",
+    "muted": "#9AA6B2",
+    "radius": "4px"
   },
   "font": "nanum-myeongjo",
   "hero": "photo",
   "heroFrame": "none",
-  "sideBg": "#EDEDED",
+  "heroLayout": "minimal-line",
+  "sideBg": "#12171D",
+  "ambient": "rain",
   "sections": [
     "hero",
     "greeting",
     "dday",
     "gallery",
     "location",
+    "transport",
     "account",
     "guestbook"
   ],
@@ -33,15 +37,14 @@
     "default": "fade"
   },
   "blockFields": {
-    "gallery": {
-      "edgeToEdge": true,
-      "layoutType": "tall",
-      "images": 6
-    },
     "dday": {
       "calendarStyle": "minimal",
       "showCounter": true,
       "counterStyle": "line"
+    },
+    "gallery": {
+      "layoutType": "tall",
+      "images": 6
     },
     "account": {
       "accStyle": "line"
@@ -49,6 +52,5 @@
     "guestbook": {
       "style": "line"
     }
-  },
-  "heroLayout": "big-date"
+  }
 }

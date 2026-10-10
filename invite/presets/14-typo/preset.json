@@ -21,9 +21,12 @@
   "sections": [
     "hero",
     "greeting",
+    "family",
     "dday",
     "location",
-    "account"
+    "transport",
+    "account",
+    "rsvp"
   ],
   "fx": {
     "default": "fade"
@@ -34,5 +37,15 @@
     "bg": "#F7F4EE",
     "color": "#222222",
     "fontSize": 26
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "minimal",
+      "showCounter": true,
+      "counterStyle": "bigd"
+    },
+    "account": {
+      "accStyle": "center"
+    }
   }
 }

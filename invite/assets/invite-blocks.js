@@ -2364,22 +2364,23 @@
         if (!weatherCache[url]) weatherCache[url] = fetch(url, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => j && j.ok ? j : null).catch(() => null);
         return weatherCache[url];
     }
-    function mountAmbient(root, fx, mopts) {
-        if (!root) return;
-        root.querySelectorAll('.ambient-field').forEach(n => n.remove());
-        let kind = fx && fx.ambient;
-        if (kind === 'weather') { // 날씨는 받아온 뒤에 붙임 (못 받으면 빛망울)
-            const tok = (root._ambTok = (root._ambTok || 0) + 1);
-            weatherKind(mopts && mopts.weatherUrl).then(w => {
-                if (root._ambTok !== tok) return; // 그 사이 다시 그렸으면 버림
-                root._weather = w;
-                mountAmbient(root, Object.assign({}, fx, { ambient: (w && WEATHER_FX[w.cond]) || 'bokeh' }), mopts);
-                root._ambTok = tok;
-                if (mopts && mopts.onWeather) mopts.onWeather(w);
-            });
-            return;
-        }
-        if (!kind || kind === 'none' || !AMBIENT[kind]) return;
+    // 날씨에 따라 첫 화면 색감도 살짝 (비 = 푸른 회색, 눈 = 차가운 흰빛, 맑음 = 따뜻하게, 밤 = 짙은 남색)
+    const WEATHER_TINT = { rain: 'rgba(32,46,68,.30)', storm: 'rgba(24,32,48,.38)', snow: 'rgba(214,228,244,.24)', clear: 'rgba(255,196,120,.14)', night: 'rgba(12,16,42,.32)', cloudy: 'rgba(120,128,140,.18)', fog: 'rgba(200,204,210,.22)' };
+    // 미리보기(에디터·디자인 고르기)에서는 비 → 눈 → 맑음을 번갈아 보여 줌 (실제 청첩장은 그날 식장 날씨)
+    const WEATHER_DEMO = [['rain', '☔', '비 오는 날'], ['snow', '❄', '눈 오는 날'], ['clear', '☀', '맑은 날']];
+    function weatherTint(root, cond, label) {
+        const col = root.querySelector('.col[data-block-id="heroVideo"], .col[data-block-id="hero"]');
+        if (!col) return;
+        const hero = col.querySelector('.hero-photo-wrap, .video-cover-wrap') || col; // 사진·영상 칸 위에만 (칸 밖으로 넓힌 사진도 꼭 맞게)
+        if (getComputedStyle(hero).position === 'static') hero.style.position = 'relative';
+        let t = hero.querySelector(':scope > .ib-wx-tint');
+        if (!t) { t = document.createElement('div'); t.className = 'ib-wx-tint'; hero.appendChild(t); }
+        t.style.background = WEATHER_TINT[cond] || 'transparent';
+        let b = hero.querySelector(':scope > .ib-wx-badge');
+        if (label) { if (!b) { b = document.createElement('div'); b.className = 'ib-wx-badge'; hero.appendChild(b); } b.textContent = label; b.classList.remove('ib-wx-in'); void b.offsetWidth; b.classList.add('ib-wx-in'); }
+        else if (b) b.remove();
+    }
+    function ambientPut(root, kind, fx) {
         const dir = ['up', 'down', 'still'].includes(fx.ambientDir) ? fx.ambientDir : '';
         if (fx.ambientScope === 'hero') {
             root.querySelectorAll('.col[data-block-id="heroVideo"], .col[data-block-id="hero"]').forEach(col => {
@@ -2389,6 +2390,41 @@
         } else root.insertAdjacentHTML('beforeend', ambientHtml(kind, { dir }));
         const op = fx.ambientOpacity != null ? Math.max(10, Math.min(100, Number(fx.ambientOpacity) || 100)) / 100 : 1;
         if (op < 1) root.querySelectorAll('.ambient-field').forEach(f => { f.style.opacity = op; });
+    }
+    function mountAmbient(root, fx, mopts) {
+        if (!root) return;
+        clearTimeout(root._wxDemoT);
+        root.querySelectorAll('.ambient-field').forEach(n => n.remove());
+        let kind = fx && fx.ambient;
+        if (kind === 'weather') {
+            const tok = (root._ambTok = (root._ambTok || 0) + 1);
+            if (mopts && mopts.weatherDemo) { // 미리보기: 비 → 눈 → 맑음 되풀이 (4.5초씩, 바뀔 때 살짝 겹쳐 사라짐)
+                let i = 0;
+                const step = () => {
+                    if (root._ambTok !== tok || !root.isConnected) return;
+                    const [cond, ic, t] = WEATHER_DEMO[i++ % WEATHER_DEMO.length];
+                    const old = [...root.querySelectorAll('.ambient-field')];
+                    old.forEach(n => { n.classList.add('ib-wx-out'); setTimeout(() => n.remove(), 900); });
+                    ambientPut(root, WEATHER_FX[cond], fx);
+                    weatherTint(root, cond, `${ic} ${t} · 날씨 따라 바뀌어요`);
+                    root._wxDemoT = setTimeout(step, 4500);
+                };
+                step();
+                if (mopts.onWeather && mopts.weatherUrl) weatherKind(mopts.weatherUrl).then(w => { if (root._ambTok === tok) mopts.onWeather(w); });
+                return;
+            }
+            weatherKind(mopts && mopts.weatherUrl).then(w => { // 실제 청첩장: 날씨를 받아온 뒤에 붙임 (못 받으면 빛망울)
+                if (root._ambTok !== tok) return; // 그 사이 다시 그렸으면 버림
+                root._weather = w;
+                root.querySelectorAll('.ambient-field').forEach(n => n.remove());
+                ambientPut(root, (w && WEATHER_FX[w.cond]) || 'bokeh', fx);
+                if (w) weatherTint(root, w.cond, '');
+                if (mopts && mopts.onWeather) mopts.onWeather(w);
+            });
+            return;
+        }
+        if (!kind || kind === 'none' || !AMBIENT[kind]) return;
+        ambientPut(root, kind, fx);
     }
 
     // ---------- 종이 질감 배경 (에디터 화면 설정 > 색상 > 종이 질감) ----------

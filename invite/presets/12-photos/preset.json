@@ -23,8 +23,10 @@
     "hero",
     "gallery",
     "greeting",
+    "dday",
     "location",
-    "account"
+    "account",
+    "guestbook"
   ],
   "fx": {
     "default": "zoom",
@@ -35,6 +37,11 @@
       "colLayout": "2",
       "edgeToEdge": true,
       "images": 8
+    },
+    "dday": {
+      "calendarStyle": "week",
+      "showCounter": false
     }
-  }
+  },
+  "heroLayout": "happy-wedding-day"
 }

@@ -23,12 +23,31 @@
   "sections": [
     "hero",
     "greeting",
-    "location",
-    "gallery",
+    "family",
     "dday",
-    "account"
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp"
   ],
   "fx": {
     "default": "up"
+  },
+  "heroLayout": "happily-ever-after",
+  "paper": "linen",
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "planner",
+      "showCounter": true,
+      "counterStyle": "ring"
+    },
+    "gallery": {
+      "layoutType": "pages",
+      "images": 12
+    },
+    "account": {
+      "accStyle": "outline"
+    }
   }
 }

@@ -22,11 +22,29 @@
   "sections": [
     "hero",
     "greeting",
-    "location",
+    "dday",
     "gallery",
-    "account"
+    "location",
+    "account",
+    "guestbook"
   ],
   "fx": {
     "default": "up"
+  },
+  "heroLayout": "split-top",
+  "paper": "kraft",
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "desk",
+      "showCounter": true,
+      "counterStyle": "ticket"
+    },
+    "gallery": {
+      "layoutType": "tall",
+      "images": 6
+    },
+    "account": {
+      "accStyle": "basic"
+    }
   }
 }

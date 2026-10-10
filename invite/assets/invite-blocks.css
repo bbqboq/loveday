@@ -1239,3 +1239,10 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .col[data-block-id] .ib-gb-msg { word-break: keep-all; overflow-wrap: anywhere; }
 /* 계좌 예금주: 괄호 대신 옅은 글씨로 계좌번호 옆에 */
 .ib-acc-hd { margin-left: .5em; opacity: .62; font-size: .94em; white-space: nowrap; }
+
+/* 날씨 따라 (장식 효과 'weather'): 첫 화면 색감 + 미리보기 이름표 (비 → 눈 → 맑음) */
+.ib-wx-tint { position: absolute; inset: 0; z-index: 2; pointer-events: none; transition: background 1.2s ease; }
+.ib-wx-badge { position: absolute; left: 50%; top: 4.5%; z-index: 7; translate: -50% 0; pointer-events: none; white-space: nowrap; font: 600 12px/1 "Pretendard Variable", Pretendard, system-ui, sans-serif; color: #fff; background: rgba(20, 20, 26, .42); border: 1px solid rgba(255,255,255,.28); padding: 7px 13px; border-radius: 99px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.ib-wx-badge.ib-wx-in { animation: ibWxIn .6s ease both; }
+@keyframes ibWxIn { from { opacity: 0; transform: translateY(-6px); } }
+.ambient-field.ib-wx-out { transition: opacity .9s ease; opacity: 0 !important; }

@@ -25,11 +25,25 @@
     "timeline",
     "interview",
     "gallery",
+    "dday",
     "location",
-    "account"
+    "account",
+    "guestbook"
   ],
   "fx": {
     "default": "up",
     "timeline": "left"
+  },
+  "heroLayout": "names-vertical",
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "planner",
+      "showCounter": true,
+      "counterStyle": "sentence"
+    },
+    "gallery": {
+      "layoutType": "collage",
+      "images": 7
+    }
   }
 }

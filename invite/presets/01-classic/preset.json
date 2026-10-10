@@ -21,11 +21,31 @@
   "sections": [
     "heroVideo",
     "greeting",
-    "location",
+    "family",
+    "dday",
     "gallery",
-    "account"
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
   ],
   "fx": {
     "default": "bounce"
+  },
+  "heroLayout": "our-wedding-day",
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "classic",
+      "showCounter": true,
+      "counterStyle": "classic"
+    },
+    "gallery": {
+      "layoutType": "grid",
+      "images": 9
+    },
+    "account": {
+      "accStyle": "basic"
+    }
   }
 }

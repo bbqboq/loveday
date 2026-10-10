@@ -24,8 +24,10 @@
     "hero",
     "greeting",
     "gallery",
+    "dday",
     "location",
-    "account"
+    "account",
+    "guestbook"
   ],
   "fx": {
     "default": "fade"
@@ -34,6 +36,13 @@
     "gallery": {
       "cardStyle": true,
       "colLayout": "2"
+    },
+    "dday": {
+      "calendarStyle": "week",
+      "showCounter": true,
+      "counterStyle": "sentence"
     }
-  }
+  },
+  "heroLayout": "polaroid",
+  "paper": "beige"
 }

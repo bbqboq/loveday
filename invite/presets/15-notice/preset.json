@@ -31,6 +31,10 @@
   "blockFields": {
     "greeting": {
       "text": "저희 두 사람이 부부가 되었습니다.\n가족과 가까운 분들만 모시고 조촐하게 예식을 올리게 되어\n직접 모시지 못하는 점 너그러이 양해 부탁드립니다.\n멀리서나마 마음으로 축복해 주시면 감사하겠습니다."
+    },
+    "gallery": {
+      "layoutType": "grid"
     }
-  }
+  },
+  "heroLayout": "minimal-line"
 }

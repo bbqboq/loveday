@@ -1,0 +1,62 @@
+{
+  "id": "p-cosmos",
+  "no": 17,
+  "group": "mood",
+  "label": "별빛 우주",
+  "desc": "깊은 밤하늘에 별똥별이 흐르는 우주 테마",
+  "tags": [
+    "다크",
+    "별",
+    "우주"
+  ],
+  "palette": {
+    "bg": "#0E1024",
+    "ink": "#ECEAF7",
+    "accent": "#E6CF95",
+    "line": "#262A4A",
+    "muted": "#A7A9C6",
+    "radius": "10px"
+  },
+  "font": "gowun-batang",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "arc-top",
+  "sideBg": "#07081A",
+  "ambient": "meteor",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "fade"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "night",
+      "showCounter": true,
+      "counterStyle": "ring"
+    },
+    "gallery": {
+      "layoutType": "circle",
+      "images": 6
+    },
+    "account": {
+      "accStyle": "outline"
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "우리의 별이 만나는 날",
+    "bg": "#07081A",
+    "color": "#E6CF95",
+    "fontSize": 26
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "id": "p-weather",
+  "no": 20,
+  "group": "layout",
+  "label": "날씨 따라 바뀌는 청첩장",
+  "desc": "예식장 날씨에 따라 비·눈·햇살로 첫 화면이 바뀌어요",
+  "tags": [
+    "날씨",
+    "반응형",
+    "NEW"
+  ],
+  "palette": {
+    "bg": "#F6F8FA",
+    "ink": "#26323E",
+    "accent": "#5C86AE",
+    "line": "#DDE5EC",
+    "muted": "#7F8C99",
+    "radius": "14px"
+  },
+  "font": "gowun-batang",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "minimal-line",
+  "sideBg": "#E6ECF2",
+  "ambient": "weather",
+  "sections": [
+    "hero",
+    "greeting",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "up"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "classic",
+      "showCounter": true,
+      "counterStyle": "bigd"
+    },
+    "gallery": {
+      "layoutType": "wide",
+      "images": 8
+    },
+    "account": {
+      "accStyle": "basic"
+    }
+  },
+  "notes": [
+    "ambient 'weather': 실제 청첩장은 식장 지역 지금 날씨(weather.php)로 효과·첫 화면 색감이 바뀜, 미리보기는 비 → 눈 → 맑음 되풀이"
+  ]
+}
