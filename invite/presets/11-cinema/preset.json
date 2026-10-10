@@ -44,16 +44,27 @@
   "heroLayout": "fade-date",
   "blockFields": {
     "dday": {
-      "calendarStyle": "night",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "flip"
+      "counterStyle": "theme"
     },
     "gallery": {
       "layoutType": "slide",
       "images": 8
     },
     "account": {
-      "accStyle": "line"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   }
 }

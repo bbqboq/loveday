@@ -39,9 +39,9 @@
       "skin": "vintage"
     },
     "dday": {
-      "calendarStyle": "week",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "sentence"
+      "counterStyle": "theme"
     },
     "greeting": {
       "skin": "vintage"
@@ -50,10 +50,19 @@
       "skin": "vintage"
     },
     "account": {
-      "accStyle": "vintage"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
     },
     "guestbook": {
-      "skin": "vintage"
+      "skin": "vintage",
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   },
   "heroLayout": "polaroid",

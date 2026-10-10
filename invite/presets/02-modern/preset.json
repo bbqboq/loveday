@@ -39,22 +39,33 @@
   "heroLayout": "magazine",
   "blockFields": {
     "dday": {
-      "calendarStyle": "minimal",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "line"
+      "counterStyle": "theme"
     },
     "gallery": {
       "layoutType": "wide",
       "images": 8
     },
     "account": {
-      "accStyle": "line"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
     },
     "contact": {
       "contactStyle": "line"
     },
     "notice": {
       "style": "box"
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   }
 }

@@ -39,15 +39,23 @@
       "images": 6
     },
     "dday": {
-      "calendarStyle": "minimal",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "line"
+      "counterStyle": "theme"
     },
     "account": {
-      "accStyle": "line"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
     },
     "guestbook": {
-      "style": "line"
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   },
   "heroLayout": "big-date"

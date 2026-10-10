@@ -40,19 +40,30 @@
   "heroLayout": "save-the-date",
   "blockFields": {
     "dday": {
-      "calendarStyle": "night",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "flip"
+      "counterStyle": "theme"
     },
     "gallery": {
       "layoutType": "slide",
       "images": 8
     },
     "account": {
-      "accStyle": "outline"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
     },
     "notice": {
       "style": "tabs"
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   }
 }

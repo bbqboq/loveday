@@ -39,8 +39,23 @@
       "images": 8
     },
     "dday": {
-      "calendarStyle": "week",
-      "showCounter": false
+      "calendarStyle": "theme",
+      "showCounter": false,
+      "counterStyle": "theme"
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   },
   "heroLayout": "happy-wedding-day"

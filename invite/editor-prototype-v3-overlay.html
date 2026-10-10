@@ -16323,7 +16323,7 @@ function skinPalOf(p) {
         hf: fo ? fo.family : (k.headFont || ''), bf: fo ? fo.family : (k.bodyFont || ''), hw: String((fo && fo.weight) || k.headWeight || ''), r: k.radius || '',
         paper: pap, font: fo ? fo.id : '', deco: look.charAt(0) === '@' ? '' : look, id: p.id };
 }
-const SKIN_STYLE_KEYS = ['layoutType', 'calendarStyle', 'counterStyle', 'accStyle', 'contactStyle', 'style'];
+const SKIN_STYLE_KEYS = ['layoutType', 'calendarStyle', 'counterStyle', 'accStyle', 'contactStyle', 'style', 'btnStyle', 'display'];
 function skinDesignOf(b) { return (b && (b.skinDesign || (b.skinPal && b.skinPal.id))) || ''; }
 // 디자인 스킨을 입힐 때 바꾼 모양 값은 skinPrev {키: [원래 값, 바꾼 값]}에 두고, '디자인 따라'로 돌아오면 (그 뒤 직접 안 바꿨으면) 원래 값으로
 function skinRestorePrev(b) {
@@ -16372,7 +16372,9 @@ function skinApply(b, k, palId) {
 //  ① 모양 = 그 섹션의 원래 모양들 (방명록 카드·줄글, 달력·카운트, 계좌, 연락처, 안내, 갤러리, 감사 인사, 인터뷰) ② 스킨 = 디자인 따라 · 빈티지 · 밤하늘 · 안개 + 디자인 21개
 //  카드마다 그 섹션을 진짜로 그려 작게 보여 줌 (sskThumb: renderBlockHtml + boxColAttrs, 보이는 카드만 한가할 때 하나씩 · 같은 내용이면 다시 안 그림)
 const SSK_LOOKS = {
-    guestbook: [['style', '방명록 모양', () => [['card', '카드'], ['line', '줄글']]]],
+    guestbook: [['style', '방명록 모양', () => [['theme', '테마 모양'], ['card', '카드'], ['line', '줄글']]]],
+    rsvp: [['btnStyle', '참석 버튼 모양', () => [['theme', '테마 모양'], ['basic', '기본']]]],
+    transport: [['style', '교통 모양', () => [['theme', '테마 모양'], ['basic', '기본 (아이콘)']]]],
     notice: [['style', '안내 모양', () => InviteBlocks.NOTICE_STYLES]],
     thanks: [['style', '감사 인사 모양', () => [['card', '카드'], ['letter', '편지지'], ['photo', '사진 위 글자'], ['plain', '깔끔하게']]]],
     account: [['accStyle', '계좌 모양', () => InviteBlocks.ACC_STYLES]],
@@ -16390,7 +16392,7 @@ function sskSkins(b) {
 function sskCur(b) { const d = skinDesignOf(b); if (d) return 'd:' + d; if (b.skin === 'plain') return 's:plain'; const k = InviteBlocks.skinOf(b); return 's:' + (k && k === designSkinOf(b) && !b.skin ? '' : k); }
 function sskMut(spec) { // 'l:키:값' 모양 · 's:스킨' · 'd:디자인 id'
     const [t, a, v] = spec.split(':');
-    if (t === 'l') return c => { c.fields[a] = v; };
+    if (t === 'l') return c => { c.fields[a] = v; if (a === 'accStyle') c.fields.display = 'cards'; }; // 계좌 모양은 카드형일 때만 보여서
     if (t === 'd') return c => themeApply(c, a);
     return c => skinApply(c, a, '');
 }
@@ -16439,7 +16441,7 @@ function sskMount(wrap, b) {
     if (h3) h3.after(box); else wrap.prepend(box);
     const pick = spec => {
         const [t, a, v] = spec.split(':');
-        if (t === 'l') { b.fields[a] = v; if (b.skinPrev && b.skinPrev[a]) delete b.skinPrev[a]; } // 직접 고른 모양은 '디자인 따라'로 돌아와도 그대로
+        if (t === 'l') { b.fields[a] = v; if (a === 'accStyle') b.fields.display = 'cards'; if (b.skinPrev && b.skinPrev[a]) delete b.skinPrev[a]; } // 직접 고른 모양은 '디자인 따라'로 돌아와도 그대로
         else if (t === 'd') themeApply(b, a); else skinApply(b, a, '');
         const sc = [...box.querySelectorAll('.ssk-row')].map(x => x.scrollLeft);
         renderFieldEditor(); renderPreview(); scheduleSnapshot();

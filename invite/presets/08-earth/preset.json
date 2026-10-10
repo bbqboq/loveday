@@ -35,9 +35,9 @@
   "paper": "kraft",
   "blockFields": {
     "dday": {
-      "calendarStyle": "desk",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "ticket"
+      "counterStyle": "theme"
     },
     "gallery": {
       "layoutType": "tall",
@@ -45,7 +45,9 @@
       "skin": "vintage"
     },
     "account": {
-      "accStyle": "vintage"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
     },
     "greeting": {
       "skin": "vintage"
@@ -54,7 +56,14 @@
       "skin": "vintage"
     },
     "guestbook": {
-      "skin": "vintage"
+      "skin": "vintage",
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   }
 }

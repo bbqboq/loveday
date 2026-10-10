@@ -170,6 +170,8 @@
         'p-earth': 'kraft', 'p-lavender': 'lace', 'p-film': 'film', 'p-cinema': 'cinema', 'p-photos': 'polaroid', 'p-story': 'note', 'p-typo': 'typo',
         'p-notice': 'board', 'p-scrapbook': 'tape', 'p-cosmos': 'stars', 'p-rain': 'drops', 'p-midnight': 'deco', 'p-weather': 'sky', 'p-webtoon': '@webtoon' };
     const FONT_RE = /^[^<>{};]{1,120}$/;
+    const THEME_FONTS = { tape: 'nanum-pen', note: 'nanum-pen', typo: 'playfair', film: 'cormorant', cinema: 'cormorant', deco: 'cormorant', rule: 'cormorant' }; // 테마 부품에 쓰는 글꼴 (숫자·영문)
+    function themeFonts(k) { if (THEME_FONTS[k]) try { ensureFont(THEME_FONTS[k]); } catch (e) {} }
     // 인터뷰(둘만의 사랑 이야기) 모양 - 에디터·공개 페이지 둘 다 .blk-interview에 iv-st-* (CSS는 invite-blocks.css '인터뷰 모양')
     const IV_STYLES = [['', '이름표'], ['chat', '채팅 말풍선'], ['card', '질문 카드'], ['mag', '매거진'], ['split', '마주 보기']];
     const ivCls = f => { const v = f && f.style; return IV_STYLES.some(x => x[0] === v && v) ? ' iv-st-' + v : ''; };
@@ -204,7 +206,7 @@
             [['bg', 'p-bg'], ['ink', 'p-ink'], ['accent', 'p-accent'], ['line', 'p-line'], ['muted', 'p-muted']].forEach(([k, v]) => { if (HEX_RE.test(pal[k] || '')) st.push(`--${v}:${pal[k]}`); });
             if (HEX_RE.test(pal.accent || '')) st.push(`--p-on-accent:${onAccent(pal.accent)}`);
             // 디자인 테마 스킨: 글꼴·모서리·종이 + 꾸밈
-            if (THEME_DECOS.includes(pal.deco)) cls += ' ib-th ib-th-' + pal.deco;
+            if (THEME_DECOS.includes(pal.deco)) { cls += ' ib-th ib-th-' + pal.deco; themeFonts(pal.deco); }
             if (pal.font && FONT_CSS[pal.font]) ensureFont(pal.font);
             const fq = v => String(v).replace(/"/g, "'"); // style="" 안에 들어가서 큰따옴표는 작은따옴표로
             if (FONT_RE.test(pal.hf || '')) st.push(`--p-head-font:${fq(pal.hf)}`);
@@ -214,7 +216,7 @@
             if (pal.paper && BG_PAPERS[pal.paper]) st.push(`--sk-paper:${BG_PAPERS[pal.paper].img}`);
         }
         // 디자인 전체 꾸밈: 디자인을 고르면 그 디자인의 꾸밈(design.sectionLook)이 모든 섹션에 기본으로 (섹션 테마·디자인 스킨을 따로 고른 섹션, 첫 화면, '꾸밈 없이'는 빼고 · 화면 설정 extras.look=false면 끔)
-        else if (!sk && b && b.id !== 'hero' && b.id !== 'heroVideo' && b.skin !== 'plain') { const gl = designLook(); if (gl) cls += ' ib-th ib-th-' + gl; }
+        else if (!sk && b && b.id !== 'hero' && b.id !== 'heroVideo' && b.skin !== 'plain') { const gl = designLook(); if (gl) { cls += ' ib-th ib-th-' + gl; themeFonts(gl); } }
         return { cls, style: st.filter(Boolean).join(';') };
     }
 
@@ -1560,13 +1562,14 @@
         // ---------- 교통수단 ----------
         transport: {
             label: '교통수단', color: '#16A085',
-            defaults: { title: '오시는 방법', items: [
+            defaults: { title: '오시는 방법', style: 'theme', items: [
                 { id: 'tr1', label: '지하철', text: '2호선 강남역 1번 출구에서 도보 5분' },
                 { id: 'tr2', label: '버스', text: '강남역 정류장 하차 (간선 140, 144, 145)' },
                 { id: 'tr3', label: '주차', text: '건물 지하 주차장 이용 (2시간 무료)' }
             ] },
             editor: [
                 { key: 'title', label: '제목', type: 'text' },
+                { key: 'style', label: '모양', type: 'choice', options: [['theme', '테마 모양'], ['basic', '기본 (아이콘)']], hint: '테마 모양은 디자인마다 달라요 (번호 · 오솔길 · 씬 번호 · 체크리스트 …).' },
                 { key: 'items', label: '교통수단', type: 'items', addLabel: '교통수단 추가', item: { label: '', text: '', depart: '' }, fields: [
                     { key: 'label', label: '교통수단', type: 'text', placeholder: '지하철 / 버스 / 자가용 / 대절버스' },
                     { key: 'text', label: '내용', type: 'textarea' },
@@ -1577,7 +1580,7 @@
             render(f) {
                 const icon = l => /지하철|전철/.test(l) ? '🚇' : /버스|셔틀/.test(l) ? '🚌' : /자가용|자동차|차량|네비/.test(l) ? '🚗' : /주차/.test(l) ? '🅿️' : /기차|KTX|SRT/.test(l) ? '🚆' : /비행/.test(l) ? '✈️' : '📍';
                 const items = (f.items || []).filter(it => it.label || it.text);
-                return `<div class="ib-block ib-transport">${sectionTitle(f.title, f)}
+                return `<div class="ib-block ib-transport${f.style === 'basic' ? '' : ' ib-tr-theme'}">${sectionTitle(f.title, f)}
                     ${items.length ? items.map(it => `<div class="ib-transport-item"><span class="ib-transport-ico">${icon(it.label || '')}</span>
                         <div><strong>${esc(it.label)}</strong>${busTime(it.depart) ? `<span class="ib-depart">${esc(busTime(it.depart))} 출발</span>` : ''}<p>${nl2br(it.text)}</p></div></div>`).join('') : emptyHint('교통수단을 추가해주세요')}
                 </div>`;
@@ -2068,11 +2071,12 @@
         label: '참석 의사 전달', color: '#16A085',
         defaults: { title: '참석 의사 전달', desc: '축하의 마음으로 참석해주시는 분들을 위해\n정성껏 자리를 준비하고자 합니다.\n참석 여부를 알려주시면 감사하겠습니다.',
             buttonLabel: '참석 의사 전달하기', doneLabel: '전달한 내용 수정하기', deadline: '',
-            askHeadcount: true, askMeal: true, askPhone: false, askMemo: true, popup: false, popupAt: 'scroll' },
+            askHeadcount: true, askMeal: true, askPhone: false, askMemo: true, popup: false, popupAt: 'scroll', btnStyle: 'theme' },
         editor: [
             { key: 'title', label: '제목', type: 'text' },
             { key: 'desc', label: '안내 문구', type: 'textarea', rows: 4 },
             { key: 'buttonLabel', label: '버튼 문구', type: 'text' },
+            { key: 'btnStyle', label: '버튼 모양', type: 'choice', options: [['theme', '테마 모양'], ['basic', '기본']], hint: '테마 모양은 디자인마다 달라요 (봉투 · 클래퍼보드 · 도장 …).' },
             { key: 'doneLabel', label: '이미 보낸 하객에게 보일 버튼 문구', type: 'text' },
             { key: 'deadline', label: '마감일 (비우면 계속 받음)', type: 'date', hint: '마감일 밤 12시까지 받고, 그 뒤로는 버튼이 "마감되었습니다"로 바뀌어요.' },
             { group: '받을 항목' },
@@ -2089,7 +2093,7 @@
             const closed = /^\d{4}-\d{2}-\d{2}$/.test(o.deadline || '') && seoulToday() > o.deadline;
             const cfg = { askHeadcount: o.askHeadcount !== false, askMeal: o.askMeal !== false, askPhone: !!o.askPhone, askMemo: o.askMemo !== false, doneLabel: o.doneLabel };
             const dl = o.deadline ? `<p class="ib-rsvp-dl">${esc(fmtKDate(o.deadline))}까지 알려주세요</p>` : '';
-            return `<div class="ib-block ib-rsvp">${sectionTitle(o.title, o)}<p class="ib-rsvp-desc">${nl2br(o.desc)}</p>${dl}
+            return `<div class="ib-block ib-rsvp${o.btnStyle === 'basic' ? '' : ' ib-rs-theme'}">${sectionTitle(o.title, o)}<p class="ib-rsvp-desc">${nl2br(o.desc)}</p>${dl}
                 ${closed && !isEditor() ? '<span class="ib-rsvp-btn is-closed">참석 여부 전달이 마감되었습니다</span>'
                     : `<button type="button" class="ib-rsvp-btn" data-ib-rsvp="${dataAttr(cfg)}">${esc(o.buttonLabel || '참석 의사 전달하기')}</button>`}
                 ${closed && isEditor() ? badge('마감일이 지나서 하객에게는 "마감" 으로 보여요') : ''}</div>`;
@@ -2109,7 +2113,7 @@
         editor: [
             { key: 'title', label: '제목', type: 'text' },
             { key: 'desc', label: '안내 문구', type: 'textarea', rows: 2 },
-            { key: 'style', label: '모양', type: 'choice', options: [['card', '카드'], ['line', '줄글']] },
+            { key: 'style', label: '모양', type: 'choice', options: [['theme', '테마 모양'], ['card', '카드'], ['line', '줄글']] },
             { key: 'pageSize', label: '한 번에 보일 글 수', type: 'choice', options: [[3, '3개'], [5, '5개'], [10, '10개']] },
             { key: 'writeLabel', label: '작성 버튼 문구', type: 'text' },
             { key: 'allowWrite', label: '', type: 'check', checkLabel: '하객이 새 글을 쓸 수 있게 하기', hint: '끄면 지금까지 받은 글만 보이고 작성 버튼이 사라져요. 글 삭제는 내 청첩장 관리 → 방명록 관리에서 할 수 있어요.' },
@@ -2119,7 +2123,7 @@
             const o = Object.assign({}, BLOCKS.guestbook.defaults, f);
             const cfg = { style: o.style, allowWrite: o.allowWrite !== false, richText: o.richText !== false };
             const list = isEditor() ? gbEntriesHtml(GB_SAMPLE.slice(0, Number(o.pageSize) || 5), o.style) : '<p class="ib-gb-empty">불러오는 중…</p>';
-            return `<div class="ib-block ib-gb ib-gb-${o.style === 'line' ? 'line' : 'card'}">${sectionTitle(o.title, o)}${o.desc ? `<p class="ib-gb-desc">${nl2br(o.desc)}</p>` : ''}
+            return `<div class="ib-block ib-gb ib-gb-${o.style === 'line' ? 'line' : o.style === 'theme' ? 'card ib-gb-theme' : 'card'}">${sectionTitle(o.title, o)}${o.desc ? `<p class="ib-gb-desc">${nl2br(o.desc)}</p>` : ''}
                 <div class="ib-gb-list" data-ib-gb="${dataAttr(cfg)}">${list}</div>
                 <button type="button" class="ib-gb-more" hidden>더 보기</button>
                 ${o.allowWrite !== false ? `<button type="button" class="ib-gb-write" data-ib-gb-write>${esc(o.writeLabel || '방명록 작성하기')}</button>` : ''}
@@ -2613,7 +2617,7 @@
         { key: 'brideBank', side: 'bride', role: 'self' }, { key: 'brideFatherBank', side: 'bride', role: 'father' }, { key: 'brideMotherBank', side: 'bride', role: 'mother' }
     ];
     // 카드형 계좌 디자인 (에디터 "마음 전하실 곳" → 카드형 → 디자인). 모양은 invite-blocks.css .ib-as-*
-    const ACC_STYLES = [['basic', '기본 카드'], ['line', '미니멀'], ['outline', '라인 상자'], ['center', '가운데 정렬'], ['vintage', '빈티지 큐피드']];
+    const ACC_STYLES = [['theme', '테마 모양'], ['basic', '기본 카드'], ['line', '미니멀'], ['outline', '라인 상자'], ['center', '가운데 정렬'], ['vintage', '빈티지 큐피드']];
     function accountCardsHtml(f, masked) {
         const MASK = '계좌번호 불러오는 중…';
         const side = (sideKey, sideLabel) => {
@@ -3308,7 +3312,7 @@
 
     // ---------- 달력 모양 프리셋 (디데이 섹션의 "달력 보여주기") ----------
     // vintage = 큐피드·비둘기·장미 액자 그림(assets/cal-vintage.webp) 위에 날짜를 그려 넣는 빈티지 달력 (결혼식이 있는 주 + 그 앞 주, 2줄)
-    const CAL_STYLES = [['classic', '기본'], ['vintage', '빈티지 큐피드'], ['minimal', '미니멀'], ['week', '한 주 띠'],
+    const CAL_STYLES = [['theme', '테마 모양'], ['classic', '기본'], ['vintage', '빈티지 큐피드'], ['minimal', '미니멀'], ['week', '한 주 띠'],
         ['desk', '탁상 달력'], ['night', '밤하늘 골드'], ['heart', '하트'], ['planner', '플래너']];
     const CAL_KEYS = CAL_STYLES.map(x => x[0]);
     const WD_KO = ['일', '월', '화', '수', '목', '금', '토'], WD_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -3363,6 +3367,15 @@
             case 'heart':
                 html = `<div class="ch-head">♥ ${m}월 ♥</div><div class="ch-grid">${WD_KO.map((w, i) => `<span class="ch-w${i === 0 ? ' sun' : ''}">${w}</span>`).join('')}${cells('ch-d', x => `<i></i><b>${x}</b>`)}</div>`;
                 break;
+            case 'theme': { // 테마 모양: 디자인 꾸밈(.ib-th-*)마다 CSS가 모양을 정함 (화관·필름 띠·찢은 종이·아르데코 액자 …) - 글자는 다 넣어 두고 테마가 골라 보여 줌
+                const wk = weeks[row] || [];
+                html = `<div class="ct-head"><span class="ct-big">${p2(m)}</span><span class="ct-mon">${MON_EN[m - 1]}</span><span class="ct-mko">${m}월</span><span class="ct-year">${y}</span><span class="ct-when">${WD_KO[wd]}요일 ${whenKo}</span></div>`
+                    + `<div class="ct-feat"><span class="ct-fm">${MON_EN[m - 1].toUpperCase()}</span><b class="ct-fd">${d}</b><span class="ct-fw">${WD_KO[wd]}요일 ${whenKo}</span></div>`
+                    + `<div class="ct-grid">${WD_KO.map((w, i) => `<span class="ct-w${i === 0 ? ' sun' : ''}${i === 6 ? ' sat' : ''}"><i>${WD_EN[i].charAt(0)}</i><em>${w}</em><u>${WD_EN[i].charAt(0) + WD_EN[i].slice(1).toLowerCase()}</u></span>`).join('')}`
+                    + weeks.map(w => w.map((x, i) => `<span class="ct-d${x ? '' : ' e'}${x === d ? ' on' : ''}${i === 0 ? ' sun' : ''}${i === 6 ? ' sat' : ''}${w === wk ? ' wk' : ''}">${x ? `<b>${x}</b>` : ''}</span>`).join('')).join('') + `</div>`
+                    + `<i class="ct-o ct-o1" aria-hidden="true"></i><i class="ct-o ct-o2" aria-hidden="true"></i>`;
+                break;
+            }
             case 'planner':
                 html = `<div class="cp-head"><b>${p2(m)}</b><span>${MON_EN[m - 1].toUpperCase()}<br>${y}</span><em>${WD_KO[wd]}요일 ${whenKo}</em></div><div class="cp-grid">${WD_EN.map(w => `<span class="cp-w">${w}</span>`).join('')}${cells('cp-d', x => `<b>${x}</b><small>Wedding</small>`, x => x < d ? ' past' : '')}</div>`;
                 break;
@@ -3376,7 +3389,7 @@
     // ---------- 디데이 카운터 모양 프리셋 (에디터·실제 청첩장 공통) ----------
     // 숫자 칸은 모두 data-dday-part(days|hours|minutes|seconds)라서 카운트다운 갱신 코드는 하나로 같이 씀.
     // 갱신 코드가 --sec(0~59)를 넣어 주면 원형 링이 초에 맞춰 돌고, 숫자가 바뀔 때 .dd-tick으로 넘김 효과.
-    const DDAY_STYLES = [['classic', '클래식'], ['bigd', '큰 D-day'], ['flip', '플립 시계'], ['ring', '원형 링'],
+    const DDAY_STYLES = [['theme', '테마 모양'], ['classic', '클래식'], ['bigd', '큰 D-day'], ['flip', '플립 시계'], ['ring', '원형 링'],
         ['sentence', '문장형'], ['line', '미니멀 라인'], ['ticket', '티켓'], ['bubble', '버블']];
     const DDAY_KEYS = DDAY_STYLES.map(x => x[0]);
     const DD_UNITS = [['days', 'Days', '일'], ['hours', 'Hours', '시간'], ['minutes', 'Minutes', '분'], ['seconds', 'Seconds', '초']];
@@ -3399,6 +3412,12 @@
             case 'line': inner = DD_UNITS.map(u => `<div class="dd-u">${P(u[0])}<span class="dd-l">${u[2]}</span></div>`).join('<i class="dd-sep"></i>'); break;
             case 'ticket': inner = `<div class="dd-tk-l"><span class="dd-l">WEDDING</span><div class="dd-tk-d">D-${P('days')}</div></div><div class="dd-tk-r">${DD_UNITS.slice(1).map(u => `<div class="dd-u">${P(u[0])}<span class="dd-l">${u[2]}</span></div>`).join('')}</div>`; break;
             case 'bubble': inner = DD_UNITS.map(u => `<div class="dd-u">${P(u[0])}<span class="dd-l">${u[2]}</span></div>`).join(''); break;
+            case 'theme': { // 테마 모양: 칸 4개 + 진행 막대 + 링 + 한 줄 설명을 다 넣어 두고 디자인 꾸밈(.ib-th-*) CSS가 골라 보여 줌
+                const left = sample ? 123 : Math.max(0, Math.ceil(((+targetMs || 0) - Date.now()) / 86400000)), pct = Math.max(6, Math.min(96, Math.round(100 - left / 200 * 100)));
+                inner = `<span class="dd-cap">우리의 결혼식까지</span>` + DD_UNITS.map(u => `<div class="dd-u dd-u-${u[0]}">${P(u[0])}<span class="dd-l"><i>${u[1].toUpperCase()}</i><em>${u[2]}</em></span></div>`).join('')
+                    + `<span class="dd-bar" style="--dd-pct:${pct}%"><i></i></span><svg class="dd-orb" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" pathLength="100"></circle><circle class="dd-orb-on" cx="50" cy="50" r="44" pathLength="100" style="stroke-dasharray:${pct} 100"></circle></svg><span class="dd-end">남았어요</span>`;
+                break;
+            }
             default: inner = DD_UNITS.map(u => `<div class="dday-unit">${P(u[0])}<span class="dday-unit-label">${u[1]}</span></div>`).join('');
         }
         const style = bg ? (st === 'classic' ? ` style="background-image:url('${bg}'); background-size:cover; background-position:center;"` : ` style="--dd-bg:url('${bg}')"`) : '';

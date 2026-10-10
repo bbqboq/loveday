@@ -40,12 +40,23 @@
   },
   "blockFields": {
     "dday": {
-      "calendarStyle": "minimal",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "bigd"
+      "counterStyle": "theme"
     },
     "account": {
-      "accStyle": "center"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   }
 }

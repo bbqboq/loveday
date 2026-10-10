@@ -45,9 +45,9 @@
   "heroLayout": "getting-married",
   "blockFields": {
     "dday": {
-      "calendarStyle": "heart",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "bubble"
+      "counterStyle": "theme"
     },
     "gallery": {
       "layoutType": "collage",
@@ -55,7 +55,9 @@
       "skin": "vintage"
     },
     "account": {
-      "accStyle": "vintage"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
     },
     "greeting": {
       "skin": "vintage"
@@ -67,10 +69,15 @@
       "skin": "vintage"
     },
     "rsvp": {
-      "skin": "vintage"
+      "skin": "vintage",
+      "btnStyle": "theme"
     },
     "guestbook": {
-      "skin": "vintage"
+      "skin": "vintage",
+      "style": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   }
 }

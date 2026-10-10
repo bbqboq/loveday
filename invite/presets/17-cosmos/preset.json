@@ -40,9 +40,9 @@
   },
   "blockFields": {
     "dday": {
-      "calendarStyle": "night",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "ring"
+      "counterStyle": "theme"
     },
     "gallery": {
       "layoutType": "circle",
@@ -50,8 +50,10 @@
       "skin": "night"
     },
     "account": {
-      "accStyle": "outline",
-      "skin": "night"
+      "accStyle": "theme",
+      "skin": "night",
+      "display": "cards",
+      "accCollapse": true
     },
     "greeting": {
       "skin": "night"
@@ -63,13 +65,16 @@
       "skin": "night"
     },
     "transport": {
-      "skin": "night"
+      "skin": "night",
+      "style": "theme"
     },
     "rsvp": {
-      "skin": "night"
+      "skin": "night",
+      "btnStyle": "theme"
     },
     "guestbook": {
-      "skin": "night"
+      "skin": "night",
+      "style": "theme"
     }
   },
   "intro": {

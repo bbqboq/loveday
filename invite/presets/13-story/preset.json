@@ -37,13 +37,27 @@
   "heroLayout": "names-vertical",
   "blockFields": {
     "dday": {
-      "calendarStyle": "planner",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "sentence"
+      "counterStyle": "theme"
     },
     "gallery": {
       "layoutType": "collage",
       "images": 7
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   }
 }

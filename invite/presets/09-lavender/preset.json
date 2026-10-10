@@ -43,22 +43,31 @@
   "heroLayout": "arc-top",
   "blockFields": {
     "dday": {
-      "calendarStyle": "vintage",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "bubble"
+      "counterStyle": "theme"
     },
     "gallery": {
       "layoutType": "circle",
       "images": 6
     },
     "account": {
-      "accStyle": "vintage"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
     },
     "family": {
       "skin": "vintage"
     },
     "rsvp": {
-      "skin": "vintage"
+      "skin": "vintage",
+      "btnStyle": "theme"
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   }
 }

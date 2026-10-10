@@ -36,16 +36,27 @@
   "heroLayout": "our-wedding-day",
   "blockFields": {
     "dday": {
-      "calendarStyle": "classic",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "classic"
+      "counterStyle": "theme"
     },
     "gallery": {
       "layoutType": "grid",
       "images": 9
     },
     "account": {
-      "accStyle": "basic"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   }
 }

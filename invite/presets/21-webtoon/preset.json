@@ -51,9 +51,9 @@
       "skin": "webtoon"
     },
     "dday": {
-      "calendarStyle": "heart",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "bubble",
+      "counterStyle": "theme",
       "skin": "webtoon"
     },
     "gallery": {
@@ -66,17 +66,21 @@
       "skin": "webtoon"
     },
     "transport": {
-      "skin": "webtoon"
+      "skin": "webtoon",
+      "style": "theme"
     },
     "account": {
-      "accStyle": "outline",
-      "skin": "webtoon"
+      "accStyle": "theme",
+      "skin": "webtoon",
+      "display": "cards",
+      "accCollapse": true
     },
     "rsvp": {
-      "skin": "webtoon"
+      "skin": "webtoon",
+      "btnStyle": "theme"
     },
     "guestbook": {
-      "style": "card",
+      "style": "theme",
       "skin": "webtoon"
     }
   },

@@ -38,16 +38,27 @@
   "paper": "linen",
   "blockFields": {
     "dday": {
-      "calendarStyle": "planner",
+      "calendarStyle": "theme",
       "showCounter": true,
-      "counterStyle": "ring"
+      "counterStyle": "theme"
     },
     "gallery": {
       "layoutType": "pages",
       "images": 12
     },
     "account": {
-      "accStyle": "outline"
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
     }
   }
 }
