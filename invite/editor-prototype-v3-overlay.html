@@ -1051,7 +1051,10 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
 .dpk-sl[hidden] { display: none; }
 .dpk-ph { position: absolute; inset: 0; border-radius: 18px; border: 3px solid #1E1B19; overflow: hidden; background: var(--sk-bg, #F4F1EC); contain: strict; }
 .dpk-sl:not(.cur) .ambient-field, .dpk-sl:not(.cur) video { display: none !important; } /* 옆 휴대폰은 장식 효과·영상 멈춤 (가볍게) */
-.dpk-sl:not(.cur) .dpk-iv *, #dpkCar.drag .dpk-iv * { animation-play-state: paused !important; }
+.dpk-sl:not(.cur) .dpk-iv * { animation-play-state: paused !important; }
+#dpkCar.moving .dpk-sl.run > .dpk-ph > .dpk-iv { animation-play-state: paused; } /* 넘기는 동안 흘러가기 잠깐 멈춤 (넓은 선택자는 오히려 느려서 이 칸 하나만) */
+@keyframes dpkFocus { 0%, 16% { transform: scale(.87); opacity: .55; } 50% { transform: none; opacity: 1; } 84%, 100% { transform: scale(.87); opacity: .55; } }
+@supports (animation-timeline: view()) { .dpk-sl { animation: dpkFocus linear both; animation-timeline: view(inline); } }
 .dpk-sl.cur .dpk-ph { cursor: zoom-in; box-shadow: 0 12px 30px rgba(30, 22, 16, .22); }
 .dpk-iv.invite-preview { position: absolute; left: 0; top: 0; width: 390px; min-height: 0; border-radius: 0; transform-origin: 0 0; transform: scale(var(--dpk-k, .4)); pointer-events: none; background-image: var(--p-paper, none); background-size: 300px; background-blend-mode: multiply; }
 .dpk-sl.run .dpk-iv { animation: dpkScroll var(--dpk-dur, 18s) ease-in-out .8s infinite; }
@@ -13941,7 +13944,7 @@ function dpkQueue() {
     if (DPK.busy) return;
     const idle = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 700 }) : setTimeout(fn, 60));
     const next = () => {
-        if (Date.now() - (DPK.moved || 0) < 350) { DPK.busy = true; setTimeout(next, 200); return; } // 넘기는 동안은 쉬었다가 (끊기지 않게)
+        if (DPK.touching || Date.now() - (DPK.moved || 0) < 600) { DPK.busy = true; setTimeout(next, 250); return; } // 손가락이 닿아 있거나 넘긴 지 얼마 안 됐으면 쉬었다가 (끊기지 않게)
         dpkSync(); // 멈춘 뒤에 가운데·양옆만 채우고 먼 것은 비움
         DPK.todo = dpkNear().filter(id => !DPK.shots[id]); // 그 사이 넘겼으면 새 가운데부터
         const id = DPK.todo.shift();
@@ -13977,33 +13980,46 @@ function dpkSize() {
 }
 const dpkLeft = sl => sl.offsetLeft + sl.offsetWidth / 2 - document.getElementById('dpkCar').clientWidth / 2;
 function dpkGo(id, inst) { const sl = document.querySelector(`#dpkCar .dpk-sl[data-id="${CSS.escape(id || '')}"]`); if (sl) document.getElementById('dpkCar').scrollTo({ left: dpkLeft(sl), behavior: inst ? 'auto' : 'smooth' }); }
-function dpkMark(id) {
+// lite = 넘기는 중: 글자·색 띠 표시만 바꿈 (무거운 일 - 휴대폰 강조·띠 따라가기·흘러가기·그리기 - 은 멈춘 뒤 dpkSettle)
+function dpkMark(id, lite) {
     const p = allDesigns().find(x => x.id === id); if (!p) return;
     const v = dpkVis(), n = v.indexOf(id), m = dpkMeta(p);
     DPK.cur = id;
-    document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => sl.classList.toggle('cur', sl.dataset.id === id));
     const strip = document.getElementById('dpkStrip'); let sw = null;
     strip.querySelectorAll('.dpk-sw').forEach(b => { const on = b.dataset.id === id; b.classList.toggle('on', on); if (on) sw = b; });
-    if (sw) strip.scrollTo({ left: sw.offsetLeft - strip.clientWidth / 2 + sw.offsetWidth / 2, behavior: 'smooth' });
+    if (!lite) {
+        document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => sl.classList.toggle('cur', sl.dataset.id === id));
+        if (sw) strip.scrollTo({ left: sw.offsetLeft - strip.clientWidth / 2 + sw.offsetWidth / 2, behavior: 'smooth' });
+    }
     const tags = (p.tags || []).filter(t => t !== 'BETA').slice(0, 2).map(t => '#' + t);
     document.getElementById('dpkInfo').innerHTML = `<div class="r1"><b>${esc(p.label)}</b><span class="cnt">${n + 1} / ${v.length}</span></div><p>${esc(p.desc || '')}</p><div class="tags"><span>${m.dark ? '어두운 색' : '밝은 색'}</span><span>${m.video ? '영상으로 시작' : '사진으로 시작'}</span>${tags.map(t => `<span>${esc(t)}</span>`).join('')}</div>`;
     document.getElementById('dpkPal').innerHTML = [m.bg, m.acc, m.ink, m.line].filter(Boolean).map(c => `<i style="background:${esc(c)}"></i>`).join('');
     const secs = (p.sections || []).filter(s => s !== 'hero' && s !== 'heroVideo').map(s => (InviteBlocks.BLOCKS[s] && InviteBlocks.BLOCKS[s].label) || blockLabels[s]).filter(Boolean);
     document.getElementById('dpkFeat').innerHTML = [m.video ? '영상으로 여는 첫 화면' : '사진으로 여는 첫 화면', m.font ? `글꼴 · ${m.font}` : '', secs.length ? secs.slice(0, 5).join(' · ') : '', p.ambient && p.ambient !== 'none' && InviteBlocks.AMBIENT[p.ambient] ? `장식 효과 · ${InviteBlocks.AMBIENT[p.ambient].label || '있음'}` : ''].filter(Boolean).map(t => `<li>${esc(t)}</li>`).join('');
     document.getElementById('dpkL').disabled = n <= 0; document.getElementById('dpkR').disabled = n >= v.length - 1;
-    dpkRun(); dpkQueue();
+    if (!lite) { dpkRun(); dpkQueue(); }
 }
+// 양옆 휴대폰 작고 흐리게: 되는 브라우저는 CSS(스크롤 따라 움직이는 애니메이션, 화면 그리는 쪽에서 처리 → 안 끊김), 안 되면 JS
+const DPK_CSS_FOCUS = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline: view()');
 function dpkPaint() {
     DPK.raf = 0;
     const car = document.getElementById('dpkCar'); if (!car) return;
     const mid = car.scrollLeft + car.clientWidth / 2; let best = DPK.cur, bd = 1e9;
-    car.querySelectorAll('.dpk-sl').forEach(sl => {
-        if (sl.hidden) return;
-        const c = sl.offsetLeft + sl.offsetWidth / 2, d = Math.abs(c - mid), r = Math.min(1, d / (sl.offsetWidth + 12));
-        sl.style.transform = `scale(${(1 - r * .13).toFixed(3)})`; sl.style.opacity = (1 - r * .45).toFixed(3);
+    car.querySelectorAll('.dpk-sl:not([hidden])').forEach(sl => {
+        const c = sl.offsetLeft + sl.offsetWidth / 2, d = Math.abs(c - mid);
+        if (!DPK_CSS_FOCUS) {
+            const r = Math.min(1, d / (sl.offsetWidth + 12)), tf = `scale(${(1 - r * .13).toFixed(3)})`;
+            if (sl._tf !== tf) { sl._tf = tf; sl.style.transform = tf; sl.style.opacity = (1 - r * .45).toFixed(3); } // 바뀐 것만
+        }
         if (d < bd) { bd = d; best = sl.dataset.id; }
     });
-    if (best !== DPK.cur) dpkMark(best);
+    if (best !== DPK.cur) dpkMark(best, document.getElementById('dpkCar').classList.contains('moving'));
+}
+// 넘기기가 멈추면 (scrollend 또는 0.15초 조용하면) 무거운 일을 한 번에
+function dpkSettle() {
+    const car = document.getElementById('dpkCar'); if (!car || !car.classList.contains('moving')) return;
+    car.classList.remove('moving'); clearTimeout(DPK.setT);
+    dpkPaint(); dpkMark(DPK.cur);
 }
 function dpkTouched() { if (DPK.touched) return; DPK.touched = true; document.getElementById('dpkHint').classList.add('gone'); }
 function dpkStep(k) { const v = dpkVis(), n = v.indexOf(DPK.cur), id = v[Math.max(0, Math.min(v.length - 1, n + k))]; dpkTouched(); dpkGo(id); }
@@ -14026,8 +14042,15 @@ function dpkBuild(list) {
 function dpkBind() {
     if (DPK.bound) return; DPK.bound = true;
     const car = document.getElementById('dpkCar'), strip = document.getElementById('dpkStrip');
-    car.addEventListener('scroll', () => { DPK.moved = Date.now(); if (!DPK.raf) DPK.raf = requestAnimationFrame(dpkPaint); }, { passive: true });
-    car.addEventListener('touchstart', dpkTouched, { passive: true });
+    car.addEventListener('scroll', () => {
+        DPK.moved = Date.now();
+        if (!car.classList.contains('moving')) car.classList.add('moving'); // 넘기는 동안: 흘러가기·장식 효과 멈춤
+        if (!DPK.raf) DPK.raf = requestAnimationFrame(dpkPaint);
+        clearTimeout(DPK.setT); DPK.setT = setTimeout(dpkSettle, 160);
+    }, { passive: true });
+    car.addEventListener('scrollend', dpkSettle);
+    car.addEventListener('touchstart', () => { DPK.touching = true; dpkTouched(); }, { passive: true });
+    ['touchend', 'touchcancel'].forEach(t => car.addEventListener(t, () => { DPK.touching = false; DPK.moved = Date.now(); }, { passive: true }));
     document.getElementById('dpkL').addEventListener('click', () => dpkStep(-1));
     document.getElementById('dpkR').addEventListener('click', () => dpkStep(1));
     strip.addEventListener('click', e => { const b = e.target.closest('.dpk-sw'); if (b) { dpkTouched(); dpkGo(b.dataset.id); } });
