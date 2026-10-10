@@ -4,7 +4,11 @@
   "group": "mood",
   "label": "웹툰 · 우리 결혼해요",
   "desc": "말풍선·효과음·먹선 컷으로 꾸민 웹툰 한 화 같은 청첩장",
-  "tags": ["웹툰", "귀여운", "말풍선"],
+  "tags": [
+    "웹툰",
+    "귀여운",
+    "말풍선"
+  ],
   "palette": {
     "bg": "#FFFFFF",
     "ink": "#1B1B1F",
@@ -12,9 +16,9 @@
     "line": "#E4E1EA",
     "muted": "#6F6A73",
     "radius": "4px",
-    "headFont": "\"Black Han Sans\", \"Pretendard Variable\", Pretendard, sans-serif",
+    "headFont": "\"Pretendard Variable\", Pretendard, sans-serif",
     "bodyFont": "\"Pretendard Variable\", Pretendard, sans-serif",
-    "headWeight": "400"
+    "headWeight": "800"
   },
   "font": "",
   "hero": "photo",
@@ -22,24 +26,107 @@
   "heroLayout": "webtoon-cover",
   "sideBg": "#FFF1C2",
   "ambient": "none",
-  "sections": ["hero", "greeting", "family", "dday", "gallery", "location", "transport", "account", "rsvp", "guestbook"],
-  "fx": { "default": "pop", "gallery": "up" },
-  "blockFields": {
-    "greeting": { "text": "서로의 주인공이 되어\n같은 이야기를 써 내려가려 합니다.\n저희의 첫 화를 함께 봐 주세요.", "skin": "webtoon" },
-    "family": { "skin": "webtoon" },
-    "dday": { "calendarStyle": "heart", "showCounter": true, "counterStyle": "bubble", "skin": "webtoon" },
-    "gallery": { "layoutType": "collage", "images": 6, "reveal": "random", "skin": "webtoon" },
-    "location": { "skin": "webtoon" },
-    "transport": { "skin": "webtoon" },
-    "account": { "accStyle": "outline", "skin": "webtoon" },
-    "rsvp": { "skin": "webtoon" },
-    "guestbook": { "style": "card", "skin": "webtoon" }
-  },
-  "intro": { "enabled": true, "text": "우리 결혼합니다!", "font": "black-han-sans", "bg": "#FFD93D", "color": "#1B1B1F", "fontSize": 34, "duration": 2.2 },
-  "stickers": [
-    { "sectionId": "greeting", "relX": 0.87, "relY": 0.1, "size": 62, "image": "stk:webtoon/bubble-heart", "effect": "pop" },
-    { "sectionId": "gallery", "relX": 0.12, "relY": 0.05, "size": 56, "image": "stk:webtoon/sfx-ppyong", "effect": "pop", "rotation": -8 },
-    { "sectionId": "guestbook", "relX": 0.88, "relY": 0.07, "size": 58, "image": "stk:webtoon/sfx-kyak", "effect": "pop" }
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
   ],
-  "stickerThemes": ["webtoon", "party"]
+  "fx": {
+    "default": "pop",
+    "gallery": "up"
+  },
+  "blockFields": {
+    "greeting": {
+      "text": "서로의 주인공이 되어\n같은 이야기를 써 내려가려 합니다.\n저희의 첫 화를 함께 봐 주세요.",
+      "skin": "webtoon"
+    },
+    "family": {
+      "skin": "webtoon"
+    },
+    "dday": {
+      "calendarStyle": "heart",
+      "showCounter": true,
+      "counterStyle": "bubble",
+      "skin": "webtoon"
+    },
+    "gallery": {
+      "layoutType": "collage",
+      "images": 6,
+      "reveal": "random",
+      "skin": "webtoon"
+    },
+    "location": {
+      "skin": "webtoon"
+    },
+    "transport": {
+      "skin": "webtoon"
+    },
+    "account": {
+      "accStyle": "outline",
+      "skin": "webtoon"
+    },
+    "rsvp": {
+      "skin": "webtoon"
+    },
+    "guestbook": {
+      "style": "card",
+      "skin": "webtoon"
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "우리 결혼합니다!",
+    "font": "black-han-sans",
+    "bg": "#FFD93D",
+    "color": "#1B1B1F",
+    "fontSize": 34,
+    "duration": 2.2
+  },
+  "stickers": [
+    {
+      "sectionId": "hero",
+      "relX": 0.14,
+      "relY": 0.872,
+      "size": 56,
+      "image": "stk:webtoon/sfx-kyak",
+      "effect": "pop",
+      "rotation": -10
+    },
+    {
+      "sectionId": "greeting",
+      "relX": 0.87,
+      "relY": 0.1,
+      "size": 62,
+      "image": "stk:webtoon/bubble-heart",
+      "effect": "pop"
+    },
+    {
+      "sectionId": "gallery",
+      "relX": 0.12,
+      "relY": 0.05,
+      "size": 56,
+      "image": "stk:webtoon/sfx-ppyong",
+      "effect": "pop",
+      "rotation": -8
+    },
+    {
+      "sectionId": "guestbook",
+      "relX": 0.88,
+      "relY": 0.07,
+      "size": 58,
+      "image": "stk:webtoon/sfx-kyak",
+      "effect": "pop"
+    }
+  ],
+  "stickerThemes": [
+    "webtoon",
+    "party"
+  ]
 }
