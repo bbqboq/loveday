@@ -208,6 +208,10 @@ foreach (glob(PRESET_DIR . '/*/preset.json') ?: [] as $jsonPath) {
         $skipped[] = ['folder' => $folder, 'reason' => $e instanceof PresetError ? $e->getMessage() : '읽기 오류'];
     }
 }
-usort($presets, fn($a, $b) => [$a['no'], $a['id']] <=> [$b['no'], $b['id']]);
+// 날씨 따라 바뀌는 청첩장(장식 효과 weather)은 디자인을 더 넣어도 늘 맨 끝 · 번호는 보이는 순서대로 1, 2, 3 … (화면에 보이는 번호)
+$isWx = fn($p) => ($p['ambient'] ?? '') === 'weather';
+usort($presets, fn($a, $b) => [$isWx($a), $a['no'], $a['id']] <=> [$isWx($b), $b['no'], $b['id']]);
+foreach ($presets as $i => &$pp) $pp['no'] = $i + 1;
+unset($pp);
 
 echo json_encode(['ok' => true, 'presets' => $presets, 'skipped' => $skipped], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

@@ -4653,14 +4653,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018w">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018w">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018x">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018x">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018w"></script>
-<script src="assets/tip-demos.js?v=1018w"></script>
-<script src="assets/ld-dialog.js?v=1018w"></script>
+<script src="assets/invite-blocks.js?v=1018x"></script>
+<script src="assets/tip-demos.js?v=1018x"></script>
+<script src="assets/ld-dialog.js?v=1018x"></script>
 </head>
 <body>
 
@@ -14049,7 +14049,8 @@ function allDesigns() {
         const b = PRESETS.find(p => p.id === it.base) || PRESETS[0] || {};
         return Object.assign({}, b, { id: it.id, label: it.label || b.label, desc: it.desc || b.desc, no: 100 + i, tags: [], __base: b.id, thumb: b.thumb });
     });
-    return PRESETS.concat(extra);
+    const all = PRESETS.concat(extra), wx = p => p && (p.ambient === 'weather' || p.id === 'p-weather' || p.__base === 'p-weather');
+    return all.filter(p => !wx(p)).concat(all.filter(wx)); // 날씨 따라 바뀌는 청첩장은 늘 맨 끝 (디자인을 더 넣어도)
 }
 // 저장된 샘플 디자인을 지금 상태에 입힌다 (불러오기와 같은 정리: 빠진 섹션 채우기·예전 저장분 옮기기)
 function applySampleDesign(d) {
@@ -14184,7 +14185,8 @@ function renderDesignScreen() {
             document.getElementById('pickTitle').textContent = '마음에 드는 디자인을 골라주세요';
             document.getElementById('pickSub').textContent = '옆으로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요';
             const fids = (FEATURED_IDS || []).filter(id => ALL.some(p => p.id === id));
-            dpkBuild(fids.map(id => ALL.find(p => p.id === id)).concat(ALL.filter(p => !fids.includes(p.id))));
+            const ord = fids.map(id => ALL.find(p => p.id === id)).concat(ALL.filter(p => !fids.includes(p.id))), wx = p => p.ambient === 'weather' || p.id === 'p-weather' || p.__base === 'p-weather';
+            dpkBuild(ord.filter(p => !wx(p)).concat(ord.filter(wx))); // 추천 디자인 먼저 · 날씨 따라 바뀌는 청첩장은 추천이어도 맨 끝
             return;
         }
     }
@@ -14264,7 +14266,9 @@ function spNewLook() {
     const loc = state.blocks.find(b => b.id === 'location'); state.venueDemo = loc && loc.fields.venue ? loc.fields.venue : undefined; state.venueDemoAddr = loc && loc.fields.address ? loc.fields.address : undefined; // 디자인 예시 예식장 이름 (고객이 적으면 그 이름으로)
 }
 // 그 디자인을 미리보기에 잠깐 그려서 HTML만 가져오고 지금 상태로 되돌림 (되돌리기 기록·자동 저장 안 남김)
-function dpkRender(id, design) {
+// lv: 'p' 첫 화면만(먼 휴대폰) · 's' 위쪽 섹션 몇 개(가운데·양옆) · 'f' 전체(크게 보기) - 안 보이는 섹션까지 다 그리면 22개 디자인의 갤러리 사진·스티커·글꼴을 다 받아서 무거웠음
+const DPK_LV = { p: 1, s: 2, f: 3 }, DPK_SLIM_BLOCKS = 8;
+function dpkRender(id, design, lv) {
     const html = document.documentElement, root = document.getElementById('previewRoot'), pane = document.querySelector('.preview-pane');
     if (!root || html.classList.contains('pv-sample') || !document.getElementById('screenDesign').classList.contains('active')) return null;
     const keep = JSON.stringify(state), sel = selectedId, lsj = lastSnapshotJSON, rStyle = root.getAttribute('style'), rCls = root.className, pBg = pane ? pane.style.background : '';
@@ -14278,11 +14282,16 @@ function dpkRender(id, design) {
         try { applyWizardDataToBlocks(); } catch (e) {}
         try { spNewLook(); } catch (e) {}
         dpkMyPut();
+        if (lv !== 'f') { // 보일 만큼만 켜 두고 그림
+            const max = lv === 'p' ? 1 : DPK_SLIM_BLOCKS; let n = 0;
+            state.blocks.forEach(b => { if (b.enabled && !SECTION_HIDDEN.has(b.id) && ++n > max) b.enabled = false; });
+            if (lv === 'p') state.effects = Object.assign({}, state.effects, { ambient: 'none' }); // (첫 화면 한 장은 장식 효과를 빼고 보여 줌)
+        }
         selectedId = null;
         window.__dpkWant = false;
         renderPreviewNow(); // (계좌 자동 정렬 등이 다시 그려 달라고 하면 한 번만 더)
         if (window.__dpkWant) { window.__dpkWant = false; renderPreviewNow(); }
-        return { fx: JSON.parse(JSON.stringify(state.effects || {})), html: dpkClean(root.innerHTML), style: root.getAttribute('style') || '', cls: root.className.replace(/\b(sp-pop|has-desktop-shadow|sp-[\w-]+)\b/g, '') };
+        return { lv: lv || 'f', fx: JSON.parse(JSON.stringify(state.effects || {})), html: dpkClean(root.innerHTML), style: root.getAttribute('style') || '', cls: root.className.replace(/\b(sp-pop|has-desktop-shadow|sp-[\w-]+)\b/g, '') };
     } catch (e) { console.warn('[dpk]', e); return null; }
     finally {
         window.__dpkBusy = false;
@@ -14309,14 +14318,16 @@ function dpkClean(h) {
     c.querySelectorAll('img[loading="lazy"]').forEach(el => el.removeAttribute('loading'));
     return t.innerHTML;
 }
-function dpkShot(id) {
-    if (DPK.shots[id]) return Promise.resolve(DPK.shots[id]);
+const dpkHas = (id, lv) => { const s = DPK.shots[id]; return !!s && DPK_LV[s.lv] >= DPK_LV[lv]; };
+function dpkShot(id, lv) {
+    lv = lv || 's';
+    if (dpkHas(id, lv)) return Promise.resolve(DPK.shots[id]);
     const key = DPK.key;
     return (DPK.q = DPK.q.then(async () => {
-        if (DPK.shots[id]) return DPK.shots[id];
+        if (dpkHas(id, lv)) return DPK.shots[id];
         const d = await dpkSample(id);
         if (key !== DPK.key) return null;
-        const s = dpkRender(id, d); if (s) DPK.shots[id] = s;
+        const s = dpkRender(id, d, lv); if (s) DPK.shots[id] = s;
         return s;
     }).catch(() => null));
 }
@@ -14369,7 +14380,7 @@ function dpkSync() {
     const near = dpkNear();
     document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => {
         const id = sl.dataset.id, s = DPK.shots[id], ph = sl.querySelector('.dpk-ph');
-        if (near.includes(id) && s) { // 가운데·양옆 = 위쪽 6줄
+        if (near.includes(id) && s && s.lv !== 'p') { // 가운데·양옆 = 위쪽 6줄 (첫 화면만 그려 둔 것은 아래 첫 화면 한 장으로 먼저)
             if (sl.dataset.filled === '1') return;
             ph.innerHTML = ''; const el = dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) }); ph.appendChild(el); dpkWx(el, s); sl.dataset.filled = '1';
         } else if (s) { // 먼 휴대폰 = 첫 화면 한 장만 (가볍게 · 넘기는 동안에도 빈 휴대폰이 안 보이게)
@@ -14387,7 +14398,7 @@ function dpkQueue() {
     const next = () => {
         if (DPK.touching || Date.now() - (DPK.moved || 0) < 600) { DPK.busy = true; setTimeout(next, 250); return; } // 손가락이 닿아 있거나 넘긴 지 얼마 안 됐으면 쉬었다가 (끊기지 않게)
         dpkSync(); // 멈춘 뒤에 가운데·양옆만 채우고 먼 것은 비움
-        const near = dpkNear().filter(id => !DPK.shots[id]); // 그 사이 넘겼으면 새 가운데부터
+        const near = dpkNear().filter(id => !dpkHas(id, 's')); // 그 사이 넘겼으면 새 가운데부터
         let far = false;
         if (!near.length) { // 가까운 것을 다 그렸으면 나머지도 가까운 순서로 천천히 (첫 화면만 보여 줄 것)
             const v = dpkVis(), i = Math.max(0, v.indexOf(DPK.cur));
@@ -14396,7 +14407,7 @@ function dpkQueue() {
         const id = DPK.todo.shift();
         if (!id || DPK.off || !document.getElementById('screenDesign').classList.contains('active') || document.getElementById('dpk').hidden) { DPK.busy = false; return; }
         DPK.busy = true;
-        idle(() => dpkShot(id).then(() => { dpkSync(); if (DPK.ovId === id) dpkOvPut(id); setTimeout(next, far ? 250 : 30); }));
+        idle(() => dpkShot(id, far ? 'p' : 's').then(() => { dpkSync(); setTimeout(next, far ? 250 : 30); }));
     };
     next();
 }
@@ -14560,7 +14571,8 @@ function dpkOvPut(id, fade) {
         ov.querySelector('.pv').disabled = n <= 0; ov.querySelector('.nv').disabled = n >= v.length - 1;
         vw.innerHTML = ''; vw.scrollTop = 0;
         if (s) { const el = dpkIvEl(s); el.classList.remove('dpk-iv'); vw.appendChild(el); dpkWx(el, s); }
-        else { vw.innerHTML = '<div class="dpk-sk">그리는 중…</div>'; dpkShot(id).then(() => { if (DPK.ovId === id && ov.classList.contains('show')) dpkOvPut(id); dpkSync(); }); }
+        else vw.innerHTML = '<div class="dpk-sk">그리는 중…</div>';
+        if (!dpkHas(id, 'f')) dpkShot(id, 'f').then(() => { if (DPK.ovId === id && ov.classList.contains('show') && dpkHas(id, 'f')) dpkOvPut(id); dpkSync(); }); // 크게 보기는 전체 (그 디자인만 이때 다 그림)
         vw.classList.remove('fade');
     };
     if (fade) { vw.classList.add('fade'); setTimeout(put, 160); } else put();
