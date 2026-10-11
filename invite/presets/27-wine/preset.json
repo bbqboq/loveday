@@ -1,0 +1,87 @@
+{
+  "id": "p-wine",
+  "no": 27,
+  "group": "mood",
+  "label": "가을 와인",
+  "desc": "깊은 와인 빛과 떨어지는 잎. 차분하고 우아한 가을 웨딩",
+  "tags": [
+    "가을",
+    "우아한",
+    "매거진"
+  ],
+  "palette": {
+    "bg": "#F5EEE8",
+    "ink": "#3B2A28",
+    "accent": "#7A2E3B",
+    "line": "#D9C6BE",
+    "muted": "#8C7570",
+    "radius": "8px"
+  },
+  "font": "noto-serif-kr",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "wine-vows",
+  "sideBg": "#E7DAD2",
+  "shadow": true,
+  "ambient": "autumn",
+  "ambientOpacity": 40,
+  "ambientScope": "hero",
+  "sectionLook": "wine",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "fade"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "theme",
+      "showCounter": true,
+      "counterStyle": "theme"
+    },
+    "gallery": {
+      "layoutType": "collage",
+      "images": 7
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
+    },
+    "greeting": {
+      "text": "깊어 가는 가을,\n두 사람이 한 계절을 함께 맞이합니다.\n저희의 약속에\n따뜻한 축복을 더해 주세요."
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "Autumn Vows",
+    "font": "playfair",
+    "bg": "#3B2A28",
+    "color": "#F5EEE8",
+    "fontSize": 36,
+    "duration": 2.2
+  },
+  "stickerThemes": [
+    "season",
+    "classic"
+  ],
+  "notes": "꾸밈 wine(흰 종이 카드 · 와인색 고리 예식일 · 큰 기울임 달 이름) + 첫 화면 wine-vows"
+}

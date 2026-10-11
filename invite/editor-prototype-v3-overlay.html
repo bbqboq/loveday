@@ -767,6 +767,9 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .hl-m span.hl-d-bubble { background: #fff; border: 1.2px solid #1B1B1F; border-radius: 50% / 46%; padding: .6em .9em .5em; line-height: 1.2; text-shadow: none; }
 .hl-m span.hl-d-sfx { -webkit-text-stroke: .08em #1B1B1F; paint-order: stroke fill; text-shadow: .06em .06em 0 #1B1B1F; }
 .hl-m span.hl-d-tag { background: #F0445A; border: 1px solid #1B1B1F; border-radius: 99px; padding: .25em .6em .12em; text-shadow: none; }
+.hl-m span.hl-d-seal { background: var(--p-accent, #B04A35); color: #fff; border-radius: 2px; padding: .25em .3em .2em; line-height: 1; text-shadow: none; }
+.hl-m span.hl-d-card { background: #fff; color: #1E2833; border-radius: 4px; padding: .5em .7em; box-shadow: 0 2px 6px rgba(0,0,0,.2); text-shadow: none; }
+.hl-m span.hl-d-line { border-top: 1px solid currentColor; border-bottom: 1px solid currentColor; padding: .3em .5em; }
 .hl-m-box .hb-fr-rounded { border-radius: 5px; } .hl-m-box .hb-fr-arch { border-radius: 999px 999px 0 0; } .hl-m-box .hb-fr-shadow { box-shadow: 0 4px 10px rgba(0,0,0,.2); }
 .hl-m-box .hb-fr-polaroid { background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.15); } .hl-m-box .hb-fr-polaroid em { inset: 5% 5% 26% 5%; }
 .hl-m-box span { text-shadow: none; }
@@ -4681,14 +4684,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z7">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018z7">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z8">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018z8">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018z7"></script>
-<script src="assets/tip-demos.js?v=1018z7"></script>
-<script src="assets/ld-dialog.js?v=1018z7"></script>
+<script src="assets/invite-blocks.js?v=1018z8"></script>
+<script src="assets/tip-demos.js?v=1018z8"></script>
+<script src="assets/ld-dialog.js?v=1018z8"></script>
 </head>
 <body>
 
@@ -9839,7 +9842,7 @@ const STK_THEMES = [
     { id: 'vintage', name: '빈티지 그림 전체', vin: Object.keys(STK_VIN), emo: [] },
 ];
 // 디자인마다 먼저 보여줄 테마 (디자인 폴더 preset.json의 stickerThemes가 있으면 그게 먼저)
-const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] , 'p-webtoon': ['webtoon', 'party'], 'p-angel': ['romantic', 'classic'] };
+const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] , 'p-webtoon': ['webtoon', 'party'], 'p-angel': ['romantic', 'classic'], 'p-hanji': ['classic', 'season'], 'p-ticket': ['party', 'classic'], 'p-olive': ['garden', 'season'], 'p-sea': ['season', 'party'], 'p-wine': ['season', 'classic'] };
 // 관리자 → 스티커 (sticker_settings.php): 테마 순서·끈 테마·숨긴 그림·디자인별 추천. 못 받으면 아래 기본대로
 let STK_CFG = { order: null, off: [], hide: [], rec: {} };
 // 관리자가 올린 종이 질감 그림 (관리자 → 추천 디자인 → 종이 질감 그림) - 받으면 바탕·고르기 칸 견본을 다시 그림
@@ -16511,7 +16514,7 @@ const SSK_PART = { greeting: '.free-canvas', family: '.ib-title-canvas', dday: '
 //  만드는 도구: 저장소 tools/ssk-sprites.js (섹션 모양 CSS나 디자인을 바꾸면 다시 돌릴 것) · 목록 assets/ssk/manifest.json
 //  지금 디자인을 따라 달라지는 카드('디자인 따라' 스킨 · '테마 모양' 모양)와 목록에 없는 카드(새로 넣은 디자인 등)만 그 자리에서 그림
 let SSK_SPR = null;
-try { fetch('assets/ssk/manifest.json?v=1018z7').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
+try { fetch('assets/ssk/manifest.json?v=1018z8').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
 // '디자인 따라' 스킨 = 지금 디자인의 디자인 스킨 그림 · '테마 모양' = 지금 디자인 꾸밈의 모양 그림 (색을 바꾸지 않았고 디자인이 정한 섹션 테마가 없을 때만 - 아니면 그 자리에서 그림)
 function sskAlias(b, spec) {
     try { if (InviteBlocks.colorChanged && InviteBlocks.colorChanged()) return null; } catch (e) { return null; }

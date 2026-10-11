@@ -1,0 +1,87 @@
+{
+  "id": "p-sea",
+  "no": 26,
+  "group": "mood",
+  "label": "여름 바다",
+  "desc": "맑은 물빛과 하늘. 시원하고 깨끗한 여름 웨딩",
+  "tags": [
+    "여름",
+    "바다",
+    "청량한"
+  ],
+  "palette": {
+    "bg": "#F2F7F8",
+    "ink": "#1E3742",
+    "accent": "#2D7C93",
+    "line": "#C6DDE3",
+    "muted": "#6F8B95",
+    "radius": "18px"
+  },
+  "font": "gothic-a1",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "sea-wave",
+  "sideBg": "#DDEBEF",
+  "shadow": true,
+  "ambient": "sunshine",
+  "ambientOpacity": 35,
+  "ambientScope": "hero",
+  "sectionLook": "sea",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "up"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "theme",
+      "showCounter": true,
+      "counterStyle": "theme"
+    },
+    "gallery": {
+      "layoutType": "pages",
+      "images": 12
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
+    },
+    "greeting": {
+      "text": "푸른 여름 바다처럼\n맑고 시원한 마음으로\n두 사람이 함께 걸어가려 합니다.\n그 첫걸음에 함께해 주세요."
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "Summer Wedding",
+    "font": "playfair",
+    "bg": "#F2F7F8",
+    "color": "#2D7C93",
+    "fontSize": 34,
+    "duration": 2.2
+  },
+  "stickerThemes": [
+    "season",
+    "party"
+  ],
+  "notes": "꾸밈 sea(흰 종이 카드 · 빛나는 예식일 · 물빛 달력 판) + 첫 화면 sea-wave + 배경 sky"
+}

@@ -43,11 +43,11 @@ const ALLOWED_STYLE   = [
     'thanks.style'       => ['card', 'letter', 'photo', 'plain'],
 ];
 // 디자인 테마 스킨 꾸밈 (전문가 모드 섹션 스킨에서 이 디자인을 고르면 섹션에 입히는 모양 - InviteBlocks.THEME_DECOS, '@webtoon' 같은 건 섹션 테마)
-const ALLOWED_LOOKS   = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', 'angel', '@vintage', '@night', '@mist', '@webtoon'];
+const ALLOWED_LOOKS   = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', 'angel', 'hanji', 'ticket', 'olive', 'sea', 'wine', '@vintage', '@night', '@mist', '@webtoon'];
 const ALLOWED_HERO    = ['video', 'photo', 'text'];
 const ALLOWED_FRAMES  = ['none', 'rounded', 'circle', 'pill', 'arch'];
 const ALLOWED_FONTS   = ['', 'pretendard', 'noto-serif-kr', 'gowun-batang', 'nanum-myeongjo', 'gothic-a1', 'song-myung',
-                         'nanum-pen', 'nanum-brush', 'gaegu', 'hi-melody', 'gamja-flower', 'bagel-fat-one', 'black-han-sans', 'pinyon', 'cormorant'];
+                         'nanum-pen', 'nanum-brush', 'gaegu', 'hi-melody', 'gamja-flower', 'bagel-fat-one', 'black-han-sans', 'pinyon', 'cormorant', 'playfair', 'great-vibes', 'parisienne', 'alex-brush', 'bangers'];
 const IMAGE_EXTS      = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
 final class PresetError extends Exception {}

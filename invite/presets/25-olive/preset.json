@@ -1,0 +1,87 @@
+{
+  "id": "p-olive",
+  "no": 25,
+  "group": "mood",
+  "label": "지중해 올리브",
+  "desc": "올리브 잎과 햇살, 아치 창문. 따뜻한 지중해 감성",
+  "tags": [
+    "야외",
+    "자연",
+    "따뜻한"
+  ],
+  "palette": {
+    "bg": "#F6F2E8",
+    "ink": "#343826",
+    "accent": "#6B7A3A",
+    "line": "#D8D0B8",
+    "muted": "#8A8670",
+    "radius": "22px"
+  },
+  "font": "gowun-batang",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "olive-arch",
+  "sideBg": "#E8E2D2",
+  "shadow": true,
+  "ambient": "leaves",
+  "ambientOpacity": 40,
+  "sectionLook": "olive",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "up",
+    "gallery": "fade"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "theme",
+      "showCounter": true,
+      "counterStyle": "theme"
+    },
+    "gallery": {
+      "layoutType": "wide",
+      "images": 8
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
+    },
+    "greeting": {
+      "text": "햇살 좋은 날,\n두 사람이 하나의 이야기를 시작합니다.\n따뜻한 마음으로 오셔서\n함께 웃어 주세요."
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "Amore",
+    "font": "cormorant",
+    "bg": "#F6F2E8",
+    "color": "#6B7A3A",
+    "fontSize": 42,
+    "duration": 2.2
+  },
+  "stickerThemes": [
+    "garden",
+    "season"
+  ],
+  "notes": "꾸밈 olive(은은한 올리브 카드 · 아치 모양 달력 판) + 첫 화면 olive-arch + 배경 soft"
+}

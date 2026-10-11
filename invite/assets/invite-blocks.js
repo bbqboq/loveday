@@ -165,18 +165,19 @@
     //  b.skinPal = {bg, ink, accent, line, muted, hf(제목 글꼴), bf(본문 글꼴), hw(제목 굵기), r(모서리), paper, font(글꼴 id), deco, id(디자인 id)}
     //  deco = THEME_DECOS 중 하나 → .col.ib-th.ib-th-<deco> (invite-blocks.css '디자인 테마 스킨'). '@vintage' 같은 건 섹션 테마(SECTION_SKINS)를 그대로 씀
     //  디자인 폴더 preset.json에 "sectionLook"을 적으면 그것, 없으면 아래 THEME_LOOKS
-    const THEME_DECOS = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', 'angel'];
+    const THEME_DECOS = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', 'angel', 'hanji', 'ticket', 'olive', 'sea', 'wine'];
     const THEME_LOOKS = { classic: 'rule', modern: 'bold', pastel: 'soft', 'p-mono': 'mono', 'p-romantic': 'cupid', 'p-garden': 'leaf', 'p-navy': 'gold',
         'p-earth': 'kraft', 'p-lavender': 'lace', 'p-film': 'film', 'p-cinema': 'cinema', 'p-photos': 'polaroid', 'p-story': 'note', 'p-typo': 'typo',
-        'p-notice': 'board', 'p-scrapbook': 'tape', 'p-cosmos': 'stars', 'p-rain': 'drops', 'p-midnight': 'deco', 'p-weather': 'sky', 'p-webtoon': '@webtoon', 'p-angel': 'angel' };
+        'p-notice': 'board', 'p-scrapbook': 'tape', 'p-cosmos': 'stars', 'p-rain': 'drops', 'p-midnight': 'deco', 'p-weather': 'sky', 'p-webtoon': '@webtoon', 'p-angel': 'angel',
+        'p-hanji': 'hanji', 'p-ticket': 'ticket', 'p-olive': 'olive', 'p-sea': 'sea', 'p-wine': 'wine' };
     const FONT_RE = /^[^<>{};]{1,120}$/;
-    const THEME_FONTS = { tape: 'nanum-pen', note: 'nanum-pen', typo: 'playfair', film: 'cormorant', cinema: 'cormorant', deco: 'cormorant', rule: 'cormorant', angel: 'cormorant' }; // 테마 부품에 쓰는 글꼴 (숫자·영문)
+    const THEME_FONTS = { tape: 'nanum-pen', note: 'nanum-pen', typo: 'playfair', film: 'cormorant', cinema: 'cormorant', deco: 'cormorant', rule: 'cormorant', angel: 'cormorant', hanji: 'nanum-myeongjo', olive: 'gowun-batang', wine: 'noto-serif-kr' }; // 테마 부품에 쓰는 글꼴 (숫자·영문)
     // 테마 부품 모양 직접 고르기: 모양 값 't:<꾸밈>' (예: 't:angel') → 부품 뿌리에 .ib-tpx.ib-tp-<꾸밈> = 어느 디자인에서나 그 디자인 모양 (색은 화면 설정 색)
     //  (모양 값 'theme' = 지금 디자인 꾸밈 따라). 순서 = 디자인 순서, 날씨는 맨 끝
-    const TP_DECOS = ['rule', 'bold', 'soft', 'mono', 'cupid', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'stars', 'drops', 'deco', 'webtoon', 'angel', 'sky'];
+    const TP_DECOS = ['rule', 'bold', 'soft', 'mono', 'cupid', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'stars', 'drops', 'deco', 'webtoon', 'angel', 'hanji', 'ticket', 'olive', 'sea', 'wine', 'sky'];
     const THEME_DECO_NAMES = { rule: '클래식', bold: '모던', soft: '파스텔', mono: '블랙 & 화이트', cupid: '로맨틱', leaf: '가든', gold: '네이비 골드', kraft: '어스톤',
         lace: '라벤더', film: '빈티지 필름', cinema: '시네마', polaroid: '폴라로이드', note: '이야기 노트', typo: '타이포', board: '알림장', tape: '스크랩북',
-        stars: '별빛 우주', drops: '비 오는 날', deco: '미드나잇 골드', webtoon: '웹툰', angel: '천사의 편지', sky: '날씨 하늘' };
+        stars: '별빛 우주', drops: '비 오는 날', deco: '미드나잇 골드', webtoon: '웹툰', angel: '천사의 편지', hanji: '한지 모던', ticket: '보딩패스', olive: '지중해 올리브', sea: '여름 바다', wine: '가을 와인', sky: '날씨 하늘' };
     const TP_STYLES = TP_DECOS.map(k => ['t:' + k, THEME_DECO_NAMES[k]]);
     function tpOf(v) { const m = /^t:([a-z]+)$/.exec(String(v || '')); return m && TP_DECOS.includes(m[1]) ? m[1] : ''; }
     function tpCls(v) { const k = tpOf(v); if (!k) return ''; if (k === 'webtoon') ensureFont('black-han-sans'); else themeFonts(k); return ` ib-tpx ib-tp-${k}`; }
@@ -1229,7 +1230,7 @@
     }
     function heroLayerInner(text, L) { return L && Number(L.arc) ? heroArcSvg(text, L) : nl2br(text); }
     // 문구 칸 글자 상자 (웹툰): 말풍선 · 나레이션 박스(노랑/흰색) · 효과음 글자(굵은 먹선) · 꼬리표(빨간 알약)
-    const HL_DECOS = [['', '없음'], ['bubble', '말풍선'], ['caption', '나레이션 (노랑)'], ['caption-w', '나레이션 (흰색)'], ['sfx', '효과음 글자'], ['tag', '꼬리표']];
+    const HL_DECOS = [['', '없음'], ['bubble', '말풍선'], ['caption', '나레이션 (노랑)'], ['caption-w', '나레이션 (흰색)'], ['sfx', '효과음 글자'], ['tag', '꼬리표'], ['seal', '도장 (포인트 색 네모)'], ['card', '흰 카드'], ['line', '위아래 가는 선']];
     function heroLayerCls(L) { return (L.deco && HL_DECOS.some(x => x[0] === L.deco && x[0]) ? ` hl-deco hl-d-${L.deco}` : '') + (L.vertical ? ' hl-vert' + (L.vertical === 'side' ? ' hl-vert-side' : '') : '') + (L.anim && HL_ANIMS.some(x => x[0] === L.anim) ? ` hl-anim hl-a-${L.anim}` : '') + (Number(L.arc) ? ' hl-curve' : ''); }
     function heroLayerCss(L) { return (Number(L.arc) ? `width:${Math.max(10, Math.min(100, Number(L.arcW) || 70))}%;` : '') + (L.anim ? `--hl-dur:${Math.max(.3, Math.min(8, Number(L.animDur) || 1.8))}s;--hl-delay:${Math.max(0, Math.min(8, Number(L.animDelay) || 0))}s;` : ''); }
     function heroLayersHtml(f, ink, styleOf, editor) {
@@ -1402,7 +1403,55 @@
                    { text: 'Lettre d\'amour', x: 50, y: 10.5, fontSize: 15, font: 'pinyon', color: '#8A6A45', anim: 'fade', animDelay: .4 },
                    { text: '{신랑}  &  {신부}', x: 50, y: 76, fontSize: 34, font: 'pinyon', color: '#4A3426', anim: 'write', animDur: 2.2, animDelay: .6 },
                    { text: '{날짜:점}  {요일:영문}  {시간}', x: 50, y: 84, fontSize: 12.5, color: '#6B5440', ls: 40, anim: 'up', animDelay: 1.2 },
-                   { text: '{예식장}', x: 50, y: 88, fontSize: 12.5, color: '#6B5440', ls: 20, anim: 'up', animDelay: 1.4 }] }
+                   { text: '{예식장}', x: 50, y: 88, fontSize: 12.5, color: '#6B5440', ls: 20, anim: 'up', animDelay: 1.4 }] },
+        // 새 디자인 5종 (2026-10-11)
+        // 한지 모던: 한지 바탕 · 가운데 사진 · 양쪽 세로 이름 · 아래 인주 도장 囍
+        { id: 'hanji-seal', label: '한지 · 세로 이름 · 도장', desc: '가운데 사진 · 양쪽 세로 이름 · 아래 빨간 도장', edge: true,
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 17, y: 12, w: 66, h: 53, frame: 'none' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: '우리 혼인합니다', x: 50, y: 6, fontSize: 14, font: 'nanum-myeongjo', ls: 420, anim: 'fade', animDur: 1.6 },
+                   { text: '{신랑}', x: 8.5, y: 38.5, fontSize: 20, font: 'nanum-myeongjo', vertical: 'up', ls: 320, anim: 'fade', animDelay: .4 },
+                   { text: '{신부}', x: 91.5, y: 38.5, fontSize: 20, font: 'nanum-myeongjo', vertical: 'up', ls: 320, anim: 'fade', animDelay: .4 },
+                   { text: '{날짜:점}  {요일:영문짧게}  {시간}', x: 50, y: 71, fontSize: 12.5, ls: 80, anim: 'up', animDelay: .8 },
+                   { text: '{예식장}', x: 50, y: 75.5, fontSize: 12.5, ls: 40, anim: 'up', animDelay: 1 },
+                   { text: '囍', x: 50, y: 84, fontSize: 21, font: 'nanum-myeongjo', color: '#FFFFFF', deco: 'seal', rotation: -4, anim: 'zoom', animDelay: 1.3 }] },
+        // 보딩패스: 위 사진 · 아래 탑승권 (이름 → 이름 · DATE · GATE)
+        { id: 'boarding-pass', label: '보딩패스', desc: '위 사진 · 아래 탑승권처럼 이름 → 이름 · 날짜 · 예식장',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 6, y: 4, w: 88, h: 46, frame: 'rounded' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'BOARDING PASS', x: 50, y: 56, fontSize: 11, ls: 440, color: '#3E6A93', anim: 'fade' },
+                   { text: '{신랑}   →   {신부}', x: 50, y: 62.5, fontSize: 25, ls: 20, anim: 'up', animDelay: .3 },
+                   { text: 'DATE  {날짜:점}     TIME  {시간}', x: 50, y: 70, fontSize: 12, ls: 60, deco: 'line', anim: 'up', animDelay: .6 },
+                   { text: 'GATE  {예식장}', x: 50, y: 76, fontSize: 12, ls: 60, anim: 'up', animDelay: .8 },
+                   { text: 'WE ARE FLYING TO FOREVER', x: 50, y: 88, fontSize: 10, ls: 320, color: '#7A8693', anim: 'fade', animDelay: 1.1 }] },
+        // 지중해 올리브: 아치 창문 속 사진 · 아래 이름 · 영문 날짜
+        { id: 'olive-arch', label: '아치 창문 · 이름', desc: '아치 창문 속 사진 · 아래 이름과 영문 날짜',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 15, y: 10, w: 70, h: 52, frame: 'arch' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'we are getting married', x: 50, y: 5, fontSize: 12, font: 'cormorant', ls: 300, color: '#6B7A3A', anim: 'fade' },
+                   { text: '{신랑}  &  {신부}', x: 50, y: 68.5, fontSize: 26, font: 'gowun-batang', ls: 40, anim: 'up', animDelay: .3 },
+                   { text: '{날짜:영문}', x: 50, y: 75, fontSize: 13, font: 'cormorant', ls: 160, color: '#6B7A3A', anim: 'up', animDelay: .6 },
+                   { text: '{시간}  ·  {예식장}', x: 50, y: 79.5, fontSize: 12, ls: 40, anim: 'up', animDelay: .8 }] },
+        // 여름 바다: 아래로 흐려지는 사진 · 큰 날짜 숫자 · 이름
+        { id: 'sea-wave', label: '여름 바다 · 큰 날짜', desc: '아래로 흐려지는 사진 · 큰 날짜 숫자 · 이름',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 0, y: 0, w: 100, h: 68, frame: 'none', fade: 40 },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'SUMMER WEDDING', x: 50, y: 6.5, fontSize: 11, ls: 520, color: '#FFFFFF', shadow: true, anim: 'fade' },
+                   { text: '{월}.{일}', x: 50, y: 70, fontSize: 60, ls: -10, color: '#2D7C93', anim: 'up', animDur: 1.4 },
+                   { text: '{신랑}  ·  {신부}', x: 50, y: 79.5, fontSize: 17, ls: 100, anim: 'up', animDelay: .4 },
+                   { text: '{요일:영문} {시간}   |   {예식장}', x: 50, y: 84.5, fontSize: 11.5, ls: 40, color: '#6F8B95', anim: 'up', animDelay: .6 }] },
+        // 가을 와인: 사진 가득 · 위 큰 영문 제목 · 아래 이름 · 날짜 줄
+        { id: 'wine-vows', label: 'Autumn Vows', desc: '사진 가득 · 위 큰 영문 제목 · 아래 이름과 날짜',
+          photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'both', heroShadeLv: '1' }, video: { heightMode: 'full', videoTextOver: true, heroShade: 'both', heroShadeLv: '1' },
+          hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'Autumn\nVows', x: 50, y: 11, fontSize: 58, font: 'playfair', color: '#FFFFFF', ls: -10, anim: 'fade', animDur: 1.8 },
+                   { text: 'THE WEDDING OF', x: 50, y: 76, fontSize: 10, ls: 420, color: '#FFFFFF', anim: 'fade', animDelay: .6 },
+                   { text: '{신랑}  &  {신부}', x: 50, y: 81, fontSize: 24, font: 'noto-serif-kr', color: '#FFFFFF', ls: 40, anim: 'up', animDelay: .8 },
+                   { text: '{날짜:점}   ·   {예식장}', x: 50, y: 88, fontSize: 12, ls: 60, color: '#FFFFFF', deco: 'line', anim: 'up', animDelay: 1 }] }
     ];
     const HL_RESET = { deco: '', font: '', color: '', ls: 0, rotation: 0, align: '', outline: false, shadow: false, glow: '', scaleX: 100, widthAuto: true, width: 80, vertical: '', arc: 0, arcW: 70, anim: '', animDur: 1.8, animDelay: 0 };
     function applyHeroLayout(block, lay) {
@@ -2263,7 +2312,7 @@
     //  design.backdrop = 디자인을 고를 때 정해짐 (preset.json "backdrop" 또는 꾸밈에서 BACKDROP_OF) · 없던 예전 저장분은 꾸밈·디자인 id로 짐작
     //  화면 설정 '배경 꾸밈'(extras.backdrop=false)을 끄면 무늬도 종이 질감도 없이 바탕색만 (.ib-nobd)
     const BACKDROPS = ['stars', 'rain', 'sky', 'dots', 'soft', 'grain', 'roses', 'navy'];
-    const BACKDROP_OF = { stars: 'stars', drops: 'rain', sky: 'sky', '@webtoon': 'dots', soft: 'soft', film: 'grain', cupid: 'roses', gold: 'navy', 'p-webtoon': 'dots' };
+    const BACKDROP_OF = { stars: 'stars', drops: 'rain', sky: 'sky', '@webtoon': 'dots', soft: 'soft', film: 'grain', cupid: 'roses', gold: 'navy', 'p-webtoon': 'dots', sea: 'sky', olive: 'soft' };
     function backdropOn(d) { return !(d && d.extras && d.extras.backdrop === false); }
     function backdropOf(d) {
         if (!d || !backdropOn(d)) return '';

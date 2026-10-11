@@ -1,0 +1,85 @@
+{
+  "id": "p-ticket",
+  "no": 24,
+  "group": "mood",
+  "label": "보딩패스",
+  "desc": "함께 떠나는 날. 항공권처럼 꾸민 여행 콘셉트 청첩장",
+  "tags": [
+    "여행",
+    "티켓",
+    "모던"
+  ],
+  "palette": {
+    "bg": "#F2F4F6",
+    "ink": "#1E2833",
+    "accent": "#3E6A93",
+    "line": "#C8D0D9",
+    "muted": "#7A8693",
+    "radius": "14px"
+  },
+  "font": "gothic-a1",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "boarding-pass",
+  "sideBg": "#E2E7EC",
+  "shadow": true,
+  "ambient": "none",
+  "sectionLook": "ticket",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "up"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "theme",
+      "showCounter": true,
+      "counterStyle": "theme"
+    },
+    "gallery": {
+      "layoutType": "slide",
+      "images": 10
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
+    },
+    "greeting": {
+      "text": "평생을 함께할 여행을 떠납니다.\n설레는 첫 출발의 자리에\n소중한 분들을 초대합니다.\n함께 축하해 주세요."
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "Bon Voyage",
+    "font": "playfair",
+    "bg": "#F2F4F6",
+    "color": "#3E6A93",
+    "fontSize": 38,
+    "duration": 2.2
+  },
+  "stickerThemes": [
+    "party",
+    "classic"
+  ],
+  "notes": "꾸밈 ticket(흰 종이 카드 · 양옆 반원 홈 · 점선 절취선 · 고정폭 숫자) + 첫 화면 boarding-pass"
+}

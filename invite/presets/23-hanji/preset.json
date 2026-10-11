@@ -1,0 +1,87 @@
+{
+  "id": "p-hanji",
+  "no": 23,
+  "group": "mood",
+  "label": "한지 모던",
+  "desc": "한지 종이에 먹 글씨, 빨간 인주 도장 하나. 담백한 전통 모던",
+  "tags": [
+    "전통",
+    "한지",
+    "미니멀"
+  ],
+  "palette": {
+    "bg": "#F3EFE6",
+    "ink": "#2A2622",
+    "accent": "#B04A35",
+    "line": "#CBC2B2",
+    "muted": "#8A8176",
+    "radius": "2px"
+  },
+  "font": "nanum-myeongjo",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "hanji-seal",
+  "paper": "hanji",
+  "sideBg": "#E4DED2",
+  "shadow": true,
+  "ambient": "none",
+  "sectionLook": "hanji",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "fade"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "theme",
+      "showCounter": true,
+      "counterStyle": "theme"
+    },
+    "gallery": {
+      "layoutType": "tall",
+      "images": 9,
+      "reveal": "seq"
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
+    },
+    "greeting": {
+      "text": "서로 다른 길을 걸어온 두 사람이\n이제 한 길을 함께 걷고자 합니다.\n귀한 걸음 하시어\n저희의 시작을 지켜봐 주세요."
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "우리 혼인합니다",
+    "font": "nanum-myeongjo",
+    "bg": "#F3EFE6",
+    "color": "#2A2622",
+    "fontSize": 26,
+    "duration": 2.2
+  },
+  "stickerThemes": [
+    "classic",
+    "season"
+  ],
+  "notes": "꾸밈 hanji(가는 선 카드 · 예식일 인주 도장) + 첫 화면 hanji-seal(양쪽 세로 이름 · 囍 도장) + 한지 종이"
+}
