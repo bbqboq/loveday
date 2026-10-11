@@ -202,13 +202,12 @@
         // 색 바꾸면 꾸밈도 같이: 디자인이 정해 둔 섹션 테마(fields.skin - 직접 고른 b.skin은 그대로)는 색을 바꾸면 디자인 꾸밈으로 (웹툰 컷은 그대로)
         if (sk && sk !== 'webtoon' && !b.skin && colorLinkOn() && colorChanged() && designLook()) sk = '';
         const palLink = !!(pal && pal.at && CUR_COLORS && colorLinkOn() && pal.at !== colKey(CUR_COLORS)); // 디자인 스킨을 고른 뒤 색을 바꿈 → 모양은 그대로, 색은 지금 색
-        if (sk) cls += ` ib-sk ib-sk-${sk}${SKIN_DARK.includes(sk) ? ' ib-sk-dark' : ''}`;
+        if (sk) cls += ` ib-sk ib-sk-${sk}`; // (바탕·글자색은 화면 설정 색 그대로 - 어두운지 밝은지도 청첩장 바탕을 따름)
         if (sk === 'webtoon') ensureFont('black-han-sans'); // 웹툰 컷 말풍선 제목 글꼴
         else if (pal && HEX_RE.test(pal.bg || '') && HEX_RE.test(pal.ink || '')) { // 다른 디자인 색으로
-            cls += ' ib-sk ib-sk-pal' + (hexDark(palLink ? CUR_COLORS.bg : pal.bg) ? ' ib-sk-dark' : ' ib-sk-light') + (palLink ? ' ib-sk-link' : '');
-            if (!palLink) {
-                [['bg', 'p-bg'], ['ink', 'p-ink'], ['accent', 'p-accent'], ['line', 'p-line'], ['muted', 'p-muted']].forEach(([k, v]) => { if (HEX_RE.test(pal[k] || '')) st.push(`--${v}:${pal[k]}`); });
-                if (HEX_RE.test(pal.accent || '')) st.push(`--p-on-accent:${onAccent(pal.accent)}`);
+            cls += ' ib-sk ib-sk-pal' + (palLink ? ' ib-sk-link' : '');
+            if (!palLink && CUR_COLORS && HEX_RE.test(pal.accent || '')) { // 섹션 바탕·글자색은 화면 설정 색 그대로, 스킨 색 = 포인트 색만 (바탕에서 잘 안 보이면 글자색 쪽으로 섞어서)
+                const a = readableOn(pal.accent, CUR_COLORS.bg, CUR_COLORS.ink); st.push(`--p-accent:${a}`, `--p-on-accent:${onAccent(a)}`);
             }
             // 디자인 테마 스킨: 글꼴·모서리·종이 + 꾸밈
             if (THEME_DECOS.includes(pal.deco)) { cls += ' ib-th ib-th-' + pal.deco; themeFonts(pal.deco); }
@@ -218,7 +217,6 @@
             if (FONT_RE.test(pal.bf || '')) st.push(`--p-body-font:${fq(pal.bf)}`);
             if (/^[1-9]00$/.test(String(pal.hw || ''))) st.push(`--p-head-weight:${pal.hw}`);
             if (/^\d{1,2}px$/.test(String(pal.r || ''))) st.push(`--p-radius:${pal.r}`);
-            if (pal.paper && BG_PAPERS[pal.paper]) st.push(`--sk-paper:${BG_PAPERS[pal.paper].img}`);
         }
         // 디자인 전체 꾸밈: 디자인을 고르면 그 디자인의 꾸밈(design.sectionLook)이 모든 섹션에 기본으로 (섹션 테마·디자인 스킨을 따로 고른 섹션, 첫 화면, '꾸밈 없이'는 빼고 · 화면 설정 extras.look=false면 끔)
         else if (!sk && b && b.id !== 'hero' && b.id !== 'heroVideo' && b.skin !== 'plain') { const gl = designLook(); if (gl) { cls += ' ib-th ib-th-' + gl; themeFonts(gl); } }
