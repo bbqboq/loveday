@@ -1074,24 +1074,24 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
 .fp-all[hidden], .fp-grid[hidden] { display: none; }
 .skp { display: grid; gap: 8px; }
 /* 섹션 스킨 (전문가 모드 편집창 맨 위 sskMount) - 카드마다 그 섹션을 진짜로 그려서 작게 (390px → 92px) */
-.ssk { margin: 2px 0 14px; padding: 12px 12px 6px; border: 1px solid var(--ui-line, #E8E1D6); border-radius: 14px; background: #fff; }
+.ssk { margin: 2px 0 12px; padding: 10px 10px 4px; border: 1px solid var(--ui-line, #E8E1D6); border-radius: 14px; background: #fff; }
 .ssk-hd { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
 .ssk-hd b { font-size: 13.5px; color: #2B2320; }
 .ssk-hd small { font-size: 11px; color: #8A847B; }
 .ssk-all { margin-left: auto; border: 1px solid var(--ui-line, #E5DED3); background: var(--ui-tint, #FAF7F2); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 11px; font-weight: 700; color: #6B6259; cursor: pointer; }
 .ssk-all:hover { border-color: #2B2320; color: #2B2320; }
-.ssk-lab { font-size: 11.5px; font-weight: 700; color: #6B6259; margin: 8px 0 5px; }
+.ssk-lab { font-size: 11px; font-weight: 700; color: #6B6259; margin: 6px 0 4px; }
 .ssk-lab small { font-weight: 500; color: #A39A8F; margin-left: 2px; }
-.ssk-row { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 2px 8px; scrollbar-width: thin; }
+.ssk-row { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 2px 6px; scrollbar-width: thin; }
 .ssk-row::-webkit-scrollbar { height: 5px; } .ssk-row::-webkit-scrollbar-thumb { background: #DDD5C9; border-radius: 9px; }
-.ssk-sep { flex: none; width: 1px; margin: 4px 2px 22px; background: var(--ui-line, #E5DED3); }
-.ssk-c { flex: none; width: 92px; scroll-snap-align: start; cursor: pointer; display: flex; flex-direction: column; gap: 4px; outline: none; }
-.ssk-c b { font-size: 10.5px; font-weight: 600; color: #6B6259; line-height: 1.25; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: keep-all; }
+.ssk-sep { flex: none; width: 1px; margin: 4px 2px 18px; background: var(--ui-line, #E5DED3); }
+.ssk-c { flex: none; width: 84px; scroll-snap-align: start; cursor: pointer; display: flex; flex-direction: column; gap: 3px; outline: none; }
+.ssk-c b { font-size: 10px; font-weight: 600; color: #6B6259; line-height: 1.25; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ssk-c.on b { color: #2B2320; font-weight: 800; }
-.ssk-th { position: relative; display: block; width: 92px; height: 120px; border-radius: 10px; overflow: hidden; background: var(--ui-tint, #F6F2EC); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.ssk-th { position: relative; display: block; width: 84px; height: 60px; border-radius: 10px; overflow: hidden; background: var(--ui-tint, #F6F2EC); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
 .ssk-c:hover .ssk-th { box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
 .ssk-c:focus-visible .ssk-th, .ssk-c.on .ssk-th { box-shadow: 0 0 0 2px #2B2320; }
-.ssk-c.on .ssk-th::after { content: '✓'; position: absolute; right: 5px; top: 5px; z-index: 5; width: 18px; height: 18px; border-radius: 50%; background: #2B2320; color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; }
+.ssk-c.on .ssk-th::after { content: '✓'; position: absolute; right: 3px; top: 3px; z-index: 5; width: 15px; height: 15px; font-size: 9px !important; border-radius: 50%; background: #2B2320; color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; }
 .ssk-ld { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%) 0 0 / 200% 100%; animation: sskLd 1.1s linear infinite; }
 @keyframes sskLd { to { background-position: -200% 0; } }
 .ssk-th > .ssk-iv { display: block; position: absolute; left: 0; top: 0; width: 390px; min-height: 0 !important; border-radius: 0 !important; transform: scale(.2359); transform-origin: 0 0; pointer-events: none; padding-top: 4px; overflow: hidden; }
@@ -4676,14 +4676,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z2">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018z2">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z3">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018z3">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018z2"></script>
-<script src="assets/tip-demos.js?v=1018z2"></script>
-<script src="assets/ld-dialog.js?v=1018z2"></script>
+<script src="assets/invite-blocks.js?v=1018z3"></script>
+<script src="assets/tip-demos.js?v=1018z3"></script>
+<script src="assets/ld-dialog.js?v=1018z3"></script>
 </head>
 <body>
 
@@ -16458,7 +16458,29 @@ const SSK_LOOKS = {
     dday: [['calendarStyle', '달력 모양', () => InviteBlocks.CAL_STYLES], ['counterStyle', '카운트 모양', () => InviteBlocks.DDAY_STYLES]],
     interview: [['style', '인터뷰 모양', () => InviteBlocks.IV_STYLES || []]],
 };
-const SSK_FOCUS = { counterStyle: '.dday-countdown' };
+const SSK_FOCUS = { counterStyle: '.dday-countdown', calendarStyle: '.dday-cal, .dday-calendar' };
+// 썸네일에 보여 줄 그 섹션의 대표 부분 (제목 + 카드 한 장) - 섹션 전체를 줄이면 너무 작아서 알아보기 어려움
+const SSK_PART = { greeting: '.free-canvas', family: '.ib-title-canvas', dday: '.dday-cal, .dday-calendar, .dday-countdown', gallery: '.blk-gallery > *', location: '.free-canvas',
+    transport: '.ib-transport-item', account: '.ib-acc-side', rsvp: '.ib-rsvp-btn', guestbook: '.ib-gb-item, .ib-gb-row', timeline: '.tl-item', interview: '.iv-qa', profile: '.ib-profile-card',
+    contact: '.ib-contact-side, .ib-contact-row, .ib-empty', letter: '.ib-letter-text', video: '.ib-video', notice: '.ib-notice-item, .ib-nt-card, .ib-nt-slide, .ib-nt-tab', together: '.ib-together-days',
+    guestsnap: '.ib-snap-desc', trip: '.ib-trip-map', lottery: '.ib-lot-form', dayinfo: '.ib-day-item', thanks: '.ib-ty-in, .ib-ty-card, .ib-thanks' };
+// 썸네일 맞추기: keep(보여 줄 요소들)을 감싸는 칸을 썸네일 칸에 꽉 차게(넘치지 않게) 줄이고 나머지 글자는 숨김
+//  편집창이 열리는 확대 효과 중에도 맞게 화면 크기 ÷ 원래 폭(390px)으로 나눠 원래 크기로 계산
+function sskFit(th, iv, keep, pad) {
+    keep = keep.filter(Boolean); if (!keep.length) return false;
+    const path = new Set(); keep.forEach(k => { for (let e = k; e && e !== iv; e = e.parentElement) path.add(e); });
+    path.forEach(e => { const pe = e.parentElement; if (!pe || pe === iv.parentElement) return; [...pe.children].forEach(x => { if (!path.has(x)) x.style.visibility = 'hidden'; }); });
+    const o = iv.getBoundingClientRect(), z = o.width / (iv.offsetWidth || 390) || 1; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    keep.forEach(k => [k, ...k.querySelectorAll('.ct-o, svg, .dd-u, .dd-paper')].forEach(e => { const q = e.getBoundingClientRect(); if (!q.width || !q.height) return; x0 = Math.min(x0, q.left); y0 = Math.min(y0, q.top); x1 = Math.max(x1, q.right); y1 = Math.max(y1, q.bottom); }));
+    if (x1 < x0) return false;
+    x0 = (x0 - o.left) / z; x1 = (x1 - o.left) / z; y0 = (y0 - o.top) / z; y1 = (y1 - o.top) / z;
+    pad = pad == null ? 8 : pad;
+    // 가로로 긴 부분(계좌 줄 · 버튼)은 양옆을 조금 잘라도(최대 1.6배) 크게 - 너무 가늘면 알아보기 어려움
+    const w = x1 - x0 + pad * 2, h = y1 - y0 + pad * 2, k = Math.min(th.clientHeight / h, th.clientWidth / w * 1.6);
+    const tx = (th.clientWidth - w * k) / 2 - (x0 - pad) * k, ty = (th.clientHeight - h * k) / 2 - (y0 - pad) * k;
+    iv.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${k.toFixed(4)})`;
+    return true;
+}
 const SSK = { cache: new Map(), io: null };
 function sskSkins(b) {
     const sk = [['', '디자인 따라'], ...(InviteBlocks.designLook && InviteBlocks.designLook() ? [['plain', '꾸밈 없이']] : []), ...((InviteBlocks.SECTION_SKINS || []).filter(([k]) => k && k !== 'webtoon' && !(k === 'vintage' && InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id))))];
@@ -16492,8 +16514,9 @@ function sskHtml(b) {
     const S = sskSkins(b), cur = sskCur(b);
     const base = S.base.map(([k, l]) => sskCard('s:' + k, l, cur === 's:' + k)).join('');
     const des = S.designs.map(p => sskCard('d:' + p.id, p.label, cur === 'd:' + p.id)).join('');
-    return `<div class="pz-gen ssk" data-ssk-for="${esc(b.id)}"><div class="ssk-hd"><b>섹션 스킨</b><small>이 섹션만 다른 모양 · 다른 디자인 느낌으로</small><button type="button" class="ssk-all" data-ssk-all>모든 섹션에 같은 스킨</button></div>
-        ${looks}<div class="ssk-lab">스킨 <small>기본 ${S.base.length} · 디자인 ${S.designs.length}가지</small></div><div class="ssk-row ssk-skins">${base}<i class="ssk-sep"></i>${des}</div></div>`;
+    const curName = cur.startsWith('d:') ? ((S.designs.find(p => 'd:' + p.id === cur) || {}).label || '') : ((S.base.find(([k]) => 's:' + k === cur) || [])[1] || '디자인 따라');
+    return `<div class="pz-gen ssk" data-ssk-for="${esc(b.id)}"><div class="ssk-hd"><b>섹션 스킨</b><small>지금: ${esc(curName)}</small><button type="button" class="ssk-all" data-ssk-all>모든 섹션에 같게</button></div>
+        ${looks}<div class="ssk-lab">스킨 <small>기본 ${S.base.length} · 디자인 ${S.designs.length}가지 · 옆으로 넘겨 보세요 · 바탕은 화면 색 그대로</small></div><div class="ssk-row ssk-skins">${base}<i class="ssk-sep"></i>${des}</div></div>`;
 }
 function sskFill(card, b) {
     const th = card.querySelector('.ssk-th'); if (!th || th.dataset.done) return;
@@ -16503,12 +16526,16 @@ function sskFill(card, b) {
     const c = sskPrep(b, card.dataset.ssk), key = JSON.stringify(c) + '|' + rs + '|' + rc;
     let html = SSK.cache.get(key);
     if (!html) { html = sskThumb(b, card.dataset.ssk, c); if (SSK.cache.size > 600) SSK.cache.clear(); SSK.cache.set(key, html); }
-    th.innerHTML = `<span class="ssk-iv ${esc(rc)}" style="${esc(rs)}">${html}</span>`;
-    th.dataset.done = '1';
+    th.innerHTML = `<span class="ssk-iv ${esc(rc)}" style="${esc(rs)};transform:none">${html}</span>`;
+    th.dataset.done = '1'; th.setAttribute('style', rs + ';background:var(--p-bg)'); // 칸 둘레도 청첩장 바탕색 (줄인 섹션이 칸보다 작을 때)
     const iv = th.firstElementChild;
     iv.querySelectorAll('.dday-countdown[data-dday-target]').forEach(el => { try { InviteBlocks.ddayTick(el)(); } catch (e) {} }); // 남은 날짜 숫자 (00 대신)
-    const fsel = SSK_FOCUS[card.dataset.ssk.split(':')[1]], ft = fsel && iv.querySelector(fsel); // 카운트 모양처럼 섹션 아래쪽이 바뀌는 건 그 부분을 보여 줌
-    if (ft) { const r = ft.getBoundingClientRect(), y = r.top - iv.getBoundingClientRect().top; iv.style.top = Math.min(0, -(y - Math.max(6, (th.clientHeight - r.height) / 2))) + 'px'; }
+    // 대표 부분만: 모양 카드 = 그 부분 하나 (카운트 모양이면 카운트), 스킨 카드 = 제목 + 대표 부분 (제목 꾸밈도 보이게)
+    const [t, lk] = card.dataset.ssk.split(':'), col = iv.querySelector('.col');
+    const part = iv.querySelector(SSK_FOCUS[t === 'l' && lk] || SSK_PART[b.id] || '.ib-block > :not(.ib-title-canvas):not(.ib-ed-badge)') || (col && col.firstElementChild);
+    const title = t !== 'l' && iv.querySelector('.ib-title-canvas, .op-title, .ib-title');
+    const keep = title && part && !part.contains(title) && !title.contains(part) && title.getBoundingClientRect().top <= part.getBoundingClientRect().top ? [title, part] : [part];
+    if (!sskFit(th, iv, keep, 8)) iv.style.transform = '';
 }
 function sskMount(wrap, b) {
     wrap.querySelector(':scope > .ssk')?.remove();
@@ -16578,28 +16605,25 @@ function ddkFill(card, b) {
     let html = SSK.cache.get(key);
     if (!html) { html = ddkThumb(c); if (SSK.cache.size > 600) SSK.cache.clear(); SSK.cache.set(key, html); }
     th.innerHTML = `<span class="ssk-iv ${esc(rc)}" style="${esc(rs)};transform:none">${html}</span>`;
-    th.dataset.done = '1';
+    th.dataset.done = '1'; th.setAttribute('style', rs + ';background:var(--p-bg)'); // 칸 둘레도 청첩장 바탕색 (줄인 섹션이 칸보다 작을 때)
     const iv = th.firstElementChild;
     iv.querySelectorAll('.dday-countdown[data-dday-target]').forEach(el => { try { InviteBlocks.ddayTick(el)(); } catch (e) {} });
     const part = iv.querySelector(kind === 'cal' ? '.dday-cal, .dday-calendar' : '.dday-countdown'); if (!part) return;
-    for (let e = part; e && e !== iv; e = e.parentElement) [...(e.parentElement ? e.parentElement.children : [])].forEach(x => { if (x !== e) x.style.visibility = 'hidden'; }); // 고르는 부분만 보이게
-    // 편집창이 열리는 동안(확대 효과) 재도 맞게: 화면 크기 ÷ 원래 폭(390px)으로 나눠서 원래 크기로 계산
-    const o = iv.getBoundingClientRect(), z = o.width / (iv.offsetWidth || 390) || 1; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
-    [part, ...part.querySelectorAll('.ct-o, svg, .dd-u, .dd-paper')].forEach(e => { const q = e.getBoundingClientRect(); if (!q.width) return; x0 = Math.min(x0, q.left); y0 = Math.min(y0, q.top); x1 = Math.max(x1, q.right); y1 = Math.max(y1, q.bottom); });
-    x0 = (x0 - o.left) / z; x1 = (x1 - o.left) / z; y0 = (y0 - o.top) / z; y1 = (y1 - o.top) / z;
-    const pad = 8, w = x1 - x0 + pad * 2, h = y1 - y0 + pad * 2, k = Math.min(th.clientWidth / w, th.clientHeight / h);
-    const tx = (th.clientWidth - w * k) / 2 - (x0 - pad) * k, ty = (th.clientHeight - h * k) / 2 - (y0 - pad) * k;
-    iv.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${k.toFixed(4)})`;
+    sskFit(th, iv, [part], 8);
 }
 // 보이는 카드만 한가할 때 하나씩 그림 (섹션 스킨·디데이 모양 고르기 같이 씀) + 고른 카드가 보이게 + PC 마우스 휠로 옆으로
 function sskLazy(box, cards, fill) {
+    // 보이는 것만 그림: 화면에 들어온 줄만, 그 줄 안에서도 보이는 카드(+ 옆 카드 하나)만 · 한가할 때 하나씩 (requestIdleCallback)
     const q = []; let busy = false;
     const idle = window.requestIdleCallback || (f => setTimeout(() => f(null), 16));
     const run = () => { if (busy) return; busy = true; const step = dl => { const t0 = performance.now(); while (q.length && (dl ? dl.timeRemaining() > 4 : performance.now() - t0 < 12)) { const c = q.shift(); if (c.isConnected) fill(c); } if (q.length) idle(step); else busy = false; }; idle(step); };
-    if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver(es => { es.forEach(en => { if (en.isIntersecting) { io.unobserve(en.target); q.push(en.target); } }); run(); }, { root: null, rootMargin: '0px 200px' });
-        cards.forEach(c => io.observe(c));
-    } else { q.push(...cards); run(); }
+    const rows = [...new Set(cards.map(c => c.closest('.ssk-row')).filter(Boolean))];
+    if (!('IntersectionObserver' in window)) { q.push(...cards); run(); }
+    else {
+        rows.forEach(row => { row._sskIo = new IntersectionObserver(es => { es.forEach(en => { if (en.isIntersecting) { row._sskIo.unobserve(en.target); q.push(en.target); } }); run(); }, { root: row, rootMargin: '0px 96px' }); });
+        const vio = new IntersectionObserver(es => es.forEach(en => { const row = en.target; if (!en.isIntersecting || row._sskOn) return; row._sskOn = 1; vio.unobserve(row); row.querySelectorAll('.ssk-c').forEach(c => { if (!c.querySelector('.ssk-th[data-done]')) row._sskIo.observe(c); }); }), { rootMargin: '160px 0px' });
+        rows.forEach(r => vio.observe(r));
+    }
     requestAnimationFrame(() => box.querySelectorAll('.ssk-row').forEach(row => { const on = row.querySelector('.ssk-c.on'); if (on && row.scrollLeft === 0 && on.offsetLeft > row.clientWidth - 60) row.scrollLeft = on.offsetLeft - 24; }));
     box.querySelectorAll('.ssk-row').forEach(row => row.addEventListener('wheel', e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && row.scrollWidth > row.clientWidth) { row.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false }));
 }
