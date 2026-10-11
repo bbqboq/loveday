@@ -31,7 +31,7 @@ const ALLOWED_PAPER   = ['beige', 'white', 'hanji', 'linen', 'kraft'];
 const ALLOWED_STYLE   = [
     'gallery.layoutType' => ['grid', 'tall', 'collage', 'wide', 'circle', 'slide', 'pages'],
     'dday.calendarStyle' => ['theme', 'classic', 'vintage', 'minimal', 'week', 'desk', 'night', 'heart', 'planner'],
-    'dday.counterStyle'  => ['theme', 'classic', 'bigd', 'flip', 'ring', 'sentence', 'line', 'ticket', 'bubble'],
+    'dday.counterStyle'  => ['theme', 'classic', 'bigd', 'flip', 'ring', 'sentence', 'line', 'ticket', 'bubble', 'seal', 'dial', 'scroll'],
     'account.accStyle'   => ['theme', 'basic', 'line', 'outline', 'center', 'vintage'],
     'contact.contactStyle' => ['basic', 'line', 'soft', 'vintage', 'outline', 'center', 'capsule'],
     'notice.style'       => ['card', 'box', 'slide', 'tabs'],
@@ -151,7 +151,10 @@ function load_preset(string $folder): array {
             $bf[$blockId] = array_filter($fields, fn($v) => is_scalar($v));
             foreach ($bf[$blockId] as $k => $v) {
                 $sk = $blockId . '.' . $k;
-                if (isset(ALLOWED_STYLE[$sk]) && !in_array($v, ALLOWED_STYLE[$sk], true)) unset($bf[$blockId][$k]);
+                // 't:<꾸밈>' = 다른 디자인의 테마 부품 모양 (InviteBlocks.TP_DECOS) - 달력·카운트·계좌·방명록·참석·교통
+                $tp = is_string($v) && preg_match('/^t:([a-z]+)$/', $v, $tm) && in_array($tm[1], array_merge(ALLOWED_LOOKS, ['webtoon']), true) && $tm[1][0] !== '@'
+                    && in_array($sk, ['dday.calendarStyle', 'dday.counterStyle', 'account.accStyle', 'guestbook.style', 'rsvp.btnStyle', 'transport.style'], true);
+                if (isset(ALLOWED_STYLE[$sk]) && !$tp && !in_array($v, ALLOWED_STYLE[$sk], true)) unset($bf[$blockId][$k]);
                 if ($k === 'skin' && !in_array($v, ['', 'vintage', 'night', 'mist', 'webtoon'], true)) unset($bf[$blockId][$k]); // 섹션 테마
             }
         }

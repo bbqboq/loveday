@@ -171,6 +171,15 @@
         'p-notice': 'board', 'p-scrapbook': 'tape', 'p-cosmos': 'stars', 'p-rain': 'drops', 'p-midnight': 'deco', 'p-weather': 'sky', 'p-webtoon': '@webtoon', 'p-angel': 'angel' };
     const FONT_RE = /^[^<>{};]{1,120}$/;
     const THEME_FONTS = { tape: 'nanum-pen', note: 'nanum-pen', typo: 'playfair', film: 'cormorant', cinema: 'cormorant', deco: 'cormorant', rule: 'cormorant', angel: 'cormorant' }; // 테마 부품에 쓰는 글꼴 (숫자·영문)
+    // 테마 부품 모양 직접 고르기: 모양 값 't:<꾸밈>' (예: 't:angel') → 부품 뿌리에 .ib-tpx.ib-tp-<꾸밈> = 어느 디자인에서나 그 디자인 모양 (색은 화면 설정 색)
+    //  (모양 값 'theme' = 지금 디자인 꾸밈 따라). 순서 = 디자인 순서, 날씨는 맨 끝
+    const TP_DECOS = ['rule', 'bold', 'soft', 'mono', 'cupid', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'stars', 'drops', 'deco', 'webtoon', 'angel', 'sky'];
+    const THEME_DECO_NAMES = { rule: '클래식', bold: '모던', soft: '파스텔', mono: '블랙 & 화이트', cupid: '로맨틱', leaf: '가든', gold: '네이비 골드', kraft: '어스톤',
+        lace: '라벤더', film: '빈티지 필름', cinema: '시네마', polaroid: '폴라로이드', note: '이야기 노트', typo: '타이포', board: '알림장', tape: '스크랩북',
+        stars: '별빛 우주', drops: '비 오는 날', deco: '미드나잇 골드', webtoon: '웹툰', angel: '천사의 편지', sky: '날씨 하늘' };
+    const TP_STYLES = TP_DECOS.map(k => ['t:' + k, THEME_DECO_NAMES[k]]);
+    function tpOf(v) { const m = /^t:([a-z]+)$/.exec(String(v || '')); return m && TP_DECOS.includes(m[1]) ? m[1] : ''; }
+    function tpCls(v) { const k = tpOf(v); if (!k) return ''; if (k === 'webtoon') ensureFont('black-han-sans'); else themeFonts(k); return ` ib-tpx ib-tp-${k}`; }
     function themeFonts(k) { if (THEME_FONTS[k]) try { ensureFont(THEME_FONTS[k]); } catch (e) {} if (k === 'angel') try { ensureCalFonts(); } catch (e) {} } // 천사의 편지: 달 이름·숫자는 Cinzel (빈티지 큐피드 달력과 같은 글꼴)
     // 인터뷰(둘만의 사랑 이야기) 모양 - 에디터·공개 페이지 둘 다 .blk-interview에 iv-st-* (CSS는 invite-blocks.css '인터뷰 모양')
     const IV_STYLES = [['', '이름표'], ['chat', '채팅 말풍선'], ['card', '질문 카드'], ['mag', '매거진'], ['split', '마주 보기']];
@@ -220,6 +229,11 @@
         }
         // 디자인 전체 꾸밈: 디자인을 고르면 그 디자인의 꾸밈(design.sectionLook)이 모든 섹션에 기본으로 (섹션 테마·디자인 스킨을 따로 고른 섹션, 첫 화면, '꾸밈 없이'는 빼고 · 화면 설정 extras.look=false면 끔)
         else if (!sk && b && b.id !== 'hero' && b.id !== 'heroVideo' && b.skin !== 'plain') { const gl = designLook(); if (gl) { cls += ' ib-th ib-th-' + gl; themeFonts(gl); } }
+        // 부품 색 (섹션 하나만 포인트·선 색을 바꿈 - 바탕·글자는 화면 설정 색 그대로): b.tint = 포인트 '#RRGGBB', b.tintLine = 선 색(디자인 스킨 색을 골랐을 때, 없으면 포인트 색을 옅게)
+        if (b && HEX_RE.test(b.tint || '')) {
+            const t = CUR_COLORS ? readableOn(b.tint, CUR_COLORS.bg, CUR_COLORS.ink) : b.tint, on = onAccent(t), ln = HEX_RE.test(b.tintLine || '') ? b.tintLine : `color-mix(in srgb, ${t} 45%, var(--p-bg, #FFFFFF))`;
+            st.push(`--p-accent:${t}`, `--p-on-accent:${on}`, `--p-line:${ln}`, `--tp-a:${t}`, `--tp-o:${on}`, `--tp-l:${ln}`); cls += ' ib-tint';
+        }
         return { cls, style: st.filter(Boolean).join(';') };
     }
 
@@ -1593,7 +1607,7 @@
             render(f) {
                 const icon = l => /지하철|전철/.test(l) ? '🚇' : /버스|셔틀/.test(l) ? '🚌' : /자가용|자동차|차량|네비/.test(l) ? '🚗' : /주차/.test(l) ? '🅿️' : /기차|KTX|SRT/.test(l) ? '🚆' : /비행/.test(l) ? '✈️' : '📍';
                 const items = (f.items || []).filter(it => it.label || it.text);
-                return `<div class="ib-block ib-transport${f.style === 'basic' ? '' : ' ib-tr-theme'}">${sectionTitle(f.title, f)}
+                return `<div class="ib-block ib-transport${f.style === 'basic' ? '' : ' ib-tr-theme' + tpCls(f.style)}">${sectionTitle(f.title, f)}
                     ${items.length ? items.map(it => `<div class="ib-transport-item"><span class="ib-transport-ico">${icon(it.label || '')}</span>
                         <div><strong>${esc(it.label)}</strong>${busTime(it.depart) ? `<span class="ib-depart">${esc(busTime(it.depart))} 출발</span>` : ''}<p>${nl2br(it.text)}</p></div></div>`).join('') : emptyHint('교통수단을 추가해주세요')}
                 </div>`;
@@ -2107,7 +2121,7 @@
             const closed = /^\d{4}-\d{2}-\d{2}$/.test(o.deadline || '') && seoulToday() > o.deadline;
             const cfg = { askHeadcount: o.askHeadcount !== false, askMeal: o.askMeal !== false, askPhone: !!o.askPhone, askMemo: o.askMemo !== false, doneLabel: o.doneLabel };
             const dl = o.deadline ? `<p class="ib-rsvp-dl">${esc(fmtKDate(o.deadline))}까지 알려주세요</p>` : '';
-            return `<div class="ib-block ib-rsvp${o.btnStyle === 'basic' ? '' : ' ib-rs-theme'}">${sectionTitle(o.title, o)}<p class="ib-rsvp-desc">${nl2br(o.desc)}</p>${dl}
+            return `<div class="ib-block ib-rsvp${o.btnStyle === 'basic' ? '' : ' ib-rs-theme' + tpCls(o.btnStyle)}">${sectionTitle(o.title, o)}<p class="ib-rsvp-desc">${nl2br(o.desc)}</p>${dl}
                 ${closed && !isEditor() ? '<span class="ib-rsvp-btn is-closed">참석 여부 전달이 마감되었습니다</span>'
                     : `<button type="button" class="ib-rsvp-btn" data-ib-rsvp="${dataAttr(cfg)}">${esc(o.buttonLabel || '참석 의사 전달하기')}</button>`}
                 ${closed && isEditor() ? badge('마감일이 지나서 하객에게는 "마감" 으로 보여요') : ''}</div>`;
@@ -2137,7 +2151,7 @@
             const o = Object.assign({}, BLOCKS.guestbook.defaults, f);
             const cfg = { style: o.style, allowWrite: o.allowWrite !== false, richText: o.richText !== false };
             const list = isEditor() ? gbEntriesHtml(GB_SAMPLE.slice(0, Number(o.pageSize) || 5), o.style) : '<p class="ib-gb-empty">불러오는 중…</p>';
-            return `<div class="ib-block ib-gb ib-gb-${o.style === 'line' ? 'line' : o.style === 'theme' ? 'card ib-gb-theme' : 'card'}">${sectionTitle(o.title, o)}${o.desc ? `<p class="ib-gb-desc">${nl2br(o.desc)}</p>` : ''}
+            return `<div class="ib-block ib-gb ib-gb-${o.style === 'line' ? 'line' : o.style === 'theme' ? 'card ib-gb-theme' : tpOf(o.style) ? 'card ib-gb-theme' + tpCls(o.style) : 'card'}">${sectionTitle(o.title, o)}${o.desc ? `<p class="ib-gb-desc">${nl2br(o.desc)}</p>` : ''}
                 <div class="ib-gb-list" data-ib-gb="${dataAttr(cfg)}">${list}</div>
                 <button type="button" class="ib-gb-more" hidden>더 보기</button>
                 ${o.allowWrite !== false ? `<button type="button" class="ib-gb-write" data-ib-gb-write>${esc(o.writeLabel || '방명록 작성하기')}</button>` : ''}
@@ -2694,8 +2708,9 @@
                 : `<div class="ib-acc-side ib-${sideKey}"><div class="ib-acc-head">${esc(sideLabel)}</div>${inner}</div>`;
         };
         const g = side('groom', L.groom + '측'), b = side('bride', L.bride + '측');
-        const as = ACC_STYLES.some(([k]) => k === f.accStyle) ? f.accStyle : 'basic';
-        return `<div class="ib-block ib-accounts ib-as-${as}">${sectionTitle(f.accTitle || '마음 전하실 곳')}
+        const tpx = tpCls(f.accStyle);
+        const as = tpx ? 'theme' : ACC_STYLES.some(([k]) => k === f.accStyle) ? f.accStyle : 'basic';
+        return `<div class="ib-block ib-accounts ib-as-${as}${tpx}">${sectionTitle(f.accTitle || '마음 전하실 곳')}
             ${f.accNote ? `<p class="ib-acc-note">${nl2br(f.accNote)}</p>` : ''}
             ${g || b ? `<div class="ib-acc-wrap">${bothSides(g, b)}</div>` : emptyHint('계좌를 입력해주세요')}
         </div>`;
@@ -3389,7 +3404,8 @@
         document.head.appendChild(l);
     }
     function ddayCalendar(f) {
-        const st = CAL_KEYS.includes(f && f.calendarStyle) ? f.calendarStyle : 'classic';
+        const tpx = tpCls(f && f.calendarStyle);
+        const st = tpx ? 'theme' : CAL_KEYS.includes(f && f.calendarStyle) ? f.calendarStyle : 'classic';
         const y = +f.year || 2026, m = +f.month || 1, d = +f.day || 1, hh = +f.hour || 0, mi = +f.minute || 0;
         const weeks = calWeeks(y, m), wd = new Date(y, m - 1, d).getDay();
         const row = weeks.findIndex(w => w.includes(d));
@@ -3440,21 +3456,24 @@
                 html = `<div class="dday-cal-row dday-cal-head">${WD_KO.map(w => `<div>${w}</div>`).join('')}</div><div class="dday-cal-row dday-cal-grid">${weeks.flat().map(x => x ? `<div class="dday-cal-cell${x === d ? ' wedding-day' : ''}">${x === d ? '♥' : x}</div>` : '<div class="dday-cal-cell empty"></div>').join('').replace(/^((<div class="dday-cal-cell empty"><\/div>)*)/, '$1')}</div>`;
                 return `<div class="dday-calendar dday-cal cal-classic">${html}</div>`;
         }
-        return `<div class="dday-cal cal-${st}">${html}</div>`;
+        return `<div class="dday-cal cal-${st}${tpx}">${html}</div>`;
     }
 
     // ---------- 디데이 카운터 모양 프리셋 (에디터·실제 청첩장 공통) ----------
     // 숫자 칸은 모두 data-dday-part(days|hours|minutes|seconds)라서 카운트다운 갱신 코드는 하나로 같이 씀.
     // 갱신 코드가 --sec(0~59)를 넣어 주면 원형 링이 초에 맞춰 돌고, 숫자가 바뀔 때 .dd-tick으로 넘김 효과.
     const DDAY_STYLES = [['theme', '테마 모양'], ['classic', '클래식'], ['bigd', '큰 D-day'], ['flip', '플립 시계'], ['ring', '원형 링'],
-        ['sentence', '문장형'], ['line', '미니멀 라인'], ['ticket', '티켓'], ['bubble', '버블']];
+        ['sentence', '문장형'], ['line', '미니멀 라인'], ['ticket', '티켓'], ['bubble', '버블'], ['seal', '밀랍 도장'], ['dial', '금테 시계판'], ['scroll', '두루마리']];
     const DDAY_KEYS = DDAY_STYLES.map(x => x[0]);
     const DD_UNITS = [['days', 'Days', '일'], ['hours', 'Hours', '시간'], ['minutes', 'Minutes', '분'], ['seconds', 'Seconds', '초']];
     const DD_SAMPLE = { days: '123', hours: '04', minutes: '12', seconds: '33' };
     /** opt.sample = 에디터 모양 고르기 칸용 (움직이지 않는 예시 숫자) */
     function ddayCounter(f, targetMs, opt) {
-        const st = DDAY_KEYS.includes(f && f.counterStyle) ? f.counterStyle : 'classic';
+        const tpx = tpCls(f && f.counterStyle);
+        const st = tpx ? 'theme' : DDAY_KEYS.includes(f && f.counterStyle) ? f.counterStyle : 'classic';
         const sample = !!(opt && opt.sample);
+        const leftD = sample ? 123 : Math.max(0, Math.ceil(((+targetMs || 0) - Date.now()) / 86400000));
+        if (st === 'seal' || st === 'dial' || st === 'scroll') { ensureCalFonts(); ensureFont('cormorant'); if (st === 'scroll') ensureFont('pinyon'); }
         const P = k => `<span class="dd-n${st === 'classic' ? ' dday-num' : ''}" data-dday-part="${k}">${sample ? DD_SAMPLE[k] : '00'}</span>`;
         // CSS 변수 안의 url()은 그 변수를 쓰는 CSS 파일(assets/) 기준으로 풀리므로 페이지 기준 절대 주소로 바꿔서 넣는다
         let bg = f && f.bgImage ? String(f.bgImage) : '';
@@ -3469,8 +3488,15 @@
             case 'line': inner = DD_UNITS.map(u => `<div class="dd-u">${P(u[0])}<span class="dd-l">${u[2]}</span></div>`).join('<i class="dd-sep"></i>'); break;
             case 'ticket': inner = `<div class="dd-tk-l"><span class="dd-l">WEDDING</span><div class="dd-tk-d">D-${P('days')}</div></div><div class="dd-tk-r">${DD_UNITS.slice(1).map(u => `<div class="dd-u">${P(u[0])}<span class="dd-l">${u[2]}</span></div>`).join('')}</div>`; break;
             case 'bubble': inner = DD_UNITS.map(u => `<div class="dd-u">${P(u[0])}<span class="dd-l">${u[2]}</span></div>`).join(''); break;
+            // 밀랍 도장 넷 · 금테 시계판 · 두루마리 (천사의 편지 카운트다운 A·B·C안 - 모든 디자인에서 고를 수 있음, 색은 --p-accent·--p-line)
+            case 'seal': inner = `<span class="dd-cap">우리의 결혼식까지</span><div class="dd-row">${DD_UNITS.map(u => `<div class="dd-u"><span class="dd-sl">${P(u[0])}</span><span class="dd-l">${u[2]}</span></div>`).join('')}</div><span class="dd-end">예식일을 봉인해 두었어요</span>`; break;
+            case 'dial': { const C = 2 * Math.PI * 100, fr = Math.max(.03, Math.min(1, leftD / 100));
+                inner = `<span class="dd-cap">우리의 결혼식까지</span><div class="dd-face"><svg viewBox="0 0 250 250" aria-hidden="true"><circle class="dd-f1" cx="125" cy="125" r="118"></circle><circle class="dd-f2" cx="125" cy="125" r="111"></circle><circle class="dd-f3" cx="125" cy="125" r="100"></circle><circle class="dd-f4" cx="125" cy="125" r="100" style="stroke-dasharray:${(C * fr).toFixed(1)} ${C.toFixed(1)}"></circle><g class="dd-f5"><circle cx="125" cy="14" r="3"></circle><circle cx="236" cy="125" r="3"></circle><circle cx="125" cy="236" r="3"></circle><circle cx="14" cy="125" r="3"></circle></g></svg><div class="dd-fin"><span class="dd-fk">D - DAY</span>${P('days')}<span class="dd-fe">days to go</span></div></div>`
+                    + `<div class="dd-sub">${DD_UNITS.slice(1).map(u => `<span class="dd-u">${P(u[0])}<small>${u[2]}</small></span>`).join('<i>·</i>')}</div>`; break; }
+            case 'scroll': inner = `<div class="dd-paper"><span class="dd-cap">until our wedding</span><div class="dd-big"><i>❦</i><span>D-${P('days')}</span><i class="dd-fl">❦</i></div><span class="dd-rule"></span>`
+                + `<div class="dd-row">${DD_UNITS.slice(1).map(u => `<div class="dd-u">${P(u[0])}<small>${u[0]} · ${u[2]}</small></div>`).join('')}</div></div>`; break;
             case 'theme': { // 테마 모양: 칸 4개 + 진행 막대 + 링 + 한 줄 설명을 다 넣어 두고 디자인 꾸밈(.ib-th-*) CSS가 골라 보여 줌
-                const left = sample ? 123 : Math.max(0, Math.ceil(((+targetMs || 0) - Date.now()) / 86400000)), pct = Math.max(6, Math.min(96, Math.round(100 - left / 200 * 100)));
+                const pct = Math.max(6, Math.min(96, Math.round(100 - leftD / 200 * 100)));
                 inner = `<span class="dd-cap">우리의 결혼식까지</span>` + DD_UNITS.map(u => `<div class="dd-u dd-u-${u[0]}">${P(u[0])}<span class="dd-l"><i>${u[1].toUpperCase()}</i><em>${u[2]}</em></span></div>`).join('')
                     + `<span class="dd-bar" style="--dd-pct:${pct}%"><i></i></span><svg class="dd-orb" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" pathLength="100"></circle><circle class="dd-orb-on" cx="50" cy="50" r="44" pathLength="100" style="stroke-dasharray:${pct} 100"></circle></svg><span class="dd-end">남았어요</span>`;
                 break;
@@ -3478,7 +3504,7 @@
             default: inner = DD_UNITS.map(u => `<div class="dday-unit">${P(u[0])}<span class="dday-unit-label">${u[1]}</span></div>`).join('');
         }
         const style = bg ? (st === 'classic' ? ` style="background-image:url('${bg}'); background-size:cover; background-position:center;"` : ` style="--dd-bg:url('${bg}')"`) : '';
-        return `<div class="dday-countdown dd-${st}${bg ? ' dd-has-bg' : ''}"${sample ? '' : ` data-dday-target="${+targetMs || 0}"`}${style}>${inner}</div>`;
+        return `<div class="dday-countdown dd-${st}${tpx}${bg ? ' dd-has-bg' : ''}"${sample ? '' : ` data-dday-target="${+targetMs || 0}"`}${style}>${inner}</div>`;
     }
     /** 카운트다운 숫자 갱신 (에디터·실제 청첩장 공통). 돌려준 함수를 1초마다 부름 */
     function ddayTick(el) {
@@ -3520,5 +3546,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);
