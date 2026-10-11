@@ -3,7 +3,7 @@
   "no": 5,
   "group": "mood",
   "label": "로맨틱 핑크",
-  "desc": "블러쉬 핑크에 하트가 살랑. 따뜻하고 사랑스럽게",
+  "desc": "하트와 장미로 꾸민 사랑스러운 핑크",
   "tags": [
     "핑크",
     "하트"
@@ -51,29 +51,20 @@
     },
     "gallery": {
       "layoutType": "collage",
-      "images": 7,
-      "skin": "vintage"
+      "images": 7
     },
     "account": {
       "accStyle": "theme",
       "display": "cards",
       "accCollapse": true
     },
-    "greeting": {
-      "skin": "vintage"
-    },
-    "family": {
-      "skin": "vintage"
-    },
-    "location": {
-      "skin": "vintage"
-    },
+    "greeting": {},
+    "family": {},
+    "location": {},
     "rsvp": {
-      "skin": "vintage",
       "btnStyle": "theme"
     },
     "guestbook": {
-      "skin": "vintage",
       "style": "theme"
     },
     "transport": {

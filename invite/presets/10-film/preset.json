@@ -3,7 +3,7 @@
   "no": 10,
   "group": "mood",
   "label": "빈티지 필름",
-  "desc": "세피아 톤과 카드형 사진. 필름 카메라 감성",
+  "desc": "은은한 필름 결과 스틸컷 느낌",
   "tags": [
     "빈티지",
     "필름"
@@ -35,27 +35,21 @@
   "blockFields": {
     "gallery": {
       "cardStyle": true,
-      "colLayout": "2",
-      "skin": "vintage"
+      "colLayout": "2"
     },
     "dday": {
       "calendarStyle": "theme",
       "showCounter": true,
       "counterStyle": "theme"
     },
-    "greeting": {
-      "skin": "vintage"
-    },
-    "location": {
-      "skin": "vintage"
-    },
+    "greeting": {},
+    "location": {},
     "account": {
       "accStyle": "theme",
       "display": "cards",
       "accCollapse": true
     },
     "guestbook": {
-      "skin": "vintage",
       "style": "theme"
     },
     "rsvp": {
@@ -65,6 +59,5 @@
       "style": "theme"
     }
   },
-  "heroLayout": "polaroid",
-  "paper": "beige"
+  "heroLayout": "polaroid"
 }

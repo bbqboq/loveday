@@ -2259,6 +2259,24 @@
     };
     let CUR_DESIGN = null; // 서명(신랑·신부 이름)을 쓰려고 지금 그리는 청첩장 - 에디터·공개페이지가 setDesign으로 넘김
     function setDesign(d) { CUR_DESIGN = d || null; }
+    // ---------- 페이지 배경 꾸밈 (청첩장 전체에 한 장으로 이어지는 무늬 - 섹션마다 끊기지 않게, CSS invite-blocks.css '페이지 배경 꾸밈') ----------
+    //  design.backdrop = 디자인을 고를 때 정해짐 (preset.json "backdrop" 또는 꾸밈에서 BACKDROP_OF) · 없던 예전 저장분은 꾸밈·디자인 id로 짐작
+    //  화면 설정 '배경 꾸밈'(extras.backdrop=false)을 끄면 무늬도 종이 질감도 없이 바탕색만 (.ib-nobd)
+    const BACKDROPS = ['stars', 'rain', 'sky', 'dots', 'soft', 'grain', 'roses', 'navy'];
+    const BACKDROP_OF = { stars: 'stars', drops: 'rain', sky: 'sky', '@webtoon': 'dots', soft: 'soft', film: 'grain', cupid: 'roses', gold: 'navy', 'p-webtoon': 'dots' };
+    function backdropOn(d) { return !(d && d.extras && d.extras.backdrop === false); }
+    function backdropOf(d) {
+        if (!d || !backdropOn(d)) return '';
+        const k = typeof d.backdrop === 'string' ? d.backdrop : (BACKDROP_OF[d.sectionLook] || BACKDROP_OF[d.presetId] || '');
+        return BACKDROPS.includes(k) ? k : '';
+    }
+    function applyBackdrop(root, d) {
+        if (!root || !root.classList) return;
+        const k = backdropOf(d);
+        BACKDROPS.forEach(x => root.classList.toggle('ib-bd-' + x, x === k));
+        root.classList.toggle('ib-bd', !!k);
+        root.classList.toggle('ib-nobd', !backdropOn(d));
+    }
     function designLook() { const d = CUR_DESIGN, g = d && d.sectionLook; return g && THEME_DECOS.includes(g) && !(d.extras && d.extras.look === false) ? g : ''; }
     // ---------- 색 바꾸면 꾸밈도 같이 (화면 설정 extras.colorLink, 기본 켜짐) ----------
     // design.themePal = 디자인을 고를 때의 원래 색 · setColors = 지금 청첩장 색 (색 묶음·포인트 색·바탕색을 바꾼 뒤)
@@ -2592,7 +2610,7 @@
     const pRelief = (id, freq, oct, scale, elev, seed, op) => `<filter id='${id}' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='${freq}' numOctaves='${oct}' seed='${seed || 1}' stitchTiles='stitch' result='n'/><feDiffuseLighting in='n' surfaceScale='${scale}' lighting-color='#fff'><feDistantLight azimuth='225' elevation='${elev}'/></feDiffuseLighting></filter><rect width='100%' height='100%' filter='url(#${id})'${op ? ` opacity='${op}'` : ''}/>`;
     const pLines = (id, freq, oct, rgb, k, c, seed, t) => `<filter id='${id}' x='0' y='0' width='100%' height='100%'><feTurbulence type='${t || 'fractalNoise'}' baseFrequency='${freq}' numOctaves='${oct}' seed='${seed || 2}' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 ${rgb[0]} 0 0 0 0 ${rgb[1]} 0 0 0 0 ${rgb[2]} ${k} 0 0 0 ${c}'/></filter><rect width='100%' height='100%' filter='url(#${id})'/>`;
     const BG_PAPERS = {
-        beige: { label: '코튼지', bg: '#F4ECDF', img: pWrap(pRelief('a', '.9', 3, 1.1, 62) + pRelief('b', '.035', 3, 1.4, 70, 5, '.55') + pLines('f', '.006 .3', 2, [.62, .54, .44], 2.6, -1.78, 7)) },
+        beige: { label: '코튼지', bg: '#F4ECDF', img: pWrap(pRelief('a', '.9', 3, 1.1, 62) + pRelief('b', '.035', 3, 1.4, 70, 5, '.55') + pLines('m', '.012', 2, [.62, .52, .40], .6, -.26, 4) + pLines('f', '.35', 1, [.5, .42, .34], 2.6, -2.25, 9, 'turbulence')) }, // (예전 가로 결 줄은 뺌 - 솜 종이처럼 은은한 얼룩 + 고운 섬유)
         white: { label: '수채화지', bg: '#FBFAF6', img: pWrap(pRelief('a', '.06', 4, 1.9, 60, 3) + pRelief('b', '.8', 2, .8, 70, 9, '.5')) },
         hanji: { label: '한지', bg: '#F6F1E6', img: pWrap(pRelief('a', '.5', 3, .9, 66) + pLines('f', '.018 .03', 3, [.55, .47, .36], -4.5, .5, 8, 'turbulence') + pLines('g', '.03 .018', 3, [.6, .52, .4], -5, .45, 13, 'turbulence')) },
         linen: { label: '린넨', bg: '#EFE9DF', img: pWrap(pLines('h', '.9 .012', 1, [.4, .35, .3], 1.8, -.95, 3) + pLines('v', '.012 .9', 1, [.4, .35, .3], 1.8, -.95, 6) + pRelief('a', '.9', 2, .7, 70, 1, '.6')) },
@@ -3546,5 +3564,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

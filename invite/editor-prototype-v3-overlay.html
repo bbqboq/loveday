@@ -4676,14 +4676,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018z">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z2">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018z2">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018z"></script>
-<script src="assets/tip-demos.js?v=1018z"></script>
-<script src="assets/ld-dialog.js?v=1018z"></script>
+<script src="assets/invite-blocks.js?v=1018z2"></script>
+<script src="assets/tip-demos.js?v=1018z2"></script>
+<script src="assets/ld-dialog.js?v=1018z2"></script>
 </head>
 <body>
 
@@ -5265,9 +5265,9 @@ const PRESETS = [
     { id:'p-garden', no:6, group:'mood', label:'가든 그린', desc:'보태니컬 그린에 꽃잎이 흩날리는 야외 웨딩 무드', tags:['야외','꽃잎'],
       palette:{ bg:'#F6F8F1', ink:'#2F3A2C', accent:'#5E7D4F', line:'#DCE5D2', muted:'#7E8B76', radius:'12px' },
       font:'gowun-batang', hero:'photo', heroFrame:'rounded', ambient:'petals', sections:['hero','greeting','location','gallery','dday','account'], fx:{ default:'up' } },
-    { id:'p-navy', no:7, group:'mood', label:'네이비 골드', desc:'격식 있는 네이비와 골드. 호텔 예식에 어울리게', tags:['포멀','호텔'],
-      palette:{ bg:'#F9F7F2', ink:'#1E2A44', accent:'#B08D4B', line:'#E4DCCB', muted:'#7D7766', radius:'2px' },
-      font:'noto-serif-kr', hero:'photo', heroFrame:'none', sideBg:'#1E2A44', shadow:true, ambient:'sparkles', sections:['hero','greeting','dday','location','account','gallery'], fx:{ default:'zoom' } },
+    { id:'p-navy', no:7, group:'mood', label:'네이비 골드', desc:'깊은 네이비 바탕에 금빛 글씨 · 호텔 예식에 어울리게', tags:['포멀','호텔'],
+      palette:{ bg:'#17223A', ink:'#EFE8D8', accent:'#C9A55C', line:'#3A4664', muted:'#A9A28F', radius:'2px' },
+      font:'noto-serif-kr', hero:'photo', heroFrame:'none', sideBg:'#0E1628', shadow:true, ambient:'sparkles', sections:['hero','greeting','dday','location','account','gallery'], fx:{ default:'zoom' } },
     { id:'p-earth', no:8, group:'mood', label:'어스톤 테라코타', desc:'테라코타와 모래빛. 가을 웨딩의 따뜻한 온도', tags:['가을','따뜻함'],
       palette:{ bg:'#FBF4EE', ink:'#4A2F24', accent:'#B5603C', line:'#EAD7C9', muted:'#9A7B6B', radius:'8px' },
       font:'song-myung', hero:'photo', heroFrame:'pill', sections:['hero','greeting','location','gallery','account'], fx:{ default:'up' } },
@@ -5290,7 +5290,7 @@ const PRESETS = [
     { id:'p-story', no:13, group:'layout', label:'우리 이야기 중심', desc:'타임라인과 인터뷰로 두 사람의 이야기를 더 길게', tags:['타임라인','인터뷰'],
       palette:{ bg:'#FDF9F3', ink:'#3A3029', accent:'#C0785A', line:'#EADFD2', muted:'#8F8174', radius:'12px' },
       font:'gowun-batang', hero:'photo', heroFrame:'rounded', sections:['hero','greeting','timeline','interview','gallery','location','account'], fx:{ default:'up', timeline:'left' } },
-    { id:'p-typo', no:14, group:'layout', label:'사진 없이 시작하기', desc:'사진이 없어도 글씨와 여백만으로 단정하게', tags:['사진없음','타이포'],
+    { id:'p-typo', no:14, group:'layout', label:'타이포 레터', desc:'사진 없이 글씨와 여백만으로 단정하게', tags:['사진없음','타이포'],
       palette:{ bg:'#F7F4EE', ink:'#222222', accent:'#9C7B52', line:'#E3DDD2', muted:'#8A8378', radius:'2px' },
       font:'nanum-myeongjo', hero:'text', sections:['hero','greeting','dday','location','account'], fx:{ default:'fade' },
       intro:{ enabled:true, text:'저희 결혼합니다', bg:'#F7F4EE', color:'#222222', fontSize:26 } },
@@ -5436,7 +5436,8 @@ function applyPreset(presetId) {
     const p = PRESETS.find(x => x.id === presetId) || PRESETS[0];
     state.skin = p.id;
     state.presetId = p.id;
-    { const lk = themeLookOf(p); state.sectionLook = lk.charAt(0) === '@' ? '' : lk; } // 디자인 꾸밈 (모든 섹션에 기본으로 - InviteBlocks.designLook)
+    { const lk = themeLookOf(p); state.sectionLook = lk.charAt(0) === '@' ? '' : lk;
+      const BO = (window.InviteBlocks && InviteBlocks.BACKDROP_OF) || {}; state.backdrop = typeof p.backdrop === 'string' ? p.backdrop : (BO[lk] || BO[p.__base || p.id] || ''); } // 디자인 꾸밈 (모든 섹션에 기본으로 - InviteBlocks.designLook) + 페이지 배경 꾸밈
     state.customFont = p.font || null;
     if (state.customFont) loadFontCss(state.customFont);
     state.customBg = null;
@@ -7481,7 +7482,7 @@ const EXTRA_DEFAULTS = {
              kakaoExtra: 'location', kakaoExtraLabel: '위치 보기', kakaoExtraUrl: '', ogImage: '', ogTitle: '', ogDesc: '',
              kakaoFocusX: 50, kakaoFocusY: 50, kakaoZoom: 100 }, // 카카오 썸네일 보이는 부분(0~100)·확대(%) - share_thumb.php가 이대로 잘라서 보냄
     labels: Object.assign({}, window.InviteBlocks ? InviteBlocks.LABEL_DEFAULTS : {}),
-    extras: { topMenu: false, look: true, colorLink: true, scrollFx: true, fxType: 'bounce', scrollbar: 'default', dividers: false, calendar: true,
+    extras: { topMenu: false, look: true, backdrop: true, colorLink: true, scrollFx: true, fxType: 'bounce', scrollbar: 'default', dividers: false, calendar: true,
               thanks: false, thanksTitle: '', thanksText: '' }
 };
 function ensureExtraState() {
@@ -7524,6 +7525,7 @@ const EXTRA_SCHEMA = {
         { key: 'extras.topMenu', type: 'check', checkLabel: '상단 섹션메뉴 (스크롤하면 위에 섹션 이름 메뉴가 떠요)' },
         { key: 'extras.dividers', type: 'check', checkLabel: '섹션 구분선 (섹션 사이에 얇은 가로선)' },
         { key: 'extras.calendar', type: 'check', checkLabel: '캘린더 저장 버튼 (예식일 아래 · 3시간 전 알림)', hint: '교통수단 섹션에 대절버스 출발 시각을 적으면 출발 30분 전 알림도 함께 들어가요. 발행된 청첩장에서만 보여요.' },
+        { key: 'extras.backdrop', type: 'check', checkLabel: '배경 꾸밈 (별·빗줄기·하늘빛 같은 배경 무늬와 종이 질감)', hint: '끄면 배경이 바탕색 한 가지로 깔끔해져요. 무늬는 청첩장 전체에 한 장으로 이어져 있어요.' },
         { key: 'extras.look', type: 'check', checkLabel: '디자인 꾸밈 (디자인마다 다른 제목 장식·카드 모양·배경 무늬)', showIf: st => !!st.sectionLook, hint: '끄면 모든 섹션이 색·글꼴만 남은 기본 모양이 돼요. 섹션 하나만 빼려면 그 섹션의 섹션 스킨에서 \'꾸밈 없이\'를 골라요.' },
         { key: 'extras.scrollFx', type: 'check', checkLabel: '섹션 등장 효과 (끄면 모든 섹션이 바로 보여요)' },
         { key: 'extras.fxType', label: '등장 효과 모두 바꾸기', type: 'choice', desc: '고르면 모든 섹션에 바로 적용', applyAll: true, options: SECTION_FX_OPTIONS.filter(([v]) => v !== 'none'), showIf: st => st.extras.scrollFx !== false }
@@ -11997,6 +11999,7 @@ function renderPreviewNow() {
     root.classList.toggle('ib-dark', !!(window.InviteBlocks && InviteBlocks.hexDark && InviteBlocks.hexDark(state.customBg || s.bg))); // 어두운 디자인: 섹션 안 카드·창도 어둡게 (공개 페이지와 같은 규칙)
     root.style.setProperty('--p-ink', s.ink);
     root.classList.toggle('dividers-on', !!(state.extras && state.extras.dividers)); // 섹션 사이 구분선 (기본 꺼짐)
+    try { InviteBlocks.applyBackdrop(root, { backdrop: state.backdrop, sectionLook: state.sectionLook, presetId: state.presetId, extras: state.extras }); } catch (e) {} // 페이지 배경 꾸밈 (청첩장 전체에 한 장으로)
     root.style.setProperty('--p-accent', state.customAccent || s.accent);
     root.style.setProperty('--p-on-accent', InviteBlocks.onAccent ? InviteBlocks.onAccent(state.customAccent || s.accent) : '#FFFFFF'); // 포인트 색 버튼 글자 (아주 밝은 포인트 색이면 진하게)
     root.style.setProperty('--p-paper', window.InviteBlocks && InviteBlocks.paperCss ? InviteBlocks.paperCss(state.paper) : 'none'); // 종이 질감
@@ -12010,7 +12013,7 @@ function renderPreviewNow() {
     ensureExtraState();
     if (window.InviteBlocks) { // 명칭·순서·색 (공개페이지와 같은 공용 설정)
         const lab = InviteBlocks.setLabels(state.labels);
-        if (InviteBlocks.setDesign) InviteBlocks.setDesign({ blocks: state.blocks, labels: state.labels, dateTbd: !!state.dateTbd, venueDemo: state.venueDemo, venueDemoAddr: state.venueDemoAddr, sectionLook: state.sectionLook, extras: state.extras, themePal: themePalOf() }); // 감사 인사 서명(신랑·신부 이름)용
+        if (InviteBlocks.setDesign) InviteBlocks.setDesign({ blocks: state.blocks, labels: state.labels, dateTbd: !!state.dateTbd, venueDemo: state.venueDemo, venueDemoAddr: state.venueDemoAddr, sectionLook: state.sectionLook, backdrop: state.backdrop, presetId: state.presetId, extras: state.extras, themePal: themePalOf() }); // 감사 인사 서명(신랑·신부 이름)용
         if (InviteBlocks.setColors) { InviteBlocks.setColors(curPalOf()); InviteBlocks.applyColorLink(root); try { renderColorLink(); } catch (e) {} } // 색 바꾸면 꾸밈도 같이 (화면 설정 extras.colorLink)
         const tbn = document.getElementById('tbNames'); if (tbn) { try { const [g, b] = stNames(); tbn.textContent = `${g} ♥ ${b}`; } catch (e) {} }
         root.style.setProperty('--groom-color', lab.groomColor);
@@ -14083,6 +14086,7 @@ function applySampleDesign(d) {
     state.customBg = d.customBg || null;
     state.paper = d.paper || null;
     state.sectionLook = d.sectionLook || '';
+    state.backdrop = typeof d.backdrop === 'string' ? d.backdrop : null; // 페이지 배경 꾸밈 (없으면 꾸밈·디자인으로 짐작)
     state.customAccent = d.customAccent || null;
     state.themePal = d.themePal || curPalOf(); // 샘플은 샘플 색이 원래 색
     state.desktopSideBg = d.desktopSideBg || null;
@@ -16629,6 +16633,7 @@ function spTheme(box) {
         (O('font') ? `<div class="wz-field"><div class="wz-lab">글꼴</div><div class="sp-fonts">${fontOptions.filter(fo => !fo.en).map(fo => `<button type="button" class="${(state.customFont || '') === fo.id ? 'on' : ''}" data-sp-font="${esc(fo.id)}" style="font-family:${String(fo.family || 'inherit').replace(/"/g, "'")}">${esc(fo.id ? fo.label.replace(/\s*\(.*\)\s*$/, '') : '테마 기본')}</button>`).join('')}</div></div>` : '') +
         (O('accent') ? `<div class="wz-field"><div class="wz-lab">포인트 색 <small>하트·버튼·강조 글자</small></div><div class="sp-cols"><button type="button" class="${!state.customAccent ? 'on' : ''}" data-sp-acc="" style="--c:${sk0.accent}" title="테마 기본"></button>${ACCENT_SWATCHES.map(([h, n]) => `<button type="button" class="${String(state.customAccent || '').toUpperCase() === h.toUpperCase() ? 'on' : ''}" data-sp-acc="${h}" style="--c:${h}" title="${n}"></button>`).join('')}<label class="sp-colpick" title="직접 고르기"><input type="color" value="${esc(state.customAccent || sk0.accent)}" data-sp-accpick></label></div></div>` : '') +
         (O('paper') && Object.keys(P).length ? `<div class="wz-field"><div class="wz-lab">종이 질감</div><div class="sp-papers"><button type="button" class="${!state.paper ? 'on' : ''}" data-sp-paper=""><span style="background:${(state.paper ? state.bgBeforePaper : state.customBg) || sk0.bg}"></span>없음</button>${Object.entries(P).map(([k, v]) => `<button type="button" class="${state.paper === k ? 'on' : ''}" data-sp-paper="${k}"><span style="background-color:${v.bg};background-image:${v.img}"></span>${esc(v.label)}</button>`).join('')}</div></div>` : '') +
+        (O('backdrop') ? `<label class="sp-sw" id="spBackdrop"><span><b>배경 꾸밈</b><small>배경 무늬·종이 질감 (끄면 바탕색만 깔끔하게)</small></span><input type="checkbox"${state.extras && state.extras.backdrop === false ? '' : ' checked'}><i></i></label>` : '') +
         (O('colorLink') && colorLinkShown() ? `<label class="sp-sw" id="spColorLink"><span><b>색을 바꾸면 꾸밈도 같이</b><small>${esc(colorLinkHint())}</small></span><input type="checkbox"${state.extras && state.extras.colorLink === false ? '' : ' checked'}><i></i></label>` : '') +
         (O('sskin') ? (() => { const fb = state.blocks.find(b => b.enabled && !SKIN_NO.includes(b.id) && !InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id)) || {};
             return `<div class="wz-field"><div class="wz-lab">섹션 꾸밈 <small>인사말·갤러리·방명록 같은 칸 모양 (모든 칸 같이)</small></div>${skinPickHtml(InviteBlocks.skinOf(fb), fb.skinPal, false)}</div>`; })() : '') +
@@ -16647,6 +16652,7 @@ function spTheme(box) {
     box.querySelectorAll('[data-sp-paper]').forEach(b => b.addEventListener('click', () => { setPaper(b.dataset.spPaper); after(); }));
     bindSkinPick(box, (k, pal) => { state.blocks.forEach(b => { if (!SKIN_NO.includes(b.id)) skinApply(b, k, pal); }); renderPreview(); after(); }); // 섹션 꾸밈: 모든 칸 같이
     box.querySelector('#spColorLink input')?.addEventListener('change', e => { colorLinkSet(e.target.checked); after(); });
+    box.querySelector('#spBackdrop input')?.addEventListener('change', e => { ensureExtraState(); state.extras.backdrop = !!e.target.checked; renderPreview(); try { renderExtraSettings(); } catch (x) {} after(); });
     const rs = box.querySelector('#spThReset');
     if (rs) rs.addEventListener('click', () => { state.customBg = null; state.customAccent = null; state.customFont = null; state.paper = null; delete state.bgBeforePaper; after(); });
 }
@@ -17471,6 +17477,7 @@ async function bootstrapFromServer() {
             state.customBg = data.design.customBg || null;
             state.paper = data.design.paper || null;
             state.sectionLook = data.design.sectionLook || ''; // 디자인 꾸밈 (예전에 저장된 청첩장은 없음 = 꾸밈 없이 예전 그대로)
+            state.backdrop = typeof data.design.backdrop === 'string' ? data.design.backdrop : null; // 페이지 배경 꾸밈 (없으면 꾸밈·디자인으로 짐작 InviteBlocks.backdropOf)
             state.themePal = data.design.themePal && data.design.themePal.bg ? data.design.themePal : null; // 디자인 원래 색 (없으면 themePalOf가 디자인 색으로 짐작)
             state.customAccent = data.design.customAccent || null;
             state.desktopSideBg = data.design.desktopSideBg || null;
@@ -17859,7 +17866,7 @@ async function saveToServer(publish, silent) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 edit_token: EDIT_TOKEN,
-                design: { skin: state.skin, presetId: state.presetId || null, palette: (({ label, ...rest }) => rest)(skins[state.skin] || skins.classic), customFont: state.customFont, customBg: state.customBg, paper: state.paper || undefined, sectionLook: state.sectionLook || undefined, themePal: themePalOf() || undefined, customAccent: state.customAccent || undefined, desktopSideBg: state.desktopSideBg, desktopShadow: state.desktopShadow, effects: state.effects, stickers: state.stickers, customTexts: state.customTexts, intro: state.intro, bgm: state.bgm, share: state.share, labels: state.labels, extras: state.extras, imgFocus: state.imgFocus, imgZoom: state.imgZoom, info: state.info, blocks: state.blocks, mode: state.mode || undefined, ...Object.fromEntries(SP_KEEP.filter(k => state[k] !== undefined && state[k] !== null).map(k => [k, state[k]])), sampleId: state.sampleId || undefined, simpleSnap: state.simpleSnap || undefined, fullSnap: state.fullSnap || undefined },
+                design: { skin: state.skin, presetId: state.presetId || null, palette: (({ label, ...rest }) => rest)(skins[state.skin] || skins.classic), customFont: state.customFont, customBg: state.customBg, paper: state.paper || undefined, sectionLook: state.sectionLook || undefined, backdrop: typeof state.backdrop === 'string' ? state.backdrop : undefined, themePal: themePalOf() || undefined, customAccent: state.customAccent || undefined, desktopSideBg: state.desktopSideBg, desktopShadow: state.desktopShadow, effects: state.effects, stickers: state.stickers, customTexts: state.customTexts, intro: state.intro, bgm: state.bgm, share: state.share, labels: state.labels, extras: state.extras, imgFocus: state.imgFocus, imgZoom: state.imgZoom, info: state.info, blocks: state.blocks, mode: state.mode || undefined, ...Object.fromEntries(SP_KEEP.filter(k => state[k] !== undefined && state[k] !== null).map(k => [k, state[k]])), sampleId: state.sampleId || undefined, simpleSnap: state.simpleSnap || undefined, fullSnap: state.fullSnap || undefined },
                 // 대시보드·관리자 목록에 쓰는 이름 - 지금 "예식 정보"에 적힌 이름으로 갱신 (비어 있으면 불러온 값 유지)
                 groom_name: (String(weddingInfo().groom || '').split('\n')[0].trim() || lastLoadedMeta.groom_name).slice(0, 50),
                 bride_name: (String(weddingInfo().bride || '').split('\n')[0].trim() || lastLoadedMeta.bride_name).slice(0, 50),
@@ -18688,6 +18695,7 @@ const LDH_EASY = [
     { t: '질문을 건너뛰고 싶어요', d: '나중에 해도 돼요', when: c => c.view === 'quick' && spOpt('flow', 'skip'), steps: ['질문 위쪽 [나중에 할게요]를 누르면 그 질문을 건너뛰어요.', '건너뛴 것은 질문을 다 마친 뒤 목록 화면에서 채울 수 있어요.'], show: () => [{ el: () => ldhFirst('#spSkip'), t: '나중에 할게요', x: '이 질문은 건너뛰고 다음 질문으로 가요.' }] },
     { t: '디자인 바꾸기', d: '적은 내용은 그대로 두고 모양만', when: () => spOpt('theme', 'design') && !spInPlace, steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 위 [디자인 바꾸기]가 열려요.', '마음에 드는 디자인을 누르면 이름·사진·글·계좌는 그대로 두고 모양만 바뀌어요.', '처음 디자인을 고를 때는 아래 [내 사진으로 보기]로 내 사진을 넣어 미리 볼 수도 있어요.'], go: ['그 칸으로 가기', () => { spDesignOpen = true; ldhEasyGo('', 'theme'); }] },
     { t: '칸 모양 바꾸기 (빈티지 · 다른 디자인 스킨)', d: '인사말·방명록 같은 칸을 다른 모양으로', when: () => spOpt('theme', 'sskin'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'섹션 꾸밈\'에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 중 하나를 눌러요.', '아래 \'디자인 스킨\'에서 다른 디자인(가든 · 필름 · 스크랩북 …)을 누르면 그 디자인의 색 · 글꼴 · 꾸밈이 모든 칸에 입혀져요. 처음처럼 하려면 [디자인 따라]를 눌러요.', '칸마다 따로 바꾸려면 전문가 모드의 \'섹션 스킨\'에서 해요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
+    { t: '배경 무늬 끄고 켜기', d: '색·글꼴 칸 → 배경 꾸밈 스위치', when: () => spOpt('theme', 'backdrop'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'배경 꾸밈\' 스위치를 끄면 배경 무늬와 종이 질감이 빠지고 바탕색만 남아요. 다시 켜면 디자인 원래 배경이에요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '색 바꾸면 달력 · 계좌 꾸밈도 같이', d: '바꾼 색을 따라가게 · 원래 색 그대로', when: () => spOpt('theme', 'colorLink') && colorLinkShown(), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'색을 바꾸면 꾸밈도 같이\' 스위치가 켜져 있으면, 색 묶음이나 포인트 색을 바꿀 때 달력 · 디데이 · 계좌 · 방명록 · 참석 버튼 · 교통 안내 꾸밈도 그 색으로 같이 바뀌어요.', '따로 고른 디자인 스킨도 모양은 그대로, 색만 바꾼 색으로 바뀌어요.', '스위치를 끄면 꾸밈의 포인트 색은 디자인 원래 색 그대로 남아요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
     { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', when: () => spOpt('gallery', 'reveal'), steps: ['아래 [그 칸으로 가기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 위(옆) 청첩장에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요. [한 번에]를 누르면 예전처럼 바로 보여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'gallery')] },
     { t: '인트로 배경에 사진 · 영상 넣기', d: '청첩장을 열 때 뒤에 깔리는 화면', when: () => spOpt('finish', 'intro') && spOpt('finish', 'introFx') && spOpt('finish', 'introMedia'), steps: ['아래 [그 칸으로 가기]를 누르면 \'마무리\' 칸이 열려요. 인트로 스위치를 켜요.', '\'인트로 배경\'에서 [사진]을 누르면 앨범이 열려요. 한 장 고르면 인트로 뒤에 깔려요.', '[유튜브 영상]을 누르고 유튜브 주소를 붙여 넣으면 영상이 소리 없이 뒤에서 흘러가요.', '[▶ 인트로 보기]를 누르면 하객이 보는 그대로 확인할 수 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'finish')] },
@@ -18704,6 +18712,7 @@ const LDH_EASY = [
 const LDH_EXPERT = [
     { t: '스티커 붙이기', d: '하트 · 꽃 · 별 · 움직이는 그림', steps: ['위쪽 웃는 얼굴 버튼(스티커 넣기)을 눌러요.', '[추천]에는 지금 디자인에 어울리는 그림이 먼저 나와요. [테마]에서 로맨틱 · 별·우주 · 비 오는 날 … 을 골라 볼 수도 있어요.', '찾기 칸에 하트, 꽃, 비처럼 적거나 [움직임]을 누르면 움직이는 스티커만 모아 봐요 (초록 점 = 움직여요).', '스티커를 누르면 청첩장에 붙어요. 끌어서 옮기고, 모서리를 끌어 크기를 바꿔요.', '[세트]를 누르면 \'웹툰 첫 화\'·\'리본과 하트\' 같은 세트가 첫 화면·인사말·갤러리 쪽에 한 번에 붙어요.'], show: () => [{ el: () => ldhFirst('#stickerAddBtn', '[data-act="sticker"]'), t: '스티커 넣기', x: '이 버튼을 누르면 스티커 창이 열려요.' }], go: ['스티커 창 열기', () => { closeLdh(); setTimeout(() => document.getElementById('stickerAddBtn')?.click(), 50); }] },
     { t: '섹션 하나만 다른 모양으로 (섹션 스킨)', d: '모양 · 디자인 21가지 스킨', when: () => spOpt('flow', 'sskin'), steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요. 편집창 맨 위에 \'섹션 스킨\'이 있어요.', '\'모양\' 줄(방명록 카드·줄글, 달력·카운트, 계좌, 인터뷰 …)에서 그림을 누르면 그 모양으로 바뀌어요.', '\'스킨\' 줄에서 빈티지 · 밤하늘 · 안개 또는 다른 디자인(클래식 · 가든 · 필름 · 웹툰 …) 그림을 누르면 그 디자인의 색 · 글꼴 · 꾸밈이 이 섹션에만 입혀져요. 옆으로 밀면 21가지가 다 나와요.', '[모든 섹션에 같은 스킨]을 누르면 모든 섹션이 같은 스킨이 돼요. 처음처럼 하려면 [디자인 따라]를 눌러요.'], go: ['방명록 열어 보기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'guestbook' && b.enabled) ? 'guestbook' : (state.blocks.find(b => b.enabled && !SKIN_NO.includes(b.id)) || {}).id)] },
+    { t: '배경 무늬 끄고 켜기', d: '화면 설정 → 부가기능 → 배경 꾸밈', steps: ['아래 [바로 열기]를 누르면 화면 설정이 열려요.', '\'부가기능\'의 \'배경 꾸밈\'을 끄면 별 · 빗줄기 · 하늘빛 같은 배경 무늬와 종이 질감이 빠지고 바탕색 한 가지만 남아요.', '다시 켜면 디자인 원래 배경으로 돌아와요. 무늬는 섹션마다 끊기지 않고 청첩장 전체에 한 장으로 이어져 있어요.'], go: ['바로 열기', () => { closeLdh(); document.getElementById(mmPc() ? 'pcSettingsBtn' : 'controlsFab')?.click(); }] },
     { t: '달력 · 카운트 모양과 색 바꾸기', d: '디데이 편집창 → 달력 모양 · 카운터 모양 · 부품 색', steps: ['아래 [바로 열기]를 누르면 디데이 카운트다운 편집창이 열려요.', '\'달력 모양\' · \'카운터 모양\' 칸을 누르면 모양이 한 줄로 나와요. 옆으로 넘기면 기본 모양 다음에 디자인 22개의 모양(천사의 편지 밀랍 도장 · 웹툰 말풍선 …)이 있어요. 어느 디자인에서나 골라 쓸 수 있어요.', '\'부품 색\'에서 디자인 색 동그라미를 누르거나 [직접]으로 색을 고르면 달력 · 카운트 색만 바뀌어요. 바탕은 늘 화면 설정 색이에요. 처음대로 하려면 [화면 색 따라].'], go: ['바로 열기', () => { closeLdh(); ldhExpertOpen('dday'); }] },
     { t: '색 바꾸면 달력 · 계좌 꾸밈도 같이', d: '화면 설정 → 색 · 연동 스위치', when: () => colorLinkShown(), steps: ['아래 [바로 열기]를 누르면 화면 설정의 \'색\' 칸이 열려요.', '\'색을 바꾸면 꾸밈도 같이\'가 켜져 있으면 스킨 · 바탕색 · 포인트 색을 바꿀 때 달력 · 디데이 · 계좌 · 방명록 · 참석 버튼 · 교통 안내 꾸밈과 따로 고른 디자인 스킨도 그 색으로 같이 바뀌어요.', '끄면 꾸밈의 포인트 색은 디자인 원래 색 그대로예요. 빈티지 · 밤하늘 · 안개 · 웹툰처럼 직접 고른 섹션 테마는 늘 그 색이에요.'], go: ['바로 열기', () => { closeLdh(); document.getElementById(mmPc() ? 'pcSettingsBtn' : 'controlsFab')?.click(); setTimeout(() => { try { spCur = 'color'; spOpen.__d3 = 1; spOpen.color = 1; spApply(); document.getElementById('colorLinkGroup')?.scrollIntoView({ block: 'center' }); } catch (e) {} }, 150); }] },
     { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', steps: ['아래 [바로 열기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 미리보기에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요.'], go: ['바로 열기', () => ldhExpertOpen('gallery')] },

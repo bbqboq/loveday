@@ -120,6 +120,7 @@ function load_preset(string $folder): array {
     if (isset($p['heroLayout']) && is_string($p['heroLayout']) && preg_match('/^[a-z0-9_-]{1,40}$/', $p['heroLayout'])) $out['heroLayout'] = $p['heroLayout'];
     if (isset($p['paper']) && in_array($p['paper'], ALLOWED_PAPER, true)) $out['paper'] = $p['paper'];
     if (isset($p['sectionLook']) && in_array($p['sectionLook'], ALLOWED_LOOKS, true)) $out['sectionLook'] = $p['sectionLook']; // 섹션 스킨 꾸밈 (없으면 에디터 THEME_LOOKS)
+    if (isset($p['backdrop']) && in_array($p['backdrop'], ['', 'stars', 'rain', 'sky', 'dots', 'soft', 'grain', 'roses', 'navy'], true)) $out['backdrop'] = $p['backdrop']; // 페이지 배경 꾸밈 (InviteBlocks.BACKDROPS, '' = 없음 · 없으면 꾸밈으로 짐작)
     if (($p['ambientScope'] ?? '') === 'hero') $out['ambientScope'] = 'hero';
     if (isset($p['ambientOpacity'])) $out['ambientOpacity'] = max(10, min(100, (int) $p['ambientOpacity']));
     // 폰트 필드(headFont 등)는 CSS에 그대로 들어가므로 따옴표·세미콜론 같은 위험 문자 제거

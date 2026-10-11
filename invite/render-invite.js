@@ -1119,6 +1119,7 @@ function renderInviteReadOnly(rootEl, design, masked) {
     rootEl.style.setProperty('--p-head-weight', (customFont && customFont.weight) || s.headWeight);
     rootEl.style.setProperty('--p-radius', s.radius);
     rootEl.classList.toggle('dividers-on', !!(design.extras && design.extras.dividers)); // 섹션 사이 구분선 (기본 꺼짐)
+    try { if (window.InviteBlocks && InviteBlocks.applyBackdrop) InviteBlocks.applyBackdrop(rootEl, design); } catch (e) {} // 페이지 배경 꾸밈 (청첩장 전체에 한 장으로 · 화면 설정 '배경 꾸밈'을 끄면 무늬·종이 질감 없음)
     if (window.InviteBlocks && InviteBlocks.setColors) { // 색 바꾸면 꾸밈도 같이 (화면 설정 extras.colorLink · design.themePal = 디자인 원래 색)
         InviteBlocks.setColors({ bg: design.customBg || s.bg, ink: s.ink, accent: design.customAccent || s.accent, line: s.line, muted: s.muted });
         InviteBlocks.applyColorLink(rootEl);
