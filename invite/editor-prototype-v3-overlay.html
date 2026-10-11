@@ -536,6 +536,7 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .spb-ready .acts { display: flex; gap: 8px; margin-top: 2px; }
 .spb-ready .acts .wz-next { flex: 1; height: 46px; }
 .spb-ready .acts .wz-back { flex: none; height: 46px; padding: 0 14px; }
+.spb-ready .acts .wz-next.ghost { flex: .8; background: #fff; color: var(--wz-ink, #1B1A18); border: 1px solid var(--ui-line, #E5DED3); box-shadow: none; }
 .spb-warn { background: #F6E7DB; } .spb-warn::after { content: '!'; position: absolute; inset: 0; display: grid; place-items: center; color: #A8643C; font-size: 12px; font-weight: 800; }
 .spb-li.warn .spb-tx small { color: #A8643C; }
 .spb-add .spb-li.off .spb-tx { opacity: 1; } .spb-add .spb-li.off .spb-tx b { color: var(--wz-ink); font-weight: 600; } .spb-add .spb-li.off .spb-tx small { white-space: normal; }
@@ -2387,6 +2388,15 @@ body.tippick-on, body.tippick-on * { cursor: crosshair !important; }
 .pubchk .pc-go { font-size: 12.5px; font-weight: 700; color: var(--ui-point, #B08A5A); white-space: nowrap; }
 .pubchk .ok .pc-go { color: #5E7D5A; font-weight: 600; }
 .pubchk .pc-kk { padding: 6px 0 4px; }
+/* 카톡 공유 모양 쉽게 고치기 (kkEasyMount) */
+.kke-pv { margin: 0 0 10px; } .kke-pv .kk-chat { margin: 0 auto; }
+.kke-f { margin: 0 0 12px; } .kke-f > b { display: block; font-size: 12.5px; font-weight: 800; margin: 0 0 6px; } .kke-f > b small { font-weight: 500; color: #8A847B; margin-left: 6px; }
+.kke-f input, .kke-f textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--ui-line, #E5DED3); border-radius: 11px; padding: 10px 12px; font: inherit; font-size: 14px; background: #fff; color: inherit; resize: vertical; }
+.kke-f input:focus, .kke-f textarea:focus { outline: 0; border-color: #2B2320; }
+.kke-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.kke-row button { height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 12.5px; font-weight: 600; color: #4A453F; cursor: pointer; }
+.kke-row button.on { background: #2B2320; border-color: #2B2320; color: #fff; } .kke-row button.up { border-style: dashed; }
+.kke-n { font-size: 11.5px; color: #8A847B; line-height: 1.6; margin: 4px 0 0; }
 .pubchk .pc-foot { display: flex; gap: 8px; margin-top: 12px; flex: none; }
 .pubchk .pc-b { flex: 1; height: 46px; border-radius: 13px; border: 1px solid var(--ui-line, #E6E0D8); background: var(--panel, #fff); color: var(--ink, #2B2B2B); font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
 .pubchk .pc-b.pri { background: var(--ink, #2B2B2B); border-color: var(--ink, #2B2B2B); color: #fff; }
@@ -4653,14 +4663,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018x">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018x">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018y">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018y">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018x"></script>
-<script src="assets/tip-demos.js?v=1018x"></script>
-<script src="assets/ld-dialog.js?v=1018x"></script>
+<script src="assets/invite-blocks.js?v=1018y"></script>
+<script src="assets/tip-demos.js?v=1018y"></script>
+<script src="assets/ld-dialog.js?v=1018y"></script>
 </head>
 <body>
 
@@ -4960,7 +4970,7 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
     <button type="button" class="pill-primary" id="publishBtn">발행하기</button>
 </div>
 <div class="sp-pvreal" id="spPvReal"></div>
-<div class="sp-pvbar" id="spPvBar"><span id="spPvMsg">미리보기 입니다. 제작 후 꼭 저장해주세요.</span><span class="sp-pvbar-b"><button type="button" id="spPvOpen" hidden>새 창으로 보기</button><button type="button" id="spPvPub" hidden>발행하기</button><button type="button" id="spPvBack">돌아가기</button></span></div>
+<div class="sp-pvbar" id="spPvBar"><span id="spPvMsg">미리보기 입니다. 제작 후 꼭 저장해주세요.</span><span class="sp-pvbar-b"><button type="button" id="spPvOpen" hidden>새 창으로 보기</button><button type="button" id="spPvKk" hidden>카톡 미리보기</button><button type="button" id="spPvPub" hidden>발행하기</button><button type="button" id="spPvBack">돌아가기</button></span></div>
 <div class="width-fab-row" id="widthFabRow">
     <button type="button" id="mWidthNormal" class="width-fab-btn active" title="표준 화면(실제 기기 폭)">표준</button>
     <button type="button" id="mWidthNarrow" class="width-fab-btn" title="좁은 화면(테스트용 320px)">좁게</button>
@@ -7223,7 +7233,7 @@ function renderSchemaInput(d, value, path, f) {
         case 'choice': return `<div class="width-row">${d.options.map(([val, lbl]) => `<button type="button" class="width-btn ${v === String(val) ? 'active' : ''}" data-sf-choice="${path}" data-val="${esc(String(val))}">${esc(String(lbl))}</button>`).join('')}</div>`;
         case 'image': return `${v ? `<img src="${esc(InviteBlocks.imgUrl(v))}" style="width:100%;max-width:220px;border-radius:8px;margin-bottom:8px;display:block;">` : ''}
             <button type="button" class="pill pill-primary-outline" data-sf-upload="${path}">📤 사진 업로드</button>
-            ${v ? `<button type="button" class="pill" data-sf-clear="${path}">삭제</button>` : ''}`;
+            ${v ? `<button type="button" class="pill" data-sf-clear="${path}">삭제</button>` : ''}${v && d.focus ? `<button type="button" class="pill" data-sf-focus="${esc(InviteBlocks.imgUrl(v))}">◎ 보일 부분 · 확대</button>` : ''}`;
         case 'order': { // 순서 바꾸기 (연락하기 가족 순서 등) - 값은 키 배열, 빠진 키는 뒤에 붙임
             const keys = d.options.map(o => o[0]);
             const ord = (Array.isArray(value) ? value.filter(k => keys.includes(k)) : []).concat(keys).filter((k, i, a) => a.indexOf(k) === i);
@@ -7266,8 +7276,8 @@ function renderSchemaEditor(wrap, block) {
     // 나중에 추가된 옵션(예: 영상 폭·둥글기)은 예전에 저장된 섹션에 값이 없으니 기본값으로 채워 둔다
     Object.keys(def.defaults || {}).forEach(k => { if (f[k] === undefined) f[k] = JSON.parse(JSON.stringify(def.defaults[k])); });
     // showIf: 'fab' = 그 값이 꺼져 있거나 비어 있으면 숨김 (사진·주소 같은 글 값도 됨) / '!fullWidth' = 켜져 있으면 숨김
-    const showIfOne = si => si.charAt(0) === '!' ? !!f[si.slice(1)] : !f[si];
-    const showIfHidden = si => String(si).split('|').every(showIfOne); // 'a|b' = 둘 중 하나라도 맞으면 보임 (예: 크레딧이 꺼졌거나 '글귀도 보여주기'가 켜졌으면 글귀 칸)
+    const showIfOne = si => { const m = /^(\w+)(!?=)(.*)$/.exec(si); if (m) return (String(f[m[1]] ?? '') === m[3]) === (m[2] === '!='); return si.charAt(0) === '!' ? !!f[si.slice(1)] : !f[si]; }; // 'style=photo' · 'style!=photo' = 그 값일 때만 / 아닐 때만
+    const showIfHidden = si => String(si).split('&').some(part => part.split('|').every(showIfOne)); // 'a|b' = 둘 중 하나라도 맞으면 보임 · 'a&b' = 둘 다 맞아야 보임 (예: 크레딧이 꺼졌거나 '글귀도 보여주기'가 켜졌으면 글귀 칸)
     const fieldHtml = (d, path) => d.type === 'deceased' ? deceasedTileHtml(f) : d.group
         ? `<div class="mini-label" style="margin:16px 0 6px;">${esc(d.group)}</div>`
         : (d.showIf && showIfHidden(d.showIf)) ? '' // showIf: 'fab' = 그 체크가 꺼지면 숨김 / '!fullWidth' = 그 체크가 켜지면 숨김
@@ -7346,6 +7356,7 @@ function renderSchemaEditor(wrap, block) {
         const val = typeof cur === 'number' ? Number(btn.dataset.val) : btn.dataset.val;
         sfSet(f, btn.dataset.sfChoice, val); commit(true);
     }));
+    wrap.querySelectorAll('[data-sf-focus]').forEach(btn => btn.addEventListener('click', () => openFocusPicker(btn.dataset.sfFocus))); // 사진에서 보일 부분 · 확대 (감사 인사 사진 등)
     wrap.querySelectorAll('[data-sf-upload]').forEach(btn => btn.addEventListener('click', () => {
         const input = makeFileInput();
         input.addEventListener('change', async () => {
@@ -7360,7 +7371,7 @@ function renderSchemaEditor(wrap, block) {
     }));
     wrap.querySelectorAll('[data-sf-check]').forEach(cb => cb.addEventListener('change', () => {
         sfSet(f, cb.dataset.sfCheck, cb.checked);
-        commit(def.editor.some(x => typeof x.showIf === 'string' && x.showIf.split('|').some(si => si === cb.dataset.sfCheck || si === '!' + cb.dataset.sfCheck))); // 이 체크에 딸린 입력칸이 있으면 편집창도 다시 그림
+        commit(def.editor.some(x => typeof x.showIf === 'string' && x.showIf.split(/[|&]/).some(si => si === cb.dataset.sfCheck || si === '!' + cb.dataset.sfCheck))); // 이 체크에 딸린 입력칸이 있으면 편집창도 다시 그림
     }));
     wrap.querySelectorAll('[data-sf-clear]').forEach(btn => btn.addEventListener('click', () => { sfSet(f, btn.dataset.sfClear, ''); commit(true); }));
     wrap.querySelectorAll('[data-sf-add]').forEach(btn => btn.addEventListener('click', () => {
@@ -9797,6 +9808,12 @@ const STK_THEMES = [
 const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] , 'p-webtoon': ['webtoon', 'party'], 'p-angel': ['romantic', 'classic'] };
 // 관리자 → 스티커 (sticker_settings.php): 테마 순서·끈 테마·숨긴 그림·디자인별 추천. 못 받으면 아래 기본대로
 let STK_CFG = { order: null, off: [], hide: [], rec: {} };
+// 관리자가 올린 종이 질감 그림 (관리자 → 추천 디자인 → 종이 질감 그림) - 받으면 바탕·고르기 칸 견본을 다시 그림
+fetch('paper_settings.php', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
+    if (!j || !j.papers || !window.InviteBlocks || !InviteBlocks.setPapers || !Object.keys(j.papers).length) return;
+    InviteBlocks.setPapers(j.papers); try { DPK.shots = {}; DPK.key += '|paper'; } catch (e) {}
+    try { renderFontBgPickers(); } catch (e) {} try { renderPreview(); } catch (e) {}
+}).catch(() => {});
 fetch('sticker_settings.php', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
     if (!j || typeof j !== 'object') return;
     STK_CFG = { order: Array.isArray(j.order) ? j.order : null, off: Array.isArray(j.off) ? j.off : [], hide: Array.isArray(j.hide) ? j.hide : [], rec: j.rec && typeof j.rec === 'object' && !Array.isArray(j.rec) ? j.rec : {} };
@@ -14730,6 +14747,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     root.classList.add('sp-pv');
     document.getElementById('spPvMsg').textContent = final ? '완성본이에요! 저장해 뒀어요. 발행하면 주소가 생겨요.' : quick ? '이렇게 만들어졌어요! 닫으면 나머지를 하나씩 고칠 수 있어요.' : '하객에게 이렇게 보여요. 저장해 뒀어요.';
     document.getElementById('spPvPub').hidden = !final;
+    document.getElementById('spPvKk').hidden = !(final || isPublished); // 카톡 공유 모양 (발행 전·후)
     document.getElementById('spPvOpen').hidden = true;
     document.getElementById('spPvBack').textContent = final ? '수정하기' : quick ? '닫기' : '돌아가기';
     const box = document.getElementById('spPvReal');
@@ -14774,6 +14792,7 @@ function spClosePreview() {
 document.getElementById('spPvBack').addEventListener('click', spClosePreview);
 document.getElementById('spPvOpen').addEventListener('click', () => { if (EDIT_TOKEN) window.open(`invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}`, '_blank', 'noopener'); }); // (창 안에 못 띄울 때 - 하객이 보는 화면을 새 창으로)
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('sp-pv')) spClosePreview(); });
+document.getElementById('spPvKk').addEventListener('click', () => kkSheetOpen());
 document.getElementById('spPvPub').addEventListener('click', e => {
     const b = e.currentTarget; if (b.disabled) return;
     pubCheckThen(async () => { // 빠진 것이 있으면 먼저 '발행 전에 확인해요'
@@ -15841,7 +15860,7 @@ function spRenderList() {
     const readyHtml = ready ? `<div class="spb-ready${bads.length ? '' : ' ok'}${spReadyFlash ? ' flash' : ''}" id="spReady"><div class="r1"><b>${isPublished ? '발행한 청첩장' : bads.length ? '발행 준비' : '발행 준비 다 됐어요'}</b><span>${nOk} / ${all}</span></div>
         <p>${bads.length ? `아래 ${bads.length}개를 채우면 좋아요 · 눌러서 바로 채워요` : isPublished ? '고친 내용은 저장되면 하객 화면에도 바로 바뀌어요' : '이제 완성본을 보고 발행하면 돼요'}</p><div class="bar"><i style="width:${Math.round(nOk / all * 100)}%"></i></div>
         ${bads.length ? `<div class="chips">${bads.map(c => `<button type="button" data-pc-go="${c.id}" title="${esc(c.t)}">${esc(short[c.id] || c.t)}</button>`).join('')}</div>` : ''}
-        <div class="acts"><button type="button" class="wz-next" id="spReadyPv">완성본 보기</button></div></div>` : '';
+        <div class="acts"><button type="button" class="wz-next" id="spReadyPv">완성본 보기</button><button type="button" class="wz-next ghost" id="spReadyKk">카톡 미리보기</button></div></div>` : '';
     spReadyFlash = false;
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 만들기</b></div>${spUdHtml()}</div>
         <div class="spb">
@@ -15854,6 +15873,7 @@ function spRenderList() {
     pane.querySelector('#spOrderBtn')?.addEventListener('click', () => { stopAllBgm(); spOrderMode = true; spRender(); });
     spBindListDrag(pane);
     pane.querySelector('#spReadyPv')?.addEventListener('click', () => pane.querySelector('#spListDone').click());
+    pane.querySelector('#spReadyKk')?.addEventListener('click', () => kkSheetOpen()); // 카톡 공유 모양 (사진·제목·내용·버튼)
     pane.querySelectorAll('#spReady [data-pc-go]').forEach(b => b.addEventListener('click', () => pubGo(b.dataset.pcGo)));
     pane.querySelectorAll('[data-sp-add]').forEach(b => b.addEventListener('click', () => spAddGo(b.dataset.spAdd)));
     pane.querySelector('#spAddMore')?.addEventListener('click', () => { spAddMore = true; spRender(); });
@@ -17872,11 +17892,59 @@ function pubGo(id) {
     ldhExpertOpen(g[2] || (spHeroKind() === 'video' ? 'heroVideo' : 'hero'));
 }
 function pubClose() { const el = document.getElementById('pubChk'); if (el) el.remove(); }
-function pubKakaoHtml() { // 카카오톡 미리보기 (설명을 따로 안 적었으면 예식 정보로)
+function pubKakaoHtml(hint) { // 카카오톡 미리보기 (설명을 따로 안 적었으면 예식 정보로)
     const sh = state.share = state.share || {}, keep = sh.kakaoDesc, wi = weddingInfo(), vf = (state.blocks.find(b => b.id === 'location') || {}).fields || {}, vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(vf) : {};
     if (!keep) sh.kakaoDesc = [wi.date ? dtDateText(wi.date) + (wi.time ? ' ' + wi.time : '') : '', vd.v ? '' : vf.venue || ''].filter(Boolean).join('\n') || ' ';
     let h = ''; try { h = sharePreviewHtml('kakao'); } finally { sh.kakaoDesc = keep; if (keep === undefined) delete sh.kakaoDesc; }
-    return h.replace('<b class="kk-hint">끌어서 맞추기</b>', '');
+    return hint ? h : h.replace('<b class="kk-hint">끌어서 맞추기</b>', '');
+}
+// 카톡 공유 모양 쉽게 고치기: 미리보기 + 사진 · 제목 · 내용 · 버튼 (전문가 모드 화면 설정 '카카오톡·링크 미리보기'와 같은 값 state.share)
+//  '발행 전에 확인해요' 창의 [카톡 미리보기] · 목록 화면 발행 준비 카드 · 완성본 화면 아래 띠의 [카톡 미리보기]
+function kkEasyHtml() {
+    ensureExtraState(); const sh = state.share, [g, b] = stNames(), wi = weddingInfo(), vf = (state.blocks.find(x => x.id === 'location') || {}).fields || {};
+    const autoDesc = [wi.date ? dtDateText(wi.date) + (wi.time ? ' ' + wi.time : '') : '', vf.venue || ''].filter(Boolean).join('\n');
+    const chips = (k, opts) => opts.map(([v, l]) => `<button type="button" class="${(sh[k] || opts[0][0]) === v ? 'on' : ''}" data-kke="${k}" data-v="${v}">${l}</button>`).join('');
+    const inp = (k, ph, ta) => ta ? `<textarea data-kks="${k}" rows="2" placeholder="${esc(ph)}">${wzEsc(sh[k] || '')}</textarea>` : `<input data-kks="${k}" value="${wzEsc(sh[k] || '')}" placeholder="${esc(ph)}">`;
+    return `<div class="kke-pv">${pubKakaoHtml(true)}</div>
+        <div class="kke-f"><b>사진 <small>미리보기 사진을 끌면 보이는 부분이 바뀌어요</small></b><div class="kke-row"><button type="button" class="up" data-kke-up>${sh.kakaoThumb ? '사진 바꾸기' : '다른 사진 고르기'}</button>${sh.kakaoThumb ? '<button type="button" data-kke-clear>첫 화면 사진으로</button>' : ''}${chips('kakaoRatio', [['portrait', '세로'], ['square', '정사각'], ['landscape', '가로']])}</div></div>
+        <div class="kke-f"><b>제목</b>${inp('kakaoTitle', `${g} ♥ ${b} 결혼합니다`)}</div>
+        <div class="kke-f"><b>내용 <small>비워 두면 날짜·예식장</small></b>${inp('kakaoDesc', autoDesc || '11월 14일 토요일 오후 2시\n라움아트센터', true)}</div>
+        <div class="kke-f"><b>버튼 이름</b>${inp('kakaoButton', '청첩장 보기')}</div>
+        <div class="kke-f"><b>버튼 하나 더</b><div class="kke-row">${chips('kakaoExtra', [['location', '위치 보기'], ['none', '없음'], ['url', '직접 정하기']])}</div></div>
+        ${sh.kakaoExtra === 'url' ? `<div class="kke-f"><b>더한 버튼 이름</b>${inp('kakaoExtraLabel', '자세히 보기')}</div><div class="kke-f"><b>연결할 주소</b>${inp('kakaoExtraUrl', 'https://')}</div>` : ''}
+        <p class="kke-n">문자·SNS에 링크를 붙여도 같은 사진·제목·내용이 보여요. 카카오톡은 한 번 받은 미리보기를 한동안 저장해 둬서, 이미 보낸 방에선 바뀐 모양이 늦게 보일 수 있어요.</p>`;
+}
+function kkEasyMount(box) {
+    const draw = () => { box.innerHTML = kkEasyHtml(); bind(); try { kkApplyCrop(); } catch (e) {} };
+    const pv = () => { const p = box.querySelector('.kke-pv'); if (p) { p.innerHTML = pubKakaoHtml(true); try { kkApplyCrop(); } catch (e) {} } };
+    const bind = () => {
+        const sh = new Proxy({}, { get: (t, k) => state.share[k], set: (t, k, v) => { state.share[k] = v; return true; }, deleteProperty: (t, k) => { delete state.share[k]; return true; } }); // (화면 설정을 다시 그리면 state.share가 새 객체로 바뀌어서 늘 지금 것에 씀)
+        box.querySelectorAll('[data-kks]').forEach(el => el.addEventListener('input', () => { const v = el.value; if (v.trim()) sh[el.dataset.kks] = v; else delete sh[el.dataset.kks]; pv(); scheduleSnapshot(); try { refreshSharePreviews(); } catch (e) {} }));
+        box.querySelectorAll('[data-kke]').forEach(el => el.addEventListener('click', () => { sh[el.dataset.kke] = el.dataset.v; scheduleSnapshot(); draw(); try { renderExtraSettings(); } catch (e) {} }));
+        box.querySelector('[data-kke-clear]')?.addEventListener('click', () => { delete sh.kakaoThumb; sh.kakaoFocusX = 50; sh.kakaoFocusY = 50; sh.kakaoZoom = 100; scheduleSnapshot(); draw(); });
+        box.querySelector('[data-kke-up]')?.addEventListener('click', e => {
+            const btn = e.currentTarget, input = makeFileInput();
+            input.addEventListener('change', async () => {
+                const file = input.files && input.files[0]; if (!file) return;
+                btn.disabled = true; btn.textContent = '올리는 중…';
+                const url = await uploadPhotoToServer(file);
+                if (url) { sh.kakaoThumb = url; sh.kakaoFocusX = 50; sh.kakaoFocusY = 50; sh.kakaoZoom = 100; scheduleSnapshot(); }
+                draw();
+            });
+            input.click();
+        });
+    };
+    draw();
+}
+function kkSheetOpen() {
+    pubClose();
+    const el = document.createElement('div'); el.id = 'pubChk'; el.className = 'pubchk';
+    el.innerHTML = `<div class="pc-dim" data-pc-x></div><div class="pc-box" role="dialog" aria-modal="true" aria-labelledby="pcTitle"><div class="pc-grab"></div>
+        <div class="pc-h"><b id="pcTitle">카톡으로 보내면 이렇게 보여요</b><button type="button" class="pc-x" data-pc-x aria-label="닫기">✕</button></div>
+        <div class="pc-kk"></div><div class="pc-foot"><button type="button" class="pc-b pri" data-pc-x>다 했어요</button></div></div>`;
+    document.body.appendChild(el);
+    kkEasyMount(el.querySelector('.pc-kk'));
+    el.addEventListener('click', e => { if (e.target.closest('[data-pc-x]')) { pubClose(); try { if (state.mode === 'simple') spAutoSaveSoon(); } catch (er) {} } });
 }
 function pubCheckThen(go) {
     if (SAMPLE_ID || !spOpt('flow', 'precheck')) return go();
@@ -17890,10 +17958,10 @@ function pubCheckThen(go) {
         <div class="pc-h"><b id="pcTitle">발행 전에 확인해요</b><button type="button" class="pc-x" data-pc-x aria-label="닫기">✕</button></div>
         <p class="pc-sum">${all}개 중 ${n}개는 괜찮아요 · <em>${bad.length}개</em>를 보면 좋아요</p><div class="pc-prog"><i style="width:${Math.round(n / all * 100)}%"></i></div>
         <div class="pc-list">${list.sort((a, b) => (a.ok ? 2 : a.info ? 1 : 0) - (b.ok ? 2 : b.info ? 1 : 0)).map(c => `<button type="button" class="pc-row ${c.ok ? 'ok' : c.info ? 'info' : 'bad'}" data-pc-go="${c.id}"><span class="pc-ic">${c.ok ? '✓' : c.info ? 'i' : '!'}</span><span class="pc-tx">${esc(c.t)}<small>${esc(c.s || '')}</small></span><span class="pc-go">${c.ok ? '확인' : esc(c.go || '보기') + ' ›'}</span></button>`).join('')}</div>
-        <div class="pc-kk" hidden>${pubKakaoHtml()}</div>
+        <div class="pc-kk" hidden></div>
         <div class="pc-foot"><button type="button" class="pc-b" data-pc-kk>카톡 미리보기</button><button type="button" class="pc-b pri" data-pc-pub>그래도 발행하기</button></div></div>`;
     document.body.appendChild(el);
-    try { kkApplyCrop(); } catch (e) {}
+    kkEasyMount(el.querySelector('.pc-kk')); // [카톡 미리보기] = 보면서 바로 고치기
     el.addEventListener('click', e => {
         if (e.target.closest('[data-pc-x]')) { pubClose(); return; }
         const r = e.target.closest('[data-pc-go]'); if (r) { if (!r.classList.contains('ok')) pubGo(r.dataset.pcGo); return; }
@@ -18540,6 +18608,7 @@ const LDH_EASY = [
     { t: '사진 · 영상 바꾸기', d: '첫 화면 사진이나 유튜브 영상을 넣어요', steps: ['아래 [그 칸으로 가기]를 눌러요.', '사진은 [사진 고르기]를 누르고 한 장 골라요. 영상은 유튜브 주소를 그대로 붙여 넣어요.', '처음에 보이는 사진·영상은 예시예요. 목록에 \'아직 예시\'라고 나오면 내 사진·영상으로 바꿔 주세요.', '\'보일 부분 · 확대\'에서 사진을 끌면 보일 곳을 옮기고, 막대로 크게 할 수 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('hero:media', 'hero')] },
     { t: '무엇이 빠졌는지 보기', d: '맨 위 \'발행 준비\' 카드', when: c => c.view === 'list' && spOpt('flow', 'summary'), steps: ['목록 화면 맨 위 \'발행 준비\' 카드에 아직 채우지 않은 것이 단추로 나와요 (예: 날짜 · 계좌).', '단추를 누르면 그 칸이 바로 열려요. 아래 칸 중 ! 표시가 있는 칸도 채우면 좋아요.', '다 채우면 \'발행 준비 다 됐어요\'로 바뀌어요. [완성본 보기]로 보고 발행하면 돼요.'], show: () => [{ el: () => ldhFirst('#spReady'), t: '발행 준비', x: '여기 단추를 누르면 빠진 칸이 바로 열려요.' }] },
     { t: '하객에게 보내기', d: '발행하고 카카오톡으로 보내요', steps: ['아래 [완성본 열기]를 눌러요.', '화면 아래 [발행하기]를 눌러요. 발행해야 하객이 볼 수 있어요.', '발행한 뒤 [내 청첩장] 화면에서 카카오톡 공유나 링크 복사를 눌러 보내요.'], go: ['완성본 열기', () => spOpenPreview(true)] },
+    { t: '카톡으로 보낼 때 모양 바꾸기', d: '사진 · 제목 · 내용 · 버튼', steps: ['아래 [바로 열기]를 누르면 카톡으로 받았을 때 모습이 보여요 (목록 맨 위 카드 · 완성본 화면 아래 [카톡 미리보기]도 같아요).', '미리보기 사진을 끌면 보이는 부분이 바뀌고, [다른 사진 고르기]로 사진을 바꿔요. 세로 · 정사각 · 가로도 골라요.', '제목 · 내용 · 버튼 이름을 적으면 바로 미리보기에 보여요. 내용을 비워 두면 날짜와 예식장이 들어가요.'], go: ['바로 열기', () => { closeLdh(); kkSheetOpen(); }] },
     { t: '발행하기 전에 확인하기', d: '빠진 것이 있으면 알려 줘요', when: () => spOpt('flow', 'precheck'), steps: ['[발행하기]를 누르면 예시 사진·예시 영상·빈 계좌·미정 날짜처럼 빠진 것이 있을 때 \'발행 전에 확인해요\' 창이 떠요.', '줄을 누르면 그 칸이 바로 열려요. 다 고치지 않아도 [그래도 발행하기]로 발행할 수 있어요.', '[카톡 미리보기]로 카카오톡에서 어떻게 보일지도 봐요.'] },
     { t: '갤러리 · 계좌 같은 칸 더 넣기', d: '넣고 싶은 칸을 켜요', when: c => c.view !== 'list', steps: ['질문을 다 마치면 목록 화면이 나와요. 맨 아래 \'더 넣을 수 있는 칸\'에 아직 안 넣은 칸이 모여 있어요.', '칸 오른쪽 스위치를 켜면 청첩장에 들어가고, 내용을 채우는 칸이 바로 열려요.', '빼고 싶으면 그 칸의 스위치를 다시 꺼요.'], go: ['목록 화면으로', () => { closeLdh(); state.spView = 'list'; spOpenSet = new Set(); spRender(); setTimeout(() => { const g = document.querySelector('#simplePane .spb-add'); if (g) g.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 120); }] },
     { t: '갤러리 · 계좌 같은 칸 더 넣기', d: '넣고 싶은 칸을 켜요', when: c => c.view === 'list', steps: ['맨 아래 \'더 넣을 수 있는 칸\'에서 오른쪽 스위치를 켜면 청첩장에 들어가요.', '켜면 그 칸이 제자리로 가서 내용을 적는 곳이 펼쳐져요. 칸 이름을 누르면 다시 접고 펼쳐요.', '빼고 싶으면 스위치를 다시 꺼요. 꺼진 칸은 \'더 넣을 수 있는 칸\'으로 돌아가요.'], show: () => [{ el: () => ldhFirst('#simplePane .spb-add [data-li-sw]', '#simplePane [data-li-sw]'), t: '켜고 끄기', x: '이 스위치를 켜면 그 칸이 청첩장에 들어가요.' }], go: ['그 칸들 보기', () => { const g = document.querySelector('#simplePane .spb-add'); if (g) g.scrollIntoView({ block: 'start', behavior: 'smooth' }); }] },

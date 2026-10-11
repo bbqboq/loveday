@@ -15,6 +15,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/admin_guard.php';
 require_once __DIR__ . '/featured_presets.php';
+require_once __DIR__ . '/paper_settings.php'; // 종이 질감 그림 (올리기·지우기는 paper_settings.php로 바로)
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify($_POST['csrf_token'] ?? null);
@@ -91,6 +92,14 @@ body { background: var(--ui-page, #F6F4F1); }
 .fd-new button, .fd-addbtn { height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: #2B2320; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
 .fd-addbtn { background: #fff; color: #2B2320; border: 1px solid #2B2320; }
 @media (max-width: 760px) { .fd-new { grid-template-columns: 1fr; } }
+.fd-pp { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.fd-ppc { border: 1px solid var(--ui-line, #ECE8E2); border-radius: 14px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+.fd-ppc .sw { height: 96px; background-size: 150px; background-blend-mode: multiply; border-bottom: 1px solid var(--ui-soft, #F1EEE9); }
+.fd-ppc b { font-size: 13.5px; padding: 10px 12px 0; } .fd-ppc small { font-size: 11.5px; color: #8A847B; padding: 2px 12px 0; } .fd-ppc small.on { color: #2F7A4E; font-weight: 700; }
+.fd-ppc .acts { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 12px 12px; margin-top: auto; }
+.fd-ppc .acts label, .fd-ppc .acts button { height: 30px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: #4A453F; cursor: pointer; display: inline-flex; align-items: center; }
+.fd-ppc .acts label { background: #2B2320; border-color: #2B2320; color: #fff; } .fd-ppc .acts button { color: #B24A4A; }
+.fd-pp-n { font-size: 12.5px; color: #8A847B; margin: 12px 0 0; line-height: 1.7; }
 </style>
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
@@ -116,17 +125,40 @@ body { background: var(--ui-page, #F6F4F1); }
             </form>
             <div class="fd-grid" id="fdGrid"><p style="color:#A29C94;font-size:13px">불러오는 중…</p></div>
         </div>
+        <div class="fd-card">
+            <div class="fd-h"><b>종이 질감 그림</b><small>청첩장 바탕 '종이 질감'에 깔리는 무늬 · 올리면 바로 저장돼요</small></div>
+            <div class="fd-pp" id="fdPP"></div>
+            <p class="fd-pp-n">그림을 올리면 기본 무늬 대신 그 그림이 깔려요 (청첩장 바탕 · 섹션 스킨 종이 · 고르기 칸 견본 모두). 300px 크기로 이어서 반복되고 바탕색에 곱해져서 깔리니, 이어 붙여도 이음새가 안 보이는 밝은 종이 무늬 그림(가로·세로 600~1200px)이 좋아요. [기본 무늬로]를 누르면 처음 무늬로 돌아가요.</p>
+        </div>
         <div class="fd-bar"><span id="fdState"></span><button type="button" class="ghost" id="fdReset">추천 처음 기본값으로</button><button type="button" id="fdSave" disabled>추천 저장</button></div>
     </div>
     <div class="fd-toast" id="fdToast"></div>
+<script src="assets/invite-blocks.js?v=<?= @filemtime(__DIR__ . '/assets/invite-blocks.js') ?: time() ?>"></script>
 <script>
 (() => {
 const CSRF = <?= json_encode($csrf) ?>;
+// ---- 종이 질감 그림 ----
+let PAPERS = <?= json_encode(paper_settings_get() ?: new stdClass(), JSON_UNESCAPED_SLASHES) ?>;
+const PAPER_NAMES = { beige: '코튼지', white: '수채화지', hanji: '한지', linen: '린넨', kraft: '크래프트' };
+function drawPapers() {
+    const P = (window.InviteBlocks && InviteBlocks.BG_PAPERS) || {}, box = document.getElementById('fdPP');
+    box.innerHTML = Object.keys(PAPER_NAMES).map(k => `<div class="fd-ppc"><span class="sw" data-sw="${k}"></span><b>${(P[k] && P[k].label) || PAPER_NAMES[k]}</b>
+        <small class="${PAPERS[k] ? 'on' : ''}">${PAPERS[k] ? '올린 그림을 쓰는 중' : '기본 무늬'}</small>
+        <span class="acts"><label>${PAPERS[k] ? '그림 바꾸기' : '그림 올리기'}<input type="file" accept="image/jpeg,image/png,image/webp" data-pp="${k}" hidden></label>${PAPERS[k] ? `<button type="button" data-ppx="${k}">기본 무늬로</button>` : ''}</span></div>`).join('');
+    box.querySelectorAll('[data-sw]').forEach(el => { const k = el.dataset.sw, p = P[k] || {}; el.style.backgroundColor = p.bg || '#F4ECDF'; el.style.backgroundImage = PAPERS[k] ? `url('${PAPERS[k]}')` : (p.img0 || p.img || 'none'); });
+    const send = (k, file) => {
+        const fd = new FormData(); fd.append('csrf_token', CSRF); fd.append('key', k); if (file) fd.append('img', file); else fd.append('remove', '1');
+        return fetch('paper_settings.php', { method: 'POST', body: fd, headers: { Accept: 'application/json' } }).then(r => r.json()).then(d => { if (!d.ok) throw new Error(d.error || '저장하지 못했어요'); if (d.url) PAPERS[k] = d.url; else delete PAPERS[k]; drawPapers(); });
+    };
+    box.querySelectorAll('[data-pp]').forEach(inp => inp.addEventListener('change', () => { const f = inp.files && inp.files[0]; if (!f) return; send(inp.dataset.pp, f).then(() => toast('종이 그림을 저장했어요. 청첩장에 바로 반영돼요')).catch(e => toast(e.message)); }));
+    box.querySelectorAll('[data-ppx]').forEach(b => b.addEventListener('click', () => { if (!confirm('기본 무늬로 되돌릴까요?')) return; send(b.dataset.ppx, null).then(() => toast('기본 무늬로 되돌렸어요')).catch(e => toast(e.message)); }));
+}
 const DEFAULT = <?= json_encode(FEATURED_DEFAULT) ?>, MAX = <?= (int) FEATURED_MAX ?>;
 let sel = <?= json_encode($cur) ?>, saved = JSON.stringify(sel), presets = [], samples = {};
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const toast = m => { const t = $('fdToast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2200); };
+drawPapers();
 // 전체 디자인 = 폴더 프리셋 + 새로 만든 샘플 (바탕 디자인의 색을 빌려 보여줌)
 function designs() {
     const extra = Object.values(samples).filter(x => x.custom).map(x => { const b = presets.find(p => p.id === x.base) || {}; return Object.assign({}, b, { id: x.id, label: x.label, desc: x.desc, no: '', __custom: true, __base: x.base }); });

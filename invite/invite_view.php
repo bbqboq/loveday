@@ -197,6 +197,9 @@ if ($lbZoom > 100): ?>
 <body>
 <div class="invite-frame" id="inviteRoot"></div>
 
+<?php require_once __DIR__ . '/paper_settings.php'; $ldPapers = paper_settings_get(); if ($ldPapers): // 관리자가 올린 종이 질감 그림 ?>
+<script>window.LD_PAPERS = <?= json_encode($ldPapers, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>;</script>
+<?php endif; ?>
 <script src="/invite/assets/invite-blocks.js?v=<?= @filemtime(__DIR__ . '/assets/invite-blocks.js') ?: time() ?>"></script>
 <script src="/invite/assets/render-invite.js?v=<?= @filemtime(__DIR__ . '/assets/render-invite.js') ?: time() ?>"></script>
 <script>

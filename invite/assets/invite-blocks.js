@@ -1414,7 +1414,7 @@
         const rows = (f.creditRows || []).map(r => ({ l: fill(r.label), t: fill(r.text) })).filter(r => r.l || r.t);
         const list = rows.map(r => `<div class="ib-cr-row"><b>${esc(r.l)}</b><span>${esc(r.t)}</span></div>`).join('');
         const sec = Math.max(20, Math.min(120, Number(f.creditSpeed) || 45)), top = Math.max(5, Math.min(60, Number(f.creditTop) || 24)), hh = Math.max(20, Math.min(80, Number(f.creditH) || 46));
-        const pos = f.align === 'top' ? 'flex-start' : 'flex-end'; // 글귀는 위 또는 아래 (가운데면 올라가는 크레딧과 겹쳐서)
+        const pos = (f.creditTextPos || (f.align === 'top' ? 'top' : 'bottom')) === 'top' ? 'flex-start' : 'flex-end'; // 글귀는 위 또는 아래 (가운데면 올라가는 크레딧과 겹쳐서) - creditTextPos가 없던 예전 저장분은 글 위치(align)대로
         // 같은 목록을 두 번 이어 붙여 -50%까지 올리면 끊김 없이 반복됨. 칸 위·아래는 흐려지게(mask)
         return `<div class="ib-block ib-ending ib-credits${f.image ? '' : ' ib-credits-noimg'}${f.creditAlign === 'center' ? ' ib-cr-center' : ''}" style="justify-content:${pos};">
             ${f.image ? `<img loading="lazy" decoding="async" src="${esc(imgUrl(f.image))}" alt=""><div class="ib-ending-shade" style="background:rgba(0,0,0,${(Number(f.overlay) || 0) / 100});"></div>` : ''}
@@ -1667,12 +1667,13 @@
         ending: {
             label: '엔딩', color: '#34495E',
             defaults: { image: '', text: '저희의 새로운 시작을\n함께해 주셔서 감사합니다.', align: 'bottom', overlay: 35,
-                credits: false, creditText: true, creditRows: CREDIT_ROWS_DEFAULT.map(r => Object.assign({}, r)), creditSpeed: 45, creditAlign: 'left', creditTop: 24, creditH: 46 },
+                credits: false, creditText: true, creditTextPos: 'bottom', creditRows: CREDIT_ROWS_DEFAULT.map(r => Object.assign({}, r)), creditSpeed: 45, creditAlign: 'left', creditTop: 24, creditH: 46 },
             editor: [
                 { key: 'credits', label: '', type: 'check', checkLabel: '엔딩 크레딧(스탭롤)로 보여주기',
                   hint: '사진을 화면 가득 깔고, 그 위 정해진 칸 안에서만 글자가 영화 엔딩처럼 아주 천천히 올라가요.' },
                 { key: 'creditText', label: '', type: 'check', checkLabel: '크레딧과 함께 글귀도 보여주기', showIf: 'credits',
-                  hint: '켜면 글귀가 크레딧 칸 아래(글 위치가 상단이면 위)에 그대로 보여요.' },
+                  hint: '켜면 글귀가 크레딧 칸 위나 아래에 그대로 보여요.' },
+                { key: 'creditTextPos', label: '글귀 자리', type: 'choice', options: [['top', '위'], ['bottom', '아래']], showIf: 'credits&creditText' },
                 { key: 'image', label: '사진', type: 'image' },
                 { key: 'text', label: '글귀', type: 'textarea', showIf: '!credits|creditText' },
                 { key: 'align', label: '글 위치 (사진 위)', type: 'choice', options: [['top', '상단'], ['center', '중간'], ['bottom', '하단']], showIf: 'image' },
@@ -2196,10 +2197,11 @@
     //  보이는 때: 예식 다음 날부터(기본) / 예식 당일부터 / 항상. 때가 되기 전엔 하객에게 섹션이 숨는다 (에디터에선 늘 보임)
     //  보일 때 대표 사진 바로 아래로 올리기 · 예식 후 참석 의사·D-DAY 안내·캘린더 버튼 숨기기 · 결혼기념일 띠 → initAfterWedding이 처리
     //  미리 보기: 청첩장 주소 뒤에 ?thankstest=1
+    const TY_RATIOS = [['4/3', '가로'], ['1/1', '정사각'], ['3/4', '세로'], ['16/9', '넓게']];
     const TY_TEXT = '바쁘신 중에도 귀한 걸음 해주셔서 진심으로 감사합니다.\n보내주신 축하와 마음, 오래 간직하며 예쁘게 잘 살겠습니다.';
     BLOCKS.thanks = {
         label: '예식 후 감사 인사', color: '#C0727E',
-        defaults: { show: 'after', toTop: true, hideRsvp: true, anniv: true, style: 'card', photo: '', eyebrow: 'THANK YOU',
+        defaults: { show: 'after', toTop: true, hideRsvp: true, anniv: true, style: 'card', photo: '', phW: 90, phRatio: '4/3', phH: 380, eyebrow: 'THANK YOU',
             title: '함께해 주셔서 감사합니다', text: TY_TEXT, sign: 'auto', signText: '', btnLabel: '', btnUrl: '' },
         editor: [
             { key: 'show', label: '하객에게 보이는 때', type: 'choice', options: [['after', '예식 다음 날부터'], ['day', '예식 당일부터'], ['always', '항상']],
@@ -2209,7 +2211,10 @@
             { key: 'anniv', label: '', type: 'check', checkLabel: '결혼기념일 띠', hint: '매년 결혼기념일에 "결혼 N주년" 띠가 맨 위에 떠요.' },
             { group: '모양' },
             { key: 'style', label: '모양', type: 'choice', options: [['card', '카드'], ['letter', '편지지'], ['photo', '사진 위 글자'], ['plain', '깔끔하게']] },
-            { key: 'photo', label: '사진 (선택 - 예식 사진·감사 사진)', type: 'image' },
+            { key: 'photo', label: '사진 (선택 - 예식 사진·감사 사진)', type: 'image', focus: true },
+            { key: 'phW', label: '사진 크기 (칸 폭에서)', type: 'range', min: 40, max: 100, unit: '%', showIf: 'photo&style!=photo' },
+            { key: 'phRatio', label: '사진 모양', type: 'choice', options: TY_RATIOS, showIf: 'photo&style!=photo' },
+            { key: 'phH', label: '사진 높이', type: 'range', min: 280, max: 720, unit: 'px', showIf: 'photo&style=photo' },
             { group: '문구' },
             { key: 'eyebrow', label: '작은 머리글', type: 'text', placeholder: 'THANK YOU' },
             { key: 'title', label: '제목', type: 'text' },
@@ -2229,8 +2234,11 @@
             const href = linkHref(o.btnUrl);
             const when = { after: '예식 다음 날부터 하객에게 보여요', day: '예식 당일부터 하객에게 보여요' }[o.show];
             const ph = o.photo ? esc(imgUrl(o.photo)) : '';
-            return `<div class="ib-block ib-ty ib-ty-${esc(st)}"${st === 'photo' ? ` style="--ty-img:url('${ph}')"` : ''}>${when ? badge(when) : ''}
-                ${ph && st !== 'photo' ? `<div class="ib-ty-ph"><img src="${ph}" alt="" loading="lazy"></div>` : ''}
+            // 사진 크기·모양 (보일 부분·확대는 다른 사진과 같이 design.imgFocus/imgZoom - <img>라서 applyImgFocus가 맞춤, '사진 위 글자'도 <img>로 깔아서 같이 됨)
+            const w = Math.max(40, Math.min(100, Number(o.phW) || 90)), ra = TY_RATIOS.some(x => x[0] === o.phRatio) ? o.phRatio : '4/3', hh = Math.max(280, Math.min(720, Number(o.phH) || 380));
+            return `<div class="ib-block ib-ty ib-ty-${esc(st)}"${st === 'photo' ? ` style="min-height:${hh}px"` : ''}>${when ? badge(when) : ''}
+                ${ph && st === 'photo' ? `<div class="ib-ty-bgph"><img src="${ph}" alt="" loading="lazy"></div>` : ''}
+                ${ph && st !== 'photo' ? `<div class="ib-ty-ph" style="width:${w}%;max-width:none;aspect-ratio:${ra}"><img src="${ph}" alt="" loading="lazy"></div>` : ''}
                 <div class="ib-ty-in">${o.eyebrow ? `<span class="ib-ty-eye">${esc(o.eyebrow)}</span>` : ''}
                 <h3>${esc(o.title || '함께해 주셔서 감사합니다')}</h3>
                 <p>${nl2br(o.text || TY_TEXT)}</p>${sign ? `<span class="ib-ty-sign">${esc(sign)}</span>` : ''}
@@ -2578,6 +2586,13 @@
         linen: { label: '린넨', bg: '#EFE9DF', img: pWrap(pLines('h', '.9 .012', 1, [.4, .35, .3], 1.8, -.95, 3) + pLines('v', '.012 .9', 1, [.4, .35, .3], 1.8, -.95, 6) + pRelief('a', '.9', 2, .7, 70, 1, '.6')) },
         kraft: { label: '크래프트', bg: '#D9C2A2', img: pWrap(pRelief('a', '.7', 3, 1.3, 60) + pLines('f', '.004 .35', 2, [.42, .32, .2], 2.8, -1.95, 4) + pLines('s', '.9', 1, [.25, .17, .1], 7, -5.6, 11)) }
     };
+    // 관리자가 올린 종이 그림 (관리자 → 추천 디자인 → 종이 질감 그림 · paper_settings.php) - 없는 종이는 기본 무늬
+    //  공개 페이지는 invite_view.php가 window.LD_PAPERS로 넣어 두고, 에디터는 받아 와서 setPapers (style 속성에도 들어가서 작은따옴표)
+    function setPapers(m) {
+        Object.keys(BG_PAPERS).forEach(k => { const p = BG_PAPERS[k]; if (p.img0 == null) p.img0 = p.img; const u = m && m[k];
+            p.img = typeof u === 'string' && /^\/invite\/uploads\/site\/[a-f0-9]{32}\.webp$/.test(u) ? `url('${u}')` : p.img0; p.custom = p.img !== p.img0; });
+    }
+    if (global.LD_PAPERS) setPapers(global.LD_PAPERS);
     function paperCss(key) { return BG_PAPERS[key] ? BG_PAPERS[key].img : 'none'; }
 
     // ---------- 갤러리 모양 6종 ----------
@@ -3507,5 +3522,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);
