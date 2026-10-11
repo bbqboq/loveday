@@ -8877,7 +8877,7 @@ function appendSectionSpacingControls(wrap, block) {
         <div class="cpk-line"><small>바탕</small>${cpkHtml('secBoxBg', block.boxBg || secBoxDef().bg, !block.boxBg && !block.boxInk, 'secBoxReset')}</div>
         <div class="cpk-line"><small>글자</small>${cpkHtml('secBoxInk', block.boxInk || secBoxDef().ink, !block.boxBg && !block.boxInk, null, CPK_INK)}</div>
         <p class="field-hint" style="margin-top:4px;">${block.boxBg || block.boxInk ? '직접 고른 색을 쓰는 중이에요.' : '지금은 테마 기본 색이에요. 색을 고르면 이 섹션 안의 창들이 바뀌어요.'}</p>` : ''}
-        ${SKIN_NO.includes(block.id) ? '' : block.id === 'dday' ? `<p class="field-hint" style="margin-top:12px;">달력·카운트 모양과 색은 위 <b>달력 모양 · 카운터 모양 · 포인트 색</b>에서 골라요.</p>` : `<p class="field-hint" style="margin-top:12px;">섹션 모양·꾸밈(스킨)은 편집창 맨 위 <b>섹션 스킨</b>에서 골라요.</p>`}
+        ${SKIN_NO.includes(block.id) ? '' : block.id === 'dday' ? `<p class="field-hint" style="margin-top:12px;">달력·카운트 모양과 색은 위 <b>달력 모양 · 카운터 모양 · 포인트 색</b>에서 골라요.</p>` : `<p class="field-hint" style="margin-top:12px;">섹션 모양·꾸밈(스킨)은 위 <b>${esc(((SSK_LOOKS[block.id] || [])[0] || [])[1] ? SSK_LOOKS[block.id][0][1] + ' · ' : '')}섹션 스킨</b> 칸에서 골라요.</p>`}
     `;
     wrap.appendChild(box);
     bindCpk(box);
@@ -14051,7 +14051,7 @@ function showScreen(name) {
 let startTrack = 'simple';
 const ONB_STEPS_BY = { simple: ['디자인', '칸 채우기', '발행'], custom: ['바탕', '두 사람', '꾸미기'] };
 let onboardingActive = false;
-let SAVE_OK = false; const NAME_SET = new Set(); // 처음 저장 관문 (saveGateOk - 디자인을 고르고 두 분 이름을 직접 적은 뒤에)
+let SAVE_OK = false; const NAME_SET = new Set(), NAME_DEMO = {}; // 처음 저장 관문 (saveGateOk - 디자인을 고르고 두 분 이름을 직접 적은 뒤에)
 function renderOnbSteps() {
     const ONB_STEPS = ONB_STEPS_BY[startTrack] || ONB_STEPS_BY.simple;
     document.querySelectorAll('.onb-steps[data-onb-step]').forEach(el => {
@@ -14664,6 +14664,7 @@ async function startWithPreset(presetId) {
     }
     try { dpkTeardown(); } catch (e) {}
     state.sampleId = presetId;
+    try { nameDemoMark(); } catch (e) {} // 디자인 예시 이름 (민준·서연 …) - 이 이름과 다르면 고객이 적은 이름으로 침
     delete state.simpleSnap; delete state.fullSnap;
     if (startTrack === 'simple') { // 간편 만들기: 기본 정보 단계 없이 바로 칸 채우기 화면 (이름·날짜부터)
         applyWizardDataToBlocks(); // 주문 때 받은 이름·장소가 있으면 미리 채움
@@ -16553,7 +16554,7 @@ function sskHtml(b) {
         ${looks}<div class="ssk-lab">스킨 <small>기본 ${S.base.length} · 디자인 ${S.designs.length}가지 · 옆으로 넘겨 보세요 · 바탕은 화면 색 그대로</small></div><div class="ssk-row ssk-skins">${base}<i class="ssk-sep"></i>${des}</div></div>`;
 }
 // 편집 칸(타일)으로: 모양 줄 · 스킨 줄을 각각 편집 칸 하나로 → 휴대폰은 누르면 아래에서 창이 올라와 청첩장을 보면서 고름 (디데이 달력·카운터처럼)
-const SSK_TILES = ['gallery'];
+const SSK_TILES = ['gallery']; // 편집창 안 제 자리(예전 '갤러리 타입' 자리)에 칸을 넣는 섹션 - 나머지 섹션은 sskMount가 편집창 맨 위에 넣음
 function sskTilesHtml(b) {
     const S = sskSkins(b), cur = sskCur(b);
     const looks = (SSK_LOOKS[b.id] || []).map(([key, lab, fn]) => { const list = (fn() || []).filter(x => x && x[0] != null); if (list.length < 2) return '';
@@ -16593,12 +16594,15 @@ function sskFill(card, b) {
     const keep = title && part && !part.contains(title) && !title.contains(part) && title.getBoundingClientRect().top <= part.getBoundingClientRect().top ? [title, part] : [part];
     if (!sskFit(th, iv, keep, 8, b.id === 'gallery' ? 'w' : '')) iv.style.transform = ''; // 갤러리는 가로를 꽉 채우고 위쪽부터 (세로로 긴 콜라주·슬라이드가 가늘게 줄어들던 것)
 }
+// 편집창 맨 위에 '<섹션> 모양' · '섹션 스킨' 편집 칸 (갤러리처럼 - 휴대폰은 칸을 누르면 아래 창에서 청첩장을 보면서 고름)
 function sskMount(wrap, b) {
-    wrap.querySelector(':scope > .ssk')?.remove();
+    wrap.querySelectorAll(':scope > .ssk, :scope > .ssk-tile').forEach(e => e.remove());
     const h3 = wrap.querySelector(':scope > h3');
-    const el = document.createElement('div'); el.innerHTML = sskHtml(b); const box = el.firstElementChild;
-    if (h3) h3.after(box); else wrap.prepend(box);
-    sskBind(box, b);
+    const t = document.createElement('template'); t.innerHTML = sskTilesHtml(b); const els = [...t.content.children];
+    if (h3) h3.after(...els); else wrap.prepend(...els);
+    els.forEach(f => sskBind(f, b));
+    // 같은 값을 고르던 예전 글자 버튼 칸(방명록 '모양' · 연락처 '디자인' …)은 뺌 - 위 칸에 그림으로 다 있음
+    (SSK_LOOKS[b.id] || []).forEach(([key]) => wrap.querySelectorAll(`[data-sf-choice="${key}"]`).forEach(x => { const f = x.closest('.field'); if (f && f.parentElement === wrap && !f.classList.contains('ssk-tile')) f.remove(); }));
 }
 // 섹션 스킨 카드 누르기·[모든 섹션에 같게]·보이는 카드만 그리기 (칸 하나 = 섹션 스킨 상자 또는 편집 칸 타일 하나)
 function sskBind(box, b) {
@@ -17990,12 +17994,16 @@ document.addEventListener('input', e => {
     const k = t.matches('[data-wi="groom"], [data-wfield="groomName"], [data-part="groomName"]') ? 'groom' : t.matches('[data-wi="bride"], [data-wfield="brideName"], [data-part="brideName"]') ? 'bride' : '';
     if (k && String(t.value != null ? t.value : t.textContent || '').trim()) NAME_SET.add(k);
 }, true);
-function saveGateOk() {
+function nameDemoMark() { const wi = weddingInfo() || {}; ['groom', 'bride'].forEach(k => { if (!NAME_SET.has(k)) NAME_DEMO[k] = String(wi[k] || '').trim(); }); }
+// 그 이름 칸을 고객이 정했는지: 직접 적었거나(어느 칸이든) 디자인 예시 이름과 다름 (예전엔 '직접 적었는지'만 봐서, 지켜보지 않는 칸에 적으면 발행까지 막혔음)
+function nameTyped(k, wi) { if (NAME_SET.has(k)) return true; const v = String((wi || weddingInfo() || {})[k] || '').trim(); return !!v && NAME_DEMO[k] != null && v !== NAME_DEMO[k]; }
+function saveGateOk(loose) { // loose = [발행하기] (발행 전 점검에서 '예시 이름'을 보여 준 뒤 - 그래도 발행하면 이름이 있기만 하면 됨)
     if (SAVE_OK) return true;
     if (onboardingActive) return false; // 아직 디자인을 고르는 중
     if (!state.presetId && startTrack !== 'custom') return false;
     const wi = weddingInfo();
-    if (!(wi && String(wi.groom || '').trim() && String(wi.bride || '').trim() && NAME_SET.has('groom') && NAME_SET.has('bride'))) return false;
+    if (!(wi && String(wi.groom || '').trim() && String(wi.bride || '').trim())) return false;
+    if (!loose && !(nameTyped('groom', wi) && nameTyped('bride', wi))) return false;
     SAVE_OK = true; return true;
 }
 async function saveToServer(publish, silent) {
@@ -18003,7 +18011,7 @@ async function saveToServer(publish, silent) {
         if (!silent) showServerNotice('편집 링크(토큰) 없이 열려서 서버에 저장할 수 없습니다. 내 청첩장 화면에서 들어와주세요.');
         return false;
     }
-    if (!saveGateOk()) { if (!silent) showServerNotice('디자인을 고르고 두 분 이름을 적으면 그때부터 저장돼요.'); return false; }
+    if (!saveGateOk(!!publish && !silent)) { if (!silent) showServerNotice(publish ? '두 분 이름을 적어야 발행할 수 있어요.' : '두 분 이름을 적으면 그때부터 저장돼요. (지금은 디자인 예시 이름이에요)'); return false; }
     const btn = silent ? null : document.getElementById(publish ? 'publishBtn' : 'saveDraftBtn');
     const originalText = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = '저장 중...'; }
@@ -18058,7 +18066,9 @@ document.getElementById('publishBtn')?.addEventListener('click', () => pubCheckT
 function pubChecks() {
     const out = [], wi = weddingInfo(), on = id => { const b = state.blocks.find(x => x.id === id); return !!(b && b.enabled); }, F = id => (state.blocks.find(x => x.id === id) || {}).fields || {};
     const easy = document.documentElement.classList.contains('simple-mode');
-    out.push(wi.groom && wi.bride ? { id: 'names', ok: 1, t: '두 분 이름', s: `${wi.groom} · ${wi.bride}` } : { id: 'names', t: '두 분 이름이 비어 있어요', s: '청첩장 맨 앞과 카카오톡 제목에 들어가요', go: '이름 적기' });
+    out.push(!(wi.groom && wi.bride) ? { id: 'names', t: '두 분 이름이 비어 있어요', s: '청첩장 맨 앞과 카카오톡 제목에 들어가요', go: '이름 적기' }
+        : !SAVE_OK && !(nameTyped('groom', wi) && nameTyped('bride', wi)) ? { id: 'names', t: '두 분 이름이 아직 디자인 예시 이름이에요', s: `${wi.groom} · ${wi.bride} · 우리 이름으로 바꿔 주세요`, go: '이름 적기' }
+        : { id: 'names', ok: 1, t: '두 분 이름', s: `${wi.groom} · ${wi.bride}` });
     const today = new Date(); today.setHours(0, 0, 0, 0);
     if (wi.undecided || state.dateTbd) out.push({ id: 'date', t: "예식 날짜가 아직 '미정'이에요", s: '날짜를 정했으면 적어 주세요 · 디데이·달력이 저절로 만들어져요', go: '날짜 적기' });
     else if (!wi.date) out.push({ id: 'date', t: '예식 날짜가 비어 있어요', s: '날짜를 적으면 디데이·달력이 저절로 만들어져요', go: '날짜 적기' });
