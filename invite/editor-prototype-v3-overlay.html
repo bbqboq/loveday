@@ -14045,6 +14045,7 @@ function showScreen(name) {
 let startTrack = 'simple';
 const ONB_STEPS_BY = { simple: ['디자인', '칸 채우기', '발행'], custom: ['바탕', '두 사람', '꾸미기'] };
 let onboardingActive = false;
+let SAVE_OK = false; const NAME_SET = new Set(); // 처음 저장 관문 (saveGateOk - 디자인을 고르고 두 분 이름을 직접 적은 뒤에)
 function renderOnbSteps() {
     const ONB_STEPS = ONB_STEPS_BY[startTrack] || ONB_STEPS_BY.simple;
     document.querySelectorAll('.onb-steps[data-onb-step]').forEach(el => {
@@ -14757,7 +14758,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     document.getElementById('spPvOpen').hidden = true;
     document.getElementById('spPvBack').textContent = final ? '수정하기' : quick ? '닫기' : '돌아가기';
     const box = document.getElementById('spPvReal');
-    const real = !!EDIT_TOKEN && !SAMPLE_ID;
+    const real = !!EDIT_TOKEN && !SAMPLE_ID && saveGateOk(); // 아직 저장 전(이름을 안 적음)이면 에디터 미리보기로
     root.classList.toggle('sp-pv-real', real);
     if (!real) { try { renderPreview(); } catch (e) {} const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0; return; }
     box.innerHTML = '<div class="sp-pvload">불러오는 중…</div>';
@@ -17578,6 +17579,7 @@ async function bootstrapFromServer() {
             state.intro = Object.assign({ enabled: false, text: '우리 결혼합니다', font: '', fontSize: 26, duration: 2.5, x: 50, y: 50, rotation: 0, align: 'center', color: '', bg: '', bgType: 'color', bgImage: '', bgYoutubeId: '', stickers: [], customTexts: [] }, data.design.intro || {});
             if (state.intro.font) loadFontCss(state.intro.font);
             state.blocks = data.design.blocks;
+            SAVE_OK = true; // 이미 저장된 청첩장
             state.info = data.design.info && typeof data.design.info === 'object' ? data.design.info : null;
             ['mode', 'sampleId', 'simpleSnap', 'fullSnap', ...SP_KEEP].forEach(k => { if (data.design[k] && !SAMPLE_ID) state[k] = data.design[k]; else delete state[k]; }); // 간편 만들기 상태 (샘플 편집에선 안 씀)
             // 저장된 디자인이 만들어질 당시엔 없었던 섹션(디데이/타임라인/인터뷰 등 나중에 추가된 것)을
@@ -17664,6 +17666,7 @@ async function bootstrapFromServer() {
             // 처음 만드는 경우 - 기존 정보(예식장소 등)를 마법사 초기값으로 채워줌
             wizardData.groomName = data.groom_name || wizardData.groomName;
             wizardData.brideName = data.bride_name || wizardData.brideName;
+            if (String(data.groom_name || '').trim()) NAME_SET.add('groom'); if (String(data.bride_name || '').trim()) NAME_SET.add('bride'); // 주문 때 받은 이름 = 고객이 적은 이름
             wizardData.venue = data.venue_name || wizardData.venue;
             wizardData.addressBase = data.venue_address || wizardData.addressBase;
             if (data.wedding_datetime) {
@@ -17944,11 +17947,29 @@ async function uploadPhotoToServer(file) {
     }
 }
 
+// ===== 처음 저장은 디자인을 고르고 두 분 이름을 직접 적은 뒤에 (사용자 결정) =====
+//  그 전엔 자동 저장(디자인 고르기 · 질문 넘기기 · 고친 뒤 4초 · 완성본 보기 …)도 [임시저장]·[발행하기]도 서버에 안 보냄
+//  이름은 디자인 예시 이름(민준·서연)이 미리 들어 있어서 값이 아니라 '고객이 이름 칸에 직접 적었는지'로 봄 (주문 때 받은 이름도 직접 적은 것으로)
+//  한 번이라도 저장된 청첩장(불러올 때 디자인이 있음)은 처음부터 저장됨
+document.addEventListener('input', e => {
+    const t = e.target; if (!t || !t.matches) return;
+    const k = t.matches('[data-wi="groom"], [data-wfield="groomName"], [data-part="groomName"]') ? 'groom' : t.matches('[data-wi="bride"], [data-wfield="brideName"], [data-part="brideName"]') ? 'bride' : '';
+    if (k && String(t.value != null ? t.value : t.textContent || '').trim()) NAME_SET.add(k);
+}, true);
+function saveGateOk() {
+    if (SAVE_OK) return true;
+    if (onboardingActive) return false; // 아직 디자인을 고르는 중
+    if (!state.presetId && startTrack !== 'custom') return false;
+    const wi = weddingInfo();
+    if (!(wi && String(wi.groom || '').trim() && String(wi.bride || '').trim() && NAME_SET.has('groom') && NAME_SET.has('bride'))) return false;
+    SAVE_OK = true; return true;
+}
 async function saveToServer(publish, silent) {
     if (!EDIT_TOKEN) {
         if (!silent) showServerNotice('편집 링크(토큰) 없이 열려서 서버에 저장할 수 없습니다. 내 청첩장 화면에서 들어와주세요.');
         return false;
     }
+    if (!saveGateOk()) { if (!silent) showServerNotice('디자인을 고르고 두 분 이름을 적으면 그때부터 저장돼요.'); return false; }
     const btn = silent ? null : document.getElementById(publish ? 'publishBtn' : 'saveDraftBtn');
     const originalText = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = '저장 중...'; }
