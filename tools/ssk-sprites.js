@@ -23,7 +23,7 @@ async function buildPage(page, preset) {
         const host = document.createElement('div'); host.id = 'sskGen';
         host.innerHTML = `<style>#sskGen{position:absolute;left:0;top:0;z-index:999999;background:#fff;width:${84 * 10}px}#sskGen .g{display:flex;flex-wrap:wrap;width:${84 * 10}px}#sskGen .ssk-c{gap:0;width:84px}#sskGen .ssk-c b,#sskGen .ssk-c small{display:none}#sskGen .ssk-th{border-radius:0!important;box-shadow:none!important}#sskGen .ssk-th::after{display:none!important}</style>`;
         document.body.appendChild(host);
-        const jobs = [];
+        const jobs = [], SSK_PER_LOOK = typeof SSK_TILES !== 'undefined' ? SSK_TILES : ['gallery'];
         const group = (key, cls, cards) => { const g = document.createElement('div'); g.className = 'g ' + cls; g.dataset.key = key; cards.forEach(c => { c.classList.remove('on'); g.appendChild(c); }); host.appendChild(g); return g; };
         for (const b of state.blocks) {
             if (SKIN_NO.includes(b.id) || b.id === 'dday') continue;
@@ -32,7 +32,22 @@ async function buildPage(page, preset) {
             if (!cards.some(c => c.dataset.ssk === 's:plain')) { const t = document.createElement('div'); t.innerHTML = sskCard('s:plain', '꾸밈 없이'); cards.unshift(t.firstElementChild); } // (꾸밈을 끄고 찍어서 목록에 안 나옴 - 디자인 꾸밈이 있는 디자인에선 보임)
             if (!cards.length) continue;
             group(b.id, '', cards); cards.forEach(c => sskFill(c, b));
-            jobs.push({ key: b.id, w: 84, h: 60, s: cards.map(c => c.dataset.ssk) });
+            const lk0 = (SSK_LOOKS[b.id] || [])[0], l0 = lk0 && ((lk0[2]() || []).filter(x => x && x[0] != null)[0] || [''])[0], lv = lk0 ? (b.fields[lk0[0]] != null && b.fields[lk0[0]] !== '' ? b.fields[lk0[0]] : l0) : '';
+            jobs.push({ key: b.id, w: 84, h: 60, s: cards.map(c => c.dataset.ssk), lv: String(lv) }); // lv = 이 그림을 찍을 때의 섹션 모양 (지금 모양이 같으면 스킨 카드도 이 그림을 씀)
+            // 스킨 카드는 섹션 모양마다 따로 - 편집 칸 타일로 고르는 섹션만 (SSK_TILES, 모양마다 다 그리면 너무 오래 걸림) (스킨 그림이 고객이 고른 모양 그대로 보이게 - 에디터 sskSprKey '<섹션>~<키>=<값>')
+            const lk = SSK_PER_LOOK.includes(b.id) && (SSK_LOOKS[b.id] || [])[0];
+            if (lk) {
+                const keep = JSON.stringify(b.fields);
+                for (const [v] of (lk[2]() || []).filter(x => x && x[0] != null && !String(x[0]).startsWith('t:'))) {
+                    b.fields[lk[0]] = v; if (lk[0] === 'accStyle') b.fields.display = 'cards';
+                    const S = sskSkins(b), t = document.createElement('div');
+                    t.innerHTML = [sskCard('s:plain', ''), ...S.base.filter(([k]) => k && k !== 'plain').map(([k]) => sskCard('s:' + k, '')), ...S.designs.map(p => sskCard('d:' + p.id, ''))].join('');
+                    const sc = [...t.children], key = `${b.id}~${lk[0]}=${v}`;
+                    group(key, '', sc); sc.forEach(c => sskFill(c, b));
+                    jobs.push({ key, w: 84, h: 60, s: sc.map(c => c.dataset.ssk) });
+                }
+                b.fields = JSON.parse(keep);
+            }
         }
         const dd = state.blocks.find(b => b.id === 'dday');
         if (dd) for (const kind of ['cal', 'dd']) {
@@ -60,7 +75,7 @@ async function generate(page, outDir) {
             await g.screenshot({ path: png });
             execFileSync('convert', [png, '-quality', '52', '-define', 'webp:method=6', webp]);
             fs.unlinkSync(png);
-            man.k[j.key] = { w: j.w, h: j.h, s: j.s };
+            man.k[j.key] = Object.assign({ w: j.w, h: j.h, s: j.s }, j.lv != null ? { lv: j.lv } : {});
             console.log(vr, j.key, j.s.length, 'cards', Math.round(fs.statSync(webp).size / 1024) + 'KB');
         }
     }

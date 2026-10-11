@@ -1075,6 +1075,8 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
 .skp { display: grid; gap: 8px; }
 /* 섹션 스킨 (전문가 모드 편집창 맨 위 sskMount) - 카드마다 그 섹션을 진짜로 그려서 작게 (390px → 92px) */
 .ssk { margin: 2px 0 12px; padding: 10px 10px 4px; border: 1px solid var(--ui-line, #E8E1D6); border-radius: 14px; background: #fff; }
+.ssk.ssk-flat { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; }
+.ssk-tile .ddk-sm .ssk-all { margin-left: 6px; vertical-align: middle; }
 .ssk-hd { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
 .ssk-hd b { font-size: 13.5px; color: #2B2320; }
 .ssk-hd small { font-size: 11px; color: #8A847B; }
@@ -4679,14 +4681,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z4">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018z4">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z5">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018z5">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018z4"></script>
-<script src="assets/tip-demos.js?v=1018z4"></script>
-<script src="assets/ld-dialog.js?v=1018z4"></script>
+<script src="assets/invite-blocks.js?v=1018z5"></script>
+<script src="assets/tip-demos.js?v=1018z5"></script>
+<script src="assets/ld-dialog.js?v=1018z5"></script>
 </head>
 <body>
 
@@ -8879,7 +8881,7 @@ function appendSectionSpacingControls(wrap, block) {
     `;
     wrap.appendChild(box);
     bindCpk(box);
-    if (!SKIN_NO.includes(block.id) && block.id !== 'dday' && (() => { try { return spOpt('flow', 'sskin'); } catch (e) { return true; } })()) try { sskMount(wrap, block); } catch (e) { console.warn(e); } // 섹션 스킨 (편집창 맨 위, 관리자 손쉬운 제작 → 간편 만들기 전체 flow.sskin)
+    if (!SKIN_NO.includes(block.id) && block.id !== 'dday' && !SSK_TILES.includes(block.id) && (() => { try { return spOpt('flow', 'sskin'); } catch (e) { return true; } })()) try { sskMount(wrap, block); } catch (e) { console.warn(e); } // 섹션 스킨 (편집창 맨 위, 관리자 손쉬운 제작 → 간편 만들기 전체 flow.sskin)
     const pdSet = (id, v, fromLink) => {
         v = Math.max(0, Math.min(120, v));
         const inp = document.getElementById(id); if (inp && +inp.value !== v) inp.value = v;
@@ -9461,10 +9463,10 @@ function renderGalleryEditor(wrap, block) {
         <div class="field"><label>갤러리 제목 (비우면 안 보임)</label><input type="text" id="gTitle" value="${esc(f.galleryTitle || '')}" placeholder="예: GALLERY"></div>
         <div class="field"><label>제목 ↕ 사진 간격 <span class="val" id="gTitleGapVal" style="float:right;font-weight:600;">${Number(f.galleryTitleGap) || 0}px</span></label>
             <input type="range" id="gTitleGap" min="-20" max="80" step="1" value="${Number(f.galleryTitleGap) || 0}"></div>
-        <div class="mini-label">갤러리 타입</div>
+        ${sskTileOn(block) ? sskTilesHtml(block) : `<div class="mini-label">갤러리 타입</div>
         <div class="width-row">
             ${InviteBlocks.GALLERY_TYPES.map(([val,lbl]) => `<button type="button" class="width-btn ${(f.layoutType||'grid')===val?'active':''}" data-gtype="${val}">${lbl}</button>`).join('')}
-        </div>
+        </div>`}
         <div class="mini-label" style="margin-top:10px;">사진 나타나는 방식 <span style="font-weight:400;opacity:.7">(하객이 스크롤해서 갤러리에 닿을 때)</span></div>
         <div class="width-row">
             ${InviteBlocks.GALLERY_REVEALS.map(([val, lbl]) => `<button type="button" class="width-btn ${(f.reveal || '') === val ? 'active' : ''}" data-greveal="${val}">${lbl}</button>`).join('')}
@@ -9507,6 +9509,7 @@ function renderGalleryEditor(wrap, block) {
     wrap.querySelector('#gTitle').addEventListener('input', e => { f.galleryTitle = e.target.value; renderPreview(); });
     wrap.querySelector('#gTitleGap').addEventListener('input', e => { f.galleryTitleGap = parseInt(e.target.value, 10) || 0; wrap.querySelector('#gTitleGapVal').textContent = f.galleryTitleGap + 'px'; renderPreview(); });
     wrap.querySelector('#gTitleGap').addEventListener('change', () => scheduleSnapshot());
+    if (sskTileOn(block)) sskTilesBind(wrap, block); // 갤러리 모양 · 섹션 스킨 칸 (누르면 아래 창에서 그림 보고 고름)
     wrap.querySelectorAll('[data-gtype]').forEach(btn => btn.addEventListener('click', () => {
         f.layoutType = btn.dataset.gtype; renderGalleryEditor(wrap, block); appendSectionSpacingControls(wrap, block); renderPreview(); scheduleSnapshot();
     }));
@@ -16476,12 +16479,14 @@ const SSK_PART = { greeting: '.free-canvas', family: '.ib-title-canvas', dday: '
 //  만드는 도구: 저장소 tools/ssk-sprites.js (섹션 모양 CSS나 디자인을 바꾸면 다시 돌릴 것) · 목록 assets/ssk/manifest.json
 //  지금 디자인을 따라 달라지는 카드('디자인 따라' 스킨 · '테마 모양' 모양)와 목록에 없는 카드(새로 넣은 디자인 등)만 그 자리에서 그림
 let SSK_SPR = null;
-try { fetch('assets/ssk/manifest.json?v=1018z4').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
+try { fetch('assets/ssk/manifest.json?v=1018z5').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
 // '디자인 따라' 스킨 = 지금 디자인의 디자인 스킨 그림 · '테마 모양' = 지금 디자인 꾸밈의 모양 그림 (색을 바꾸지 않았고 디자인이 정한 섹션 테마가 없을 때만 - 아니면 그 자리에서 그림)
 function sskAlias(b, spec) {
     try { if (InviteBlocks.colorChanged && InviteBlocks.colorChanged()) return null; } catch (e) { return null; }
     const [t, a, ...r] = String(spec).split(':'), v = r.join(':');
-    if (t === 's' && !a) return b && !b.skin && !b.skinPal && !designSkinOf(b) && state.presetId ? 'd:' + state.presetId : null;
+    if (t === 's' && !a) { if (!b || b.skin || b.skinPal) return null; const ds = designSkinOf(b); if (ds) return 's:' + ds; if (!state.presetId) return null;
+        const lk = (SSK_LOOKS[b.id] || [])[0]; if (lk) { const c = sskPrep(b, 'd:' + state.presetId); if (String(c.fields[lk[0]] ?? '') !== String((b.fields || {})[lk[0]] ?? '')) return null; } // 디자인 그림이 지금 모양과 다르면(고객이 모양을 바꿈) 그 자리에서 그림
+        return 'd:' + state.presetId; } // 디자인이 정한 섹션 테마가 있으면 그 테마 그림
     if (t === 'l' && v === 'theme') return state.sectionLook ? `l:${a}:t:${state.sectionLook}` : null;
     if (t === 'dd' || t === 'cal') return v === 'theme' && state.sectionLook ? 't:' + state.sectionLook : null;
     return null;
@@ -16495,7 +16500,7 @@ function sskSprite(th, key, spec) {
     th.style.cssText = `background: url('assets/ssk/${key}-${vr}.webp?v=${SSK_SPR.v}') no-repeat ${-(i % c) * j.w}px ${-Math.floor(i / c) * j.h}px / ${c * j.w}px auto`;
     return true;
 }
-function sskFit(th, iv, keep, pad) {
+function sskFit(th, iv, keep, pad, fill) {
     keep = keep.filter(Boolean); if (!keep.length) return false;
     const path = new Set(); keep.forEach(k => { for (let e = k; e && e !== iv; e = e.parentElement) path.add(e); });
     path.forEach(e => { const pe = e.parentElement; if (!pe || pe === iv.parentElement) return; [...pe.children].forEach(x => { if (!path.has(x)) x.style.visibility = 'hidden'; }); });
@@ -16505,8 +16510,8 @@ function sskFit(th, iv, keep, pad) {
     x0 = (x0 - o.left) / z; x1 = (x1 - o.left) / z; y0 = (y0 - o.top) / z; y1 = (y1 - o.top) / z;
     pad = pad == null ? 8 : pad;
     // 가로로 긴 부분(계좌 줄 · 버튼)은 양옆을 조금 잘라도(최대 1.6배) 크게 - 너무 가늘면 알아보기 어려움
-    const w = x1 - x0 + pad * 2, h = y1 - y0 + pad * 2, k = Math.min(th.clientHeight / h, th.clientWidth / w * 1.6);
-    const tx = (th.clientWidth - w * k) / 2 - (x0 - pad) * k, ty = (th.clientHeight - h * k) / 2 - (y0 - pad) * k;
+    const w = x1 - x0 + pad * 2, h = y1 - y0 + pad * 2, k = fill === 'w' ? th.clientWidth / w : Math.min(th.clientHeight / h, th.clientWidth / w * 1.6);
+    const tx = (th.clientWidth - w * k) / 2 - (x0 - pad) * k, ty = fill === 'w' && h * k > th.clientHeight ? -(y0 - pad) * k : (th.clientHeight - h * k) / 2 - (y0 - pad) * k;
     iv.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${k.toFixed(4)})`;
     return true;
 }
@@ -16547,6 +16552,28 @@ function sskHtml(b) {
     return `<div class="pz-gen ssk" data-ssk-for="${esc(b.id)}"><div class="ssk-hd"><b>섹션 스킨</b><small>지금: ${esc(curName)}</small><button type="button" class="ssk-all" data-ssk-all>모든 섹션에 같게</button></div>
         ${looks}<div class="ssk-lab">스킨 <small>기본 ${S.base.length} · 디자인 ${S.designs.length}가지 · 옆으로 넘겨 보세요 · 바탕은 화면 색 그대로</small></div><div class="ssk-row ssk-skins">${base}<i class="ssk-sep"></i>${des}</div></div>`;
 }
+// 편집 칸(타일)으로: 모양 줄 · 스킨 줄을 각각 편집 칸 하나로 → 휴대폰은 누르면 아래에서 창이 올라와 청첩장을 보면서 고름 (디데이 달력·카운터처럼)
+const SSK_TILES = ['gallery'];
+function sskTilesHtml(b) {
+    const S = sskSkins(b), cur = sskCur(b);
+    const looks = (SSK_LOOKS[b.id] || []).map(([key, lab, fn]) => { const list = (fn() || []).filter(x => x && x[0] != null); if (list.length < 2) return '';
+        const cv = b.fields && b.fields[key] != null && b.fields[key] !== '' ? b.fields[key] : list[0][0], cl = (list.find(x => String(x[0]) === String(cv)) || [])[1] || '';
+        return `<div class="field ssk-tile" data-pz-value="${esc(cl)}"><label>${esc(lab)}</label><p class="ddk-sm">${list.length}가지 · 옆으로 넘겨 보세요</p><div class="ssk ssk-flat" data-ssk-for="${esc(b.id)}"><div class="ssk-row">${list.map(([v, l]) => sskCard(`l:${key}:${v}`, l, String(cv) === String(v))).join('')}</div></div></div>`; }).join('');
+    const base = S.base.map(([k, l]) => sskCard('s:' + k, l, cur === 's:' + k)).join(''), des = S.designs.map(p => sskCard('d:' + p.id, p.label, cur === 'd:' + p.id)).join('');
+    const curName = cur.startsWith('d:') ? ((S.designs.find(p => 'd:' + p.id === cur) || {}).label || '') : ((S.base.find(([k]) => 's:' + k === cur) || [])[1] || '디자인 따라');
+    return looks + `<div class="field ssk-tile" data-pz-value="${esc(curName)}"><label>섹션 스킨</label><p class="ddk-sm">기본 ${S.base.length} · 디자인 ${S.designs.length}가지 · 바탕은 화면 색 그대로 <button type="button" class="ssk-all" data-ssk-all>모든 섹션에 같게</button></p><div class="ssk ssk-flat" data-ssk-for="${esc(b.id)}"><div class="ssk-row ssk-skins">${base}<i class="ssk-sep"></i>${des}</div></div></div>`;
+}
+function sskTileOn(b) { if (!SSK_TILES.includes(b.id)) return false; try { return spOpt('flow', 'sskin'); } catch (e) { return true; } } // (관리자가 섹션 스킨을 끄면 예전 글자 버튼)
+function sskTilesBind(wrap, b) { wrap.querySelectorAll('.ssk-tile').forEach(f => sskBind(f, b)); }
+// 그림 묶음 열쇠: 스킨 카드는 지금 섹션 모양마다 따로 그려 둔 묶음(<섹션>~<모양 키>=<값>)에서 (스킨 그림이 지금 모양 그대로 보이게)
+function sskSprKey(b, spec) {
+    const t = String(spec).charAt(0), lk = (SSK_LOOKS[b.id] || [])[0];
+    if (t === 'l' || !lk) return b.id;
+    const list = (lk[2]() || []).filter(x => x && x[0] != null), cv = b.fields && b.fields[lk[0]] != null && b.fields[lk[0]] !== '' ? b.fields[lk[0]] : (list[0] || [''])[0];
+    const k = `${b.id}~${lk[0]}=${cv}`, m = SSK_SPR && SSK_SPR.k;
+    if (m && m[k]) return k;
+    return m && m[b.id] && m[b.id].lv === String(cv) ? b.id : k; // 모양마다 따로 그린 게 없으면: 기본 그림을 찍은 모양과 같을 때만 기본 그림 (다르면 그 자리에서 그림)
+}
 function sskFill(card, b) {
     const th = card.querySelector('.ssk-th'); if (!th || th.dataset.done) return;
     const r = document.getElementById('previewRoot'); if (!r) return;
@@ -16564,13 +16591,17 @@ function sskFill(card, b) {
     const part = iv.querySelector(SSK_FOCUS[t === 'l' && lk] || SSK_PART[b.id] || '.ib-block > :not(.ib-title-canvas):not(.ib-ed-badge)') || (col && col.firstElementChild);
     const title = t !== 'l' && iv.querySelector('.ib-title-canvas, .op-title, .ib-title');
     const keep = title && part && !part.contains(title) && !title.contains(part) && title.getBoundingClientRect().top <= part.getBoundingClientRect().top ? [title, part] : [part];
-    if (!sskFit(th, iv, keep, 8)) iv.style.transform = '';
+    if (!sskFit(th, iv, keep, 8, b.id === 'gallery' ? 'w' : '')) iv.style.transform = ''; // 갤러리는 가로를 꽉 채우고 위쪽부터 (세로로 긴 콜라주·슬라이드가 가늘게 줄어들던 것)
 }
 function sskMount(wrap, b) {
     wrap.querySelector(':scope > .ssk')?.remove();
     const h3 = wrap.querySelector(':scope > h3');
     const el = document.createElement('div'); el.innerHTML = sskHtml(b); const box = el.firstElementChild;
     if (h3) h3.after(box); else wrap.prepend(box);
+    sskBind(box, b);
+}
+// 섹션 스킨 카드 누르기·[모든 섹션에 같게]·보이는 카드만 그리기 (칸 하나 = 섹션 스킨 상자 또는 편집 칸 타일 하나)
+function sskBind(box, b) {
     const pick = spec => {
         const [t, a, ...vr] = spec.split(':'), v = vr.join(':');
         if (t === 'l') { b.fields[a] = v; if (a === 'accStyle') b.fields.display = 'cards'; if (b.skinPrev && b.skinPrev[a]) delete b.skinPrev[a]; } // 직접 고른 모양은 '디자인 따라'로 돌아와도 그대로
@@ -16589,7 +16620,7 @@ function sskMount(wrap, b) {
         }
     });
     box.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-ssk]')) { e.preventDefault(); pick(e.target.dataset.ssk); } });
-    sskLazy(box, [...box.querySelectorAll('.ssk-c')].filter(c => { const sp = c.dataset.ssk, al = sskDynamic(sp) ? sskAlias(b, sp) : sp; return !al || !sskSprite(c.querySelector('.ssk-th'), b.id, al); }), c => sskFill(c, b)); // 미리 그려 둔 이미지가 있으면 바로, 없거나 지금 디자인을 따라가는 카드만 그림
+    sskLazy(box, [...box.querySelectorAll('.ssk-c')].filter(c => { const sp = c.dataset.ssk, al = sskDynamic(sp) ? sskAlias(b, sp) : sp; return !al || !sskSprite(c.querySelector('.ssk-th'), sskSprKey(b, al), al); }), c => sskFill(c, b)); // 미리 그려 둔 이미지가 있으면 바로, 없거나 지금 디자인을 따라가는 카드만 그림
 }
 // ===== 디데이 달력·카운트 모양 고르기 (전문가 디데이 편집창) =====
 //  한 줄에 기본 모양 + 디자인 모양 22개(값 't:<꾸밈>' → 어느 디자인에서나 그 모양) · 옆으로 넘겨 봄
