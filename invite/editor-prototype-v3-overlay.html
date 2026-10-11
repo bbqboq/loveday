@@ -4538,12 +4538,15 @@ body.hh-drag, body.hh-drag * { cursor: ns-resize !important; }
 .ddk-dd .ssk-th { height: 48px; }
 .ddk-c .ssk-th > .ssk-iv { transform-origin: 0 0; }
 .ddk-tints { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.ddk-t0, .ddk-tp { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border: 1px solid var(--ui-line, #E5DED3); border-radius: 999px; background: #fff; font: inherit; font-size: 11.5px; font-weight: 700; color: #6B6259; cursor: pointer; }
+.ddk-t0, .ddk-tp { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; box-sizing: border-box; border: 1px solid var(--ui-line, #E5DED3); border-radius: 999px; background: #fff; font-family: inherit; font-size: 12px; font-weight: 700; line-height: 1; letter-spacing: 0; color: #6B6259; cursor: pointer; white-space: nowrap; }
+.ddk-tints .ddk-tp { display: inline-flex !important; flex-direction: row; align-items: center; gap: 6px; width: auto; margin: 0; padding-left: 6px; overflow: hidden; } /* (편집창 칸의 label 규칙이 block으로 바꾸던 것) */
+.ddk-tints .ddk-tp .ddk-dot { display: block; flex: none; width: 18px; min-width: 18px; height: 18px; padding: 0; border-radius: 50%; background: var(--c, #C9A55C); box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+.ddk-tp span { font: inherit; }
+/* 기기 기본 색 고르기 칸은 투명하게 버튼 전체를 덮음 (휴대폰마다 크기가 달라 글자를 가리던 것) */
+.ddk-tp input[type=color] { position: absolute; inset: 0; width: 100% !important; height: 100% !important; min-width: 0; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; -webkit-appearance: none; appearance: none; }
 .ddk-t { width: 26px; height: 26px; padding: 0; border-radius: 50%; border: 0; cursor: pointer; background: radial-gradient(circle, var(--a) 0 46%, var(--l) 50% 100%); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
 .ddk-t.on, .ddk-t0.on, .ddk-tp.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2B2320; }
 .ddk-t0.on, .ddk-tp.on { border-color: #2B2320; color: #2B2320; }
-.ddk-tp input { width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
-.ddk-tp input::-webkit-color-swatch-wrapper { padding: 0; } .ddk-tp input::-webkit-color-swatch { border: 0; border-radius: 50%; }
 .dd-pick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .dd-pk { display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding: 5px; border: 1px solid var(--line); border-radius: 12px; background: #fff; cursor: pointer; font: inherit; color: var(--ink); min-width: 0; }
 .dd-pk b { font-size: 10.5px; font-weight: 700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -8872,7 +8875,7 @@ function appendSectionSpacingControls(wrap, block) {
         <div class="cpk-line"><small>바탕</small>${cpkHtml('secBoxBg', block.boxBg || secBoxDef().bg, !block.boxBg && !block.boxInk, 'secBoxReset')}</div>
         <div class="cpk-line"><small>글자</small>${cpkHtml('secBoxInk', block.boxInk || secBoxDef().ink, !block.boxBg && !block.boxInk, null, CPK_INK)}</div>
         <p class="field-hint" style="margin-top:4px;">${block.boxBg || block.boxInk ? '직접 고른 색을 쓰는 중이에요.' : '지금은 테마 기본 색이에요. 색을 고르면 이 섹션 안의 창들이 바뀌어요.'}</p>` : ''}
-        ${SKIN_NO.includes(block.id) ? '' : block.id === 'dday' ? `<p class="field-hint" style="margin-top:12px;">달력·카운트 모양과 색은 위 <b>달력 모양 · 카운트 모양 · 부품 색</b>에서 골라요.</p>` : `<p class="field-hint" style="margin-top:12px;">섹션 모양·꾸밈(스킨)은 편집창 맨 위 <b>섹션 스킨</b>에서 골라요.</p>`}
+        ${SKIN_NO.includes(block.id) ? '' : block.id === 'dday' ? `<p class="field-hint" style="margin-top:12px;">달력·카운트 모양과 색은 위 <b>달력 모양 · 카운터 모양 · 포인트 색</b>에서 골라요.</p>` : `<p class="field-hint" style="margin-top:12px;">섹션 모양·꾸밈(스킨)은 편집창 맨 위 <b>섹션 스킨</b>에서 골라요.</p>`}
     `;
     wrap.appendChild(box);
     bindCpk(box);
@@ -9162,7 +9165,7 @@ function renderDdayEditor(wrap, block) {
             <label class="account-toggle"><input type="checkbox" id="ddayCountToggle" ${f.showCounter !== false ? 'checked' : ''}> 카운트 보여주기</label>
         </div>
         <div class="field dd-pick-field" data-pz-value="${esc(f.showCounter === false ? '끔' : ddkName('dd', f.counterStyle))}"><label>카운터 모양</label><p class="ddk-sm">기본 ${InviteBlocks.DDAY_STYLES.length} · 디자인 ${InviteBlocks.TP_STYLES.length}가지</p>${ddkRow('dd', f)}</div>
-        <div class="field" data-pz-value="${esc(block.tint ? ((ddkTints().find(t => t.a.toUpperCase() === String(block.tint).toUpperCase() && t.l.toUpperCase() === String(block.tintLine || '').toUpperCase()) || {}).label || '직접 고른 색') : '화면 색 따라')}"><label>부품 색</label><p class="ddk-sm">달력·카운트 색만 바뀌어요 · 바탕은 화면 설정 색 그대로</p>${ddkTintHtml(block)}</div>
+        <div class="field" data-pz-value="${esc(block.tint ? ((ddkTints().find(t => t.a.toUpperCase() === String(block.tint).toUpperCase() && t.l.toUpperCase() === String(block.tintLine || '').toUpperCase()) || {}).label || '직접 고른 색') : '전체 색 따라')}"><label>포인트 색</label><p class="ddk-sm">이 섹션의 달력·카운트 강조 색만 바뀌어요 · 청첩장 전체 포인트 색은 화면 설정에서</p>${ddkTintHtml(block)}</div>
         <div class="field">
             <label>카운트다운 배경 사진 (선택)</label>
             ${f.bgImage ? `<img src="${esc(f.bgImage)}" style="width:100%;border-radius:8px;margin-bottom:8px;display:block;">` : ''}
@@ -16591,7 +16594,7 @@ function sskMount(wrap, b) {
 // ===== 디데이 달력·카운트 모양 고르기 (전문가 디데이 편집창) =====
 //  한 줄에 기본 모양 + 디자인 모양 22개(값 't:<꾸밈>' → 어느 디자인에서나 그 모양) · 옆으로 넘겨 봄
 //  카드마다 진짜로 그린 섹션에서 달력(또는 카운트) 부분만 칸에 맞게 줄여 보여 줌 (보이는 카드만 한가할 때 · 같은 내용이면 다시 안 그림)
-//  부품 색 = block.tint/tintLine (InviteBlocks.boxColAttrs → --p-accent·--p-line) · 바탕은 늘 화면 설정 색
+//  포인트 색(이 섹션만) = block.tint/tintLine (InviteBlocks.boxColAttrs → --p-accent·--p-line) · 바탕은 늘 화면 설정 색
 // ===== 옆으로 넘기는 줄 위치 기억 (편집창 모든 고르기 줄 공통) =====
 //  고르면 편집창이 다시 그려져 줄이 맨 앞으로 돌아가던 것 → 넘긴 자리를 줄마다(섹션 · 줄 종류 · 몇 번째) 기억해 두고,
 //  새로 그려진 줄이 화면에 보이는 순간(휴대폰 편집 칸처럼 늦게 열려도 - ResizeObserver) 그 자리로 되돌림.
@@ -16648,7 +16651,7 @@ function ddkTints() { // 디자인마다 포인트·선 색 (같은 색은 하�
 function ddkTintHtml(b) {
     const cur = String(b.tint || '').toUpperCase(), curL = String(b.tintLine || '').toUpperCase();
     const T = ddkTints(), hit = T.some(t => t.a.toUpperCase() === cur && t.l.toUpperCase() === curL);
-    return `<div class="ddk-tints"><button type="button" class="ddk-t0${!cur ? ' on' : ''}" data-tint="">화면 색 따라</button>${T.map(t => `<button type="button" class="ddk-t${cur && t.a.toUpperCase() === cur && t.l.toUpperCase() === curL ? ' on' : ''}" data-tint="${esc(t.a)}" data-tint-l="${esc(t.l)}" title="${esc(t.label)} 색" style="--a:${t.a};--l:${t.l || t.a}"></button>`).join('')}<label class="ddk-tp${cur && !hit ? ' on' : ''}" title="직접 고르기"><input type="color" data-tint-pick value="${esc(b.tint || (skins[state.skin] || {}).accent || '#9E3B3B')}"><span>직접</span></label></div>`;
+    return `<div class="ddk-tints"><button type="button" class="ddk-t0${!cur ? ' on' : ''}" data-tint="">전체 색 따라</button>${T.map(t => `<button type="button" class="ddk-t${cur && t.a.toUpperCase() === cur && t.l.toUpperCase() === curL ? ' on' : ''}" data-tint="${esc(t.a)}" data-tint-l="${esc(t.l)}" title="${esc(t.label)} 색" style="--a:${t.a};--l:${t.l || t.a}"></button>`).join('')}<label class="ddk-tp${cur && !hit ? ' on' : ''}" title="직접 고르기"><span class="ddk-dot" style="--c:${esc(b.tint || (skins[state.skin] || {}).accent || '#9E3B3B')}"></span><span>직접 고르기</span><input type="color" data-tint-pick value="${esc(b.tint || (skins[state.skin] || {}).accent || '#9E3B3B')}" aria-label="포인트 색 직접 고르기"></label></div>`;
 }
 function ddkPrep(b, kind, v) { // 그 모양만 보이게 (다른 쪽 모양 값은 빼서, 고를 때 반대쪽 줄은 다시 안 그림)
     const c = JSON.parse(JSON.stringify(b)); c.fields = c.fields || {};
@@ -16703,7 +16706,7 @@ function ddkMount(wrap, b) {
     wrap.querySelectorAll('[data-ddk]').forEach(c => { c.addEventListener('click', () => pick(c)); c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(c); } }); });
     wrap.querySelectorAll('[data-tint]').forEach(x => x.addEventListener('click', () => { if (x.dataset.tint) { b.tint = x.dataset.tint; if (x.dataset.tintL) b.tintLine = x.dataset.tintL; else delete b.tintLine; } else { delete b.tint; delete b.tintLine; } redo(); }));
     const tp = wrap.querySelector('[data-tint-pick]');
-    if (tp) { tp.addEventListener('input', () => { b.tint = tp.value; delete b.tintLine; renderPreview(); }); tp.addEventListener('change', () => { b.tint = tp.value; delete b.tintLine; redo(); }); }
+    if (tp) { tp.addEventListener('input', () => { b.tint = tp.value; delete b.tintLine; const dot = tp.parentElement.querySelector('.ddk-dot'); if (dot) dot.style.setProperty('--c', tp.value); renderPreview(); }); tp.addEventListener('change', () => { b.tint = tp.value; delete b.tintLine; redo(); }); }
     const cards = [...wrap.querySelectorAll('.ddk-c')];
     sskLazy(wrap, cards.filter(c => { const v = c.dataset.ddkV, al = v === 'theme' ? sskAlias(b, c.dataset.ddk + ':x:theme') : v; return !al || !sskSprite(c.querySelector('.ssk-th'), 'dday-' + c.dataset.ddk, al); }), c => ddkFill(c, b));
 }
@@ -18826,7 +18829,7 @@ const LDH_EXPERT = [
     { t: '스티커 붙이기', d: '하트 · 꽃 · 별 · 움직이는 그림', steps: ['위쪽 웃는 얼굴 버튼(스티커 넣기)을 눌러요.', '[추천]에는 지금 디자인에 어울리는 그림이 먼저 나와요. [테마]에서 로맨틱 · 별·우주 · 비 오는 날 … 을 골라 볼 수도 있어요.', '찾기 칸에 하트, 꽃, 비처럼 적거나 [움직임]을 누르면 움직이는 스티커만 모아 봐요 (초록 점 = 움직여요).', '스티커를 누르면 청첩장에 붙어요. 끌어서 옮기고, 모서리를 끌어 크기를 바꿔요.', '[세트]를 누르면 \'웹툰 첫 화\'·\'리본과 하트\' 같은 세트가 첫 화면·인사말·갤러리 쪽에 한 번에 붙어요.'], show: () => [{ el: () => ldhFirst('#stickerAddBtn', '[data-act="sticker"]'), t: '스티커 넣기', x: '이 버튼을 누르면 스티커 창이 열려요.' }], go: ['스티커 창 열기', () => { closeLdh(); setTimeout(() => document.getElementById('stickerAddBtn')?.click(), 50); }] },
     { t: '섹션 하나만 다른 모양으로 (섹션 스킨)', d: '모양 · 디자인 21가지 스킨', when: () => spOpt('flow', 'sskin'), steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요. 편집창 맨 위에 \'섹션 스킨\'이 있어요.', '\'모양\' 줄(방명록 카드·줄글, 달력·카운트, 계좌, 인터뷰 …)에서 그림을 누르면 그 모양으로 바뀌어요.', '\'스킨\' 줄에서 빈티지 · 밤하늘 · 안개 또는 다른 디자인(클래식 · 가든 · 필름 · 웹툰 …) 그림을 누르면 그 디자인의 색 · 글꼴 · 꾸밈이 이 섹션에만 입혀져요. 옆으로 밀면 21가지가 다 나와요.', '[모든 섹션에 같은 스킨]을 누르면 모든 섹션이 같은 스킨이 돼요. 처음처럼 하려면 [디자인 따라]를 눌러요.'], go: ['방명록 열어 보기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'guestbook' && b.enabled) ? 'guestbook' : (state.blocks.find(b => b.enabled && !SKIN_NO.includes(b.id)) || {}).id)] },
     { t: '배경 무늬 끄고 켜기', d: '화면 설정 → 부가기능 → 배경 꾸밈', steps: ['아래 [바로 열기]를 누르면 화면 설정이 열려요.', '\'부가기능\'의 \'배경 꾸밈\'을 끄면 별 · 빗줄기 · 하늘빛 같은 배경 무늬와 종이 질감이 빠지고 바탕색 한 가지만 남아요.', '다시 켜면 디자인 원래 배경으로 돌아와요. 무늬는 섹션마다 끊기지 않고 청첩장 전체에 한 장으로 이어져 있어요.'], go: ['바로 열기', () => { closeLdh(); document.getElementById(mmPc() ? 'pcSettingsBtn' : 'controlsFab')?.click(); }] },
-    { t: '달력 · 카운트 모양과 색 바꾸기', d: '디데이 편집창 → 달력 모양 · 카운터 모양 · 부품 색', steps: ['아래 [바로 열기]를 누르면 디데이 카운트다운 편집창이 열려요.', '\'달력 모양\' · \'카운터 모양\' 칸을 누르면 모양이 한 줄로 나와요. 옆으로 넘기면 기본 모양 다음에 디자인 22개의 모양(천사의 편지 밀랍 도장 · 웹툰 말풍선 …)이 있어요. 어느 디자인에서나 골라 쓸 수 있어요.', '\'부품 색\'에서 디자인 색 동그라미를 누르거나 [직접]으로 색을 고르면 달력 · 카운트 색만 바뀌어요. 바탕은 늘 화면 설정 색이에요. 처음대로 하려면 [화면 색 따라].'], go: ['바로 열기', () => { closeLdh(); ldhExpertOpen('dday'); }] },
+    { t: '달력 · 카운트 모양과 색 바꾸기', d: '디데이 편집창 → 달력 모양 · 카운터 모양 · 포인트 색', steps: ['아래 [바로 열기]를 누르면 디데이 카운트다운 편집창이 열려요.', '\'달력 모양\' · \'카운터 모양\' 칸을 누르면 모양이 한 줄로 나와요. 옆으로 넘기면 기본 모양 다음에 디자인 22개의 모양(천사의 편지 밀랍 도장 · 웹툰 말풍선 …)이 있어요. 어느 디자인에서나 골라 쓸 수 있어요.', '\'포인트 색\'에서 디자인 색 동그라미를 누르거나 [직접 고르기]로 색을 고르면 달력 · 카운트 색만 바뀌어요. 바탕은 늘 화면 설정 색이에요. 처음대로 하려면 [전체 색 따라].'], go: ['바로 열기', () => { closeLdh(); ldhExpertOpen('dday'); }] },
     { t: '색 바꾸면 달력 · 계좌 꾸밈도 같이', d: '화면 설정 → 색 · 연동 스위치', when: () => colorLinkShown(), steps: ['아래 [바로 열기]를 누르면 화면 설정의 \'색\' 칸이 열려요.', '\'색을 바꾸면 꾸밈도 같이\'가 켜져 있으면 스킨 · 바탕색 · 포인트 색을 바꿀 때 달력 · 디데이 · 계좌 · 방명록 · 참석 버튼 · 교통 안내 꾸밈과 따로 고른 디자인 스킨도 그 색으로 같이 바뀌어요.', '끄면 꾸밈의 포인트 색은 디자인 원래 색 그대로예요. 빈티지 · 밤하늘 · 안개 · 웹툰처럼 직접 고른 섹션 테마는 늘 그 색이에요.'], go: ['바로 열기', () => { closeLdh(); document.getElementById(mmPc() ? 'pcSettingsBtn' : 'controlsFab')?.click(); setTimeout(() => { try { spCur = 'color'; spOpen.__d3 = 1; spOpen.color = 1; spApply(); document.getElementById('colorLinkGroup')?.scrollIntoView({ block: 'center' }); } catch (e) {} }, 150); }] },
     { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', steps: ['아래 [바로 열기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 미리보기에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요.'], go: ['바로 열기', () => ldhExpertOpen('gallery')] },
     { t: '중세 유럽 빈티지로 꾸미기 (천사의 편지)', d: '천사 아기 · 하트 · 금테 액자 · 밀랍 도장', steps: ['메인 사진 칸 맨 위 \'메인 레이아웃\'에서 \'천사의 편지\'를 고르면 사진이 금테 액자 속으로 들어가요. 아래 \'사진 칸 테두리\'에서 금테 액자 · 폴라로이드 · 아치 …로 바꿀 수 있어요.', '섹션을 열어 맨 위 \'섹션 스킨\' → \'천사의 편지\'를 누르면 그 섹션만, [모든 섹션에 같은 스킨]을 누르면 모든 섹션이 양피지 · 금테 · ❦ 모양이 돼요.', '디데이 섹션 \'모양\' 줄에서 \'빈티지 큐피드\'(원래 큐피드 달력) 또는 \'테마 모양\'(금테 달력 + 천사 · 밀랍 도장)을 골라요.', '스티커 창 [테마] → \'빈티지 그림 전체\'에서 천사 · 비둘기 · 장미 그림을 붙여요.'], go: ['메인 사진 칸 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
