@@ -32,7 +32,7 @@
     "dday": { "calendarStyle": "vintage", "showCounter": true, "counterStyle": "theme" },
     "gallery": { "layoutType": "collage", "images": 6, "reveal": "seq" },
     "contact": { "contactStyle": "vintage" },
-    "account": { "accStyle": "vintage", "display": "cards", "accCollapse": true },
+    "account": { "accStyle": "theme", "display": "cards", "accCollapse": true },
     "rsvp": { "btnStyle": "theme" },
     "guestbook": { "style": "theme" },
     "transport": { "style": "theme" }
