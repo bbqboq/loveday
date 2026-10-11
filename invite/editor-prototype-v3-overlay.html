@@ -4684,14 +4684,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z8">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018z8">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z9">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018z9">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018z8"></script>
-<script src="assets/tip-demos.js?v=1018z8"></script>
-<script src="assets/ld-dialog.js?v=1018z8"></script>
+<script src="assets/invite-blocks.js?v=1018z9"></script>
+<script src="assets/tip-demos.js?v=1018z9"></script>
+<script src="assets/ld-dialog.js?v=1018z9"></script>
 </head>
 <body>
 
@@ -5356,6 +5356,16 @@ PRESETS.forEach(registerPresetSkin);
 // [프리셋 = 폴더] 서버에서는 /invite/presets/ 폴더가 진짜 목록이다 - preset_list.php가 폴더를 훑어서 돌려준 목록으로
 // 위의 내장 목록을 통째로 바꾼다. 폴더를 FTP로 올리기만 하면 여기 코드를 고치지 않아도 디자인 선택 화면에 나온다.
 // (preset_list.php를 못 부르는 환경 - 로컬에서 파일로 열었을 때 등 - 에서는 위 내장 목록을 그대로 쓴다)
+// 관리자 → 추천 디자인에서 끈 디자인 (preset_list.php "off") - 목록(PRESETS)엔 남겨 두고(이미 그 디자인으로 만든 청첩장용) 고르는 화면에서만 뺌
+var PRESET_OFF = new Set();
+function presetShown(p) { return !!p && !PRESET_OFF.has(p.id); }
+function presetsShown() { return PRESETS.filter(presetShown); }
+// 테마 부품 모양('t:<꾸밈>') 중 그 꾸밈을 쓰는 디자인이 모두 꺼졌으면 뺌 (지금 고른 값은 그대로 둠)
+function tpStylesShown(cur) {
+    const looks = (window.InviteBlocks && InviteBlocks.THEME_LOOKS) || {}, users = {};
+    PRESETS.forEach(p => { let k = p.sectionLook || looks[p.id] || ''; if (k === '@webtoon') k = 'webtoon'; if (k) (users[k] = users[k] || []).push(p.id); });
+    return InviteBlocks.TP_STYLES.filter(([v]) => { const k = v.slice(2); return v === cur || !users[k] || users[k].some(id => !PRESET_OFF.has(id)); });
+}
 async function loadPresetsFromServer() {
     try {
         const res = await fetch('preset_list.php', { cache: 'no-cache' });
@@ -5365,6 +5375,7 @@ async function loadPresetsFromServer() {
         if (data.skipped && data.skipped.length) console.warn('[프리셋] 건너뛴 폴더:', data.skipped);
         PRESETS.splice(0, PRESETS.length, ...data.presets);
         PRESETS.forEach(registerPresetSkin);
+        PRESET_OFF = new Set(Array.isArray(data.off) ? data.off : []);
         if (document.getElementById('screenDesign')?.classList.contains('active')) renderDesignScreen();
         if (typeof renderSkinPicker === 'function' && document.getElementById('skinPicker')) renderSkinPicker();
     } catch (e) { /* 내장 목록 그대로 사용 */ }
@@ -9842,7 +9853,7 @@ const STK_THEMES = [
     { id: 'vintage', name: '빈티지 그림 전체', vin: Object.keys(STK_VIN), emo: [] },
 ];
 // 디자인마다 먼저 보여줄 테마 (디자인 폴더 preset.json의 stickerThemes가 있으면 그게 먼저)
-const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] , 'p-webtoon': ['webtoon', 'party'], 'p-angel': ['romantic', 'classic'], 'p-hanji': ['classic', 'season'], 'p-ticket': ['party', 'classic'], 'p-olive': ['garden', 'season'], 'p-sea': ['season', 'party'], 'p-wine': ['season', 'classic'] };
+const STK_REC = { classic: ['classic', 'romantic'], modern: ['classic', 'party'], pastel: ['garden', 'romantic'], 'p-mono': ['classic', 'cosmos'], 'p-romantic': ['romantic', 'garden'], 'p-garden': ['garden', 'season'], 'p-navy': ['cosmos', 'classic'], 'p-earth': ['garden', 'season'], 'p-lavender': ['garden', 'romantic'], 'p-film': ['classic', 'romantic'], 'p-cinema': ['cosmos', 'classic'], 'p-photos': ['party', 'romantic'], 'p-story': ['romantic', 'season'], 'p-typo': ['classic', 'party'], 'p-notice': ['classic', 'garden'], 'p-scrapbook': ['party', 'romantic'], 'p-cosmos': ['cosmos', 'classic'], 'p-rain': ['rain', 'garden'], 'p-midnight': ['cosmos', 'classic'], 'p-weather': ['rain', 'season'] , 'p-webtoon': ['webtoon', 'party'], 'p-angel': ['romantic', 'classic'], 'p-hanji': ['classic', 'season'], 'p-ticket': ['party', 'classic'], 'p-olive': ['garden', 'season'], 'p-sea': ['season', 'party'], 'p-wine': ['season', 'classic'], 'p-spring': ['garden', 'season'], 'p-winter': ['season', 'classic'], 'p-press': ['classic', 'party'], 'p-retro': ['party', 'season'], 'p-picnic': ['garden', 'party'] };
 // 관리자 → 스티커 (sticker_settings.php): 테마 순서·끈 테마·숨긴 그림·디자인별 추천. 못 받으면 아래 기본대로
 let STK_CFG = { order: null, off: [], hide: [], rec: {} };
 // 관리자가 올린 종이 질감 그림 (관리자 → 추천 디자인 → 종이 질감 그림) - 받으면 바탕·고르기 칸 견본을 다시 그림
@@ -14105,7 +14116,7 @@ function allDesigns() {
         const b = PRESETS.find(p => p.id === it.base) || PRESETS[0] || {};
         return Object.assign({}, b, { id: it.id, label: it.label || b.label, desc: it.desc || b.desc, no: 100 + i, tags: [], __base: b.id, thumb: b.thumb });
     });
-    const all = PRESETS.concat(extra), wx = p => p && (p.ambient === 'weather' || p.id === 'p-weather' || p.__base === 'p-weather');
+    const all = PRESETS.concat(extra).filter(presetShown), wx = p => p && (p.ambient === 'weather' || p.id === 'p-weather' || p.__base === 'p-weather');
     return all.filter(p => !wx(p)).concat(all.filter(wx)); // 날씨 따라 바뀌는 청첩장은 늘 맨 끝 (디자인을 더 넣어도)
 }
 // 저장된 샘플 디자인을 지금 상태에 입힌다 (불러오기와 같은 정리: 빠진 섹션 채우기·예전 저장분 옮기기)
@@ -16466,7 +16477,7 @@ function skinPickHtml(cur, curPal, noVintage) {
     const SK = ((window.InviteBlocks && InviteBlocks.SECTION_SKINS) || []).filter(([k]) => !(noVintage && k === 'vintage'));
     const chip = ([k, l]) => { const c = SKIN_PV[k], on = k ? cur === k : !cur && !curPal;
         return `<button type="button" class="skp-b${on ? ' on' : ''}" data-skp="${k}">${c ? `<i style="--b:${c[0]};--a:${c[1]};--l:${c[2]}"></i>` : '<i class="d"></i>'}${esc(l)}</button>`; };
-    const pals = PRESETS.map(p => { const pl = skinPalOf(p); if (!pl) return ''; const on = !cur && curPal && (curPal.id ? curPal.id === p.id : curPal.bg === pl.bg && curPal.accent === pl.accent);
+    const pals = presetsShown().map(p => { const pl = skinPalOf(p); if (!pl) return ''; const on = !cur && curPal && (curPal.id ? curPal.id === p.id : curPal.bg === pl.bg && curPal.accent === pl.accent);
         return `<button type="button" class="skp-p${on ? ' on' : ''}" data-skp-pal="${esc(p.id)}" title="${esc(p.label)} 스킨으로" style="--b:${pl.bg};--a:${pl.accent};--k:${pl.ink}"><i></i><span>${esc(p.label)}</span></button>`; }).join('');
     return `<div class="skp"><div class="skp-row">${SK.map(chip).join('')}</div><div class="skp-lab">디자인 스킨 (그 디자인의 색·글꼴·꾸밈)</div><div class="skp-pals">${pals}</div></div>`;
 }
@@ -16489,12 +16500,12 @@ function skinApply(b, k, palId) {
 //  ① 모양 = 그 섹션의 원래 모양들 (방명록 카드·줄글, 달력·카운트, 계좌, 연락처, 안내, 갤러리, 감사 인사, 인터뷰) ② 스킨 = 디자인 따라 · 빈티지 · 밤하늘 · 안개 + 디자인 21개
 //  카드마다 그 섹션을 진짜로 그려 작게 보여 줌 (sskThumb: renderBlockHtml + boxColAttrs, 보이는 카드만 한가할 때 하나씩 · 같은 내용이면 다시 안 그림)
 const SSK_LOOKS = {
-    guestbook: [['style', '방명록 모양', () => [['theme', '테마 모양'], ['card', '카드'], ['line', '줄글'], ...InviteBlocks.TP_STYLES.filter(x => x[0] !== 't:webtoon')]]], // (웹툰 방명록·참석 버튼은 섹션 테마 '웹툰 컷' 쪽에 있음)
-    rsvp: [['btnStyle', '참석 버튼 모양', () => [['theme', '테마 모양'], ['basic', '기본'], ...InviteBlocks.TP_STYLES.filter(x => x[0] !== 't:webtoon')]]],
-    transport: [['style', '교통 모양', () => [['theme', '테마 모양'], ['basic', '기본 (아이콘)'], ...InviteBlocks.TP_STYLES]]],
+    guestbook: [['style', '방명록 모양', () => [['theme', '테마 모양'], ['card', '카드'], ['line', '줄글'], ...tpStylesShown().filter(x => x[0] !== 't:webtoon')]]], // (웹툰 방명록·참석 버튼은 섹션 테마 '웹툰 컷' 쪽에 있음)
+    rsvp: [['btnStyle', '참석 버튼 모양', () => [['theme', '테마 모양'], ['basic', '기본'], ...tpStylesShown().filter(x => x[0] !== 't:webtoon')]]],
+    transport: [['style', '교통 모양', () => [['theme', '테마 모양'], ['basic', '기본 (아이콘)'], ...tpStylesShown()]]],
     notice: [['style', '안내 모양', () => InviteBlocks.NOTICE_STYLES]],
     thanks: [['style', '감사 인사 모양', () => [['card', '카드'], ['letter', '편지지'], ['photo', '사진 위 글자'], ['plain', '깔끔하게']]]],
-    account: [['accStyle', '계좌 모양', () => InviteBlocks.ACC_STYLES.concat(InviteBlocks.TP_STYLES)]],
+    account: [['accStyle', '계좌 모양', () => InviteBlocks.ACC_STYLES.concat(tpStylesShown())]],
     contact: [['contactStyle', '연락처 모양', () => InviteBlocks.CONTACT_STYLES]],
     gallery: [['layoutType', '갤러리 모양', () => InviteBlocks.GALLERY_TYPES]],
     dday: [['calendarStyle', '달력 모양', () => InviteBlocks.CAL_STYLES], ['counterStyle', '카운트 모양', () => InviteBlocks.DDAY_STYLES]],
@@ -16514,7 +16525,7 @@ const SSK_PART = { greeting: '.free-canvas', family: '.ib-title-canvas', dday: '
 //  만드는 도구: 저장소 tools/ssk-sprites.js (섹션 모양 CSS나 디자인을 바꾸면 다시 돌릴 것) · 목록 assets/ssk/manifest.json
 //  지금 디자인을 따라 달라지는 카드('디자인 따라' 스킨 · '테마 모양' 모양)와 목록에 없는 카드(새로 넣은 디자인 등)만 그 자리에서 그림
 let SSK_SPR = null;
-try { fetch('assets/ssk/manifest.json?v=1018z8').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
+try { fetch('assets/ssk/manifest.json?v=1018z9').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
 // '디자인 따라' 스킨 = 지금 디자인의 디자인 스킨 그림 · '테마 모양' = 지금 디자인 꾸밈의 모양 그림 (색을 바꾸지 않았고 디자인이 정한 섹션 테마가 없을 때만 - 아니면 그 자리에서 그림)
 function sskAlias(b, spec) {
     try { if (InviteBlocks.colorChanged && InviteBlocks.colorChanged()) return null; } catch (e) { return null; }
@@ -16553,7 +16564,7 @@ function sskFit(th, iv, keep, pad, fill) {
 const SSK = { cache: new Map(), io: null };
 function sskSkins(b) {
     const sk = [['', '디자인 따라'], ...(InviteBlocks.designLook && InviteBlocks.designLook() ? [['plain', '꾸밈 없이']] : []), ...((InviteBlocks.SECTION_SKINS || []).filter(([k]) => k && k !== 'webtoon' && !(k === 'vintage' && InviteBlocks.SKIN_HAS_VINTAGE.includes(b.id))))];
-    return { base: sk, designs: PRESETS.filter(p => skins[p.__base || p.id]) };
+    return { base: sk, designs: presetsShown().filter(p => skins[p.__base || p.id]) };
 }
 function sskCur(b) { const d = skinDesignOf(b); if (d) return 'd:' + d; if (b.skin === 'plain') return 's:plain'; const k = InviteBlocks.skinOf(b); return 's:' + (k && k === designSkinOf(b) && !b.skin ? '' : k); }
 function sskMut(spec) { // 'l:키:값' 모양 · 's:스킨' · 'd:디자인 id' (값에 ':'가 들어갈 수 있음 - 't:angel' 같은 테마 부품 모양)
@@ -16707,7 +16718,7 @@ function rowRestore(row) {
         if (!(Date.now() - (row._rowUser || 0) < 3000)) return;
         ROWPOS.set(row._rowKey || (row._rowKey = rowKey(row)), row.scrollLeft); }, true);
 })();
-function ddkList(kind) { const B = kind === 'cal' ? InviteBlocks.CAL_STYLES : InviteBlocks.DDAY_STYLES; return B.map(([v, l]) => [v, v === 'theme' ? '디자인 따라' : l]).concat([null], InviteBlocks.TP_STYLES); }
+function ddkList(kind) { const B = kind === 'cal' ? InviteBlocks.CAL_STYLES : InviteBlocks.DDAY_STYLES; return B.map(([v, l]) => [v, v === 'theme' ? '디자인 따라' : l]).concat([null], tpStylesShown()); }
 function ddkName(kind, v) { const x = ddkList(kind).find(x => x && x[0] === (v || 'classic')); return x ? x[1] : '기본'; }
 function ddkRow(kind, f) {
     const on = kind === 'cal' ? !!f.showCalendar : f.showCounter !== false, cur = (kind === 'cal' ? f.calendarStyle : f.counterStyle) || 'classic';
@@ -16715,7 +16726,7 @@ function ddkRow(kind, f) {
 }
 function ddkTints() { // 디자인마다 포인트·선 색 (같은 색은 하나만)
     const seen = new Set();
-    return PRESETS.map(p => { const k = skins[p.__base || p.id]; if (!k || !k.accent) return null; const key = (k.accent + (k.line || '')).toUpperCase(); if (seen.has(key)) return null; seen.add(key); return { id: p.id, label: p.label, a: k.accent, l: k.line || '' }; }).filter(Boolean);
+    return presetsShown().map(p => { const k = skins[p.__base || p.id]; if (!k || !k.accent) return null; const key = (k.accent + (k.line || '')).toUpperCase(); if (seen.has(key)) return null; seen.add(key); return { id: p.id, label: p.label, a: k.accent, l: k.line || '' }; }).filter(Boolean);
 }
 function ddkTintHtml(b) {
     const cur = String(b.tint || '').toUpperCase(), curL = String(b.tintLine || '').toUpperCase();

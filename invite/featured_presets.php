@@ -50,6 +50,42 @@ function featured_presets_save(array $ids): array
     return $ids;
 }
 
+// ---- 디자인 켜고 끄기 (관리자 → 추천 디자인 · 카드마다 [고객에게 보이기] 스위치) ----
+//  끈 디자인은 고객 화면(디자인 고르기 · 섹션 스킨 · 모양 고르기)에서 빠짐. 이미 그 디자인으로 만든 청첩장은 그대로 보임
+//  preset_list.php가 끈 디자인에 "off": true 를 붙이고 목록 맨 위에 "off": [...] 를 내보냄 (에디터 PRESET_OFF)
+//  저장 위치: invite/uploads/site/preset_off.json {"off": [디자인 id …]}
+function preset_off_file(): string
+{
+    return (defined('UPLOAD_DIR') ? UPLOAD_DIR : __DIR__ . '/uploads/') . 'site/preset_off.json';
+}
+function preset_off_clean($ids): array
+{
+    $out = [];
+    foreach ((array) $ids as $id) {
+        if (is_string($id) && preg_match('/^[a-z0-9-]{2,40}$/', $id) && !in_array($id, $out, true)) $out[] = $id;
+        if (count($out) >= 300) break;
+    }
+    return $out;
+}
+function preset_off_get(): array
+{
+    $f = preset_off_file();
+    if (!is_file($f)) return [];
+    $j = json_decode((string) @file_get_contents($f, false, null, 0, 32768), true);
+    return is_array($j) ? preset_off_clean($j['off'] ?? []) : [];
+}
+function preset_off_save(array $ids): array
+{
+    $ids = preset_off_clean($ids);
+    $f = preset_off_file();
+    if (!$ids) { if (is_file($f)) @unlink($f); return []; }
+    if (!is_dir(dirname($f))) @mkdir(dirname($f), 0750, true);
+    if (@file_put_contents($f, json_encode(['off' => $ids, 'saved_at' => date('c')], JSON_UNESCAPED_UNICODE), LOCK_EX) === false) {
+        throw new RuntimeException('저장 파일을 쓸 수 없어요 (uploads/site 폴더 권한 확인).');
+    }
+    return $ids;
+}
+
 if (basename((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === basename(__FILE__)) {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');

@@ -1,0 +1,87 @@
+{
+  "id": "p-spring",
+  "no": 28,
+  "group": "mood",
+  "label": "벚꽃 봄",
+  "desc": "연분홍 벚꽃잎이 흩날리는 포근한 봄날 웨딩",
+  "tags": [
+    "봄",
+    "벚꽃",
+    "포근한"
+  ],
+  "palette": {
+    "bg": "#FBF6F4",
+    "ink": "#463A3C",
+    "accent": "#C97B8C",
+    "line": "#EBD9DA",
+    "muted": "#9C8A8D",
+    "radius": "24px"
+  },
+  "font": "gowun-batang",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "spring-bloom",
+  "sideBg": "#F1E4E3",
+  "shadow": true,
+  "ambient": "cherry",
+  "ambientOpacity": 45,
+  "sectionLook": "spring",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "up"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "theme",
+      "showCounter": true,
+      "counterStyle": "theme"
+    },
+    "gallery": {
+      "layoutType": "pages",
+      "images": 12,
+      "reveal": "seq"
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
+    },
+    "greeting": {
+      "text": "벚꽃이 피는 계절에\n두 사람이 같은 봄을 맞이합니다.\n따스한 햇살 같은 마음으로\n함께 축복해 주세요."
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "Spring Wedding",
+    "font": "cormorant",
+    "bg": "#FBF6F4",
+    "color": "#C97B8C",
+    "fontSize": 40,
+    "duration": 2.2
+  },
+  "stickerThemes": [
+    "garden",
+    "season"
+  ],
+  "notes": "꾸밈 spring(은은한 분홍 카드 · 예식일 꽃잎 다섯 장) + 첫 화면 spring-bloom + 벚꽃 효과 + 배경 soft"
+}

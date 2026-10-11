@@ -43,7 +43,7 @@ const ALLOWED_STYLE   = [
     'thanks.style'       => ['card', 'letter', 'photo', 'plain'],
 ];
 // 디자인 테마 스킨 꾸밈 (전문가 모드 섹션 스킨에서 이 디자인을 고르면 섹션에 입히는 모양 - InviteBlocks.THEME_DECOS, '@webtoon' 같은 건 섹션 테마)
-const ALLOWED_LOOKS   = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', 'angel', 'hanji', 'ticket', 'olive', 'sea', 'wine', '@vintage', '@night', '@mist', '@webtoon'];
+const ALLOWED_LOOKS   = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', 'angel', 'hanji', 'ticket', 'olive', 'sea', 'wine', 'spring', 'winter', 'press', 'retro', 'picnic', '@vintage', '@night', '@mist', '@webtoon'];
 const ALLOWED_HERO    = ['video', 'photo', 'text'];
 const ALLOWED_FRAMES  = ['none', 'rounded', 'circle', 'pill', 'arch'];
 const ALLOWED_FONTS   = ['', 'pretendard', 'noto-serif-kr', 'gowun-batang', 'nanum-myeongjo', 'gothic-a1', 'song-myung',
@@ -218,4 +218,10 @@ usort($presets, fn($a, $b) => [$isWx($a), $a['no'], $a['id']] <=> [$isWx($b), $b
 foreach ($presets as $i => &$pp) $pp['no'] = $i + 1;
 unset($pp);
 
-echo json_encode(['ok' => true, 'presets' => $presets, 'skipped' => $skipped], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+// 관리자 → 추천 디자인에서 끈 디자인: 목록엔 그대로 두고 "off": true (이미 그 디자인으로 만든 청첩장이 색·꾸밈을 계속 쓰게) - 고르는 화면에서만 빠짐
+require_once __DIR__ . '/featured_presets.php';
+$off = preset_off_get();
+foreach ($presets as &$pp) if (in_array($pp['id'], $off, true)) $pp['off'] = true;
+unset($pp);
+
+echo json_encode(['ok' => true, 'presets' => $presets, 'off' => $off, 'skipped' => $skipped], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

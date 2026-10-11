@@ -1,0 +1,85 @@
+{
+  "id": "p-press",
+  "no": 30,
+  "group": "layout",
+  "label": "웨딩 신문",
+  "desc": "두 사람의 결혼 소식을 신문 1면처럼 알리는 청첩장",
+  "tags": [
+    "신문",
+    "에디토리얼",
+    "유니크"
+  ],
+  "palette": {
+    "bg": "#F4F1EA",
+    "ink": "#1A1A1A",
+    "accent": "#A3262A",
+    "line": "#CFC8BA",
+    "muted": "#6E6A62",
+    "radius": "0px"
+  },
+  "font": "noto-serif-kr",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "press-front",
+  "sideBg": "#E4DFD3",
+  "shadow": true,
+  "ambient": "none",
+  "sectionLook": "press",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "fade"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "theme",
+      "showCounter": true,
+      "counterStyle": "theme"
+    },
+    "gallery": {
+      "layoutType": "wide",
+      "images": 8
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
+    },
+    "greeting": {
+      "text": "[알림] 오랜 연애 끝에\n두 사람이 결혼을 발표했습니다.\n이 특별한 소식의 현장에\n여러분을 초대합니다."
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "THE WEDDING TIMES",
+    "font": "playfair",
+    "bg": "#F4F1EA",
+    "color": "#1A1A1A",
+    "fontSize": 30,
+    "duration": 2.2
+  },
+  "stickerThemes": [
+    "classic",
+    "party"
+  ],
+  "notes": "꾸밈 press(먹선 · 굵은 줄 달력 · 큰 D-day) + 첫 화면 press-front(제호 · 큰 제목 · 기사)"
+}

@@ -1,0 +1,86 @@
+{
+  "id": "p-winter",
+  "no": 29,
+  "group": "mood",
+  "label": "겨울 눈",
+  "desc": "소복이 눈 내리는 조용한 겨울. 은빛 블루의 차분한 웨딩",
+  "tags": [
+    "겨울",
+    "눈",
+    "차분한"
+  ],
+  "palette": {
+    "bg": "#F3F5F8",
+    "ink": "#26303C",
+    "accent": "#5B7896",
+    "line": "#D3DCE6",
+    "muted": "#7D8898",
+    "radius": "16px"
+  },
+  "font": "noto-serif-kr",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "winter-snow",
+  "sideBg": "#E1E6EE",
+  "shadow": true,
+  "ambient": "snow",
+  "ambientOpacity": 50,
+  "sectionLook": "winter",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "fade"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "theme",
+      "showCounter": true,
+      "counterStyle": "theme"
+    },
+    "gallery": {
+      "layoutType": "grid",
+      "images": 9
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
+    },
+    "greeting": {
+      "text": "하얀 눈이 내리는 날,\n두 사람이 서로의 온기가 되려 합니다.\n추운 겨울 귀한 걸음 하시어\n따뜻한 축복을 더해 주세요."
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "Winter Wedding",
+    "font": "cormorant",
+    "bg": "#26303C",
+    "color": "#F3F5F8",
+    "fontSize": 38,
+    "duration": 2.2
+  },
+  "stickerThemes": [
+    "season",
+    "classic"
+  ],
+  "notes": "꾸밈 winter(흰 종이 카드 · 고리 예식일 · 서리빛 달력 판) + 첫 화면 winter-snow + 눈 효과"
+}

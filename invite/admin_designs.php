@@ -9,6 +9,8 @@
  *  디자인 샘플: 디자인마다 [에디터로 꾸미기] → 실제 에디터(?sample=아이디)에서 사진·글·스티커·글자 위치까지 꾸며 저장하면
  *              고객이 그 디자인을 고를 때 꾸민 모습 그대로 시작한다. [원래대로]로 지울 수 있다. (sample_api.php)
  *              [+ 새 디자인 만들기] → 바탕 디자인을 골라 새 디자인을 하나 더 만든다 (한 번 저장해야 고객에게 보임)
+ *  디자인 켜고 끄기: 카드마다 [고객에게 보이기] 스위치 → 바로 저장 (featured_presets.php preset_off_* → uploads/site/preset_off.json)
+ *              끈 디자인은 고객 화면(디자인 고르기 · 섹션 스킨 · 모양 고르기)에서 빠지고 추천에서도 빠짐. 이미 그 디자인으로 만든 청첩장은 그대로
  *  부관리자: "사업자·사이트 정보 수정" 권한(site_settings)이 있어야 저장할 수 있다 (없으면 보기 전용)
  */
 declare(strict_types=1);
@@ -20,6 +22,14 @@ require_once __DIR__ . '/paper_settings.php'; // 종이 질감 그림 (올리기
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify($_POST['csrf_token'] ?? null);
     header('Content-Type: application/json; charset=utf-8');
+    if (($_POST['act'] ?? '') === 'off') { // 디자인 켜고 끄기 (바로 저장)
+        $off = json_decode((string) ($_POST['off'] ?? ''), true);
+        if (!is_array($off)) { echo json_encode(['ok' => false, 'error' => '저장할 내용이 올바르지 않아요.'], JSON_UNESCAPED_UNICODE); exit; }
+        try { $off = preset_off_save($off); $feat = array_values(array_filter(featured_presets_get(), fn($id) => !in_array($id, $off, true))); if ($feat !== featured_presets_get()) featured_presets_save($feat); }
+        catch (Throwable $e) { echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit; }
+        echo json_encode(['ok' => true, 'off' => $off, 'ids' => featured_presets_get()], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     $ids = json_decode((string) ($_POST['ids'] ?? ''), true);
     if (!is_array($ids)) { echo json_encode(['ok' => false, 'error' => '저장할 내용이 올바르지 않아요.'], JSON_UNESCAPED_UNICODE); exit; }
     try { $saved = featured_presets_save($ids); }
@@ -99,6 +109,16 @@ body { background: var(--ui-page, #F6F4F1); }
 .fd-ppc .acts { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 12px 12px; margin-top: auto; }
 .fd-ppc .acts label, .fd-ppc .acts button { height: 30px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: #4A453F; cursor: pointer; display: inline-flex; align-items: center; }
 .fd-ppc .acts label { background: #2B2320; border-color: #2B2320; color: #fff; } .fd-ppc .acts button { color: #B24A4A; }
+.fd-p.off .top { opacity: .45; }
+.fd-p .vis { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #4A453F; cursor: pointer; user-select: none; }
+.fd-p .vis input { position: absolute; opacity: 0; pointer-events: none; }
+.fd-p .vis i { width: 34px; height: 20px; border-radius: 99px; background: #D9D3CA; position: relative; transition: background .15s; flex: none; }
+.fd-p .vis i::after { content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: transform .15s; }
+.fd-p .vis input:checked + i { background: var(--ui-point, #B8935A); }
+.fd-p .vis input:checked + i::after { transform: translateX(14px); }
+.fd-p .vis input:focus-visible + i { outline: 2px solid #2B2320; outline-offset: 2px; }
+.fd-p .tag.off { background: #EFECE7; color: #6F6A63; }
+.fd-off-n { font-size: 12.5px; color: #8A847B; margin: -4px 0 12px; }
 .fd-pp-n { font-size: 12.5px; color: #8A847B; margin: 12px 0 0; line-height: 1.7; }
 </style>
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
@@ -109,7 +129,7 @@ body { background: var(--ui-page, #F6F4F1); }
         <h2 class="page-title">디자인 샘플 · 추천 디자인</h2>
         <p class="fd-intro">
             <b>에디터로 꾸미기</b>를 누르면 실제 에디터가 열려요. 사진·글·스티커·글자 위치까지 꾸며서 <b>샘플 저장</b>하면, 고객이 그 디자인을 고를 때 꾸민 모습 그대로 시작해요.<br>
-            카드 윗부분을 누르면 <b>추천 디자인</b>에 넣고 빼요. 추천은 새 청첩장 화면에 크게 보이고, 나머지는 “다른 디자인 더 보기”에 들어가요 (3~4개 추천, 최대 <?= FEATURED_MAX ?>개).
+            카드 윗부분을 누르면 <b>추천 디자인</b>에 넣고 빼요. 카드 아래 <b>고객에게 보이기</b> 스위치를 끄면 고객의 디자인 고르기 화면에서 그 디자인이 빠져요 (바로 저장 · 이미 그 디자인으로 만든 청첩장은 그대로). 추천은 새 청첩장 화면에 크게 보이고, 나머지는 “다른 디자인 더 보기”에 들어가요 (3~4개 추천, 최대 <?= FEATURED_MAX ?>개).
         </p>
         <div class="fd-card">
             <div class="fd-h"><b>추천 디자인 · 고객에게 보이는 순서</b><small id="fdCount"></small></div>
@@ -123,6 +143,7 @@ body { background: var(--ui-page, #F6F4F1); }
                 <label>한 줄 설명<input id="fdDesc" maxlength="60" placeholder="예: 연둣빛 정원에 꽃잎이 흩날리는"></label>
                 <button type="submit">만들고 꾸미기</button>
             </form>
+            <p class="fd-off-n" id="fdOffN"></p>
             <div class="fd-grid" id="fdGrid"><p style="color:#A29C94;font-size:13px">불러오는 중…</p></div>
         </div>
         <div class="fd-card">
@@ -154,6 +175,7 @@ function drawPapers() {
     box.querySelectorAll('[data-ppx]').forEach(b => b.addEventListener('click', () => { if (!confirm('기본 무늬로 되돌릴까요?')) return; send(b.dataset.ppx, null).then(() => toast('기본 무늬로 되돌렸어요')).catch(e => toast(e.message)); }));
 }
 const DEFAULT = <?= json_encode(FEATURED_DEFAULT) ?>, MAX = <?= (int) FEATURED_MAX ?>;
+let OFF = <?= json_encode(preset_off_get()) ?>;
 let sel = <?= json_encode($cur) ?>, saved = JSON.stringify(sel), presets = [], samples = {};
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -180,19 +202,34 @@ function draw() {
         <span class="ord"><button type="button" data-mv="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''} aria-label="앞으로">←</button><button type="button" data-mv="${i}" data-d="1" ${i === sel.length - 1 ? 'disabled' : ''} aria-label="뒤로">→</button><button type="button" data-rm="${esc(id)}" aria-label="빼기">✕</button></span></div>`; }).join('')
         : '<p class="empty">고른 디자인이 없어요 → 고객 화면에 모든 디자인이 한꺼번에 보여요.</p>';
     $('fdCount').textContent = `${sel.length} / ${MAX}개`;
-    $('fdGrid').innerHTML = designs().map(p => { const i = sel.indexOf(p.id), pl = p.palette || {}, sm = samples[p.id];
-        const tag = p.__custom ? (sm && sm.saved ? `<span class="tag">새 디자인</span>` : `<span class="tag draft">아직 저장 전</span>`) : (sm && sm.saved ? `<span class="tag">꾸민 샘플 · ${esc(sm.updated)}</span>` : '');
-        return `<div class="fd-p ${i >= 0 ? 'on' : ''}" data-id="${esc(p.id)}">
+    const offN = designs().filter(p => OFF.includes(p.id)).length;
+    $('fdOffN').textContent = offN ? `고객에게 안 보이는 디자인 ${offN}개 · 보이는 디자인 ${designs().length - offN}개` : `모든 디자인 ${designs().length}개가 고객에게 보여요`;
+    $('fdGrid').innerHTML = designs().map(p => { const i = sel.indexOf(p.id), pl = p.palette || {}, sm = samples[p.id], off = OFF.includes(p.id);
+        const tag = off ? `<span class="tag off">고객에게 안 보임</span>` : p.__custom ? (sm && sm.saved ? `<span class="tag">새 디자인</span>` : `<span class="tag draft">아직 저장 전</span>`) : (sm && sm.saved ? `<span class="tag">꾸민 샘플 · ${esc(sm.updated)}</span>` : '');
+        return `<div class="fd-p ${i >= 0 ? 'on' : ''}${off ? ' off' : ''}" data-id="${esc(p.id)}">
             <button type="button" class="top" data-fav="${esc(p.id)}" title="추천에 넣기/빼기"><span class="pv" style="background:${esc(pl.bg)};color:${esc(pl.ink)};font-family:${esc(pl.headFont || 'serif')}"><i style="background:linear-gradient(150deg, ${esc(pl.line)}, ${esc(pl.accent)})"></i><span>민준<span class="hrt" style="color:${esc(pl.accent)}">♥</span>서연</span></span>
             ${tag}<span class="ck">${i >= 0 ? i + 1 : '★'}</span>
             <span class="tx"><b>${p.no ? String(p.no).padStart(2, '0') + ' ' : ''}${esc(p.label)}</b><small>${esc(p.desc || '')}${p.__custom ? ` · 바탕: ${esc((presets.find(x => x.id === p.__base) || {}).label || p.__base)}` : ''}</small></span></button>
             <div class="acts"><a class="main" href="editor-prototype-v3-overlay.html?sample=${encodeURIComponent(p.id)}" target="_blank" rel="noopener">에디터로 꾸미기</a>
-            ${p.__custom ? `<button type="button" data-rename="${esc(p.id)}">이름</button><button type="button" class="del" data-reset="${esc(p.id)}">삭제</button>` : (sm && sm.saved ? `<button type="button" class="del" data-reset="${esc(p.id)}">원래대로</button>` : '')}</div></div>`; }).join('');
+            ${p.__custom ? `<button type="button" data-rename="${esc(p.id)}">이름</button><button type="button" class="del" data-reset="${esc(p.id)}">삭제</button>` : (sm && sm.saved ? `<button type="button" class="del" data-reset="${esc(p.id)}">원래대로</button>` : '')}
+            <label class="vis" title="끄면 고객의 디자인 고르기 화면에서 빠져요"><input type="checkbox" data-vis="${esc(p.id)}" ${off ? '' : 'checked'}><i></i>고객에게 보이기</label></div></div>`; }).join('');
+    $('fdGrid').querySelectorAll('[data-vis]').forEach(inp => inp.onchange = () => {
+        const id = inp.dataset.vis, next = inp.checked ? OFF.filter(x => x !== id) : OFF.concat(id);
+        if (!inp.checked && designs().every(p => p.id === id || next.includes(p.id))) { inp.checked = true; toast('디자인은 하나 이상 보여야 해요'); return; }
+        const fd = new FormData(); fd.append('csrf_token', CSRF); fd.append('act', 'off'); fd.append('off', JSON.stringify(next));
+        inp.disabled = true;
+        fetch('admin_designs.php', { method: 'POST', body: fd }).then(r => r.json()).then(d => {
+            if (!d.ok) throw new Error(d.error || '저장하지 못했어요');
+            OFF = d.off; const dirty = JSON.stringify(sel) !== saved; saved = JSON.stringify(d.ids); if (!dirty) sel = d.ids.slice(); else sel = sel.filter(x => !OFF.includes(x));
+            draw(); toast(inp.checked ? '고객에게 다시 보여요' : '고객 화면에서 뺐어요 (추천에서도 빠짐)');
+        }).catch(e => { toast(e.message); draw(); });
+    });
     $('fdSel').querySelectorAll('[data-mv]').forEach(b => b.onclick = () => { const i = +b.dataset.mv, j = i + +b.dataset.d; [sel[i], sel[j]] = [sel[j], sel[i]]; draw(); });
     $('fdSel').querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { sel = sel.filter(x => x !== b.dataset.rm); draw(); });
     $('fdGrid').querySelectorAll('[data-fav]').forEach(b => b.onclick = () => {
         const id = b.dataset.fav, p = byId(id);
         if (sel.includes(id)) sel = sel.filter(x => x !== id);
+        else if (OFF.includes(id)) { toast('고객에게 안 보이는 디자인은 추천에 넣을 수 없어요 - 먼저 [고객에게 보이기]를 켜 주세요'); return; }
         else if (!canFeature(p)) { toast('새 디자인은 에디터에서 한 번 저장해야 추천에 넣을 수 있어요'); return; }
         else if (sel.length >= MAX) { toast(`최대 ${MAX}개까지 고를 수 있어요`); return; }
         else sel.push(id);

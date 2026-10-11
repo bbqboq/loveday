@@ -1,0 +1,85 @@
+{
+  "id": "p-retro",
+  "no": 31,
+  "group": "mood",
+  "label": "레트로 70",
+  "desc": "머스터드 · 브라운 · 둥근 글씨. 70년대 감성의 유쾌한 웨딩",
+  "tags": [
+    "레트로",
+    "유쾌한",
+    "빈티지"
+  ],
+  "palette": {
+    "bg": "#F4EAD7",
+    "ink": "#4A3426",
+    "accent": "#C9902F",
+    "line": "#E2D3B5",
+    "muted": "#8E7A62",
+    "radius": "24px"
+  },
+  "font": "gothic-a1",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "retro-groovy",
+  "sideBg": "#E8DABF",
+  "shadow": true,
+  "ambient": "none",
+  "sectionLook": "retro",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "pop"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "theme",
+      "showCounter": true,
+      "counterStyle": "theme"
+    },
+    "gallery": {
+      "layoutType": "collage",
+      "images": 7
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
+    },
+    "greeting": {
+      "text": "우리, 결혼합니다!\n즐겁고 유쾌한 두 사람의 시작에\n함께 웃어 주실 여러분을\n초대합니다."
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "Groovy Love",
+    "font": "bagel-fat-one",
+    "bg": "#F4EAD7",
+    "color": "#C9902F",
+    "fontSize": 40,
+    "duration": 2.2
+  },
+  "stickerThemes": [
+    "party",
+    "season"
+  ],
+  "notes": "꾸밈 retro(머스터드 카드 · 알약 카운트) + 첫 화면 retro-groovy(배글 팻 원 제목)"
+}

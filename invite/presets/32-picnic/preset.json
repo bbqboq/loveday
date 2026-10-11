@@ -1,0 +1,87 @@
+{
+  "id": "p-picnic",
+  "no": 32,
+  "group": "mood",
+  "label": "피크닉",
+  "desc": "깅엄 체크와 들꽃. 가볍고 편안한 야외 피크닉 웨딩",
+  "tags": [
+    "야외",
+    "캐주얼",
+    "체크"
+  ],
+  "palette": {
+    "bg": "#FFFDF7",
+    "ink": "#2F3A30",
+    "accent": "#C65D4B",
+    "line": "#EAD9CF",
+    "muted": "#8A7F76",
+    "radius": "16px"
+  },
+  "font": "gothic-a1",
+  "hero": "photo",
+  "heroFrame": "none",
+  "heroLayout": "picnic-day",
+  "sideBg": "#F1EAE0",
+  "shadow": true,
+  "ambient": "daisy",
+  "ambientOpacity": 35,
+  "ambientScope": "hero",
+  "sectionLook": "picnic",
+  "sections": [
+    "hero",
+    "greeting",
+    "family",
+    "dday",
+    "gallery",
+    "location",
+    "transport",
+    "account",
+    "rsvp",
+    "guestbook"
+  ],
+  "fx": {
+    "default": "up"
+  },
+  "blockFields": {
+    "dday": {
+      "calendarStyle": "theme",
+      "showCounter": true,
+      "counterStyle": "theme"
+    },
+    "gallery": {
+      "layoutType": "slide",
+      "images": 10
+    },
+    "account": {
+      "accStyle": "theme",
+      "display": "cards",
+      "accCollapse": true
+    },
+    "guestbook": {
+      "style": "theme"
+    },
+    "rsvp": {
+      "btnStyle": "theme"
+    },
+    "transport": {
+      "style": "theme"
+    },
+    "greeting": {
+      "text": "햇살 좋은 날, 돗자리 하나 펴듯\n가벼운 마음으로 와 주세요.\n두 사람의 소풍 같은 시작을\n함께 축하해 주세요."
+    }
+  },
+  "intro": {
+    "enabled": true,
+    "text": "피크닉 가는 날",
+    "font": "nanum-pen",
+    "bg": "#FFFDF7",
+    "color": "#C65D4B",
+    "fontSize": 40,
+    "duration": 2.2
+  },
+  "stickerThemes": [
+    "garden",
+    "party"
+  ],
+  "notes": "꾸밈 picnic(흰 종이 카드 · 달력 위 깅엄 띠) + 첫 화면 picnic-day(손글씨 · 폴라로이드) + 데이지 효과"
+}
