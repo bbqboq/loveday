@@ -44,27 +44,19 @@
     },
     "gallery": {
       "layoutType": "tall",
-      "images": 6,
-      "skin": "mist"
+      "images": 6
     },
     "account": {
       "accStyle": "theme",
-      "skin": "mist",
       "display": "cards",
       "accCollapse": true
     },
     "guestbook": {
-      "style": "theme",
-      "skin": "mist"
+      "style": "theme"
     },
-    "greeting": {
-      "skin": "mist"
-    },
-    "location": {
-      "skin": "mist"
-    },
+    "greeting": {},
+    "location": {},
     "transport": {
-      "skin": "mist",
       "style": "theme"
     },
     "rsvp": {

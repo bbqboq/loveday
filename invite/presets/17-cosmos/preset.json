@@ -46,34 +46,23 @@
     },
     "gallery": {
       "layoutType": "circle",
-      "images": 6,
-      "skin": "night"
+      "images": 6
     },
     "account": {
       "accStyle": "theme",
-      "skin": "night",
       "display": "cards",
       "accCollapse": true
     },
-    "greeting": {
-      "skin": "night"
-    },
-    "family": {
-      "skin": "night"
-    },
-    "location": {
-      "skin": "night"
-    },
+    "greeting": {},
+    "family": {},
+    "location": {},
     "transport": {
-      "skin": "night",
       "style": "theme"
     },
     "rsvp": {
-      "skin": "night",
       "btnStyle": "theme"
     },
     "guestbook": {
-      "skin": "night",
       "style": "theme"
     }
   },

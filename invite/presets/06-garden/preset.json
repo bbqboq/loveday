@@ -35,7 +35,6 @@
     "default": "up"
   },
   "heroLayout": "happily-ever-after",
-  "paper": "linen",
   "blockFields": {
     "dday": {
       "calendarStyle": "theme",

@@ -32,7 +32,6 @@
     "default": "up"
   },
   "heroLayout": "split-top",
-  "paper": "kraft",
   "blockFields": {
     "dday": {
       "calendarStyle": "theme",
@@ -41,22 +40,16 @@
     },
     "gallery": {
       "layoutType": "tall",
-      "images": 6,
-      "skin": "vintage"
+      "images": 6
     },
     "account": {
       "accStyle": "theme",
       "display": "cards",
       "accCollapse": true
     },
-    "greeting": {
-      "skin": "vintage"
-    },
-    "location": {
-      "skin": "vintage"
-    },
+    "greeting": {},
+    "location": {},
     "guestbook": {
-      "skin": "vintage",
       "style": "theme"
     },
     "rsvp": {

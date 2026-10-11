@@ -70,5 +70,6 @@
     "transport": {
       "style": "theme"
     }
-  }
+  },
+  "backdrop": "soft"
 }
