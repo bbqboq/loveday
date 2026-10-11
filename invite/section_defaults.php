@@ -32,6 +32,7 @@
  *  세션을 열지 않으려고 config.php를 부르지 않는다.
  */
 declare(strict_types=1);
+require_once __DIR__ . '/device_scope.php'; // 기기별 켜고 끄기 (에디터에 'scope'로 같이 내려줌)
 
 const SECTION_ID_RE = '/^[A-Za-z0-9_-]{1,40}$/';
 const SECTION_FILE_MAX = 65536; // 저장 파일 최대 크기 (섹션 묶음까지 넣어도 넉넉하게)
@@ -496,5 +497,5 @@ if (realpath((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
     header('Cache-Control: no-store');
     header('X-Content-Type-Options: nosniff');
     $grp = section_defaults_groups();
-    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos(), 'mobileView' => section_defaults_easy_mview(), 'videoSample' => section_defaults_easy_video()]], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'scope' => device_scope_get() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos(), 'mobileView' => section_defaults_easy_mview(), 'videoSample' => section_defaults_easy_video()]], JSON_UNESCAPED_UNICODE);
 }

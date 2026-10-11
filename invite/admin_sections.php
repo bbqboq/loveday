@@ -107,6 +107,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($act === 'easy_hero_pos') {
         // 메인 사진 예시에서 보일 부분·확대 (끌거나 확대하면 바로 저장)
         $ok = section_defaults_easy_hero() !== '' && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['heroPos' => ['focus' => (string) ($_POST['focus'] ?? ''), 'zoom' => (float) ($_POST['zoom'] ?? 1)]]);
+    } elseif ($act === 'scope') {
+        // 기기별 켜고 끄기 (간편·전문가 × 휴대폰·PC) - JSON {ctx:{sec:[], opt:{id:[]}}}
+        $sj = json_decode((string) ($_POST['scope'] ?? ''), true);
+        $ok = is_array($sj) && device_scope_save($sj);
     } elseif ($act === 'groups_reset') {
         $ok = section_defaults_save(section_defaults_get(), null, null, null, []);
     } elseif ($act === 'save') {
@@ -574,6 +578,27 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-fold-btn.open { border-color: #2B2B2B; color: #2B2B2B; }
 .ez-fold { flex-basis: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px; margin: 8px 0 2px 58px; padding: 10px; border-radius: 12px; background: var(--ui-soft, #F8F5F0); border: 1px solid var(--ui-line, #EEE8DF); animation: ezFold .22s ease; }
 .ez-fold[hidden] { display: none; }
+/* 기기별 설정 탭 */
+.dv-ctx { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0 0 12px; }
+@media (max-width: 760px) { .dv-ctx { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dv-ctx button { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 11px 12px; border-radius: 14px; border: 1.5px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.dv-ctx button b { font-size: 13.5px; display: flex; align-items: center; gap: 6px; } .dv-ctx button small { font-size: 11.5px; color: #8A8278; }
+.dv-ctx button.on { border-color: var(--ui-point, #B8925A); background: var(--ui-tint, #FBF8F3); box-shadow: 0 0 0 1px var(--ui-point, #B8925A) inset; }
+.dv-ctx button em { font-style: normal; font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 99px; background: var(--ui-soft, #F3EFE8); color: #B5713A; }
+.dv-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
+.dv-tools span { flex: 1; min-width: 180px; font-size: 12px; color: #8A8278; }
+.dv-tools button { height: 32px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--ui-line, #E3DED7); background: #fff; font: inherit; font-size: 12px; font-weight: 700; color: #4A4540; cursor: pointer; }
+.dv-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.dv-list .ez-row .ez-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .dv-list .ez-t b { font-size: 13.5px; } .dv-list .ez-t small { font-size: 11.5px; color: #8A8278; }
+.dv-list .ez-row.dv-gone .ez-t b { text-decoration: line-through; color: #A29C94; }
+.dv-sw { flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: #6F6A63; cursor: pointer; }
+.dv-sw input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.dv-sw i { position: relative; width: 34px; height: 20px; border-radius: 99px; background: #34A060; transition: background .15s; }
+.dv-sw i::after { content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transform: translateX(14px); transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.dv-sw.off i { background: var(--ui-line, #D5CFC6); } .dv-sw.off i::after { transform: none; }
+.dv-list .ez-fold { margin-left: 0; animation: none; } /* (누를 때마다 목록을 다시 그려서 펼친 칸이 깜빡이지 않게) */
+.dv-hd { list-style: none; margin: 14px 2px 2px; font-size: 12px; font-weight: 700; color: #8A8278; }
+
 @keyframes ezFold { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 .ez-opt { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: #fff; border: 1px solid var(--ui-line, #ECE6DD); cursor: pointer; font-size: 12.5px; font-weight: 600; }
 .ez-opt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
@@ -723,7 +748,16 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             <a href="#panel" data-so-tab="panel" role="tab">편집창·메뉴 모양</a>
             <a href="#groups" data-so-tab="groups" role="tab">섹션 묶음</a>
             <a href="#easy" data-so-tab="easy" role="tab">손쉬운 제작</a>
+            <a href="#device" data-so-tab="device" role="tab">기기별 설정</a>
         </nav>
+
+        <div class="so-tab" data-so-pane="device" hidden>
+            <p class="gp-intro"><b>간편 만들기 · 전문가 모드</b>를 <b>휴대폰</b>과 <b>PC</b>에서 따로 정해요. 여기서 끈 칸·옵션은 <b>그 화면에서만</b> 안 보여요. 손쉬운 제작 탭이나 섹션 순서 탭(비노출)에서 끈 것은 모든 화면에서 안 보이니, 여기서 켜도 다시 나오지 않아요. 고객이 이미 넣은 섹션은 청첩장에 그대로 나오고, 그 화면에서 고치는 칸만 숨어요. 휴대폰 = 화면 폭 860px 이하이거나 손가락으로 쓰는 기기(태블릿 포함)예요.</p>
+            <div class="dv-ctx" id="dvCtx" role="tablist"></div>
+            <div class="dv-tools"><span id="dvNote"></span><button type="button" id="dvCopy"></button><button type="button" id="dvAllOn">이 화면 모두 켜기</button></div>
+            <ul class="dv-list" id="dvList"><li class="so-load">불러오는 중…</li></ul>
+            <div class="gp-foot"><span id="dvState">바꾼 것이 없어요</span><button type="button" class="gp-undo" id="dvUndo" disabled>되돌리기</button><button type="button" class="gp-save" id="dvSave" disabled>저장</button></div>
+        </div>
 
         <div class="so-tab" data-so-pane="easy" hidden>
             <p class="gp-intro">왕초보 고객이 쓰는 <b>간편 만들기</b>는 두 화면으로 되어 있어요. <b>① 처음 만들 때</b> 질문에 하나씩 답하고, 다 하면 <b>② 목록 화면</b> 한 장에서 나머지를 고쳐요 (위쪽 <b>정보</b> 버튼도 ② 목록 화면). 아래에서 질문 순서·켜기와 목록에 보일 메뉴·묶음을 정하고 저장하세요. 오른쪽 미리보기가 고객 화면과 같은 순서로 바뀌어요.</p>
@@ -919,7 +953,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
         document.body.dataset.soTab = t; // 섹션 순서 저장 막대는 섹션 순서 탭에서만
     }
     document.querySelectorAll('[data-so-tab]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); history.replaceState(null, '', '#' + a.dataset.soTab); showTab(a.dataset.soTab); }));
-    showTab(['#panel', '#groups', '#easy'].includes(location.hash) ? location.hash.slice(1) : 'order');
+    showTab(['#panel', '#groups', '#easy', '#device'].includes(location.hash) ? location.hash.slice(1) : 'order');
     // 편집창 모양: 고르면 바로 저장
     const pzCards = document.getElementById('pzCards');
     let pzNow = (pzCards.querySelector('input:checked') || {}).value || 'C';
@@ -1697,6 +1731,105 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
     document.getElementById('soS10Fix')?.addEventListener('click', () => { order = s10Sort(order); build(); }); // 묶음 순서대로 정리 (저장 버튼을 눌러야 저장)
     build();
     gpRender();
+})();
+</script>
+
+<script>
+// ===== 기기별 설정 탭: 간편·전문가 × 휴대폰·PC 마다 칸·옵션 켜고 끄기 (device_scope.php) =====
+//  간편 = 손쉬운 제작 단계(SECTION_EASY_STEPS)와 그 옵션(SECTION_EASY_OPTS) · 전문가 = 섹션과 편집창 칸 이름
+//  전문가 칸 이름은 에디터를 화면 밖에서 몰래 열어(?opts=harvest) 섹션마다 편집창을 그려서 모음 (에디터 harvestOpts · devKeyOf)
+(function () {
+    const CSRF = <?= json_encode($csrf) ?>;
+    const CTX = <?= json_encode(DEVICE_SCOPES, JSON_UNESCAPED_UNICODE) ?>;
+    const STEPS = <?= json_encode(SECTION_EASY_STEPS, JSON_UNESCAPED_UNICODE) ?>;
+    const STEP_ORDER = <?= json_encode(array_map(fn($x) => [$x['id'], !empty($x['on'])], section_defaults_easy()), JSON_UNESCAPED_UNICODE) ?>;
+    const EOPTS = <?= json_encode(SECTION_EASY_OPTS, JSON_UNESCAPED_UNICODE) ?>;
+    const HIDDEN = <?= json_encode(section_defaults_hidden(), JSON_UNESCAPED_UNICODE) ?>;
+    const EXP_FLOW = ['help', 'helpIntro', 'precheck', 'sskin', 'stkset']; // 전문가 모드에도 있는 '전체 기능'
+    const readonly = !!document.getElementById('admRo');
+    const toast = m => window.LD ? LD.toast(m) : null, say = m => window.LD ? LD.alert(m) : alert(m);
+    const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const box = document.getElementById('dvList'); if (!box) return;
+    let saved = <?= json_encode(device_scope_get() ?: new stdClass(), JSON_UNESCAPED_UNICODE) ?>;
+    let dv = JSON.parse(JSON.stringify(saved)), ctx = 'easy-m';
+    const open = new Set();
+    let EXP = null; // {order, labels, opts} - 에디터에서 모은 전문가 섹션·칸
+    const C = c => dv[c] || (dv[c] = { sec: [], opt: {} });
+    const norm = o => { const out = {}; Object.keys(CTX).forEach(c => { const x = o[c]; if (!x) return; const sec = (x.sec || []).slice().sort(), opt = {}; Object.keys(x.opt || {}).sort().forEach(k => { if ((x.opt[k] || []).length) opt[k] = x.opt[k].slice().sort(); }); if (sec.length || Object.keys(opt).length) out[c] = { sec, opt }; }); return JSON.stringify(out); };
+    const dirty = () => norm(dv) !== norm(saved);
+    const count = c => { const x = dv[c]; if (!x) return 0; return (x.sec || []).length + Object.values(x.opt || {}).reduce((n, l) => n + (l || []).length, 0); };
+    function rows() { // [{id, name, sub, opts:{key:label}, gone}]
+        if (ctx.startsWith('easy')) {
+            const out = [{ id: 'flow', name: '간편 만들기 전체 기능', sub: '질문 · 도움말 · 발행 전 점검 같은 화면 전체 기능', opts: EOPTS.flow, fixed: true }];
+            const seen = new Set();
+            STEP_ORDER.concat(Object.keys(STEPS).map(id => [id, true])).forEach(([id, on]) => { if (seen.has(id) || !STEPS[id]) return; seen.add(id);
+                out.push({ id, name: STEPS[id], sub: on ? '' : '손쉬운 제작 탭에서 꺼져 있어요 (모든 화면에서 안 보임)', opts: EOPTS[id] || null, gone: !on, fixed: id === 'names' }); });
+            return out;
+        }
+        const fl = {}; EXP_FLOW.forEach(k => { if (EOPTS.flow[k]) fl[k] = EOPTS.flow[k]; });
+        const out = [{ id: 'flow', name: '전문가 모드 전체 기능', sub: '도움말 · 발행 전 점검 · 섹션 스킨 · 스티커 세트', opts: fl, fixed: true }];
+        if (!EXP) { out.push({ id: '', name: '섹션과 편집 칸 목록을 모으는 중…', sub: '에디터를 화면 밖에서 열어 섹션마다 편집창 칸 이름을 모아요 (몇 초)', loading: true }); return out; }
+        EXP.order.forEach(id => { const l = EXP.opts[id] || []; const o = {}; l.forEach(k => { o[k] = k; });
+            out.push({ id, name: EXP.labels[id] || id, sub: HIDDEN.includes(id) ? '섹션 순서 탭에서 비노출 (모든 화면에서 안 보임)' : '', opts: l.length ? o : null, gone: HIDDEN.includes(id) }); });
+        return out;
+    }
+    function render() {
+        document.getElementById('dvCtx').innerHTML = Object.entries(CTX).map(([c, l]) => { const n = count(c); const [a, b] = l.split(' · ');
+            return `<button type="button" role="tab" data-dv-ctx="${c}" class="${c === ctx ? 'on' : ''}" aria-selected="${c === ctx}"><b>${b === '휴대폰' ? '📱' : '🖥'} ${esc(b)}${n ? `<em>${n}개 끔</em>` : ''}</b><small>${esc(a)}</small></button>`; }).join('');
+        const sib = ctx.endsWith('-m') ? ctx.replace('-m', '-pc') : ctx.replace('-pc', '-m');
+        document.getElementById('dvCopy').textContent = `이 설정을 ${CTX[sib].split(' · ')[1]}에도 똑같이`;
+        document.getElementById('dvNote').textContent = `${CTX[ctx]} 화면에서 안 보일 칸·옵션을 꺼요.`;
+        const x = C(ctx);
+        box.innerHTML = rows().map(r => {
+            if (r.loading) return `<li class="ez-row"><span class="ez-t"><b>${esc(r.name)}</b><small>${esc(r.sub)}</small></span></li>`;
+            const secOff = x.sec.includes(r.id), keys = r.opts ? Object.keys(r.opts) : [], off = x.opt[r.id] || [], onN = keys.filter(k => !off.includes(k)).length, op = open.has(ctx + '|' + r.id);
+            return `<li class="ez-row${secOff ? ' off' : ''}${r.gone ? ' dv-gone' : ''}" data-dv-row="${esc(r.id)}"><span class="ez-t"><b>${esc(r.name)}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span>
+                ${keys.length ? `<button type="button" class="ez-fold-btn${op ? ' open' : ''}${onN < keys.length ? ' part' : ''}" data-dv-fold="${esc(r.id)}">옵션 <b>${onN}/${keys.length}</b><i>▾</i></button>` : ''}
+                ${r.fixed ? '' : `<label class="dv-sw${secOff ? ' off' : ''}"><input type="checkbox" data-dv-sec="${esc(r.id)}"${secOff ? '' : ' checked'}${readonly ? ' disabled' : ''}><i></i>${secOff ? '숨김' : '보임'}</label>`}
+                ${keys.length ? `<div class="ez-fold"${op ? '' : ' hidden'}>${keys.map(k => `<label class="ez-opt${off.includes(k) ? ' off' : ''}"><input type="checkbox" data-dv-opt="${esc(r.id)}" data-k="${esc(k)}"${off.includes(k) ? '' : ' checked'}${readonly ? ' disabled' : ''}><i></i><span>${esc(r.opts[k])}</span></label>`).join('')}<span class="ez-fold-act"><button type="button" data-dv-all="${esc(r.id)}:1">모두 켜기</button><button type="button" data-dv-all="${esc(r.id)}:0">모두 끄기</button></span></div>` : ''}</li>`;
+        }).join('');
+        const d = dirty();
+        document.getElementById('dvSave').disabled = !d || readonly; document.getElementById('dvUndo').disabled = !d;
+        document.getElementById('dvState').textContent = d ? '저장하지 않은 바뀐 것이 있어요' : (Object.keys(CTX).some(count) ? '저장한 설정을 쓰는 중이에요' : '바꾼 것이 없어요 (모든 화면 같게)');
+    }
+    const optsOf = id => { const r = rows().find(x => x.id === id); return r && r.opts ? Object.keys(r.opts) : []; };
+    document.getElementById('dvCtx').addEventListener('click', e => { const b = e.target.closest('[data-dv-ctx]'); if (!b) return; ctx = b.dataset.dvCtx; render(); if (ctx.startsWith('exp')) harvest(); });
+    box.addEventListener('click', e => {
+        const f = e.target.closest('[data-dv-fold]'); if (f) { const k = ctx + '|' + f.dataset.dvFold; open.has(k) ? open.delete(k) : open.add(k); render(); return; }
+        const a = e.target.closest('[data-dv-all]'); if (a && !readonly) { const [id, v] = a.dataset.dvAll.split(':'), x = C(ctx); if (v === '1') delete x.opt[id]; else x.opt[id] = optsOf(id); render(); }
+    });
+    box.addEventListener('change', e => {
+        const x = C(ctx), t = e.target;
+        if (t.dataset.dvSec) { const id = t.dataset.dvSec; x.sec = t.checked ? x.sec.filter(v => v !== id) : x.sec.concat([id]); }
+        else if (t.dataset.dvOpt) { const id = t.dataset.dvOpt, k = t.dataset.k, l = x.opt[id] || []; x.opt[id] = t.checked ? l.filter(v => v !== k) : l.concat([k]); if (!x.opt[id].length) delete x.opt[id]; }
+        render();
+    });
+    document.getElementById('dvCopy').addEventListener('click', () => { const sib = ctx.endsWith('-m') ? ctx.replace('-m', '-pc') : ctx.replace('-pc', '-m'); dv[sib] = JSON.parse(JSON.stringify(C(ctx))); render(); toast(`${CTX[sib]}에도 똑같이 했어요. [저장]을 눌러야 적용돼요`); });
+    document.getElementById('dvAllOn').addEventListener('click', () => { delete dv[ctx]; render(); });
+    document.getElementById('dvUndo').addEventListener('click', () => { dv = JSON.parse(JSON.stringify(saved)); render(); });
+    document.getElementById('dvSave').addEventListener('click', () => {
+        const fd = new FormData(); fd.set('csrf_token', CSRF); fd.set('ajax', '1'); fd.set('act', 'scope'); fd.set('scope', norm(dv));
+        fetch('admin_sections.php', { method: 'POST', body: fd, credentials: 'same-origin' }).then(r => r.json()).then(j => { if (!j.ok) throw new Error(j.error || '저장하지 못했어요.'); saved = JSON.parse(norm(dv)); dv = JSON.parse(JSON.stringify(saved)); render(); toast('저장했어요. 고객 에디터를 새로 열면 적용돼요'); }).catch(err => say(err.message));
+    });
+    window.addEventListener('beforeunload', e => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
+    // 전문가 섹션·편집 칸 모으기 (처음 전문가 화면을 열 때 한 번)
+    let hv = null;
+    function harvest() {
+        if (EXP || hv) return;
+        const fr = document.createElement('iframe'); hv = fr;
+        fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+        fr.style.cssText = 'position:fixed;left:-3000px;top:0;width:1200px;height:900px;border:0;visibility:hidden';
+        const done = j => { if (EXP) return; EXP = j; fr.remove(); render(); };
+        const onMsg = e => { if (e.origin !== location.origin || e.source !== fr.contentWindow || !e.data || e.data.type !== 'ld-opts') return; window.removeEventListener('message', onMsg); done({ order: e.data.order || [], labels: e.data.labels || {}, opts: e.data.opts || {} }); };
+        window.addEventListener('message', onMsg);
+        setTimeout(() => { if (EXP) return; window.removeEventListener('message', onMsg); // (못 모으면 섹션만 - 편집 칸 옵션 없이)
+            const cat = window.InviteBlocks && InviteBlocks.sectionCatalog ? InviteBlocks.sectionCatalog() : []; const labels = {}; cat.forEach(s => { labels[s.id] = s.label; });
+            done({ order: cat.map(s => s.id), labels, opts: {} }); toast('편집 칸 목록을 모으지 못해서 섹션만 보여요. 새로고침해 보세요'); }, 20000);
+        fr.src = 'editor-prototype-v3-overlay.html?opts=harvest&_=' + Date.now();
+        document.body.appendChild(fr);
+    }
+    render();
+    if (location.hash === '#device') { /* (전문가 화면을 누를 때 모음) */ }
 })();
 </script>
 </body>
