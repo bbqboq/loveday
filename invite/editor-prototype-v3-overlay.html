@@ -1096,7 +1096,7 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
 @keyframes sskLd { to { background-position: -200% 0; } }
 .ssk-th > .ssk-iv { display: block; position: absolute; left: 0; top: 0; width: 390px; min-height: 0 !important; border-radius: 0 !important; transform: scale(.2359); transform-origin: 0 0; pointer-events: none; padding-top: 4px; overflow: hidden; }
 .ssk-iv .col { padding-top: 18px; padding-bottom: 18px; }
-.ssk-iv * { animation-play-state: paused !important; }
+.ssk-iv *, .ssk-iv *::before, .ssk-iv *::after { animation: none !important; transition: none !important; } /* 썸네일은 다 나타난 모습 그대로 (멈춘 첫 장면은 투명해서 날짜 칸이 비어 보였음) */
 .ssk-iv .reveal-up, .ssk-iv [class*="reveal-"] { opacity: 1 !important; transform: none !important; }
 @media (prefers-reduced-motion: reduce) { .ssk-ld { animation: none; } }
 .skp-row { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -4676,14 +4676,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z3">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018z3">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z4">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018z4">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018z3"></script>
-<script src="assets/tip-demos.js?v=1018z3"></script>
-<script src="assets/ld-dialog.js?v=1018z3"></script>
+<script src="assets/invite-blocks.js?v=1018z4"></script>
+<script src="assets/tip-demos.js?v=1018z4"></script>
+<script src="assets/ld-dialog.js?v=1018z4"></script>
 </head>
 <body>
 
@@ -16463,9 +16463,34 @@ const SSK_FOCUS = { counterStyle: '.dday-countdown', calendarStyle: '.dday-cal, 
 const SSK_PART = { greeting: '.free-canvas', family: '.ib-title-canvas', dday: '.dday-cal, .dday-calendar, .dday-countdown', gallery: '.blk-gallery > *', location: '.free-canvas',
     transport: '.ib-transport-item', account: '.ib-acc-side', rsvp: '.ib-rsvp-btn', guestbook: '.ib-gb-item, .ib-gb-row', timeline: '.tl-item', interview: '.iv-qa', profile: '.ib-profile-card',
     contact: '.ib-contact-side, .ib-contact-row, .ib-empty', letter: '.ib-letter-text', video: '.ib-video', notice: '.ib-notice-item, .ib-nt-card, .ib-nt-slide, .ib-nt-tab', together: '.ib-together-days',
-    guestsnap: '.ib-snap-desc', trip: '.ib-trip-map', lottery: '.ib-lot-form', dayinfo: '.ib-day-item', thanks: '.ib-ty-in, .ib-ty-card, .ib-thanks' };
+    guestsnap: '.ib-snap-desc', trip: '.ib-trip-post', lottery: '.ib-lot-form', dayinfo: '.ib-day-item', thanks: '.ib-ty-in, .ib-ty-card, .ib-thanks' };
 // 썸네일 맞추기: keep(보여 줄 요소들)을 감싸는 칸을 썸네일 칸에 꽉 차게(넘치지 않게) 줄이고 나머지 글자는 숨김
 //  편집창이 열리는 확대 효과 중에도 맞게 화면 크기 ÷ 원래 폭(390px)으로 나눠 원래 크기로 계산
+// ===== 미리 그려 둔 썸네일 이미지 (스프라이트) =====
+//  섹션마다 썸네일을 이미지 한 장(assets/ssk/<칸>-lt|dk.webp, 밝은·어두운 바탕)에 모아 둠 → 편집창을 열면 이 한 장만 받아 바로 다 보임
+//  (예전엔 카드마다 섹션을 진짜로 그려서 휴대폰에서 한 장 0.1초 + 처음 뜨기까지 3초 가까이)
+//  만드는 도구: 저장소 tools/ssk-sprites.js (섹션 모양 CSS나 디자인을 바꾸면 다시 돌릴 것) · 목록 assets/ssk/manifest.json
+//  지금 디자인을 따라 달라지는 카드('디자인 따라' 스킨 · '테마 모양' 모양)와 목록에 없는 카드(새로 넣은 디자인 등)만 그 자리에서 그림
+let SSK_SPR = null;
+try { fetch('assets/ssk/manifest.json?v=1018z4').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
+// '디자인 따라' 스킨 = 지금 디자인의 디자인 스킨 그림 · '테마 모양' = 지금 디자인 꾸밈의 모양 그림 (색을 바꾸지 않았고 디자인이 정한 섹션 테마가 없을 때만 - 아니면 그 자리에서 그림)
+function sskAlias(b, spec) {
+    try { if (InviteBlocks.colorChanged && InviteBlocks.colorChanged()) return null; } catch (e) { return null; }
+    const [t, a, ...r] = String(spec).split(':'), v = r.join(':');
+    if (t === 's' && !a) return b && !b.skin && !b.skinPal && !designSkinOf(b) && state.presetId ? 'd:' + state.presetId : null;
+    if (t === 'l' && v === 'theme') return state.sectionLook ? `l:${a}:t:${state.sectionLook}` : null;
+    if (t === 'dd' || t === 'cal') return v === 'theme' && state.sectionLook ? 't:' + state.sectionLook : null;
+    return null;
+}
+function sskDynamic(spec) { const [t, a, ...r] = String(spec).split(':'); return (t === 's' && !a) || (t === 'l' && r.join(':') === 'theme'); }
+function sskSprite(th, key, spec) {
+    const j = SSK_SPR && SSK_SPR.k[key]; if (!th || !j) return false;
+    const i = j.s.indexOf(spec); if (i < 0) return false;
+    const root = document.getElementById('previewRoot'), vr = root && root.classList.contains('ib-dark') ? 'dk' : 'lt', c = SSK_SPR.cols || 10;
+    th.innerHTML = ''; th.dataset.done = '1'; th.classList.add('ssk-img');
+    th.style.cssText = `background: url('assets/ssk/${key}-${vr}.webp?v=${SSK_SPR.v}') no-repeat ${-(i % c) * j.w}px ${-Math.floor(i / c) * j.h}px / ${c * j.w}px auto`;
+    return true;
+}
 function sskFit(th, iv, keep, pad) {
     keep = keep.filter(Boolean); if (!keep.length) return false;
     const path = new Set(); keep.forEach(k => { for (let e = k; e && e !== iv; e = e.parentElement) path.add(e); });
@@ -16560,12 +16585,55 @@ function sskMount(wrap, b) {
         }
     });
     box.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-ssk]')) { e.preventDefault(); pick(e.target.dataset.ssk); } });
-    sskLazy(box, [...box.querySelectorAll('.ssk-c')], c => sskFill(c, b));
+    sskLazy(box, [...box.querySelectorAll('.ssk-c')].filter(c => { const sp = c.dataset.ssk, al = sskDynamic(sp) ? sskAlias(b, sp) : sp; return !al || !sskSprite(c.querySelector('.ssk-th'), b.id, al); }), c => sskFill(c, b)); // 미리 그려 둔 이미지가 있으면 바로, 없거나 지금 디자인을 따라가는 카드만 그림
 }
 // ===== 디데이 달력·카운트 모양 고르기 (전문가 디데이 편집창) =====
 //  한 줄에 기본 모양 + 디자인 모양 22개(값 't:<꾸밈>' → 어느 디자인에서나 그 모양) · 옆으로 넘겨 봄
 //  카드마다 진짜로 그린 섹션에서 달력(또는 카운트) 부분만 칸에 맞게 줄여 보여 줌 (보이는 카드만 한가할 때 · 같은 내용이면 다시 안 그림)
 //  부품 색 = block.tint/tintLine (InviteBlocks.boxColAttrs → --p-accent·--p-line) · 바탕은 늘 화면 설정 색
+// ===== 옆으로 넘기는 줄 위치 기억 (편집창 모든 고르기 줄 공통) =====
+//  고르면 편집창이 다시 그려져 줄이 맨 앞으로 돌아가던 것 → 넘긴 자리를 줄마다(섹션 · 줄 종류 · 몇 번째) 기억해 두고,
+//  새로 그려진 줄이 화면에 보이는 순간(휴대폰 편집 칸처럼 늦게 열려도 - ResizeObserver) 그 자리로 되돌림.
+//  기억이 없으면(처음 여는 줄) 고른 칸이 안 보일 때만 고른 칸이 보이게.
+const ROW_SEL = '.ssk-row, .hl-row, .skp-pals, .bdr-l, .b5chips, .mm-chips, .sp-chips, .sp-jump, #skinPicker, .stk-qs, .stk-themes, .dd-pick, .width-row, .opt-pics';
+const ROWPOS = new Map();
+function rowKey(row) {
+    const host = row.closest('[data-ssk-for], [data-step], [data-sp-step], [data-sp-id]');
+    const ctx = (host && (host.getAttribute('data-ssk-for') || host.getAttribute('data-step') || host.getAttribute('data-sp-step') || host.getAttribute('data-sp-id'))) || selectedId || '';
+    const sig = (row.id ? '#' + row.id : '') + '.' + [...row.classList].filter(c => !/^(on|active|moving|dragging)$/.test(c)).sort().join('.');
+    let n = 0; for (const r of document.querySelectorAll(ROW_SEL)) { if (r === row) break; if (r.className === row.className && r.id === row.id) n++; }
+    return ctx + '|' + (state.spView || '') + '|' + sig + '|' + n;
+}
+function rowRestore(row) {
+    if (!row.isConnected || !row.clientWidth) return false;
+    const k = row._rowKey || (row._rowKey = rowKey(row)), v = ROWPOS.get(k);
+    if (v != null) {
+        if (Math.abs(row.scrollLeft - v) > 1) { row._rowSet = 1; row.scrollLeft = v; }
+        // 줄 안 카드가 아직 다 안 펼쳐져서(편집 칸이 열리는 중) 넘길 길이가 모자라면 잘림 → 몇 번 더 (약 1초)
+        if (Math.abs(row.scrollLeft - v) > 1 && (row._rowTry = (row._rowTry || 0) + 1) < 40) requestAnimationFrame(() => rowRestore(row));
+        return true;
+    }
+    if (row.scrollWidth <= row.clientWidth + 2) return false;
+    const on = row.querySelector('.on, .active, [aria-pressed="true"], [aria-checked="true"]');
+    if (on) { const r = row.getBoundingClientRect(), q = on.getBoundingClientRect(); if (q.left < r.left || q.right > r.right) { row._rowSet = 1; row.scrollLeft += q.left - r.left - 24; } }
+    return true;
+}
+(function () {
+    const ro = 'ResizeObserver' in window ? new ResizeObserver(es => es.forEach(en => { if (en.contentRect.width && rowRestore(en.target)) ro.unobserve(en.target); })) : null;
+    const seen = new WeakSet(); let t = 0;
+    const scan = () => { t = 0; document.querySelectorAll(ROW_SEL).forEach(row => { if (seen.has(row)) return; seen.add(row);
+        if (!rowRestore(row) && ro) ro.observe(row); // 아직 안 보이는 줄(접힌 칸)은 보일 때
+        requestAnimationFrame(() => rowRestore(row)); }); }; // (안에 카드가 늦게 들어오는 줄도 한 번 더)
+    new MutationObserver(ms => { if (t) return; if (ms.every(m => m.target.closest && m.target.closest('#previewRoot, .ssk-th, .dpk-car, .dpk-strip'))) return; t = requestAnimationFrame(scan); })
+        .observe(document.documentElement, { childList: true, subtree: true });
+    // 사람이 직접 넘긴 것만 기억 (손가락·마우스·휠·키보드로 만진 뒤 3초 안 - 다시 그리거나 칸을 옮길 때 브라우저가 0으로 되돌린 건 안 씀)
+    const touch = e => { const row = e.target && e.target.closest && e.target.closest(ROW_SEL); if (row) row._rowUser = Date.now(); };
+    ['pointerdown', 'touchstart', 'wheel', 'keydown'].forEach(t => document.addEventListener(t, touch, { capture: true, passive: true }));
+    document.addEventListener('scroll', e => { const row = e.target; if (!row || !row.matches || !row.matches(ROW_SEL)) return;
+        if (row._rowSet) { row._rowSet = 0; return; } // 되돌리느라 생긴 스크롤은 그대로
+        if (!(Date.now() - (row._rowUser || 0) < 3000)) return;
+        ROWPOS.set(row._rowKey || (row._rowKey = rowKey(row)), row.scrollLeft); }, true);
+})();
 function ddkList(kind) { const B = kind === 'cal' ? InviteBlocks.CAL_STYLES : InviteBlocks.DDAY_STYLES; return B.map(([v, l]) => [v, v === 'theme' ? '디자인 따라' : l]).concat([null], InviteBlocks.TP_STYLES); }
 function ddkName(kind, v) { const x = ddkList(kind).find(x => x && x[0] === (v || 'classic')); return x ? x[1] : '기본'; }
 function ddkRow(kind, f) {
@@ -16624,7 +16692,7 @@ function sskLazy(box, cards, fill) {
         const vio = new IntersectionObserver(es => es.forEach(en => { const row = en.target; if (!en.isIntersecting || row._sskOn) return; row._sskOn = 1; vio.unobserve(row); row.querySelectorAll('.ssk-c').forEach(c => { if (!c.querySelector('.ssk-th[data-done]')) row._sskIo.observe(c); }); }), { rootMargin: '160px 0px' });
         rows.forEach(r => vio.observe(r));
     }
-    requestAnimationFrame(() => box.querySelectorAll('.ssk-row').forEach(row => { const on = row.querySelector('.ssk-c.on'); if (on && row.scrollLeft === 0 && on.offsetLeft > row.clientWidth - 60) row.scrollLeft = on.offsetLeft - 24; }));
+    // (고른 카드가 보이게 · 넘긴 자리 기억은 공통 '줄 위치 기억' rowRestore가 함)
     box.querySelectorAll('.ssk-row').forEach(row => row.addEventListener('wheel', e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && row.scrollWidth > row.clientWidth) { row.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false }));
 }
 function ddkMount(wrap, b) {
@@ -16636,7 +16704,7 @@ function ddkMount(wrap, b) {
     const tp = wrap.querySelector('[data-tint-pick]');
     if (tp) { tp.addEventListener('input', () => { b.tint = tp.value; delete b.tintLine; renderPreview(); }); tp.addEventListener('change', () => { b.tint = tp.value; delete b.tintLine; redo(); }); }
     const cards = [...wrap.querySelectorAll('.ddk-c')];
-    sskLazy(wrap, cards, c => ddkFill(c, b));
+    sskLazy(wrap, cards.filter(c => { const v = c.dataset.ddkV, al = v === 'theme' ? sskAlias(b, c.dataset.ddk + ':x:theme') : v; return !al || !sskSprite(c.querySelector('.ssk-th'), 'dday-' + c.dataset.ddk, al); }), c => ddkFill(c, b));
 }
 function bindSkinPick(box, onPick) {
     box.querySelectorAll('[data-skp]').forEach(x => x.addEventListener('click', () => onPick(x.dataset.skp, '')));
