@@ -181,7 +181,22 @@
         stars: '별빛 우주', drops: '비 오는 날', deco: '미드나잇 골드', webtoon: '웹툰', angel: '천사의 편지', hanji: '한지 모던', ticket: '보딩패스', olive: '지중해 올리브', sea: '여름 바다', wine: '가을 와인', spring: '벚꽃 봄', winter: '겨울 눈', press: '웨딩 신문', retro: '레트로 70', picnic: '피크닉', sky: '날씨 하늘' };
     const TP_STYLES = TP_DECOS.map(k => ['t:' + k, THEME_DECO_NAMES[k]]);
     function tpOf(v) { const m = /^t:([a-z]+)$/.exec(String(v || '')); return m && TP_DECOS.includes(m[1]) ? m[1] : ''; }
-    function tpCls(v) { const k = tpOf(v); if (!k) return ''; if (k === 'webtoon') ensureFont('black-han-sans'); else themeFonts(k); return ` ib-tpx ib-tp-${k}`; }
+    function tpCls(v) { const k = tpOf(v); if (!k) return ''; if (k === 'webtoon') ensureFont('black-han-sans'); else themeFonts(k); return ` ib-tpx ib-tp-${oldOf(k) ? 'o' + k : k}`; }
+    // ---------- 꾸밈 스타일 '예전' / '모던' (design.lookStyle = 'old'면 예전, 없거나 'modern'이면 모던) ----------
+    //  같은 꾸밈(rule·film …)을 모던 리뉴얼 전 모습으로: .col에 ib-th-o<꾸밈> + ib-tho (모던 전용 공통 규칙 - 영문 머리글 등 - 은 .ib-tho를 뺌)
+    //  · 테마 부품 직접 고르기 't:<꾸밈>'도 ib-tp-o<꾸밈>. CSS는 assets/invite-blocks-old.css (예전일 때만 ensureOldLooks가 불러옴, 공개 페이지는 invite_view가 미리)
+    //  예전 모습이 있는 꾸밈만 (새로 만든 디자인 10개·웹툰은 한 벌)
+    const OLD_DECOS = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', 'angel'];
+    function lookOld(d) { d = d || CUR_DESIGN; return !!(d && d.lookStyle === 'old'); }
+    function oldOf(deco) { if (!lookOld() || !OLD_DECOS.includes(deco)) return false; ensureOldLooks(); return true; }
+    function ensureOldLooks() {
+        if (typeof document === 'undefined' || document.querySelector('link[data-ib-old]')) return;
+        const main = [...document.querySelectorAll('link[rel="stylesheet"]')].find(l => /invite-blocks\.css/.test(l.getAttribute('href') || ''));
+        const link = document.createElement('link'); link.rel = 'stylesheet'; link.dataset.ibOld = '1';
+        link.href = main ? main.href.replace('invite-blocks.css', 'invite-blocks-old.css') : '/invite/assets/invite-blocks-old.css';
+        if (main && main.parentNode) main.after(link); else document.head.appendChild(link); // (모던 공통 규칙 뒤에 와야 같은 세기일 때 예전이 이김)
+    }
+    function thCls(deco) { return oldOf(deco) ? ' ib-th ib-tho ib-th-o' + deco : ' ib-th ib-th-' + deco; }
     function themeFonts(k) { if (THEME_FONTS[k]) try { ensureFont(THEME_FONTS[k]); } catch (e) {} if (k === 'angel') try { ensureCalFonts(); } catch (e) {} } // 천사의 편지: 달 이름·숫자는 Cinzel (빈티지 큐피드 달력과 같은 글꼴)
     // 인터뷰(둘만의 사랑 이야기) 모양 - 에디터·공개 페이지 둘 다 .blk-interview에 iv-st-* (CSS는 invite-blocks.css '인터뷰 모양')
     const IV_STYLES = [['', '이름표'], ['chat', '채팅 말풍선'], ['card', '질문 카드'], ['mag', '매거진'], ['split', '마주 보기']];
@@ -213,7 +228,7 @@
         // 색 바꾸면 꾸밈도 같이: 디자인이 정해 둔 섹션 테마(fields.skin - 직접 고른 b.skin은 그대로)는 색을 바꾸면 디자인 꾸밈으로 (웹툰 컷은 그대로)
         if (sk && sk !== 'webtoon' && !b.skin && colorLinkOn() && colorChanged() && designLook()) sk = '';
         const palLink = !!(pal && pal.at && CUR_COLORS && colorLinkOn() && pal.at !== colKey(CUR_COLORS)); // 디자인 스킨을 고른 뒤 색을 바꿈 → 모양은 그대로, 색은 지금 색
-        if (sk) cls += ` ib-sk ib-sk-${sk}`; // (바탕·글자색은 화면 설정 색 그대로 - 어두운지 밝은지도 청첩장 바탕을 따름)
+        if (sk) cls += ` ib-sk ib-sk-${sk}` + (lookOld() ? ' ib-tho' : ''); // (꾸밈 스타일 '예전'이면 섹션 테마도 예전 모습 - 영문 머리글 없이 제목 ✦ 그대로) // (바탕·글자색은 화면 설정 색 그대로 - 어두운지 밝은지도 청첩장 바탕을 따름)
         if (sk === 'webtoon') ensureFont('black-han-sans'); // 웹툰 컷 말풍선 제목 글꼴
         else if (pal && HEX_RE.test(pal.bg || '') && HEX_RE.test(pal.ink || '')) { // 다른 디자인 색으로
             cls += ' ib-sk ib-sk-pal' + (palLink ? ' ib-sk-link' : '');
@@ -221,7 +236,7 @@
                 const a = readableOn(pal.accent, CUR_COLORS.bg, CUR_COLORS.ink); st.push(`--p-accent:${a}`, `--p-on-accent:${onAccent(a)}`);
             }
             // 디자인 테마 스킨: 글꼴·모서리·종이 + 꾸밈
-            if (THEME_DECOS.includes(pal.deco)) { cls += ' ib-th ib-th-' + pal.deco; themeFonts(pal.deco); }
+            if (THEME_DECOS.includes(pal.deco)) { cls += thCls(pal.deco); themeFonts(pal.deco); }
             if (pal.font && FONT_CSS[pal.font]) ensureFont(pal.font);
             const fq = v => String(v).replace(/"/g, "'"); // style="" 안에 들어가서 큰따옴표는 작은따옴표로
             if (FONT_RE.test(pal.hf || '')) st.push(`--p-head-font:${fq(pal.hf)}`);
@@ -230,7 +245,7 @@
             if (/^\d{1,2}px$/.test(String(pal.r || ''))) st.push(`--p-radius:${pal.r}`);
         }
         // 디자인 전체 꾸밈: 디자인을 고르면 그 디자인의 꾸밈(design.sectionLook)이 모든 섹션에 기본으로 (섹션 테마·디자인 스킨을 따로 고른 섹션, 첫 화면, '꾸밈 없이'는 빼고 · 화면 설정 extras.look=false면 끔)
-        else if (!sk && b && b.id !== 'hero' && b.id !== 'heroVideo' && b.skin !== 'plain') { const gl = designLook(); if (gl) { cls += ' ib-th ib-th-' + gl; themeFonts(gl); } }
+        else if (!sk && b && b.id !== 'hero' && b.id !== 'heroVideo' && b.skin !== 'plain') { const gl = designLook(); if (gl) { cls += thCls(gl); themeFonts(gl); } }
         // 부품 색 (섹션 하나만 포인트·선 색을 바꿈 - 바탕·글자는 화면 설정 색 그대로): b.tint = 포인트 '#RRGGBB', b.tintLine = 선 색(디자인 스킨 색을 골랐을 때, 없으면 포인트 색을 옅게)
         if (b && HEX_RE.test(b.tint || '')) {
             const t = CUR_COLORS ? readableOn(b.tint, CUR_COLORS.bg, CUR_COLORS.ink) : b.tint, on = onAccent(t), ln = HEX_RE.test(b.tintLine || '') ? b.tintLine : `color-mix(in srgb, ${t} 45%, var(--p-bg, #FFFFFF))`;
@@ -3660,5 +3675,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

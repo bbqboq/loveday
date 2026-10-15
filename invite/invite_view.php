@@ -192,6 +192,7 @@ if ($lbZoom > 100): ?>
 <?php endif; ?>
 <!-- 에디터와 같이 쓰는 공용 섹션(연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <link rel="stylesheet" href="/invite/assets/invite-blocks.css?v=<?= @filemtime(__DIR__ . '/assets/invite-blocks.css') ?: time() ?>">
+<?php if (($design['lookStyle'] ?? '') === 'old'): ?><link rel="stylesheet" href="/invite/assets/invite-blocks-old.css?v=<?= @filemtime(__DIR__ . '/assets/invite-blocks-old.css') ?: time() ?>" data-ib-old="1"><!-- 꾸밈 스타일 '예전' --><?php endif; ?>
 <?php foreach ($customFontUrls as $url): ?><link rel="stylesheet" href="<?= htmlspecialchars($url, ENT_QUOTES, 'UTF-8') ?>"><?php endforeach; ?>
 </head>
 <body>

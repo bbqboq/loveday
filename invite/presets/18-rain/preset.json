@@ -62,5 +62,6 @@
     "rsvp": {
       "btnStyle": "theme"
     }
-  }
+  },
+  "old": {"blockFields": {"gallery": {"skin": "mist"}, "account": {"skin": "mist"}, "guestbook": {"skin": "mist"}, "greeting": {"skin": "mist"}, "location": {"skin": "mist"}, "transport": {"skin": "mist"}}}
 }

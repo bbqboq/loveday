@@ -59,5 +59,6 @@
     "transport": {
       "style": "theme"
     }
-  }
+  },
+  "old": {"paper": "linen"}
 }

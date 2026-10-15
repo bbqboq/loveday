@@ -58,5 +58,6 @@
     "transport": {
       "style": "theme"
     }
-  }
+  },
+  "old": {"paper": "kraft", "blockFields": {"gallery": {"skin": "vintage"}, "greeting": {"skin": "vintage"}, "location": {"skin": "vintage"}, "guestbook": {"skin": "vintage"}}}
 }

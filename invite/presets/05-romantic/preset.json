@@ -71,5 +71,6 @@
       "style": "theme"
     }
   },
-  "backdrop": "soft"
+  "backdrop": "soft",
+  "old": {"backdrop": "roses"}
 }

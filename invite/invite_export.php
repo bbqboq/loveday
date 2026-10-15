@@ -144,6 +144,7 @@ $fontLinkTag = implode('', array_map(fn($url) => '<link rel="stylesheet" href="'
 // ---------------------------------------------------------------- 화면 코드 (공개 청첩장과 같은 파일들을 그대로 넣음)
 $read = fn(string $f) => (string) (@file_get_contents(__DIR__ . '/assets/' . $f) ?: '');
 $css = $read('render-invite.css') . "\n" . $read('invite-blocks.css');
+if ((($design ?? [])['lookStyle'] ?? '') === 'old') $css .= "\n" . $read('invite-blocks-old.css'); // 꾸밈 스타일 '예전'
 $safeJs = fn(string $js) => str_ireplace('</script', '<\/script', $js);
 $jsBlocks = $safeJs($read('invite-blocks.js'));
 $jsRender = $safeJs($read('render-invite.js'));

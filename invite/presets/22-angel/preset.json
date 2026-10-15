@@ -56,5 +56,6 @@
     { "sectionId": "guestbook", "relX": 0.87, "relY": 0.05, "size": 64, "image": "stk:vintage/cupid-letter", "effect": "fade", "rotation": 6 }
   ],
   "stickerThemes": ["romantic", "classic"],
-  "notes": "원래 빈티지 큐피드 달력(cal-vintage.webp)·계좌·연락처 모양 + 빈티지 그림 스티커 + 꾸밈 angel(양피지·금테·❦·밀랍 도장) + 첫 화면 angel-letter(금테 액자)"
+  "notes": "원래 빈티지 큐피드 달력(cal-vintage.webp)·계좌·연락처 모양 + 빈티지 그림 스티커 + 꾸밈 angel(양피지·금테·❦·밀랍 도장) + 첫 화면 angel-letter(금테 액자)",
+  "old": {"blockFields": {"account": {"accStyle": "vintage"}}}
 }

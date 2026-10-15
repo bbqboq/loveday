@@ -11,6 +11,8 @@
  *              [+ 새 디자인 만들기] → 바탕 디자인을 골라 새 디자인을 하나 더 만든다 (한 번 저장해야 고객에게 보임)
  *  디자인 켜고 끄기: 카드마다 [고객에게 보이기] 스위치 → 바로 저장 (featured_presets.php preset_off_* → uploads/site/preset_off.json)
  *              끈 디자인은 고객 화면(디자인 고르기 · 섹션 스킨 · 모양 고르기)에서 빠지고 추천에서도 빠짐. 이미 그 디자인으로 만든 청첩장은 그대로
+ *  꾸밈 스타일: 카드마다 [모던 | 예전] (예전 모습이 있는 디자인만) → 바로 저장 (featured_presets.php preset_look_* → uploads/site/preset_look.json)
+ *              고객이 그 디자인을 고를 때 처음 꾸밈 스타일. [에디터로 꾸미기]로 꾸민 샘플은 샘플에서 고른 스타일이 먼저
  *  부관리자: "사업자·사이트 정보 수정" 권한(site_settings)이 있어야 저장할 수 있다 (없으면 보기 전용)
  */
 declare(strict_types=1);
@@ -22,6 +24,14 @@ require_once __DIR__ . '/paper_settings.php'; // 종이 질감 그림 (올리기
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify($_POST['csrf_token'] ?? null);
     header('Content-Type: application/json; charset=utf-8');
+    if (($_POST['act'] ?? '') === 'look') { // 꾸밈 스타일 기본 (바로 저장)
+        $look = json_decode((string) ($_POST['look'] ?? ''), true);
+        if (!is_array($look)) { echo json_encode(['ok' => false, 'error' => '저장할 내용이 올바르지 않아요.'], JSON_UNESCAPED_UNICODE); exit; }
+        try { $look = preset_look_save($look); }
+        catch (Throwable $e) { echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit; }
+        echo json_encode(['ok' => true, 'look' => $look ?: new stdClass()], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     if (($_POST['act'] ?? '') === 'off') { // 디자인 켜고 끄기 (바로 저장)
         $off = json_decode((string) ($_POST['off'] ?? ''), true);
         if (!is_array($off)) { echo json_encode(['ok' => false, 'error' => '저장할 내용이 올바르지 않아요.'], JSON_UNESCAPED_UNICODE); exit; }
@@ -117,6 +127,9 @@ body { background: var(--ui-page, #F6F4F1); }
 .fd-p .vis input:checked + i { background: var(--ui-point, #B8935A); }
 .fd-p .vis input:checked + i::after { transform: translateX(14px); }
 .fd-p .vis input:focus-visible + i { outline: 2px solid #2B2320; outline-offset: 2px; }
+.fd-p .lk { display: inline-flex; border: 1px solid var(--ui-line, #E5DED3); border-radius: 9px; overflow: hidden; height: 30px; }
+.fd-p .lk button { border: 0; background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: #8A847B; padding: 0 9px; cursor: pointer; }
+.fd-p .lk button.on { background: #2B2320; color: #fff; }
 .fd-p .tag.off { background: #EFECE7; color: #6F6A63; }
 .fd-off-n { font-size: 12.5px; color: #8A847B; margin: -4px 0 12px; }
 .fd-pp-n { font-size: 12.5px; color: #8A847B; margin: 12px 0 0; line-height: 1.7; }
@@ -129,7 +142,7 @@ body { background: var(--ui-page, #F6F4F1); }
         <h2 class="page-title">디자인 샘플 · 추천 디자인</h2>
         <p class="fd-intro">
             <b>에디터로 꾸미기</b>를 누르면 실제 에디터가 열려요. 사진·글·스티커·글자 위치까지 꾸며서 <b>샘플 저장</b>하면, 고객이 그 디자인을 고를 때 꾸민 모습 그대로 시작해요.<br>
-            카드 윗부분을 누르면 <b>추천 디자인</b>에 넣고 빼요. 카드 아래 <b>고객에게 보이기</b> 스위치를 끄면 고객의 디자인 고르기 화면에서 그 디자인이 빠져요 (바로 저장 · 이미 그 디자인으로 만든 청첩장은 그대로). 추천은 새 청첩장 화면에 크게 보이고, 나머지는 “다른 디자인 더 보기”에 들어가요 (3~4개 추천, 최대 <?= FEATURED_MAX ?>개).
+            카드 윗부분을 누르면 <b>추천 디자인</b>에 넣고 빼요. 카드 아래 <b>모던 | 예전</b>은 고객이 그 디자인을 고를 때 처음 꾸밈 모습이에요(예전 = 리뉴얼 전 장식 · 고객이 바꿀 수 있어요). <b>고객에게 보이기</b> 스위치를 끄면 고객의 디자인 고르기 화면에서 그 디자인이 빠져요 (바로 저장 · 이미 그 디자인으로 만든 청첩장은 그대로). 추천은 새 청첩장 화면에 크게 보이고, 나머지는 “다른 디자인 더 보기”에 들어가요 (3~4개 추천, 최대 <?= FEATURED_MAX ?>개).
         </p>
         <div class="fd-card">
             <div class="fd-h"><b>추천 디자인 · 고객에게 보이는 순서</b><small id="fdCount"></small></div>
@@ -176,6 +189,10 @@ function drawPapers() {
 }
 const DEFAULT = <?= json_encode(FEATURED_DEFAULT) ?>, MAX = <?= (int) FEATURED_MAX ?>;
 let OFF = <?= json_encode(preset_off_get()) ?>;
+let LOOK = <?= json_encode(preset_look_get() ?: new stdClass()) ?>;
+const IB = window.InviteBlocks || {};
+const lookDeco = p => { const L = IB.THEME_LOOKS || {}; return (p.sectionLook || L[p.__base] || L[p.id] || ''); };
+const hasOld = p => (IB.OLD_DECOS || []).includes(lookDeco(p));
 let sel = <?= json_encode($cur) ?>, saved = JSON.stringify(sel), presets = [], samples = {};
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -212,7 +229,16 @@ function draw() {
             <span class="tx"><b>${p.no ? String(p.no).padStart(2, '0') + ' ' : ''}${esc(p.label)}</b><small>${esc(p.desc || '')}${p.__custom ? ` · 바탕: ${esc((presets.find(x => x.id === p.__base) || {}).label || p.__base)}` : ''}</small></span></button>
             <div class="acts"><a class="main" href="editor-prototype-v3-overlay.html?sample=${encodeURIComponent(p.id)}" target="_blank" rel="noopener">에디터로 꾸미기</a>
             ${p.__custom ? `<button type="button" data-rename="${esc(p.id)}">이름</button><button type="button" class="del" data-reset="${esc(p.id)}">삭제</button>` : (sm && sm.saved ? `<button type="button" class="del" data-reset="${esc(p.id)}">원래대로</button>` : '')}
+            ${hasOld(p) ? `<span class="lk" role="group" aria-label="꾸밈 스타일 기본" title="고객이 이 디자인을 고를 때 처음 꾸밈 모습 (고객이 바꿀 수 있어요)"><button type="button" data-lk="${esc(p.id)}" data-v="modern" class="${LOOK[p.id] === 'old' ? '' : 'on'}">모던</button><button type="button" data-lk="${esc(p.id)}" data-v="old" class="${LOOK[p.id] === 'old' ? 'on' : ''}">예전</button></span>` : ''}
             <label class="vis" title="끄면 고객의 디자인 고르기 화면에서 빠져요"><input type="checkbox" data-vis="${esc(p.id)}" ${off ? '' : 'checked'}><i></i>고객에게 보이기</label></div></div>`; }).join('');
+    $('fdGrid').querySelectorAll('[data-lk]').forEach(b => b.onclick = () => {
+        const next = Object.assign({}, LOOK); if (b.dataset.v === 'old') next[b.dataset.lk] = 'old'; else delete next[b.dataset.lk];
+        const fd = new FormData(); fd.append('csrf_token', CSRF); fd.append('act', 'look'); fd.append('look', JSON.stringify(next));
+        fetch('admin_designs.php', { method: 'POST', body: fd }).then(r => r.json()).then(d => {
+            if (!d.ok) throw new Error(d.error || '저장하지 못했어요');
+            LOOK = d.look || {}; draw(); toast(b.dataset.v === 'old' ? '이 디자인은 예전 꾸밈으로 시작해요' : '이 디자인은 모던 꾸밈으로 시작해요');
+        }).catch(e => toast(e.message));
+    });
     $('fdGrid').querySelectorAll('[data-vis]').forEach(inp => inp.onchange = () => {
         const id = inp.dataset.vis, next = inp.checked ? OFF.filter(x => x !== id) : OFF.concat(id);
         if (!inp.checked && designs().every(p => p.id === id || next.includes(p.id))) { inp.checked = true; toast('디자인은 하나 이상 보여야 해요'); return; }

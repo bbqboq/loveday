@@ -86,6 +86,41 @@ function preset_off_save(array $ids): array
     return $ids;
 }
 
+// ---- 꾸밈 스타일 기본값 (관리자 → 추천 디자인 · 카드마다 [모던 | 예전]) ----
+//  고객이 그 디자인을 고를 때 처음 꾸밈 스타일 (고객이 화면 설정 · 간편 색·글꼴 칸에서 바꿀 수 있음). 정하지 않은 디자인은 모던
+//  preset_list.php가 "lookDefault": "old" 로 내보냄 → 에디터 presetLookDefault. 저장: invite/uploads/site/preset_look.json {"look": {디자인 id: "old"}}
+function preset_look_file(): string
+{
+    return (defined('UPLOAD_DIR') ? UPLOAD_DIR : __DIR__ . '/uploads/') . 'site/preset_look.json';
+}
+function preset_look_clean($map): array
+{
+    $out = [];
+    foreach ((array) $map as $id => $v) {
+        if (is_string($id) && preg_match('/^[a-z0-9-]{2,40}$/', $id) && $v === 'old') $out[$id] = 'old';
+        if (count($out) >= 300) break;
+    }
+    return $out;
+}
+function preset_look_get(): array
+{
+    $f = preset_look_file();
+    if (!is_file($f)) return [];
+    $j = json_decode((string) @file_get_contents($f, false, null, 0, 32768), true);
+    return is_array($j) ? preset_look_clean($j['look'] ?? []) : [];
+}
+function preset_look_save($map): array
+{
+    $map = preset_look_clean($map);
+    $f = preset_look_file();
+    if (!$map) { if (is_file($f)) @unlink($f); return []; }
+    if (!is_dir(dirname($f))) @mkdir(dirname($f), 0750, true);
+    if (@file_put_contents($f, json_encode(['look' => $map, 'saved_at' => date('c')], JSON_UNESCAPED_UNICODE), LOCK_EX) === false) {
+        throw new RuntimeException('저장 파일을 쓸 수 없어요 (uploads/site 폴더 권한 확인).');
+    }
+    return $map;
+}
+
 if (basename((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === basename(__FILE__)) {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');

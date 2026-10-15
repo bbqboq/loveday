@@ -66,5 +66,6 @@
     "transport": {
       "style": "theme"
     }
-  }
+  },
+  "old": {"blockFields": {"family": {"skin": "vintage"}, "rsvp": {"skin": "vintage"}}}
 }

@@ -1381,7 +1381,8 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .col.ib-sk-night :is(.ib-contact-side, .ib-notice-item, .ib-acc-side, .ib-gb-item, .ib-day-item, .ib-nt-card, .ib-thanks, .ib-ty-card .ib-ty-in, .ib-lot-prizes, .ib-lot-me, .ib-trip-post) {
     background: rgba(255,255,255,.05); border: 1px solid rgba(226,201,142,.32); box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 10px 30px rgba(0,0,0,.25); }
 .col.ib-sk-night .ib-title { color: var(--p-accent); letter-spacing: .08em; }
-.col.ib-sk-night .ib-title::after { content: none; } /* (제목 양옆 ✦ 기호는 뺌 - 모던 리뉴얼 2026-10-11, 위 머리글은 디자인 테마 스킨 쪽) */
+.col.ib-sk-night:not(.ib-tho) .ib-title::after { content: none; } /* (제목 양옆 ✦ 기호는 뺌 - 모던 리뉴얼 2026-10-11, 위 머리글은 디자인 테마 스킨 쪽 · 꾸밈 스타일 '예전'(.ib-tho)이면 그대로) */
+.col.ib-sk-night.ib-tho .ib-title::before, .col.ib-sk-night.ib-tho .ib-title::after { content: '✦'; margin: 0 8px; font-size: .55em; color: var(--p-accent); opacity: .8; vertical-align: .2em; } /* 꾸밈 스타일 '예전': 리뉴얼 전 밤하늘 제목 ✦ */
 /* 안개 유리: 비 오는 창처럼 푸른 회색 + 뿌연 유리 카드 (비 오는 날 디자인에 어울리게) */
 .col.ib-sk-mist { }
 .col.ib-sk-mist :is(.ib-contact-side, .ib-notice-item, .ib-acc-side, .ib-gb-item, .ib-day-item, .ib-nt-card, .ib-thanks, .ib-ty-card .ib-ty-in, .ib-lot-prizes, .ib-lot-me, .ib-trip-post) {
@@ -1556,8 +1557,8 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .col:is([data-block-id="dayinfo"], [data-ssk-col="dayinfo"]) { --th-eb: 'D-DAY GUIDE'; }
 .col:is([data-block-id="thanks"], [data-ssk-col="thanks"]) { --th-eb: 'THANK YOU'; }
 .col:is([data-block-id="share"], [data-ssk-col="share"]) { --th-eb: 'SHARE'; }
-.col:is(.ib-th, .ib-sk-night, .ib-sk-mist):not(.ib-th-angel) :is(.ib-title-layer[data-part="title"], .op-title)::before { content: var(--th-eb, none); position: absolute; left: 0; right: 0; bottom: 100%; margin: 0 0 1px; display: block; font: 600 10px/1.2 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif; font-style: normal; letter-spacing: .32em; text-indent: .32em; text-transform: uppercase; color: color-mix(in srgb, var(--tp-a, var(--p-accent)) 88%, transparent); white-space: nowrap; pointer-events: none; opacity: 1; transform: none; background: none; width: auto; height: auto; -webkit-mask: none; mask: none; vertical-align: baseline; }
-.col.ib-th:not(.ib-th-angel, .ib-th-bold, .ib-th-typo) :is(.ib-title-layer[data-part="title"], .op-title)::after { content: none; }
+.col:is(.ib-th, .ib-sk-night, .ib-sk-mist):not(.ib-th-angel, .ib-tho) :is(.ib-title-layer[data-part="title"], .op-title)::before { content: var(--th-eb, none); position: absolute; left: 0; right: 0; bottom: 100%; margin: 0 0 1px; display: block; font: 600 10px/1.2 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif; font-style: normal; letter-spacing: .32em; text-indent: .32em; text-transform: uppercase; color: color-mix(in srgb, var(--tp-a, var(--p-accent)) 88%, transparent); white-space: nowrap; pointer-events: none; opacity: 1; transform: none; background: none; width: auto; height: auto; -webkit-mask: none; mask: none; vertical-align: baseline; }
+.col.ib-th:not(.ib-th-angel, .ib-th-bold, .ib-th-typo, .ib-tho) :is(.ib-title-layer[data-part="title"], .op-title)::after { content: none; }
 /* ===== 디자인 테마 스킨 끝 ===== */
 /* ===== 테마 부품 (calendarStyle·counterStyle·accStyle·guestbook.style = 'theme', 참석 btnStyle·교통 style 기본 'theme'): 디자인 꾸밈(.ib-th-* · 웹툰은 .ib-sk-webtoon)마다 모양이 다름
    색은 --ta·--tk·--tb·--tl·--tm·--to (= 그 섹션의 --p-* · 화면 설정 '부품 색 연동'을 끄면 --tp-* 디자인 원래 색) → 색을 바꾸면 같이 바뀜. 꾸밈이 없으면 아래 기본 모양 */

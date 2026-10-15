@@ -72,6 +72,24 @@ function preset_asset_url(string $folder, string $rel): string {
     return PRESET_URL_BASE . '/' . rawurlencode($folder) . '/' . implode('/', array_map('rawurlencode', explode('/', $rel))) . '?v=' . filemtime($path);
 }
 
+/** 섹션별 기본값(blockFields) 검사 - 디자인 폴더 blockFields 와 예전 꾸밈 old.blockFields 같이 씀 */
+function clean_block_fields(array $in): array {
+    $bf = [];
+    foreach ($in as $blockId => $fields) {
+        if (!in_array($blockId, ALLOWED_BLOCKS, true) || !is_array($fields)) continue;
+        // 값은 문자열/숫자/불리언만 (객체·스크립트 같은 건 버림). 사진 개수(images)는 숫자만 허용.
+        $bf[$blockId] = array_filter($fields, fn($v) => is_scalar($v));
+        foreach ($bf[$blockId] as $k => $v) {
+            $sk = $blockId . '.' . $k;
+            // 't:<꾸밈>' = 다른 디자인의 테마 부품 모양 (InviteBlocks.TP_DECOS) - 달력·카운트·계좌·방명록·참석·교통
+            $tp = is_string($v) && preg_match('/^t:([a-z]+)$/', $v, $tm) && in_array($tm[1], array_merge(ALLOWED_LOOKS, ['webtoon']), true) && $tm[1][0] !== '@'
+                && in_array($sk, ['dday.calendarStyle', 'dday.counterStyle', 'account.accStyle', 'guestbook.style', 'rsvp.btnStyle', 'transport.style'], true);
+            if (isset(ALLOWED_STYLE[$sk]) && !$tp && !in_array($v, ALLOWED_STYLE[$sk], true)) unset($bf[$blockId][$k]);
+            if ($k === 'skin' && !in_array($v, ['', 'vintage', 'night', 'mist', 'webtoon'], true)) unset($bf[$blockId][$k]); // 섹션 테마
+        }
+    }
+    return $bf;
+}
 function load_preset(string $folder): array {
     $jsonPath = PRESET_DIR . '/' . $folder . '/preset.json';
     if (filesize($jsonPath) > MAX_JSON_BYTES) throw new PresetError('preset.json이 너무 큼 (64KB 초과)');
@@ -144,22 +162,15 @@ function load_preset(string $folder): array {
             'duration' => max(1, min(8, (float) ($i['duration'] ?? 2.5))),
         ], fn($v) => $v !== '' && $v !== null);
     }
-    if (isset($p['blockFields']) && is_array($p['blockFields'])) {
-        $bf = [];
-        foreach ($p['blockFields'] as $blockId => $fields) {
-            if (!in_array($blockId, ALLOWED_BLOCKS, true) || !is_array($fields)) continue;
-            // 값은 문자열/숫자/불리언만 (객체·스크립트 같은 건 버림). 사진 개수(images)는 숫자만 허용.
-            $bf[$blockId] = array_filter($fields, fn($v) => is_scalar($v));
-            foreach ($bf[$blockId] as $k => $v) {
-                $sk = $blockId . '.' . $k;
-                // 't:<꾸밈>' = 다른 디자인의 테마 부품 모양 (InviteBlocks.TP_DECOS) - 달력·카운트·계좌·방명록·참석·교통
-                $tp = is_string($v) && preg_match('/^t:([a-z]+)$/', $v, $tm) && in_array($tm[1], array_merge(ALLOWED_LOOKS, ['webtoon']), true) && $tm[1][0] !== '@'
-                    && in_array($sk, ['dday.calendarStyle', 'dday.counterStyle', 'account.accStyle', 'guestbook.style', 'rsvp.btnStyle', 'transport.style'], true);
-                if (isset(ALLOWED_STYLE[$sk]) && !$tp && !in_array($v, ALLOWED_STYLE[$sk], true)) unset($bf[$blockId][$k]);
-                if ($k === 'skin' && !in_array($v, ['', 'vintage', 'night', 'mist', 'webtoon'], true)) unset($bf[$blockId][$k]); // 섹션 테마
-            }
-        }
-        $out['blockFields'] = $bf;
+    if (isset($p['blockFields']) && is_array($p['blockFields'])) $out['blockFields'] = clean_block_fields($p['blockFields']);
+    // 꾸밈 스타일: lookStyle 'old'(예전) | 'modern'(모던, 기본) · old = 예전을 고르면 같이 바꾸는 값 (모던 리뉴얼 때 바꾼 종이·배경 무늬·섹션 테마·계좌 모양)
+    if (in_array($p['lookStyle'] ?? '', ['old', 'modern'], true)) $out['lookStyle'] = $p['lookStyle'];
+    if (isset($p['old']) && is_array($p['old'])) {
+        $o = [];
+        if (isset($p['old']['paper']) && in_array($p['old']['paper'], array_merge([''], ALLOWED_PAPER), true)) $o['paper'] = $p['old']['paper'];
+        if (isset($p['old']['backdrop']) && in_array($p['old']['backdrop'], ['', 'stars', 'rain', 'sky', 'dots', 'soft', 'grain', 'roses', 'navy'], true)) $o['backdrop'] = $p['old']['backdrop'];
+        if (isset($p['old']['blockFields']) && is_array($p['old']['blockFields'])) $o['blockFields'] = clean_block_fields($p['old']['blockFields']);
+        if ($o) $out['old'] = $o;
     }
     $stickers = [];
     foreach ((array) ($p['stickers'] ?? []) as $st) {
@@ -222,6 +233,9 @@ unset($pp);
 require_once __DIR__ . '/featured_presets.php';
 $off = preset_off_get();
 foreach ($presets as &$pp) if (in_array($pp['id'], $off, true)) $pp['off'] = true;
+unset($pp);
+$lookDef = preset_look_get(); // 관리자가 정한 꾸밈 스타일 기본 (예전)
+foreach ($presets as &$pp) if (($lookDef[$pp['id']] ?? '') === 'old') $pp['lookDefault'] = 'old';
 unset($pp);
 
 echo json_encode(['ok' => true, 'presets' => $presets, 'off' => $off, 'skipped' => $skipped], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

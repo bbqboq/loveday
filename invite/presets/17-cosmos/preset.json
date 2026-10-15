@@ -72,5 +72,6 @@
     "bg": "#07081A",
     "color": "#E6CF95",
     "fontSize": 26
-  }
+  },
+  "old": {"blockFields": {"gallery": {"skin": "night"}, "account": {"skin": "night"}, "greeting": {"skin": "night"}, "family": {"skin": "night"}, "location": {"skin": "night"}, "transport": {"skin": "night"}, "rsvp": {"skin": "night"}, "guestbook": {"skin": "night"}}}
 }
