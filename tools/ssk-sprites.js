@@ -72,7 +72,7 @@ async function generate(page, outDir) {
         for (const j of jobs) {
             const g = await page.$(`#sskGen .g[data-key="${j.key}"]`);
             const png = path.join(outDir, `${j.key}-${vr}.png`), webp = png.replace(/\.png$/, '.webp');
-            await g.screenshot({ path: png });
+            await g.screenshot({ path: png, animations: 'disabled', timeout: 300000 }); // (디자인이 늘어 카드가 수천 장 - 다 그려지고 멈출 때까지 넉넉히 기다림)
             execFileSync('convert', [png, '-quality', '52', '-define', 'webp:method=6', webp]);
             fs.unlinkSync(png);
             man.k[j.key] = Object.assign({ w: j.w, h: j.h, s: j.s }, j.lv != null ? { lv: j.lv } : {});
