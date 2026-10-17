@@ -14848,11 +14848,13 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     const box = document.getElementById('spPvReal');
     const real = !!EDIT_TOKEN && !SAMPLE_ID && saveGateOk(); // 아직 저장 전(이름을 안 적음)이면 에디터 미리보기로
     root.classList.toggle('sp-pv-real', real);
-    if (!real) { try { renderPreview(); } catch (e) {} const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0; return; }
+    if (!real) {
+        if (EDIT_TOKEN && !SAMPLE_ID) document.getElementById('spPvMsg').textContent = final ? '완성본 미리보기예요. [발행하기]를 누르면 저장하고 주소가 생겨요.' : '하객에게 이렇게 보여요. (두 분 이름을 적으면 그때부터 저장돼요)';
+        try { renderPreview(); } catch (e) {} const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0; return; }
     box.innerHTML = '<div class="sp-pvload">불러오는 중…</div>';
     const ok = saved || await saveToServer(false, true);
     if (seq !== spPvSeq || !root.classList.contains('sp-pv')) return; // 그새 닫았음
-    if (!ok) { box.innerHTML = '<div class="sp-pvload">저장하지 못했어요. 닫고 잠시 뒤 다시 눌러 주세요.</div>'; return; }
+    if (!ok) { box.innerHTML = `<div class="sp-pvload">저장하지 못했어요. 닫고 잠시 뒤 다시 눌러 주세요.${lastSaveErr ? `<br><small>${esc(lastSaveErr)}</small>` : ''}</div>`; return; }
     const fr = document.createElement('iframe');
     fr.title = '완성본 미리보기'; fr.setAttribute('allow', 'autoplay; fullscreen; clipboard-write; web-share');
     fr.src = `invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}&_=${Date.now()}`;
@@ -15939,6 +15941,17 @@ const SP_ADD_DESC = { gallery: '사진 여러 장을 모아 보여 줘요', venu
 const spAddDesc = st => SP_ADD_DESC[st.k] || ((window.InviteBlocks && InviteBlocks.BLOCKS[st.k] && InviteBlocks.BLOCKS[st.k].desc) || '켜면 청첩장에 들어가요');
 // 간편 만들기로 다 만든 뒤(목록 화면) 한 번: '더 꾸미고 싶다면 전문가 모드' 안내 (닫거나 전문가 모드로 가면 state.spMoreSeen - 저장됨)
 //  관리자 손쉬운 제작 → 간편 만들기 전체 'moreTip' · 정보 버튼(in-place)으로 연 목록·샘플 편집에는 안 나옴
+// [완성본 보기]: 저장 → 하객 화면. 아직 처음 저장 전(두 분 이름을 직접 안 적음)이면 저장 실패가 아니니 미리보기를 그대로 열고 [발행하기]로 갈 수 있게
+//  (예전엔 이때도 '저장하지 못했어요'가 떠서 발행까지 못 갔음 - 발행 전 점검이 '예시 이름이에요'를 먼저 물어봄)
+function spShowFinal(b) {
+    if (!EDIT_TOKEN || SAMPLE_ID || !saveGateOk()) { spOpenPreview(true, false); return; }
+    if (b) { b.disabled = true; b.textContent = '저장 중…'; }
+    saveToServer(false, true).then(ok => {
+        if (b) { b.disabled = false; b.textContent = '완성본 보기'; }
+        if (ok) spOpenPreview(true, true);
+        else showServerNotice('저장하지 못했어요. 인터넷 연결을 확인하고 잠시 뒤 다시 눌러 주세요.' + (lastSaveErr ? ' (' + esc(lastSaveErr) + ')' : ''));
+    });
+}
 function spMoreTipHtml() {
     if (spInPlace || state.spMoreSeen || SAMPLE_ID || !spOpt('flow', 'moreTip')) return '';
     const mob = window.innerWidth <= 860;
@@ -15999,7 +16012,7 @@ function spRenderList() {
     pane.querySelectorAll('[data-sp-add]').forEach(b => b.addEventListener('click', () => spAddGo(b.dataset.spAdd)));
     pane.querySelector('#spAddMore')?.addEventListener('click', () => { spAddMore = true; spRender(); });
     pane.querySelector('#spAskAgain')?.addEventListener('click', () => { stopAllBgm(); state.spView = 'quick'; spStep = 0; spAskLast = -1; pane._spKey = null; spRender(); spAskAutoSave(); });
-    pane.querySelector('#spListDone').addEventListener('click', e => { const b = e.currentTarget; b.disabled = true; b.textContent = '저장 중…'; saveToServer(false, true).then(ok => { b.disabled = false; b.textContent = '완성본 보기'; if (ok) spOpenPreview(true, true); else showServerNotice('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }); });
+    pane.querySelector('#spListDone').addEventListener('click', e => spShowFinal(e.currentTarget));
     pane.querySelectorAll('[data-li-tog]').forEach(b => b.addEventListener('click', () => {
         const k = b.dataset.liTog, st = steps.find(x => x.k === k), sw = st && swOf(st); stopAllBgm();
         if (sw && !spBlock(sw).enabled) { spBlock(sw).enabled = true; try { renderBlockList(); } catch (e) {} spChanged([sw]); scheduleSnapshot(); } // 꺼진 칸을 누르면 켜고 펼침
@@ -18149,7 +18162,9 @@ function saveGateOk(loose) { // loose = [발행하기] (발행 전 점검에서 
     if (!loose && !(nameTyped('groom', wi) && nameTyped('bride', wi))) return false;
     SAVE_OK = true; return true;
 }
+let lastSaveErr = ''; // 조용한 저장(silent)이 실패한 까닭 - 안내 문구에 같이 보여 줌
 async function saveToServer(publish, silent) {
+    lastSaveErr = '';
     if (!EDIT_TOKEN) {
         if (!silent) showServerNotice('편집 링크(토큰) 없이 열려서 서버에 저장할 수 없습니다. 내 청첩장 화면에서 들어와주세요.');
         return false;
@@ -18194,6 +18209,7 @@ async function saveToServer(publish, silent) {
         return true;
     } catch (e) {
         console.error(e);
+        lastSaveErr = e && e.message ? String(e.message) : '';
         if (!silent) showServerNotice('저장에 실패했습니다: ' + e.message);
         return false; // 실패했다는 걸 호출한 쪽이 알 수 있게 반환 (이전엔 내부에서 삼켜버려서 항상 성공한 것처럼 보였음)
     } finally {
