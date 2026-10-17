@@ -15539,7 +15539,7 @@ function spSplitScroll(el, pop, quiet) {
 }
 // ② 돋보기 창
 let spLensEl = null;
-const SP_LENS = { s: [46, 1], l: [62, 1] }; // [창 폭 %, 창에 보이는 청첩장 폭 비율] - 늘 가로 100% (작아지더라도 양옆이 잘리지 않게 - 예전 0.62·0.8은 양쪽 세로 이름 등이 잘려 보였음)
+const SP_LENS = { s: [36, 1], l: [52, 1] }; // [창 폭 %, 창에 보이는 청첩장 폭 비율] - 늘 가로 100% (작아지더라도 양옆이 잘리지 않게 - 예전 0.62·0.8은 양쪽 세로 이름 등이 잘려 보였음)
 // 창 = 지금 고치는 섹션 하나만 통째로 (가로 100% · 섹션 위아래 끝까지 보이게 줄임 - 사용자 요청 2026-10-17)
 //  창 크기도 섹션 모양대로: 폭은 최대 SP_LENS 폭, 키가 큰 섹션(갤러리 등)이면 더 줄여서 폭이 좁아짐 · 위 이름표 줄(SP_LENS_HEAD) 아래에 섹션
 const SP_LENS_HEAD = 24;
@@ -15552,11 +15552,14 @@ function spLensBox() {
     const W = window.innerWidth, H = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sp-vvh')) || window.innerHeight;
     const kb = document.documentElement.classList.contains('sp-kb'), z = kb ? 's' : spMv.lz;
     const wMax = Math.round(W * SP_LENS[z][0] / 100), top = 58 + 8, nav = document.querySelector('#simplePane .sp-nav'), bottom = H - (nav && !kb ? nav.offsetHeight : 0) - 10;
-    const hMax = Math.round((bottom - top) * (kb ? 0.6 : 0.86)) - SP_LENS_HEAD;
+    const hMax = Math.round((bottom - top) * (kb ? 0.45 : 0.62)) - SP_LENS_HEAD; // (창은 작게 - 긴 섹션은 더 줄여서 통째로)
     const fr = document.getElementById('phoneFrame'), FW = (fr && fr.offsetWidth) || W, sec = spLensSec();
     let sc = wMax / FW, secTop = 0, secH = hMax / sc;
-    if (fr && sec) { const fr0 = fr.getBoundingClientRect(), k = fr0.width / FW || 1, r = sec.getBoundingClientRect(); secTop = (r.top - fr0.top) / k; secH = Math.max(60, r.height / k); sc = Math.min(wMax / FW, hMax / secH); }
-    const w = Math.max(110, Math.round(FW * sc)), h = Math.round(Math.min(secH * sc, hMax)) + SP_LENS_HEAD;
+    if (fr && sec) { const fr0 = fr.getBoundingClientRect(), k = fr0.width / FW || 1, r = sec.getBoundingClientRect(); let t = r.top, bt = r.bottom;
+        // 자유 배치 글자 칸은 섹션 밖으로 넘칠 수 있음 (글이 길어지면 위아래로 늘어남) → 넘친 글자까지 들어가게
+        sec.querySelectorAll('.drag-part, .ib-title-layer, [data-part]').forEach(n => { if (!n.offsetWidth) return; const q = n.getBoundingClientRect(); if (q.top < t) t = q.top; if (q.bottom > bt) bt = q.bottom; });
+        secTop = (t - fr0.top) / k; secH = Math.max(60, (bt - t) / k); sc = Math.min(wMax / FW, hMax / secH); }
+    const w = Math.max(96, Math.round(FW * sc)), h = Math.round(Math.min(secH * sc, hMax)) + SP_LENS_HEAD;
     return { W, w, h, top, bottom, z, sc, secTop, FW, sec };
 }
 function spLensXY(c, bx) { return { x: c[1] === 'l' ? 10 : bx.W - bx.w - 10, y: c[0] === 't' ? bx.top : bx.bottom - bx.h }; }
@@ -15590,6 +15593,7 @@ function spLensPlace(anim) {
     if (spMvMode() !== 'lens') return;
     const pane = document.querySelector('#screenEditor .preview-pane'), ui = document.getElementById('spLensUi'); if (!pane || !ui) return;
     const root = document.documentElement, kind = spLensKind(), peeking = Date.now() < spLensPeekUntil;
+    if (pane.scrollTop || pane.scrollLeft) { pane.scrollTop = 0; pane.scrollLeft = 0; } // 창 안이 스크롤돼 있으면 섹션이 위로 밀려 위가 잘리고 아래가 비었음 (자리는 --sp-lens-tf로만 맞춤)
     const bx = spLensBox(); let c = spLensCorner(bx, kind === 'cd');
     // ③ 비킬 모서리가 없으면 접힘 · ④ 평소엔 숨음 → 바꾸면 잠깐(peeking) 또는 창을 눌러 고정(spLensPin)일 때만 보임
     spLensWouldHide = kind === 'peek' || (kind === 'cd' && !c);
@@ -15661,6 +15665,10 @@ function spLensBind() {
     document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button, [role="button"]'); if (!lensOn() || !b || !inPane(b) || b.matches('label input')) return; setTimeout(() => spLensPeek(2000), 260); }, true);
     // 적는 칸을 누르거나 질문 칸을 넘기면 다시 자리 잡기 (적는 칸을 가리지 않게 - spLensCorner)
     document.addEventListener('focusin', e => { if (spMvMode() === 'lens' && e.target.closest && e.target.closest('#simplePane')) setTimeout(spLensPlace, 380); });
+    // 창 안(미리보기 칸)은 스크롤하지 않음 + 글이 길어지거나 사진이 늦게 뜨는 등 청첩장 높이가 바뀌면 창 크기·자리를 다시 맞춤
+    const pv = pane(); if (pv) pv.addEventListener('scroll', () => { if (spMvMode() === 'lens' && (pv.scrollTop || pv.scrollLeft)) { pv.scrollTop = 0; pv.scrollLeft = 0; } }, { passive: true });
+    const pr = document.getElementById('previewRoot');
+    if (pr && window.ResizeObserver) { let rt = 0; new ResizeObserver(() => { if (spMvMode() !== 'lens' || document.documentElement.classList.contains('sp-lens-drag')) return; clearTimeout(rt); rt = setTimeout(() => spLensPlace(), 120); }).observe(pr); }
     window.addEventListener('scroll', () => { if (spMvMode() === 'lens') { clearTimeout(spLensSc); spLensSc = setTimeout(spLensPlace, 160); } }, { passive: true });
 }
 // 미리보기를 ↓ 스크롤 버튼이 보이는 자리로 (버튼 모양을 고를 때 - 맨 위로 올라가 버튼이 안 보이던 문제)
