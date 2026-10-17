@@ -946,10 +946,20 @@ html.mob-easy-only #scBack { display: none; }
     html.sp-lens-drag .sp-lens-dock { display: block; position: fixed; inset: 0; z-index: 639; pointer-events: none; }
     .sp-lens-dock i { position: absolute; border-radius: 16px; border: 2px dashed rgba(184, 146, 90, .75); background: rgba(184, 146, 90, .08); }
     .sp-lens-dock i.near { border-style: solid; background: rgba(184, 146, 90, .2); }
-    html.sp-mv-lens.sp-lens-tucked #screenEditor .preview-pane, html.sp-mv-lens.sp-lens-tucked .sp-lens-ui { opacity: 0; pointer-events: none; }
-    html.sp-mv-lens.sp-lens-tucked:not(.sp-pv) .sp-lens-tab { display: block; position: fixed; z-index: 641; top: 46%; width: 30px; height: 100px; border: 0; background: var(--wz-ink, #2B2320); color: #fff; font: inherit; font-size: 11.5px; font-weight: 700; writing-mode: vertical-rl; letter-spacing: .1em; box-shadow: 0 6px 16px rgba(0,0,0,.2); }
+    html.sp-mv-lens:is(.sp-lens-tucked, .sp-lens-auto-hide) #screenEditor .preview-pane, html.sp-mv-lens:is(.sp-lens-tucked, .sp-lens-auto-hide) .sp-lens-ui { opacity: 0; pointer-events: none; }
+    html.sp-mv-lens:is(.sp-lens-tucked, .sp-lens-auto-hide):not(.sp-pv) .sp-lens-tab { display: block; position: fixed; z-index: 641; top: 46%; width: 30px; height: 100px; border: 0; background: var(--wz-ink, #2B2320); color: #fff; font: inherit; font-size: 11.5px; font-weight: 700; writing-mode: vertical-rl; letter-spacing: .1em; box-shadow: 0 6px 16px rgba(0,0,0,.2); }
     html.sp-mv-lens:not(.sp-pv) .sp-body { padding-bottom: calc(40px + var(--sp-lens-pad, 0px)); }
     .sp-lens-tab.r { right: 0; border-radius: 12px 0 0 12px; } .sp-lens-tab.l { left: 0; border-radius: 0 12px 12px 0; }
+    /* ③ 비켜서고 접힘 + 잠깐 보여 주기 · ④ 평소엔 숨고 바꾸면 2초 (spLensKind 'cd' / 'peek') - 숨을 땐 오른쪽으로 작아지며 들어감 */
+    html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane, html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-mv-lens:not(.sp-pv) .sp-lens-ui { transform-origin: 100% 60%; transition: left .34s cubic-bezier(.3,.8,.3,1), top .34s cubic-bezier(.3,.8,.3,1), width .3s ease, height .3s ease, opacity .22s ease, transform .3s cubic-bezier(.3,1.3,.5,1); }
+    html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-lens-auto-hide #screenEditor .preview-pane, html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-lens-auto-hide .sp-lens-ui { transform: scale(.3); }
+    .sp-lens-tab.fold { top: auto; bottom: 86px; right: 12px; width: 60px; height: 60px; border-radius: 50%; writing-mode: horizontal-tb; letter-spacing: 0; font-size: 11.5px; box-shadow: 0 6px 18px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.18); }
+    .sp-lens-x { display: none; position: absolute; right: 37px; top: 5px; width: 26px; height: 26px; border: 0; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; font-size: 12px; cursor: pointer; place-items: center; }
+    html.sp-lens-pinned .sp-lens-x { display: grid; }
+    .sp-lens-cd { display: none; position: absolute; left: 24%; right: 24%; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.35); overflow: hidden; }
+    html.sp-lens-peeking .sp-lens-cd { display: block; }
+    .sp-lens-cd.run::after { content: ''; position: absolute; inset: 0; background: #fff; transform-origin: 0 50%; animation: spLensCd var(--cd, 2s) linear forwards; }
+    @keyframes spLensCd { to { transform: scaleX(0); } }
 }
 @media (max-width: 860px) and (prefers-reduced-motion: reduce) { html.sp-mv-split #screenEditor .preview-pane, html.sp-mv-lens #screenEditor .preview-pane, html.sp-mv-lens #screenEditor .preview-pane > .phone-frame, .sp-lens-ui { transition: none !important; } }
 
@@ -5443,7 +5453,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy && j.easy.off && typeof j.easy.off === 'object') EASY_OFF = j.easy.off;
     if (j && j.easy && Array.isArray(j.easy.ask)) EASY_ASK = j.easy.ask; // 처음 만들 때 질문 순서·켜기
     if (j && j.easy) EASY_SHOWOFF = !!j.easy.showOff;
-    if (j && j.easy && ['split', 'lens', 'off'].includes(j.easy.mobileView)) { EASY_MOBILE_VIEW = j.easy.mobileView; try { spMvApply(); } catch (e) {} } // 휴대폰 보기 방식 (관리자 손쉬운 제작)
+    if (j && j.easy && ['split', 'lens', 'lens2', 'peek', 'off'].includes(j.easy.mobileView)) { EASY_MOBILE_VIEW = j.easy.mobileView; try { spMvApply(); } catch (e) {} } // 휴대폰 보기 방식 (관리자 손쉬운 제작)
     if (j && j.easy) { EASY_VIDEO_SAMPLE = /^[\w-]{11}$/.test(j.easy.videoSample || '') ? j.easy.videoSample : ''; try { if (spApplyVideoSample()) renderPreview(); } catch (e) {} } // 메인 영상 예시 (관리자 손쉬운 제작)
     if (j && j.easy) { EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; EASY_HERO_POS = j.easy.heroPos && typeof j.easy.heroPos === 'object' ? j.easy.heroPos : {}; } // 메인 사진 예시 + 보일 부분·확대 (관리자 손쉬운 제작)
     if (j && j.easy) { try { if (startTrack === 'simple' && document.getElementById('screenDesign').classList.contains('active')) renderDesignScreen(); } catch (e) {} } // 디자인 고르기 (flow.pick · 메인 사진 예시)
@@ -15377,27 +15387,32 @@ function spScrollPreview(ids, pop) { // pop: 스크롤하지 않고 그 자리�
 //            옆 끝으로 밀면 '청첩장' 손잡이로 숨음. 적는 칸을 가리면 비킴. 누르면 완성본 미리보기(spOpenPreview).
 //  'off'   = 예전처럼 질문만 (위 '지금 청첩장' 카드를 눌러 미리보기). 크기·켜고 끔·창 자리는 이 기기에 기억(localStorage).
 let EASY_MOBILE_VIEW = 'split';
+// 돋보기 창 3가지 (관리자 '휴대폰 보기 방식'): 'lens' ② 그대로 떠 있음 · 'lens2' ③ 만지는 칸을 피해 비켜서고 못 비키면 접힘 + 바꾸면 잠깐 보여 주기(C+D) · 'peek' ④ 평소엔 숨고 바꾸면 2초 보여 주기(D)
+const SP_LENS_VIEWS = ['lens', 'lens2', 'peek'];
+function spLensKind() { return EASY_MOBILE_VIEW === 'lens2' ? 'cd' : EASY_MOBILE_VIEW === 'peek' ? 'peek' : 'plain'; }
 const SP_MV_SNAP = [[30, '작게'], [45, '반'], [65, '크게']];
 let spMv = (() => { try { return Object.assign({ h: 45, off: false, lens: 'br', lz: 's' }, JSON.parse(localStorage.getItem('ld-sp-mv') || '{}')); } catch (e) { return { h: 45, off: false, lens: 'br', lz: 's' }; } })();
 const spMvSave = () => { try { localStorage.setItem('ld-sp-mv', JSON.stringify(spMv)); } catch (e) {} };
 function spMvMode() { // 지금 쓰는 휴대폰 보기 ('split' | 'lens' | '')
     const r = document.documentElement;
     if (window.innerWidth > 860 || !r.classList.contains('simple-mode') || r.classList.contains('sp-pv')) return '';
-    if (EASY_MOBILE_VIEW === 'lens') return 'lens';
+    if (SP_LENS_VIEWS.includes(EASY_MOBILE_VIEW)) return 'lens';
     return EASY_MOBILE_VIEW === 'split' && !spMv.off ? 'split' : '';
 }
 function spMvApply() {
     const r = document.documentElement, mob = window.innerWidth <= 860 && r.classList.contains('simple-mode');
     const v = mob ? EASY_MOBILE_VIEW : '';
     r.classList.toggle('sp-mv-split', v === 'split' && !spMv.off);
-    r.classList.toggle('sp-mv-lens', v === 'lens');
-    r.classList.toggle('sp-mv-on', (v === 'split' && !spMv.off) || v === 'lens');
-    if (v !== 'lens') { const pane = document.querySelector('#screenEditor .preview-pane'); if (pane) ['left', 'top', 'width', 'height'].forEach(k => { pane.style[k] = ''; }); r.classList.remove('sp-lens-tucked'); }
+    const lens = SP_LENS_VIEWS.includes(v);
+    r.classList.toggle('sp-mv-lens', lens);
+    r.classList.toggle('sp-lens-k-cd', v === 'lens2'); r.classList.toggle('sp-lens-k-peek', v === 'peek');
+    r.classList.toggle('sp-mv-on', (v === 'split' && !spMv.off) || lens);
+    if (!lens) { const pane = document.querySelector('#screenEditor .preview-pane'); if (pane) ['left', 'top', 'width', 'height'].forEach(k => { pane.style[k] = ''; }); r.classList.remove('sp-lens-tucked', 'sp-lens-auto-hide', 'sp-lens-peeking'); }
     if (!(v === 'split' && !spMv.off)) r.classList.remove('sp-split-big');
     spMvUi();
     const tg = document.getElementById('spSplitTg'); if (tg) { tg.hidden = v !== 'split'; tg.classList.toggle('on', !spMv.off); tg.setAttribute('aria-pressed', String(!spMv.off)); }
     if (v === 'split' && !spMv.off) spSplitSet(spMv.h, true);
-    if (v === 'lens') requestAnimationFrame(spLensPlace);
+    if (lens) requestAnimationFrame(spLensPlace);
 }
 // 화면 부품 (한 번만 만듦): 머리줄 스위치 · 가운데 손잡이 · 돋보기 창 겉모습
 function spMvUi() {
@@ -15409,7 +15424,7 @@ function spMvUi() {
         <span class="sp-sh-l" id="spShL">지금 고치는 곳</span><span class="sp-sh-g"><i></i><b id="spShSz">반</b><i></i></span>
         <button type="button" class="sp-sh-b" id="spShRet" hidden>↺ 고치는 곳</button><button type="button" class="sp-sh-b" id="spShBig" title="청첩장을 화면 가득 보기">⤢ 전체</button></div>
         <button type="button" class="sp-split-back" id="spSplitBack">질문으로 돌아가기</button>`);
-    document.body.insertAdjacentHTML('beforeend', `<div class="sp-lens-ui" id="spLensUi" role="button" tabindex="0" aria-label="청첩장 크게 보기"><span class="sp-lens-t" id="spLensT">지금 청첩장</span><button type="button" class="sp-lens-z" id="spLensZ" aria-label="창 크기 바꾸기">⤢</button><i class="sp-lens-map"><b id="spLensDot"></b></i><span class="sp-lens-f">누르면 크게 · 끌면 옮겨요</span></div>
+    document.body.insertAdjacentHTML('beforeend', `<div class="sp-lens-ui" id="spLensUi" role="button" tabindex="0" aria-label="청첩장 크게 보기"><span class="sp-lens-t" id="spLensT">지금 청첩장</span><button type="button" class="sp-lens-z" id="spLensZ" aria-label="창 크기 바꾸기">⤢</button><button type="button" class="sp-lens-x" id="spLensX" aria-label="청첩장 창 숨기기" title="숨기기">✕</button><i class="sp-lens-map"><b id="spLensDot"></b></i><span class="sp-lens-f" id="spLensF">누르면 크게 · 끌면 옮겨요</span><i class="sp-lens-cd" id="spLensCd"></i></div>
         <div class="sp-lens-dock" id="spLensDock"><i data-c="tl"></i><i data-c="tr"></i><i data-c="bl"></i><i data-c="br"></i></div><button type="button" class="sp-lens-tab" id="spLensTab">청첩장 ‹</button>`);
     const tg = document.getElementById('spSplitTg');
     tg.addEventListener('click', () => { spMv.off = !spMv.off; spMvSave(); spMvApply(); if (!spMv.off) setTimeout(spMvRefollow, 320); });
@@ -15534,22 +15549,49 @@ function spLensBox() {
 }
 function spLensXY(c, bx) { return { x: c[1] === 'l' ? 10 : bx.W - bx.w - 10, y: c[0] === 't' ? bx.top : bx.bottom - bx.h }; }
 // 고른 모서리가 지금 질문의 적는 칸을 가리면 가리지 않는 모서리로 (위아래 → 좌우 → 대각선 순서, 다 가리면 고른 그대로)
-function spLensCorner(bx) {
+function spLensCorner(bx, strict) {
     const pref = document.documentElement.classList.contains('sp-kb') ? 't' + spMv.lens[1] : spMv.lens;
-    const H = window.innerHeight, fields = [...document.querySelectorAll('#spBody input:not([type="hidden"]):not([type="file"]), #spBody textarea, #spBody select')]
-        .map(e => e.getBoundingClientRect()).filter(r => r.width && r.height && r.bottom > 0 && r.top < H);
+    const H = window.innerHeight, plain = spLensKind() === 'plain', sel = plain ? '#spBody' : '#simplePane';
+    // ② 질문 칸의 적는 칸 모두 · ③④ 지금 만지는 칸 한 줄 전체(제목·설명 글·스위치·막대)만 - 모든 칸을 피하면 늘 접혀 버림
+    const els = plain ? [...document.querySelectorAll(`${sel} input:not([type="hidden"]):not([type="file"]), ${sel} textarea, ${sel} select`)] : [spLensActiveRow()].filter(Boolean);
+    const fields = els.map(e => e.getBoundingClientRect()).filter(r => r.width && r.height && r.bottom > 0 && r.top < H);
     const hit = c => { const p = spLensXY(c, bx); return fields.some(r => r.right > p.x + 4 && r.left < p.x + bx.w - 4 && r.bottom > p.y + 4 && r.top < p.y + bx.h - 4); };
     const v = x => (x === 't' ? 'b' : 't'), hz = x => (x === 'l' ? 'r' : 'l');
-    return [pref, v(pref[0]) + pref[1], pref[0] + hz(pref[1]), v(pref[0]) + hz(pref[1])].find(c => !hit(c)) || pref;
+    return [pref, v(pref[0]) + pref[1], pref[0] + hz(pref[1]), v(pref[0]) + hz(pref[1])].find(c => !hit(c)) || (strict ? null : pref);
+}
+// 지금 만지는 칸 (누르거나 적기 시작한 칸의 한 줄 - 스위치 줄·막대 줄·적는 칸 묶음)
+let spLensAct = null, spLensPeekUntil = 0, spLensPeekT = 0, spLensPin = false, spLensWouldHide = false;
+function spLensActiveRow() {
+    const t = spLensAct && spLensAct.isConnected ? spLensAct : (document.activeElement && document.activeElement.closest && document.activeElement.closest('#simplePane') ? document.activeElement : null);
+    if (!t) return null;
+    return t.closest('label.sp-sw, .sp-range, .wz-field, .spb-h') || t;
+}
+// ③④: 바꾼 모습을 잠깐(2초) 보여 주기 - 막대를 끄는 동안은 계속, 손을 떼면 2초 뒤 들어감 · 창을 누르면 고정(spLensPin)
+function spLensPeek(ms) {
+    if (spMvMode() !== 'lens' || spLensKind() === 'plain' || spMv.tuck) return;
+    ms = ms || 2000; spLensPeekUntil = Date.now() + ms;
+    clearTimeout(spLensPeekT); spLensPeekT = setTimeout(spLensPlace, ms + 40);
+    spLensPlace();
+    const cd = document.getElementById('spLensCd'); if (cd) { cd.style.setProperty('--cd', ms + 'ms'); cd.classList.remove('run'); void cd.offsetWidth; cd.classList.add('run'); }
 }
 function spLensPlace() {
     if (spMvMode() !== 'lens') return;
     const pane = document.querySelector('#screenEditor .preview-pane'), ui = document.getElementById('spLensUi'); if (!pane || !ui) return;
-    const bx = spLensBox(), c = spLensCorner(bx), p = spLensXY(c, bx);
-    document.documentElement.classList.toggle('sp-lens-tucked', !!spMv.tuck);
-    document.documentElement.style.setProperty('--sp-lens-pad', (!spMv.tuck && c[0] === 'b' ? bx.h + 12 : 0) + 'px'); // 창이 아래에 있으면 질문 칸 맨 아래도 창 위로 올려 볼 수 있게
+    const root = document.documentElement, kind = spLensKind(), peeking = Date.now() < spLensPeekUntil;
+    const bx = spLensBox(); let c = spLensCorner(bx, kind === 'cd');
+    // ③ 비킬 모서리가 없으면 접힘 · ④ 평소엔 숨음 → 바꾸면 잠깐(peeking) 또는 창을 눌러 고정(spLensPin)일 때만 보임
+    spLensWouldHide = kind === 'peek' || (kind === 'cd' && !c);
+    const hide = spLensWouldHide && !peeking && !spLensPin && !spMv.tuck;
+    if (!c) c = spLensCorner(bx);
+    const p = spLensXY(c, bx);
+    root.classList.toggle('sp-lens-tucked', !!spMv.tuck);
+    root.classList.toggle('sp-lens-auto-hide', hide);
+    root.classList.toggle('sp-lens-peeking', !hide && peeking && !spLensPin && spLensWouldHide);
+    root.classList.toggle('sp-lens-pinned', spLensPin && kind !== 'plain');
+    root.style.setProperty('--sp-lens-pad', (!spMv.tuck && !hide && !spLensWouldHide && c[0] === 'b' ? bx.h + 12 : 0) + 'px'); // 창이 아래에 있으면 질문 칸 맨 아래도 창 위로 올려 볼 수 있게 (잠깐 보이는 창은 빼고)
     [pane, ui].forEach(el => { el.style.left = p.x + 'px'; el.style.top = p.y + 'px'; el.style.width = bx.w + 'px'; el.style.height = bx.h + 'px'; });
-    const tab = document.getElementById('spLensTab'); if (tab) { tab.className = 'sp-lens-tab ' + (spMv.tuck || 'r'); tab.textContent = spMv.tuck === 'l' ? '› 청첩장' : '청첩장 ‹'; }
+    const tab = document.getElementById('spLensTab'); if (tab) { const fold = hide && kind === 'cd'; tab.className = 'sp-lens-tab ' + (fold ? 'fold' : spMv.tuck || 'r'); tab.textContent = fold ? '청첩장' : spMv.tuck === 'l' ? '› 청첩장' : '청첩장 ‹'; }
+    const lf = document.getElementById('spLensF'); if (lf) lf.textContent = kind !== 'plain' && spLensWouldHide && !spLensPin ? '누르면 계속 보여요' : '누르면 크게 · 끌면 옮겨요';
     const z = document.getElementById('spLensZ'); if (z) z.textContent = spMv.lz === 's' ? '⤢' : '↙';
     spLensAim(null, true);
 }
@@ -15589,7 +15631,7 @@ function spLensBind() {
             const n = near(x, y); dk.forEach(d => d.classList.toggle('near', d === n)); };
         const up = () => { ui.removeEventListener('pointermove', mv); ui.removeEventListener('pointerup', up); ui.removeEventListener('pointercancel', up);
             root.classList.remove('sp-lens-drag');
-            if (!moved) { spOpenPreview(false); return; }
+            if (!moved) { if (spLensKind() !== 'plain' && spLensWouldHide && !spLensPin) { spLensPin = true; spLensPlace(); return; } spOpenPreview(false); return; } // ③④ 잠깐 보이는 창을 누르면 계속 보이게
             const x = ui.offsetLeft;
             if (x < -bx.w * 0.35 || x + bx.w > bx.W + bx.w * 0.35) spMv.tuck = x < 0 ? 'l' : 'r';
             else spMv.lens = near(x, ui.offsetTop).dataset.c;
@@ -15597,7 +15639,19 @@ function spLensBind() {
         ui.addEventListener('pointermove', mv); ui.addEventListener('pointerup', up); ui.addEventListener('pointercancel', up);
     });
     ui.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); spOpenPreview(false); } });
-    tab.addEventListener('click', () => { spMv.tuck = ''; spMvSave(); spLensPlace(); });
+    tab.addEventListener('click', () => { if (spMv.tuck) { spMv.tuck = ''; spMvSave(); } else if (spLensKind() !== 'plain') spLensPin = true; spLensPlace(); });
+    const lx = document.getElementById('spLensX');
+    lx.addEventListener('pointerdown', e => e.stopPropagation());
+    lx.addEventListener('click', e => { e.stopPropagation(); spLensPin = false; spLensPeekUntil = 0; spLensPlace(); });
+    // ③④ 만지는 칸 기억 + 바꾸면 잠깐 보여 주기 (질문·목록 칸 안 스위치·막대·고르기 버튼 · 글자는 다 적고 1.2초 뒤)
+    const inPane = t => t && t.closest && t.closest('#simplePane') && !t.closest('.sp-nav, .sp-head, .sp-ask-top');
+    const lensOn = () => spMvMode() === 'lens' && spLensKind() !== 'plain';
+    ['pointerdown', 'focusin'].forEach(ev => document.addEventListener(ev, e => { if (lensOn() && inPane(e.target)) spLensAct = e.target; }, true));
+    let typeT = 0;
+    document.addEventListener('input', e => { const t = e.target; if (!lensOn() || !inPane(t)) return;
+        if (t.type === 'range') spLensPeek(2000); else if (t.matches('input[type="text"], input:not([type]), input[type="tel"], input[type="search"], textarea')) { clearTimeout(typeT); typeT = setTimeout(() => spLensPeek(2200), 1200); } }, true);
+    document.addEventListener('change', e => { const t = e.target; if (!lensOn() || !inPane(t) || t.type === 'range' || t.type === 'file') return; setTimeout(() => spLensPeek(2000), 260); }, true);
+    document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button, [role="button"]'); if (!lensOn() || !b || !inPane(b) || b.matches('label input')) return; setTimeout(() => spLensPeek(2000), 260); }, true);
     // 적는 칸을 누르거나 질문 칸을 넘기면 다시 자리 잡기 (적는 칸을 가리지 않게 - spLensCorner)
     document.addEventListener('focusin', e => { if (spMvMode() === 'lens' && e.target.closest && e.target.closest('#simplePane')) setTimeout(spLensPlace, 380); });
     window.addEventListener('scroll', () => { if (spMvMode() === 'lens') { clearTimeout(spLensSc); spLensSc = setTimeout(spLensPlace, 160); } }, { passive: true });
@@ -19024,7 +19078,10 @@ const LDH_EASY = [
     { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },
     { t: '저장은 어떻게 하나요?', d: '따로 안 눌러도 저절로 저장돼요', steps: ['고치면 몇 초 뒤 저절로 저장돼요. 질문을 넘길 때도 저장돼요.', '창을 닫았다가 다시 들어와도 하던 질문부터 이어서 해요.', '이미 발행한 청첩장이면 고친 내용이 하객 화면에도 바로 바뀌어요.'] },
     { t: '위 청첩장 화면 쓰는 법', d: '크기 바꾸기 · 끄고 켜기', when: c => c.mv === 'split', steps: ['위는 내 청첩장, 아래는 적는 곳이에요. 아래에 적으면 위가 바로 바뀌고, 고치는 곳으로 저절로 움직여요.', '가운데 줄을 위아래로 끌면 크기가 바뀌어요. [⤢ 전체]를 누르면 청첩장을 크게 봐요.', '글자를 적느라 키보드가 올라오면 위 칸이 작아지고 적는 칸이 가운데로 와요.', '맨 위 [청첩장 보기]를 끄면 적는 곳만 크게 보여요.'], show: () => ldhIntroSteps('easy-split') },
-    { t: '작은 청첩장 창 쓰는 법', d: '옮기기 · 크게 보기', when: c => c.mv === 'lens', steps: ['작은 창에 지금 고치는 곳이 크게 보여요.', '창을 끌면 다른 모서리로 옮겨져요. 옆 끝으로 밀면 숨어요.', '창을 누르면 청첩장 전체가 크게 보여요.'], show: () => ldhIntroSteps('easy-lens') },
+    { t: '작은 청첩장 창 쓰는 법', d: '숨었다가 잠깐 나와요', when: c => c.mv === 'lens' && spLensKind() !== 'plain', steps: () => spLensKind() === 'peek'
+        ? ['평소엔 청첩장 창이 숨어 있어서 설정 글자를 가리지 않아요.', '스위치·막대·고르기를 바꾸면 창이 2초 동안 나와 바뀐 모습을 보여 줘요.', '창이나 오른쪽 \'청첩장\' 손잡이를 누르면 계속 보여요. ✕를 누르면 다시 숨어요.']
+        : ['작은 창이 지금 만지는 칸을 피해 다른 모서리로 비켜요.', '비킬 곳이 없으면 오른쪽 아래 \'청첩장\' 동그라미로 접혀요. 설정을 바꾸면 2초 동안 나와서 바뀐 모습을 보여 줘요.', '동그라미를 누르면 계속 보여요. ✕를 누르면 다시 접혀요.'], show: () => ldhIntroSteps('easy-lens') },
+    { t: '작은 청첩장 창 쓰는 법', d: '옮기기 · 크게 보기', when: c => c.mv === 'lens' && spLensKind() === 'plain', steps: ['작은 창에 지금 고치는 곳이 크게 보여요.', '창을 끌면 다른 모서리로 옮겨져요. 옆 끝으로 밀면 숨어요.', '창을 누르면 청첩장 전체가 크게 보여요.'], show: () => ldhIntroSteps('easy-lens') },
     { t: '글자 위치 · 스티커까지 바꾸고 싶어요', d: '전문가 모드에서 자세히 꾸며요', steps: ['[전문가 모드]에서는 글자를 끌어서 옮기고, 스티커를 하나씩 붙이고, 칸 모양을 더 자세히 바꿀 수 있어요.', '지금 적은 내용은 그대로 옮겨져요. 언제든 간편 만들기로 돌아올 수 있어요.', '[전문가 모드] 버튼은 질문을 다 마치면 위에 나와요. 지금 가려면 아래 버튼을 눌러요.'], go: ['전문가 모드로 가기', () => { closeLdh(); spInPlace ? spExitInPlace() : simpleToFull(); }] },
 ];
 const LDH_EXPERT = [
@@ -19092,7 +19149,9 @@ function ldhIntroSteps(kind) {
         { el: () => ldh$('#spSplitHd'), t: '크기 바꾸기', x: '이 줄을 위아래로 끌면 청첩장 칸이 커지고 작아져요.' },
         { el: () => ldh$('#spSplitTg'), t: '끄고 켜기', x: '적는 곳만 크게 보고 싶으면 이 스위치를 꺼요.' }, help];
     if (kind === 'easy-lens') return [
-        { el: () => ldh$('#spLensUi'), t: '작은 청첩장 창', x: '지금 고치는 곳이 여기 크게 보여요. 끌면 옮겨지고, 누르면 전체가 보여요.' }, help];
+        spLensKind() === 'plain' || !document.documentElement.classList.contains('sp-lens-auto-hide')
+            ? { el: () => ldh$('#spLensUi'), t: '작은 청첩장 창', x: spLensKind() === 'plain' ? '지금 고치는 곳이 여기 크게 보여요. 끌면 옮겨지고, 누르면 전체가 보여요.' : '지금 고치는 곳이 여기 보여요. 설정 글자를 가리면 저절로 비켜요.' }
+            : { el: () => ldh$('#spLensTab'), t: '청첩장 창', x: '평소엔 여기 숨어 있어요. 설정을 바꾸면 2초 동안 나와 바뀐 모습을 보여 주고, 누르면 계속 보여요.' }, help];
     if (kind === 'easy-pc') return [
         { el: () => ldh$('#phoneFrame'), t: '여기가 내 청첩장', x: '오른쪽에 적으면 여기 청첩장이 바로 바뀌어요.' },
         { el: ldhUndoEl, t: '잘못 고쳤으면', x: '이 화살표를 누르면 바로 전으로 돌아가요.' }, help];
@@ -19148,7 +19207,7 @@ function openLdh(item) {
         bd.querySelectorAll('.ldh-ic').forEach(btn => btn.addEventListener('click', () => { const e = icons[+btn.dataset.k], [t, x] = nm(e); closeLdh(); ldhTourStart([{ el: () => e, t, x }]); }));
     } else {
         ldh$('#ldhTitle').textContent = item.t;
-        bd.innerHTML = `<ol class="ldh-steps">${(item.steps || []).map(t => `<li>${esc(t)}</li>`).join('')}</ol>
+        bd.innerHTML = `<ol class="ldh-steps">${((typeof item.steps === 'function' ? item.steps() : item.steps) || []).map(t => `<li>${esc(t)}</li>`).join('')}</ol>
             <div class="ldh-acts">${item.show ? '<button type="button" class="ldh-show" id="ldhShow">화면에서 보여주기</button>' : ''}${item.go ? `<button type="button" class="ldh-go" id="ldhGo">${esc(item.go[0])}</button>` : ''}</div>`;
         const sh = ldh$('#ldhShow'); if (sh) sh.addEventListener('click', () => { closeLdh(); setTimeout(() => ldhTourStart(item.show()), 260); });
         const go = ldh$('#ldhGo'); if (go) go.addEventListener('click', () => { closeLdh(); setTimeout(() => item.go[1](), 200); });

@@ -18,7 +18,7 @@
  *                ask    : 처음 만들 때 질문 [{"id":"names:name","on":true}, ...] (순서 = 묻는 순서)
  *                off    : 끈 세부 옵션 {step: [key]} · showOff: 디자인에서 꺼 둔 섹션도 목록에 보이기
  *                heroSample : 메인 사진 예시 '/invite/uploads/site/….webp' (고객이 사진을 고르기 전까지 간편 만들기 첫 화면에 보임)
- *                mobileView : 휴대폰 간편 만들기 보기 방식 'split'(① 반반 화면, 기본) | 'lens'(② 떠 있는 돋보기 창) | 'off'(질문만)
+ *                mobileView : 휴대폰 간편 만들기 보기 방식 'split'(① 반반 화면, 기본) | 'lens'(② 떠 있는 돋보기 창) | 'lens2'(③ 비켜서고 접히는 창 + 바꾸면 잠깐 보여 주기) | 'peek'(④ 바꾸면 잠깐 보여 주기) | 'off'(질문만)
  *                heroPos    : 그 예시 사진에서 보일 부분·확대 {focus:'x% y%', zoom:1~4} (관리자가 끌어서 정함, 고객 화면 state.imgFocus/imgZoom으로 들어감)
  *                videoSample: 메인 영상 예시 유튜브 영상 ID 11자 (고객이 영상 주소를 넣기 전까지 영상으로 시작하는 첫 화면에 보임, 없으면 에디터 기본 예시)
  *                단계 순서와 켜기/끄기. names(두 사람)는 늘 켜짐, finish(마무리)는 늘 맨 끝. 정한 적 없으면 기본 순서·모두 켜짐
@@ -404,7 +404,7 @@ function section_youtube_id(string $in): string
     return '';
 }
 
-const SECTION_EASY_MVIEWS = ['split', 'lens', 'off'];
+const SECTION_EASY_MVIEWS = ['split', 'lens', 'lens2', 'peek', 'off'];
 /** 휴대폰 간편 만들기 보기 방식 (기본 'split') */
 function section_defaults_easy_mview(): string
 {
