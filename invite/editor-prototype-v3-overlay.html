@@ -15539,7 +15539,7 @@ function spSplitScroll(el, pop, quiet) {
 }
 // ② 돋보기 창
 let spLensEl = null;
-const SP_LENS = { s: [46, 0.62], l: [62, 0.8] }; // [창 폭 %, 창에 보이는 청첩장 폭 비율]
+const SP_LENS = { s: [46, 1], l: [62, 1] }; // [창 폭 %, 창에 보이는 청첩장 폭 비율] - 늘 가로 100% (작아지더라도 양옆이 잘리지 않게 - 예전 0.62·0.8은 양쪽 세로 이름 등이 잘려 보였음)
 function spLensBox() {
     const W = window.innerWidth, H = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sp-vvh')) || window.innerHeight;
     const kb = document.documentElement.classList.contains('sp-kb'), z = kb ? 's' : spMv.lz;
