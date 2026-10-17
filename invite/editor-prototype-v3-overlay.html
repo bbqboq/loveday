@@ -4705,14 +4705,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z12">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018z12">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z13">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018z13">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018z12"></script>
-<script src="assets/tip-demos.js?v=1018z12"></script>
-<script src="assets/ld-dialog.js?v=1018z12"></script>
+<script src="assets/invite-blocks.js?v=1018z13"></script>
+<script src="assets/tip-demos.js?v=1018z13"></script>
+<script src="assets/ld-dialog.js?v=1018z13"></script>
 </head>
 <body>
 
@@ -15498,16 +15498,26 @@ document.addEventListener('focusin', e => { const t = e.target; if (t && t.close
 let spFocT = 0;
 function spMvGlow(el) { if (!el || el.classList.contains('col')) return; el.classList.remove('sp-glow'); void el.offsetWidth; el.classList.add('sp-glow'); clearTimeout(el._spG); el._spG = setTimeout(() => el.classList.remove('sp-glow'), 1400); }
 function spMvRefollow() { if (spCurSt) spScrollPreview(spCurSt.s || [], false); }
+// 끄는 막대(지도 높이 등)를 움직이는 동안: 그 부분을 매 프레임 바로 따라감 (반짝임·부드러운 이동 없이 - 예전엔 0.26초 뒤에야 겨눠서 돋보기 창이 늦게 따라왔음)
+function spMvFollow(sel) {
+    spPvHint = { sel, t: Date.now() };
+    const mv = spMvMode(); if (!mv || !spCurSt) return;
+    cancelAnimationFrame(spMvFollow._r);
+    spMvFollow._r = requestAnimationFrame(() => { const el = spPvTargetEl(spCurSt); if (!el) return; if (mv === 'lens') spLensAim(el, true); else spSplitScroll(el, true, true); });
+}
 // ① 반반 화면: 고치는 자리를 위 칸 가운데쯤으로 (섹션이면 섹션 맨 위)
-function spSplitScroll(el, pop) {
+function spSplitScroll(el, pop, quiet) {
     const pane = document.querySelector('#screenEditor .preview-pane'); if (!pane || !el) return;
     const pr = pane.getBoundingClientRect(), r = el.getBoundingClientRect(), isCol = el.classList.contains('col');
     let top = r.top - pr.top + pane.scrollTop;
-    top = isCol && r.height > pane.clientHeight * 0.6 ? top - 12 : top + r.height / 2 - pane.clientHeight * 0.45;
+    top = isCol && r.height > pane.clientHeight * 0.6 ? top - 12
+        : !isCol && r.height > pane.clientHeight * 0.8 ? top + r.height - pane.clientHeight * 0.9 // 칸보다 큰 부분(높인 지도 등)은 아래 끝이 보이게
+        : top + r.height / 2 - pane.clientHeight * 0.45;
     top = Math.max(0, top);
     const b = document.getElementById('spShRet'); if (b) b.hidden = true;
     spMvAutoUntil = Date.now() + 900;
-    if (Math.abs(top - pane.scrollTop) > 24) pane.scrollTo({ top, behavior: pop ? 'instant' : 'smooth' });
+    if (Math.abs(top - pane.scrollTop) > (quiet ? 2 : 24)) pane.scrollTo({ top, behavior: pop ? 'instant' : 'smooth' });
+    if (quiet) return;
     spMvGlow(el); if (isCol) { el.classList.remove('sp-flash'); void el.offsetWidth; el.classList.add('sp-flash'); }
 }
 // ② 돋보기 창
@@ -15545,9 +15555,12 @@ function spLensAim(el, instant) {
     if (el) spLensEl = el; else el = spLensEl && spLensEl.isConnected ? spLensEl : (spCurSt && spPvTargetEl(spCurSt));
     const pane = document.querySelector('#screenEditor .preview-pane'), fr = document.getElementById('phoneFrame'); if (!pane || !fr) return;
     if (el && !el.isConnected && spCurSt) el = spPvTargetEl(spCurSt);
-    const bx = spLensBox(), FW = fr.offsetWidth || window.innerWidth, FH = fr.offsetHeight || 1, s = bx.w / (FW * SP_LENS[bx.z][1]);
+    const bx = spLensBox(), FW = fr.offsetWidth || window.innerWidth, FH = fr.offsetHeight || 1; let s = bx.w / (FW * SP_LENS[bx.z][1]);
     let cx = FW / 2, cy = 0;
-    if (el) { const fr0 = fr.getBoundingClientRect(), k = fr0.width / FW || 1, r = el.getBoundingClientRect(); cx = (r.left + r.width / 2 - fr0.left) / k; const isCol = el.classList.contains('col'); cy = isCol && r.height / k > bx.h / s ? (r.top - fr0.top) / k + bx.h / s * 0.4 : (r.top + r.height / 2 - fr0.top) / k; }
+    if (el) { const fr0 = fr.getBoundingClientRect(), k = fr0.width / FW || 1, r = el.getBoundingClientRect(), isCol = el.classList.contains('col'), eh = r.height / k, ew = r.width / k;
+        // 섹션 안 한 부분(지도·글자)이 창보다 크면 덜 확대해서 통째로 보이게 (높인 지도의 위아래 끝까지 - 예전엔 지도 한가운데만 크게 보여 높이가 바뀌는 게 안 보였음)
+        if (!isCol) { const fit = Math.min(bx.h * 0.86 / Math.max(1, eh), bx.w * 0.96 / Math.max(1, ew)); if (fit < s) s = Math.max(bx.w / FW, fit); }
+        cx = (r.left + r.width / 2 - fr0.left) / k; cy = isCol && eh > bx.h / s ? (r.top - fr0.top) / k + bx.h / s * 0.4 : (r.top + r.height / 2 - fr0.top) / k; }
     let tx = bx.w / 2 - cx * s, ty = bx.h / 2 - cy * s;
     tx = Math.min(0, Math.max(bx.w - FW * s, tx)); ty = Math.min(0, Math.max(bx.h - FH * s, ty));
     if (instant) fr.classList.add('sp-lens-now');
@@ -15933,7 +15946,7 @@ function spMoreTipHtml() {
         <div class="mt-h"><i aria-hidden="true">✦</i><b>기본은 다 됐어요! 더 꾸미고 싶다면</b></div>
         <p>지금 청첩장 그대로 <b>전문가 모드</b>에서 더 자세히 꾸밀 수 있어요. 만든 내용은 그대로 남아요.${mob ? ' 화면이 넓은 PC에서 열면 더 편해요.' : ''}</p>
         <ul><li>스티커 붙이기</li><li>글자 위치·크기</li><li>섹션 모양·스킨</li><li>섹션 더 넣기</li><li>나타나는 효과</li></ul>
-        <div class="mt-acts"><button type="button" class="wz-next" id="spMtGo">전문가 모드로 더 꾸미기</button><button type="button" class="wz-next ghost" id="spMtOk">이대로 충분해요</button></div></div>`;
+        <div class="mt-acts"><button type="button" class="wz-next" id="spMtGo">전문가 모드 열기</button><button type="button" class="wz-next ghost" id="spMtOk">이대로 충분해요</button></div></div>`;
 }
 function spRenderList() {
     const pane = document.getElementById('simplePane'); if (!pane) return;
@@ -16603,7 +16616,7 @@ const SSK_PART = { greeting: '.free-canvas', family: '.ib-title-canvas', dday: '
 //  만드는 도구: 저장소 tools/ssk-sprites.js (섹션 모양 CSS나 디자인을 바꾸면 다시 돌릴 것) · 목록 assets/ssk/manifest.json
 //  지금 디자인을 따라 달라지는 카드('디자인 따라' 스킨 · '테마 모양' 모양)와 목록에 없는 카드(새로 넣은 디자인 등)만 그 자리에서 그림
 let SSK_SPR = null;
-try { fetch('assets/ssk/manifest.json?v=1018z12').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
+try { fetch('assets/ssk/manifest.json?v=1018z13').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
 // '디자인 따라' 스킨 = 지금 디자인의 디자인 스킨 그림 · '테마 모양' = 지금 디자인 꾸밈의 모양 그림 (색을 바꾸지 않았고 디자인이 정한 섹션 테마가 없을 때만 - 아니면 그 자리에서 그림)
 function sskAlias(b, spec) {
     try { if (InviteBlocks.colorChanged && InviteBlocks.colorChanged()) return null; } catch (e) { return null; }
@@ -17181,7 +17194,10 @@ function spVenue(box) {
         if (c.dataset.spMap === 'mapFullWidth' && demo) demo.classList.toggle('full', c.checked); else spRender();
     }));
     const mh = box.querySelector('#spMapH');
-    if (mh) { mh.addEventListener('input', () => { spPvHint = { sel: '.location-map', t: Date.now() }; f.mapHeight = parseInt(mh.value, 10) || 200; box.querySelector('#spMapHV').textContent = mh.value + 'px'; if (demo) demo.style.height = Math.round(f.mapHeight * .8) + 'px'; renderPreview(); clearTimeout(mh._aim); mh._aim = setTimeout(() => spScrollPreview(['location']), 260); }); mh.addEventListener('change', () => scheduleSnapshot()); } // (높이를 바꾸면 지도가 보이게)
+    // 지도 높이: 끄는 동안은 다시 그리지 않고 지도 높이만 바로 바꾸고(locSet) 미리보기·돋보기 창이 지도를 통째로 따라감 → 손을 떼면 한 번 다시 그림
+    if (mh) { mh.addEventListener('input', () => { const v = locSet('mapHeight', parseInt(mh.value, 10) || 200); f.mapHeight = v; box.querySelector('#spMapHV').textContent = v + 'px'; if (demo) demo.style.height = Math.round(v * .8) + 'px';
+            if (spMvMode()) spMvFollow('.location-map'); else { clearTimeout(mh._aim); mh._aim = setTimeout(() => spScrollPreview(['location']), 260); } });
+        mh.addEventListener('change', () => { renderPreview(); scheduleSnapshot(); setTimeout(() => spMvFollow('.location-map'), 220); }); }
     box.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => {
         f[inp.dataset.f] = inp.value; f.address = [f.addressBase, f.addressDetail].filter(Boolean).join(' '); spChanged(['location']);
     }));
