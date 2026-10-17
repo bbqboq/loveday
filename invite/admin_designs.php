@@ -13,6 +13,8 @@
  *              끈 디자인은 고객 화면(디자인 고르기 · 섹션 스킨 · 모양 고르기)에서 빠지고 추천에서도 빠짐. 이미 그 디자인으로 만든 청첩장은 그대로
  *  꾸밈 스타일: 카드마다 [모던 | 예전] (예전 모습이 있는 디자인만) → 바로 저장 (featured_presets.php preset_look_* → uploads/site/preset_look.json)
  *              고객이 그 디자인을 고를 때 처음 꾸밈 스타일. [에디터로 꾸미기]로 꾸민 샘플은 샘플에서 고른 스타일이 먼저
+ *  디자인 썸네일: [썸네일 만들기] → 에디터 ?thumbs=make (새 창, PC 크롬·엣지) 가 디자인마다 첫 화면·긴 화면 그림을 찍어 올림
+ *              (dpk_thumbs.php → uploads/site/dpk/) - 고객 디자인 고르기 화면이 청첩장을 진짜로 그리지 않고 그림만 보여 줘서 빠름
  *  부관리자: "사업자·사이트 정보 수정" 권한(site_settings)이 있어야 저장할 수 있다 (없으면 보기 전용)
  */
 declare(strict_types=1);
@@ -132,6 +134,13 @@ body { background: var(--ui-page, #F6F4F1); }
 .fd-p .lk button.on { background: #2B2320; color: #fff; }
 .fd-p .tag.off { background: #EFECE7; color: #6F6A63; }
 .fd-off-n { font-size: 12.5px; color: #8A847B; margin: -4px 0 12px; }
+.fd-th { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; margin-top: 12px; }
+.fd-thc { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: #6F6A63; min-width: 0; }
+.fd-thc img, .fd-thc i { width: 100%; aspect-ratio: 390 / 600; object-fit: cover; object-position: top; border-radius: 9px; background: var(--ui-tint, #F1ECE4); box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); display: block; }
+.fd-thc b { font-size: 12px; color: #2B2320; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .fd-thc small.no { color: #B0763A; }
+.fd-th-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.fd-th-acts a, .fd-th-acts button { height: 38px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: #4A453F; text-decoration: none; display: inline-flex; align-items: center; cursor: pointer; }
+.fd-th-acts a.main { background: #2B2320; border-color: #2B2320; color: #fff; } .fd-th-acts button { color: #B24A4A; font-weight: 600; }
 .fd-pp-n { font-size: 12.5px; color: #8A847B; margin: 12px 0 0; line-height: 1.7; }
 </style>
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
@@ -158,6 +167,13 @@ body { background: var(--ui-page, #F6F4F1); }
             </form>
             <p class="fd-off-n" id="fdOffN"></p>
             <div class="fd-grid" id="fdGrid"><p style="color:#A29C94;font-size:13px">불러오는 중…</p></div>
+        </div>
+        <div class="fd-card" id="thumbs">
+            <div class="fd-h"><b>디자인 썸네일 · 디자인 고르기 그림</b><small id="thN">불러오는 중…</small></div>
+            <p class="fd-pp-n" style="margin:0 0 12px">고객이 간편 만들기에서 디자인을 고를 때, 디자인마다 청첩장을 진짜로 그리면 PC가 느려져요. 디자인을 다 꾸민 뒤 <b>[썸네일 만들기]</b>를 한 번 누르면 디자인마다 그림 두 장(첫 화면 · 긴 화면)을 찍어 두고, 고객 화면은 그 그림만 보여 줘서 빨라요.
+                새 창이 열리면 <b>[바뀐 것만 찍기]</b>(처음엔 전부) → 크롬·엣지가 묻는 <b>'이 탭 공유'</b>에서 [공유]를 눌러 주세요 (화면을 그대로 찍어요 · PC 크롬·엣지만 돼요). 디자인·샘플·메인 사진 예시를 바꾸면 그 디자인 그림은 '예전 그림'이 되어 고객 화면에선 예전처럼 진짜로 그려요 - 다시 만들어 주세요.</p>
+            <div class="fd-th-acts"><a class="main" href="editor-prototype-v3-overlay.html?thumbs=make" target="_blank" rel="noopener">썸네일 만들기 (새 창)</a><button type="button" id="thClear" hidden>썸네일 모두 지우기</button></div>
+            <div class="fd-th" id="thGrid"></div>
         </div>
         <div class="fd-card">
             <div class="fd-h"><b>종이 질감 그림</b><small>청첩장 바탕 '종이 질감'에 깔리는 무늬 · 올리면 바로 저장돼요</small></div>
@@ -294,12 +310,30 @@ $('fdSave').onclick = () => {
         sel = d.ids; saved = JSON.stringify(sel); draw(); toast('저장했어요. 새 청첩장 화면에 바로 반영돼요');
     }).catch(e => { toast(e.message); draw(); });
 };
+// ---- 디자인 썸네일 (dpk_thumbs.php) ----
+let THUMBS = null;
+function loadThumbs() { return fetch('dpk_thumbs.php', { cache: 'no-store' }).then(r => r.json()).then(d => { THUMBS = d.items || {}; drawThumbs(); }).catch(() => { $('thN').textContent = '썸네일 목록을 불러오지 못했어요'; }); }
+function drawThumbs() {
+    if (!THUMBS) return;
+    const ids = presets.length ? presets.map(p => p.id).concat(Object.keys(samples).filter(id => !presets.some(p => p.id === id))) : Object.keys(THUMBS);
+    const have = ids.filter(id => THUMBS[id]).length, name = id => { const p = presets.find(x => x.id === id), sm = samples[id]; return (sm && sm.label) || (p && p.label) || id; };
+    const day = t => { const d = new Date(t * 1000); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+    $('thN').textContent = have ? `${ids.length}개 중 ${have}개 그림 있음` : '아직 만든 그림이 없어요 (고객 화면은 진짜로 그려서 보여 줘요)';
+    $('thClear').hidden = !have;
+    $('thGrid').innerHTML = ids.map(id => { const t = THUMBS[id]; return `<span class="fd-thc">${t ? `<img src="${esc(t.c)}" alt="" loading="lazy">` : '<i></i>'}<b>${esc(name(id))}</b>${t ? `<small>${day(t.at)} 찍음</small>` : '<small class="no">그림 없음</small>'}</span>`; }).join('');
+}
+$('thClear').onclick = () => {
+    if (!confirm('디자인 썸네일을 모두 지울까요? 고객 화면은 다시 만들 때까지 진짜로 그려서 보여 줘요.')) return;
+    const fd = new FormData(); fd.append('csrf_token', CSRF); fd.append('act', 'clear');
+    fetch('dpk_thumbs.php', { method: 'POST', body: fd }).then(r => r.json()).then(d => { if (!d.ok) throw new Error(d.error || '지우지 못했어요'); toast('썸네일을 모두 지웠어요'); return loadThumbs(); }).catch(e => toast(e.message));
+};
+loadThumbs();
 // 다른 탭(에디터)에서 샘플을 저장하고 돌아오면 표시를 새로
-window.addEventListener('focus', () => { loadSamples().then(draw).catch(() => {}); });
+window.addEventListener('focus', () => { loadSamples().then(draw).catch(() => {}); loadThumbs(); });
 Promise.all([
     fetch('preset_list.php', { cache: 'no-store' }).then(r => r.json()).then(d => { presets = (d.presets || []).slice().sort((a, b) => (a.no || 99) - (b.no || 99)); }),
     loadSamples().catch(() => {})
-]).then(() => { $('fdBase').innerHTML = presets.map(p => `<option value="${esc(p.id)}">${esc(p.label)}</option>`).join(''); draw(); })
+]).then(() => { $('fdBase').innerHTML = presets.map(p => `<option value="${esc(p.id)}">${esc(p.label)}</option>`).join(''); draw(); drawThumbs(); })
   .catch(() => { $('fdGrid').innerHTML = '<p style="color:#B24A4A;font-size:13px">디자인 목록(preset_list.php)을 불러오지 못했어요.</p>'; });
 window.addEventListener('beforeunload', e => { if (JSON.stringify(sel) !== saved) { e.preventDefault(); e.returnValue = ''; } });
 })();

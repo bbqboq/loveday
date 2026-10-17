@@ -1221,6 +1221,68 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
     .dpk-foot .dpk-view { width: 100%; height: 46px; }
     .dpk-side .note { margin: -2px 0 0; font-size: 12px; color: #8A847B; text-align: center; }
 }
+/* 찍어 둔 디자인 그림 (관리자 → 추천 디자인 → 디자인 썸네일) */
+.dpk-sk.th img { height: 100%; object-position: top; }
+.dpk-im { position: absolute; left: 0; top: 0; width: 100%; height: auto; display: block; pointer-events: none; }
+.dpk-sl.run .dpk-im, .dpk-one.run .dpk-im { animation: dpkScroll var(--dpk-dur, 18s) ease-in-out .8s infinite; }
+#dpkCar.moving .dpk-sl.run > .dpk-ph > .dpk-im { animation-play-state: paused; }
+.dpk-ovim { display: block; width: 390px; max-width: 100%; margin: 0 auto; }
+.dpk-grid[hidden], .dpk-one[hidden] { display: none !important; }
+@media (min-width: 861px) {
+    /* B 한눈에 격자: 왼쪽 첫 화면 그림 카드 + 오른쪽 칸 맨 위 휴대폰 (관리자 손쉬운 제작 → PC 디자인 고르기 화면) */
+    .dpk.m-grid { grid-template-columns: minmax(0, 1fr) 340px; grid-template-areas: 'chips side' 'grid side'; grid-template-rows: auto minmax(0, 1fr); height: clamp(520px, calc(100vh - 150px), 1100px); }
+    .dpk.m-grid .dpk-stage, .dpk.m-grid .dpk-strip, .dpk.m-film .dpk-stage { display: none; }
+    .dpk-grid { grid-area: grid; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 16px 14px; align-content: start; padding: 6px 6px 24px 2px; scrollbar-width: thin; }
+    .dpk-card { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 6px; text-align: left; min-width: 0; }
+    .dpk-card[hidden] { display: none; }
+    .dpk-card .cv { position: relative; display: block; aspect-ratio: 390 / 600; border-radius: 12px; overflow: hidden; background: var(--sk-bg, #F4F1EC); box-shadow: 0 0 0 1px rgba(0,0,0,.07); transition: box-shadow .15s; }
+    .dpk-card .cv > img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+    .dpk-card .cv > i { position: absolute; inset: 14% 16% 30%; border-radius: 8px; background: linear-gradient(170deg, var(--sk-acc, #CFC6BA), transparent 140%); opacity: .45; }
+    .dpk-card .cv > img.lg { height: auto; object-fit: initial; transition: transform .5s ease; }
+    .dpk-card.hov .cv > img.lg { transform: translateY(var(--ty, 0)); transition: transform var(--dur, 6s) linear .15s; }
+    .dpk-card .cv em, .dpk-card .cv u { position: absolute; top: 6px; z-index: 1; font-style: normal; text-decoration: none; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 5px; }
+    .dpk-card .cv em { right: 6px; background: rgba(20, 16, 14, .6); color: #fff; } .dpk-card .cv u { left: 6px; background: var(--ui-point, #B8925A); color: #fff; }
+    .dpk-card b { font-size: 12.5px; font-weight: 600; color: #4A443E; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dpk-card:hover .cv { box-shadow: 0 0 0 1px rgba(0,0,0,.12), 0 6px 16px rgba(30, 22, 16, .12); }
+    .dpk-card.cur .cv { box-shadow: 0 0 0 2.5px #2B2320, 0 8px 20px rgba(30, 22, 16, .16); } .dpk-card.cur b { color: #2B2320; font-weight: 700; }
+    .dpk-card:focus-visible { outline: none; } .dpk-card:focus-visible .cv { box-shadow: 0 0 0 3px var(--ui-point, #B8925A); }
+    .dpk.m-grid .dpk-side { padding: 16px 18px; gap: 8px; overflow-y: auto; min-height: 0; }
+    .dpk.m-grid .dpk-side .dpk-lbl, .dpk.m-grid .dpk-feat, .dpk.m-grid .dpk-pal, .dpk.m-grid .dpk-side .note, .dpk.m-grid .dpk-side .grow { display: none; }
+    .dpk.m-grid .dpk-my { padding: 7px 10px; margin: 0; } .dpk.m-grid .dpk-my .ph { width: 32px; height: 32px; } .dpk.m-grid .dpk-my small { display: none; }
+    .dpk.m-grid .dpk-one { flex: 1 1 0; min-height: 230px; }
+    .dpk.m-grid .dpk-one .dpk-arr { display: none; }
+    .dpk.m-grid .dpk-info b { font-size: 18px; }
+    .dpk.m-grid .dpk-foot { flex-direction: row-reverse; } .dpk.m-grid .dpk-foot .dpk-view { width: 96px; } .dpk.m-grid .dpk-foot .dpk-go { flex: 1; }
+    /* C 필름 띠: 가운데 큰 휴대폰 + 아래 첫 화면 그림 한 줄 */
+    .dpk.m-film { grid-template-areas: 'chips side' 'one side' 'strip side'; grid-template-rows: auto minmax(0, 1fr) auto; height: clamp(560px, calc(100vh - 150px), 1100px); }
+    .dpk.m-film .dpk-one { grid-area: one; min-height: 0; padding: 4px 0; }
+    .dpk.m-film .dpk-strip { justify-content: flex-start; gap: 10px; padding: 10px 2px 12px; scroll-behavior: smooth; }
+    .dpk-sw.fc { width: 70px; }
+    .dpk-sw.fc img, .dpk-sw.fc > i { width: 66px; height: 104px; border-radius: 9px; object-fit: cover; object-position: top; display: block; background: var(--sw-bg); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); transition: box-shadow .2s, transform .2s; }
+    .dpk-sw.fc > i::before, .dpk-sw.fc > i::after { display: none; }
+    .dpk-sw.fc.on img, .dpk-sw.fc.on > i { box-shadow: 0 0 0 2.5px #2B2320; transform: translateY(-2px); }
+    /* 큰 휴대폰 하나 (격자·필름 띠) */
+    .dpk-one { position: relative; display: flex; align-items: center; justify-content: center; gap: 18px; }
+    .dpk-onew { position: relative; height: 100%; aspect-ratio: 9 / 19.5; max-width: 100%; }
+    .dpk-one .dpk-ph { cursor: zoom-in; box-shadow: 0 12px 30px rgba(30, 22, 16, .2); }
+    .dpk-one .dpk-ph:focus-visible { outline: 3px solid var(--ui-point, #B8925A); outline-offset: 3px; }
+    .dpk-one .dpk-arr { position: static; flex: none; }
+}
+/* 디자인 썸네일 만들기 (관리자, ?thumbs=make) */
+.thm { position: fixed; top: 16px; right: 16px; bottom: 16px; width: min(400px, calc(100vw - 440px)); z-index: 2147483001; background: #fff; border-radius: 18px; box-shadow: 0 10px 40px rgba(30, 22, 16, .25); display: flex; flex-direction: column; font-size: 13px; color: #2B2320; }
+.thm-h { padding: 18px 20px 10px; } .thm-h b { font-size: 17px; display: block; } .thm-h p { margin: 6px 0 0; color: #6F6A63; line-height: 1.6; word-break: keep-all; }
+.thm-msg { margin: 0 20px 8px; padding: 9px 12px; border-radius: 10px; background: var(--ui-tint, #F6F3EE); color: #4A443E; line-height: 1.5; word-break: keep-all; } .thm-msg.bad { background: #FBEDEA; color: #9A3B2E; } .thm-msg:empty { display: none; }
+.thm-l { flex: 1; overflow-y: auto; padding: 0 12px; display: grid; gap: 2px; align-content: start; }
+.thm-r { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 9px; } .thm-r.now { background: var(--ui-tint, #F6F3EE); }
+.thm-r img, .thm-r i { width: 30px; height: 46px; border-radius: 5px; object-fit: cover; object-position: top; background: #EEE8E0; flex: none; }
+.thm-r b { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.thm-r small { flex: none; font-size: 11.5px; color: #8A847B; } .thm-r small.ok { color: #2F7A4E; font-weight: 700; } .thm-r small.old, .thm-r small.no { color: #B0763A; } .thm-r small.bad { color: #B24A4A; }
+.thm-f { padding: 12px 20px 16px; border-top: 1px solid var(--ui-line, #ECE8E2); display: grid; gap: 8px; }
+.thm-f button, .thm-f a { height: 44px; border-radius: 12px; border: 1px solid var(--ui-line, #DED8CF); background: #fff; font: inherit; font-size: 14px; font-weight: 700; color: #2B2320; cursor: pointer; display: grid; place-items: center; text-decoration: none; }
+.thm-f button.main { background: #2B2320; border-color: #2B2320; color: #fff; } .thm-f button:disabled { opacity: .45; cursor: default; }
+.thm-cap { position: fixed; left: 0; top: 0; width: 390px; overflow: hidden; z-index: 2147483000; background: #fff; }
+.thm-cap .dpk-iv.invite-preview { position: absolute; left: 0; top: 0; transform: none; }
+html.thm-on body { overflow: hidden; }
 /* PC: 위쪽 글을 줄이고 휴대폰을 크게 (예전엔 화면 높이 - 330px까지라 작게 보였음) */
 @media (min-width: 861px) {
     #startPick.dpk-on { max-width: 1360px; padding-top: 20px; padding-bottom: 14px; }
@@ -4776,6 +4838,8 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
                 <button type="button" class="dpk-arr l" id="dpkL" aria-label="이전 디자인" title="이전 디자인">‹</button><button type="button" class="dpk-arr r" id="dpkR" aria-label="다음 디자인" title="다음 디자인">›</button>
                 <span class="dpk-hint" id="dpkHint">← 옆으로 밀어 보세요 →</span></div>
             <div class="dpk-strip" id="dpkStrip"></div>
+            <div class="dpk-grid" id="dpkGrid" hidden></div>
+            <div class="dpk-one" id="dpkOne" hidden><button type="button" class="dpk-arr l" id="dpkL2" aria-label="이전 디자인" title="이전 디자인">‹</button><div class="dpk-onew"><div class="dpk-ph" id="dpkOnePh" role="button" tabindex="0" aria-label="이 디자인 크게 보기" title="누르면 크게 보여요"></div></div><button type="button" class="dpk-arr r" id="dpkR2" aria-label="다음 디자인" title="다음 디자인">›</button></div>
             <div class="dpk-side">
                 <div class="dpk-info" id="dpkInfo"></div>
                 <span class="dpk-lbl">이 디자인의 색</span><div class="dpk-pal" id="dpkPal"></div>
@@ -5392,7 +5456,7 @@ PRESETS.forEach(registerPresetSkin);
 // 위의 내장 목록을 통째로 바꾼다. 폴더를 FTP로 올리기만 하면 여기 코드를 고치지 않아도 디자인 선택 화면에 나온다.
 // (preset_list.php를 못 부르는 환경 - 로컬에서 파일로 열었을 때 등 - 에서는 위 내장 목록을 그대로 쓴다)
 // 관리자 → 추천 디자인에서 끈 디자인 (preset_list.php "off") - 목록(PRESETS)엔 남겨 두고(이미 그 디자인으로 만든 청첩장용) 고르는 화면에서만 뺌
-var PRESET_OFF = new Set();
+var PRESET_OFF = new Set(), PRESETS_OK = false; // PRESETS_OK: 서버 디자인 목록을 받았거나 못 받음 (디자인 썸네일 만들기가 기다림)
 function presetShown(p) { return !!p && !PRESET_OFF.has(p.id); }
 function presetsShown() { return PRESETS.filter(presetShown); }
 // 테마 부품 모양('t:<꾸밈>') 중 그 꾸밈을 쓰는 디자인이 모두 꺼졌으면 뺌 (지금 고른 값은 그대로 둠)
@@ -5414,6 +5478,7 @@ async function loadPresetsFromServer() {
         if (document.getElementById('screenDesign')?.classList.contains('active')) renderDesignScreen();
         if (typeof renderSkinPicker === 'function' && document.getElementById('skinPicker')) renderSkinPicker();
     } catch (e) { /* 내장 목록 그대로 사용 */ }
+    finally { PRESETS_OK = true; }
 }
 loadPresetsFromServer();
 // 저장된 청첩장을 열 때 그 청첩장이 쓰던 색 묶음이 지금 목록에 없으면(프리셋이 바뀌었거나 사라진 경우) 되살려 둔다
@@ -5460,6 +5525,8 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy && ['split', 'lens', 'lens2', 'peek', 'off'].includes(j.easy.mobileView)) { EASY_MOBILE_VIEW = j.easy.mobileView; try { spMvApply(); } catch (e) {} } // 휴대폰 보기 방식 (관리자 손쉬운 제작)
     if (j && j.easy) { EASY_VIDEO_SAMPLE = /^[\w-]{11}$/.test(j.easy.videoSample || '') ? j.easy.videoSample : ''; try { if (spApplyVideoSample()) renderPreview(); } catch (e) {} } // 메인 영상 예시 (관리자 손쉬운 제작)
     if (j && j.easy) { EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; EASY_HERO_POS = j.easy.heroPos && typeof j.easy.heroPos === 'object' ? j.easy.heroPos : {}; } // 메인 사진 예시 + 보일 부분·확대 (관리자 손쉬운 제작)
+    if (j && j.easy && ['grid', 'film', 'car'].includes(j.easy.pcPick)) EASY_PC_PICK = j.easy.pcPick; // PC 디자인 고르기 화면 (관리자 손쉬운 제작)
+    DPK_SECDEF = true;
     if (j && j.easy) { try { if (startTrack === 'simple' && document.getElementById('screenDesign').classList.contains('active')) renderDesignScreen(); } catch (e) {} } // 디자인 고르기 (flow.pick · 메인 사진 예시)
     if (j && j.easy && Array.isArray(j.easy.steps)) { EASY_STEPS = j.easy.steps; try { if (document.documentElement.classList.contains('simple-mode')) { if (spApplyEasyOrder()) renderPreview(); spRender(); } } catch (e) {} } // 손쉬운 제작 단계
     // 편집창 모양 (관리자 → 섹션 순서 → 편집창 모양). 주소에 ?panel= 이 있으면 그게 우선
@@ -5472,7 +5539,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
         if (SECTION_HIDDEN.has(selectedId)) selectedId = null;
         try { renderBlockList(); renderPreview(); } catch (e) {}
     }
-}).catch(() => {});
+}).catch(() => {}).finally(() => { DPK_SECDEF = true; });
 // 관리자 → 섹션 설정 → 순서에서 바꾼 섹션 이름 (바꾼 것만 옴). 섹션 목록·넣기 창·편집창 제목에 다 쓰임
 const SECTION_LABEL_OVR = {};
 // 관리자 → 섹션 설정 → 순서의 "새 청첩장" (on = 처음부터 넣기, off = 대기 중). 안 적힌 섹션은 디자인대로. 디자인을 고를 때(applyPreset) 씀
@@ -14144,12 +14211,13 @@ let presetFilter = 'all';
 // 추천 디자인 (관리자 → 추천 디자인, featured_presets.php) - 못 불러오면 기본 넷
 let FEATURED_IDS = ['modern', 'classic', 'p-cinema', 'p-photos'], fpAllOpen = false;
 // 관리자가 에디터로 꾸며 저장한 디자인 샘플 (sample_api.php?a=list) - id → {label, desc, base, custom}
-let SAMPLE_LIST = {};
+let SAMPLE_LIST = {}, SAMPLE_LIST_OK = false;
 fetch('sample_api.php?a=list', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
+    SAMPLE_LIST_OK = true;
     if (!j || !Array.isArray(j.items)) return;
     SAMPLE_LIST = {}; j.items.forEach(it => { SAMPLE_LIST[it.id] = it; });
     if (document.getElementById('screenDesign').classList.contains('active')) renderDesignScreen();
-}).catch(() => {});
+}).catch(() => {}).finally(() => { SAMPLE_LIST_OK = true; });
 // 고르기 화면에 나올 디자인 = 폴더 프리셋 + 관리자가 새로 만든 샘플 (바탕 디자인의 미리보기 모양을 빌려 씀)
 function allDesigns() {
     const extra = Object.values(SAMPLE_LIST).filter(it => it.custom).map((it, i) => {
@@ -14292,7 +14360,8 @@ function renderDesignScreen() {
         sp.classList.toggle('dpk-on', on); document.getElementById('dpk').hidden = !on;
         if (on) {
             document.getElementById('pickTitle').textContent = '마음에 드는 디자인을 골라주세요';
-            document.getElementById('pickSub').textContent = '옆으로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요';
+            const pm = dpkMode();
+            document.getElementById('pickSub').textContent = pm === 'grid' ? '그림을 누르면 오른쪽 휴대폰에서 크게 보여요. 고른 뒤에도 다 바꿀 수 있어요' : pm === 'film' ? '아래 그림을 누르거나 ← → 로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요' : '옆으로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요';
             const fids = (FEATURED_IDS || []).filter(id => ALL.some(p => p.id === id));
             const ord = fids.map(id => ALL.find(p => p.id === id)).concat(ALL.filter(p => !fids.includes(p.id))), wx = p => p.ambient === 'weather' || p.id === 'p-weather' || p.__base === 'p-weather';
             dpkBuild(ord.filter(p => !wx(p)).concat(ord.filter(wx))); // 추천 디자인 먼저 · 날씨 따라 바뀌는 청첩장은 추천이어도 맨 끝
@@ -14344,7 +14413,28 @@ function bindDesignCards(box) {
 //  휴대폰 속 청첩장은 그 디자인을 에디터 미리보기로 정말 그려서(dpkRender) 복사한 것 - 고른 뒤 처음 보일 모습 그대로
 //  (첫 화면 = 매거진 표지 + 메인 사진 예시, 디자인 예시 예식장 이름은 비움). 가운데부터 차례로 하나씩 그려 둠.
 //  관리자 손쉬운 제작 → 간편 만들기 전체 → '디자인 고르기: 큰 휴대폰 넘겨 보기'(flow.pick)를 끄면 예전 카드 화면
-const DPK = { ids: [], cur: '', filt: 'all', shots: {}, samples: {}, q: Promise.resolve(), key: '', touched: false, raf: 0, bound: false, todo: [], ovId: '' };
+const DPK = { ids: [], cur: '', filt: 'all', shots: {}, samples: {}, q: Promise.resolve(), key: '', touched: false, raf: 0, bound: false, todo: [], ovId: '', mode: 'car', sig: {}, sigKey: '' };
+// PC 화면 모양 (관리자 손쉬운 제작 → PC 디자인 고르기 화면): 'grid' 한눈에 격자 + 오른쪽 휴대폰 · 'film' 큰 휴대폰 + 아래 표지 띠 · 'car' 넘겨 보기(예전, 휴대폰은 늘 이것)
+let EASY_PC_PICK = 'grid', DPK_SECDEF = false;
+function dpkMode() { try { return window.matchMedia('(min-width: 861px)').matches && !window.matchMedia('(pointer: coarse)').matches ? EASY_PC_PICK : 'car'; } catch (e) { return 'car'; } }
+// 관리자가 찍어 둔 디자인 그림 (관리자 → 추천 디자인 → 디자인 썸네일 만들기 = ?thumbs=make, dpk_thumbs.php)
+//  있으면 휴대폰 속 청첩장을 진짜로 그리지 않고 그림만: c = 첫 화면 · l = 긴 화면(위쪽 섹션들, h = 390px 폭일 때 높이)
+//  sig = 찍을 때 디자인 내용 지문 - 지금과 다르면(디자인·샘플·메인 사진 예시를 고침) 그 디자인만 예전처럼 진짜로 그림 · 내 사진으로 보기 중에도 진짜로
+const THUMB_MAKE = new URLSearchParams(location.search).get('thumbs') === 'make';
+let DPK_TH = null;
+const DPK_TH_READY = THUMB_MAKE ? Promise.resolve() : fetch('dpk_thumbs.php', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { DPK_TH = (j && j.items && typeof j.items === 'object') ? j.items : {}; }).catch(() => { DPK_TH = {}; });
+function dpkSig(id) {
+    if (DPK.sigKey !== DPK.key) { DPK.sig = {}; DPK.sigKey = DPK.key; }
+    if (DPK.sig[id]) return DPK.sig[id];
+    const p = allDesigns().find(x => x.id === id) || {}, sm = SAMPLE_LIST[id] || {};
+    const src = JSON.stringify([p, sm.updated || sm.updated_at || '', sm.cover || '', EASY_HERO_SAMPLE, EASY_HERO_POS], (k, v) => (k === 'off' || k === 'no') ? undefined : v); // (보이기 켜고 끄기·번호는 그림과 상관없음)
+    let h = 2166136261; for (let i = 0; i < src.length; i++) { h ^= src.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (DPK.sig[id] = (h >>> 0).toString(36));
+}
+function dpkTh(id) { if (!DPK_TH || DPK.my || THUMB_MAKE) return null; const t = DPK_TH[id]; return t && t.c && t.l && t.sig === dpkSig(id) ? t : null; }
+const dpkThLong = t => `<img class="dpk-im" src="${esc(t.l)}" alt="" decoding="async">`;
+// 첫 화면 그림 주소 (찍어 둔 그림 > 관리자 샘플 표지 > 디자인 사진 > 메인 사진 예시)
+function dpkCoverSrc(id) { const t = dpkTh(id); if (t) return t.c; const p = allDesigns().find(x => x.id === id) || {}, sm = SAMPLE_LIST[id], m = dpkMeta(p); return (sm && sm.cover) || (!m.video && (p.heroImage || EASY_HERO_SAMPLE)) || ''; }
 function dpkOn() { try { return startTrack === 'simple' && spOpt('flow', 'pick'); } catch (e) { return false; } }
 function dpkMeta(p) {
     const pal = skins[p.__base || p.id] || skins.classic, sm = SAMPLE_LIST[p.id];
@@ -14459,7 +14549,8 @@ function dpkMySet(file) {
     document.getElementById('dpkMyS').textContent = DPK.my ? '디자인을 고르면 이 사진이 첫 화면에 들어가요 (영상으로 시작하는 디자인은 영상 그대로) · 눌러서 바꾸기' : '사진 한 장을 고르면 모든 디자인에 넣어 보여 줘요';
     // 그려 둔 휴대폰을 비우고 가운데부터 다시
     DPK.shots = {}; DPK.todo = []; DPK.key += '|my';
-    document.querySelectorAll('#dpkCar .dpk-sl[data-filled]').forEach(sl => { sl.querySelector('.dpk-ph').innerHTML = dpkSkHtml(sl.dataset.id); delete sl.dataset.filled; sl.classList.remove('run'); });
+    document.querySelectorAll('#dpkCar .dpk-sl[data-filled], #dpkCar .dpk-sl[data-th]').forEach(sl => { sl.querySelector('.dpk-ph').innerHTML = dpkSkHtml(sl.dataset.id); delete sl.dataset.filled; delete sl.dataset.th; sl.classList.remove('run'); });
+    const one = document.getElementById('dpkOne'); if (one) delete one.dataset.k; // (내 사진은 큰 휴대폰에 진짜로 그려 보여 줌 - 찍어 둔 그림은 예시 사진이라)
     DPK.busy = false; dpkMark(DPK.cur);
 }
 function dpkIvEl(s) { const el = document.createElement('div'); el.className = s.cls + ' dpk-iv'; el.setAttribute('style', s.style); el.innerHTML = s.html; return el; }
@@ -14481,6 +14572,7 @@ function dpkPoster(s) {
 }
 // 아직 안 그린 휴대폰 = 그 디자인 첫 화면 사진 + 이름만 (가볍게 - 진짜로 그리는 건 가운데와 양옆 두 대씩만)
 function dpkSkHtml(id) {
+    const th = dpkTh(id); if (th) return `<div class="dpk-sk img th"><img src="${esc(th.c)}" alt="" loading="lazy" decoding="async"></div>`; // 찍어 둔 첫 화면 그림
     const p = allDesigns().find(x => x.id === id) || {}, sm = SAMPLE_LIST[id], m = dpkMeta(p);
     const img = (sm && sm.cover) || (!m.video && (p.heroImage || EASY_HERO_SAMPLE)) || '';
     return `<div class="dpk-sk${img ? ' img' : ''}">${img ? `<img src="${esc(img)}" alt="" loading="lazy" decoding="async">` : '<i></i>'}<span>${esc(p.label || '')}</span></div>`;
@@ -14490,16 +14582,24 @@ function dpkSkHtml(id) {
 const DPK_SIDE = 2;
 function dpkPlan() {
     const v = dpkVis(), i = v.indexOf(DPK.cur); if (i < 0) return [];
+    if (DPK.mode !== 'car') return dpkTh(DPK.cur) ? [] : [[DPK.cur, 's']]; // 격자·필름 띠 = 큰 휴대폰 하나만 (그림이 있으면 안 그림)
     const out = [[v[i], 's']];
     for (let k = 1; k <= DPK_SIDE; k++) { if (v[i + k]) out.push([v[i + k], 'p']); if (v[i - k]) out.push([v[i - k], 'p']); }
-    return out;
+    return out.filter(([id]) => !dpkTh(id)); // (찍어 둔 그림이 있는 디자인은 그림으로)
 }
 function dpkNear() { return dpkPlan().map(x => x[0]); }
 function dpkSync() {
     if (DPK.off) return;
+    if (DPK.mode !== 'car') { dpkOneSync(); return; }
     const near = dpkNear();
     document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => {
-        const id = sl.dataset.id, s = DPK.shots[id], ph = sl.querySelector('.dpk-ph');
+        const id = sl.dataset.id, s = DPK.shots[id], ph = sl.querySelector('.dpk-ph'), th = dpkTh(id);
+        if (th) { // 찍어 둔 그림: 가운데 = 긴 그림(흘러감) · 나머지 = 첫 화면 그림
+            const want = id === DPK.cur ? 'L' : 'C';
+            if (sl.dataset.th !== want) { ph.innerHTML = want === 'L' ? dpkThLong(th) : dpkSkHtml(id); sl.dataset.th = want; delete sl.dataset.filled; sl.classList.remove('run'); }
+            return;
+        }
+        if (sl.dataset.th) { delete sl.dataset.th; ph.innerHTML = dpkSkHtml(id); }
         if (id === DPK.cur && s && s.lv !== 'p') { // 가운데 = 위쪽 6줄
             if (sl.dataset.filled === '1') return;
             ph.innerHTML = ''; const el = dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) }); ph.appendChild(el); dpkWx(el, s); sl.dataset.filled = '1';
@@ -14511,12 +14611,27 @@ function dpkSync() {
     if (!DPK.runRaf) DPK.runRaf = requestAnimationFrame(() => { DPK.runRaf = 0; dpkRun(); }); // (흘러가기 길이 재기는 한 프레임에 한 번만 - 높이를 재면 그 자리에서 다시 그려서 무거웠음)
 }
 function dpkFill() { dpkSync(); }
+// 격자·필름 띠: 큰 휴대폰 하나 = 찍어 둔 긴 그림 > 진짜로 그린 위쪽 섹션 > 사진 카드
+function dpkOneSync() {
+    const one = document.getElementById('dpkOne'), ph = document.getElementById('dpkOnePh'), id = DPK.cur; if (!one || !id || DPK.off) return;
+    const th = dpkTh(id), s = DPK.shots[id], k = th ? 'L' : (s && s.lv !== 'p') ? 'S' : 'K';
+    one.style.setProperty('--dpk-k', (Math.max(60, ph.clientWidth - 6) / 390).toFixed(4));
+    if (one.dataset.k === id + k) return;
+    one.dataset.k = id + k; one.classList.remove('run');
+    const p = allDesigns().find(x => x.id === id) || {}, m = dpkMeta(p);
+    ph.style.cssText = `--sk-bg:${m.bg};--sk-ink:${m.ink};--sk-acc:${m.acc}`;
+    if (k === 'L') ph.innerHTML = dpkThLong(th);
+    else if (k === 'S') { ph.innerHTML = ''; const el = dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) }); ph.appendChild(el); dpkWx(el, s); }
+    else ph.innerHTML = dpkSkHtml(id);
+    if (!DPK.runRaf) DPK.runRaf = requestAnimationFrame(() => { DPK.runRaf = 0; dpkRun(); });
+}
 // 가운데 → 양옆 순서로, 넘기기가 멈춘 뒤 한가할 때 하나씩 그림 (사이사이 쉬어서 마우스·키보드가 바로 먹게)
 function dpkQueue() {
     if (DPK.busy) return;
     const idle = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 500 }) : setTimeout(fn, 60));
     const next = () => {
         if (DPK.touching || DPK.dragging || Date.now() - (DPK.moved || 0) < 500) { DPK.busy = true; setTimeout(next, 200); return; } // 넘기는 중이면 쉬었다가 (끊기지 않게)
+        if ((!DPK_TH && !THUMB_MAKE || !DPK_SECDEF) && Date.now() - (DPK.t0 || 0) < 3000) { DPK.busy = true; setTimeout(next, 150); return; } // 찍어 둔 그림 목록·메인 사진 예시를 받은 뒤에 (그림이 있으면 안 그려도 돼서)
         dpkSync();
         const job = dpkPlan().find(([id, lv]) => !dpkHas(id, lv)); // 그 사이 넘겼으면 새 가운데부터
         if (!job || DPK.off || !document.getElementById('screenDesign').classList.contains('active') || document.getElementById('dpk').hidden) { DPK.busy = false; return; }
@@ -14528,23 +14643,34 @@ function dpkQueue() {
 // 디자인을 고르고 나가면 작은 휴대폰들을 비워서 에디터가 가볍게
 function dpkTeardown() {
     DPK.off = true; DPK.todo = [];
-    document.querySelectorAll('#dpkCar .dpk-sl[data-filled]').forEach(sl => { sl.querySelector('.dpk-ph').innerHTML = dpkSkHtml(sl.dataset.id); delete sl.dataset.filled; sl.classList.remove('run'); });
+    document.querySelectorAll('#dpkCar .dpk-sl[data-filled], #dpkCar .dpk-sl[data-th]').forEach(sl => { sl.querySelector('.dpk-ph').innerHTML = ''; delete sl.dataset.filled; delete sl.dataset.th; sl.classList.remove('run'); });
+    const one = document.getElementById('dpkOnePh'); if (one) { one.innerHTML = ''; delete document.getElementById('dpkOne').dataset.k; }
+    document.querySelectorAll('#dpkGrid img.lg').forEach(im => im.remove());
     const ov = document.getElementById('dpkOv'); if (ov) ov.querySelector('.dpk-vw').innerHTML = '';
 }
 // 가운데 휴대폰만 위에서 아래로 천천히 흘러감
 function dpkRun() {
-    document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => {
-        const on = sl.dataset.id === DPK.cur, iv = sl.querySelector('.dpk-iv');
+    const boxes = DPK.mode === 'car' ? document.querySelectorAll('#dpkCar .dpk-sl') : [document.getElementById('dpkOne')];
+    boxes.forEach(sl => {
+        if (!sl) return;
+        const on = DPK.mode !== 'car' || sl.dataset.id === DPK.cur, iv = sl.querySelector('.dpk-iv, .dpk-im');
         if (!on || !iv) { sl.classList.remove('run'); return; }
         if (sl.classList.contains('run') && iv._dpkRun) return; // 이미 흘러가는 중이면 다시 재지 않음
+        const ph = sl.querySelector('.dpk-ph'); let h, end;
+        if (iv.classList.contains('dpk-im')) { // 찍어 둔 긴 그림 (높이는 목록에 있음 - 그림이 덜 받아져도 잴 수 있게)
+            const th = dpkTh(DPK.cur); if (!th) return;
+            h = th.h; end = Math.min(0, -(th.h * ph.clientWidth / 390 - ph.clientHeight));
+        } else {
+            const k = parseFloat(getComputedStyle(sl.closest('#dpkCar, #dpkOne') || sl).getPropertyValue('--dpk-k')) || .4;
+            h = iv.offsetHeight; end = Math.min(0, -(h * k - ph.clientHeight));
+        }
         iv._dpkRun = 1;
-        const k = parseFloat(getComputedStyle(document.getElementById('dpkCar')).getPropertyValue('--dpk-k')) || .4, ph = sl.querySelector('.dpk-ph');
-        const h = iv.offsetHeight, end = Math.min(0, -(h * k - ph.clientHeight));
         iv.style.setProperty('--dpk-end', end.toFixed(1) + 'px'); iv.style.setProperty('--dpk-dur', Math.max(14, Math.min(48, h / 260)).toFixed(1) + 's');
         if (!sl.classList.contains('run')) { void iv.offsetWidth; sl.classList.add('run'); }
     });
 }
 function dpkSize() {
+    if (DPK.mode !== 'car') { dpkOneSync(); return; }
     const car = document.getElementById('dpkCar'); if (!car) return;
     const sl = car.querySelector('.dpk-sl:not([hidden])'); if (!sl) return;
     const w = sl.offsetWidth, gap = parseFloat(getComputedStyle(car).columnGap) || 12;
@@ -14552,7 +14678,7 @@ function dpkSize() {
     car.querySelectorAll(':scope > i').forEach(g => { g.style.width = Math.max(0, (car.clientWidth - w) / 2 - gap) + 'px'; });
 }
 const dpkLeft = sl => sl.offsetLeft + sl.offsetWidth / 2 - document.getElementById('dpkCar').clientWidth / 2;
-function dpkGo(id, inst) { const sl = document.querySelector(`#dpkCar .dpk-sl[data-id="${CSS.escape(id || '')}"]`); if (sl) document.getElementById('dpkCar').scrollTo({ left: dpkLeft(sl), behavior: inst ? 'auto' : 'smooth' }); }
+function dpkGo(id, inst) { if (DPK.mode !== 'car') { if (id) dpkMark(id); return; } const sl = document.querySelector(`#dpkCar .dpk-sl[data-id="${CSS.escape(id || '')}"]`); if (sl) document.getElementById('dpkCar').scrollTo({ left: dpkLeft(sl), behavior: inst ? 'auto' : 'smooth' }); }
 // lite = 넘기는 중: 글자·색 띠 표시만 바꿈 (무거운 일 - 휴대폰 강조·띠 따라가기·흘러가기·그리기 - 은 멈춘 뒤 dpkSettle)
 function dpkMark(id, lite) {
     const p = allDesigns().find(x => x.id === id); if (!p) return;
@@ -14563,19 +14689,22 @@ function dpkMark(id, lite) {
     if (!lite) {
         document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => sl.classList.toggle('cur', sl.dataset.id === id));
         if (sw) strip.scrollTo({ left: sw.offsetLeft - strip.clientWidth / 2 + sw.offsetWidth / 2, behavior: 'smooth' });
+        let card = null; document.querySelectorAll('#dpkGrid .dpk-card').forEach(c => { const on = c.dataset.id === id; c.classList.toggle('cur', on); c.setAttribute('aria-pressed', String(on)); if (on) card = c; });
+        if (card && DPK.mode === 'grid') { const g = document.getElementById('dpkGrid'), r = card.getBoundingClientRect(), gr = g.getBoundingClientRect(); if (r.top < gr.top || r.bottom > gr.bottom) g.scrollBy({ top: r.top < gr.top ? r.top - gr.top - 8 : r.bottom - gr.bottom + 8, behavior: 'smooth' }); } // (키보드로 옮기면 그 카드가 보이게)
     }
     const tags = (p.tags || []).filter(t => t !== 'BETA').slice(0, 2).map(t => '#' + t);
     document.getElementById('dpkInfo').innerHTML = `<div class="r1"><b>${esc(p.label)}</b><span class="cnt">${n + 1} / ${v.length}</span></div><p>${esc(p.desc || '')}</p><div class="tags"><span>${m.dark ? '어두운 색' : '밝은 색'}</span><span>${m.video ? '영상으로 시작' : '사진으로 시작'}</span>${tags.map(t => `<span>${esc(t)}</span>`).join('')}</div>`;
     document.getElementById('dpkPal').innerHTML = [m.bg, m.acc, m.ink, m.line].filter(Boolean).map(c => `<i style="background:${esc(c)}"></i>`).join('');
     const secs = (p.sections || []).filter(s => s !== 'hero' && s !== 'heroVideo').map(s => (InviteBlocks.BLOCKS[s] && InviteBlocks.BLOCKS[s].label) || blockLabels[s]).filter(Boolean);
     document.getElementById('dpkFeat').innerHTML = [m.video ? '영상으로 여는 첫 화면' : '사진으로 여는 첫 화면', m.font ? `글꼴 · ${m.font}` : '', secs.length ? secs.slice(0, 5).join(' · ') : '', p.ambient && p.ambient !== 'none' && InviteBlocks.AMBIENT[p.ambient] ? `장식 효과 · ${InviteBlocks.AMBIENT[p.ambient].label || '있음'}` : ''].filter(Boolean).map(t => `<li>${esc(t)}</li>`).join('');
-    document.getElementById('dpkL').disabled = n <= 0; document.getElementById('dpkR').disabled = n >= v.length - 1;
-    if (!lite) { dpkRun(); dpkQueue(); }
+    ['dpkL', 'dpkL2'].forEach(k => { const b = document.getElementById(k); if (b) b.disabled = n <= 0; }); ['dpkR', 'dpkR2'].forEach(k => { const b = document.getElementById(k); if (b) b.disabled = n >= v.length - 1; });
+    if (!lite) { if (DPK.mode !== 'car') dpkOneSync(); dpkRun(); dpkQueue(); }
 }
 // 양옆 휴대폰 작고 흐리게: 되는 브라우저는 CSS(스크롤 따라 움직이는 애니메이션, 화면 그리는 쪽에서 처리 → 안 끊김), 안 되면 JS
 const DPK_CSS_FOCUS = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline: view()');
 function dpkPaint() {
     DPK.raf = 0;
+    if (DPK.mode !== 'car') return;
     const car = document.getElementById('dpkCar'); if (!car) return;
     const mid = car.scrollLeft + car.clientWidth / 2; let best = DPK.cur, bd = 1e9;
     car.querySelectorAll('.dpk-sl:not([hidden])').forEach(sl => {
@@ -14599,8 +14728,13 @@ function dpkStep(k) { const v = dpkVis(), n = v.indexOf(DPK.cur), id = v[Math.ma
 function dpkBuild(list) {
     const key = JSON.stringify([Object.keys(SAMPLE_LIST).map(k => [k, SAMPLE_LIST[k].updated || SAMPLE_LIST[k].updated_at || '']), EASY_HERO_SAMPLE, EASY_HERO_POS, list.map(p => p.id)]) + (DPK.my ? '|my' : '');
     if (key !== DPK.key) { DPK.key = key; DPK.shots = {}; DPK.todo = []; }
-    DPK.ids = list.map(p => p.id);
-    DPK.off = false;
+    DPK.ids = list.map(p => p.id); DPK.list = list;
+    DPK.off = false; DPK.t0 = DPK.t0 || Date.now();
+    const mode = DPK.mode = dpkMode(), dpk = document.getElementById('dpk'), one = document.getElementById('dpkOne'), side = dpk.querySelector('.dpk-side');
+    ['grid', 'film', 'car'].forEach(m => dpk.classList.toggle('m-' + m, mode === m));
+    document.getElementById('dpkGrid').hidden = mode !== 'grid'; one.hidden = mode === 'car'; delete one.dataset.k;
+    if (mode === 'grid' && one.parentNode !== side) side.prepend(one); // 격자: 오른쪽 칸 맨 위에 휴대폰
+    else if (mode === 'film' && one.nextElementSibling !== side) dpk.insertBefore(one, side); // 필름 띠: 가운데 큰 휴대폰
     document.getElementById('dpkMy').hidden = !dpkMyOn(); // 관리자 손쉬운 제작 → 간편 만들기 전체 'myphoto'
     if (!DPK.ids.includes(DPK.cur)) DPK.cur = DPK.ids[0];
     const cnt = f => DPK.ids.filter(id => dpkFit(id, f)).length;
@@ -14608,10 +14742,18 @@ function dpkBuild(list) {
     if (!chips.some(([f]) => f === DPK.filt)) DPK.filt = 'all';
     document.getElementById('dpkChips').innerHTML = chips.length > 1 ? chips.map(([f, t]) => `<button type="button" data-f="${f}" class="${f === DPK.filt ? 'on' : ''}">${t}</button>`).join('') : '';
     const car = document.getElementById('dpkCar');
-    car.innerHTML = '<i></i>' + list.map(p => { const m = dpkMeta(p); return `<div class="dpk-sl" data-id="${esc(p.id)}" role="button" tabindex="-1" aria-label="${esc(p.label)}"${dpkFit(p.id, DPK.filt) ? '' : ' hidden'}><div class="dpk-ph" style="--sk-bg:${esc(m.bg)};--sk-ink:${esc(m.ink)};--sk-acc:${esc(m.acc)}">${dpkSkHtml(p.id)}</div></div>`; }).join('') + '<i></i>';
-    document.getElementById('dpkStrip').innerHTML = list.map(p => { const m = dpkMeta(p); return `<button type="button" class="dpk-sw" data-id="${esc(p.id)}" title="${esc(p.label)}" style="--sw-bg:${esc(m.bg)};--sw-acc:${esc(m.acc)}${m.cover ? `;--sw-img:url('${esc(m.cover)}')` : ''}"${dpkFit(p.id, DPK.filt) ? '' : ' hidden'}><i></i><span>${esc(p.label)}</span></button>`; }).join('');
+    car.innerHTML = mode !== 'car' ? '' : '<i></i>' + list.map(p => { const m = dpkMeta(p); return `<div class="dpk-sl" data-id="${esc(p.id)}" role="button" tabindex="-1" aria-label="${esc(p.label)}"${dpkTh(p.id) ? ' data-th="C"' : ''}${dpkFit(p.id, DPK.filt) ? '' : ' hidden'}><div class="dpk-ph" style="--sk-bg:${esc(m.bg)};--sk-ink:${esc(m.ink)};--sk-acc:${esc(m.acc)}">${dpkSkHtml(p.id)}</div></div>`; }).join('') + '<i></i>';
+    const hid = p => dpkFit(p.id, DPK.filt) ? '' : ' hidden';
+    document.getElementById('dpkStrip').innerHTML = mode === 'film' // 필름 띠: 디자인 첫 화면 그림 한 줄
+        ? list.map(p => { const m = dpkMeta(p), src = dpkCoverSrc(p.id); return `<button type="button" class="dpk-sw fc" data-id="${esc(p.id)}" title="${esc(p.label)}" style="--sw-bg:${esc(m.bg)};--sw-acc:${esc(m.acc)}"${hid(p)}>${src ? `<img src="${esc(src)}" alt="" loading="lazy" decoding="async">` : '<i></i>'}<span>${esc(p.label)}</span></button>`; }).join('')
+        : list.map(p => { const m = dpkMeta(p); return `<button type="button" class="dpk-sw" data-id="${esc(p.id)}" title="${esc(p.label)}" style="--sw-bg:${esc(m.bg)};--sw-acc:${esc(m.acc)}${m.cover ? `;--sw-img:url('${esc(m.cover)}')` : ''}"${hid(p)}><i></i><span>${esc(p.label)}</span></button>`; }).join('');
+    document.getElementById('dpkGrid').innerHTML = mode !== 'grid' ? '' : list.map(p => { // 격자: 첫 화면 그림 카드 (마우스를 올리면 카드 안에서 아래까지 흘러감)
+        const m = dpkMeta(p), src = dpkCoverSrc(p.id), feat = (FEATURED_IDS || []).includes(p.id);
+        return `<button type="button" class="dpk-card" data-id="${esc(p.id)}" aria-pressed="false" title="${esc(p.label)}"${hid(p)}><span class="cv" style="--sk-bg:${esc(m.bg)};--sk-acc:${esc(m.acc)}">${src ? `<img src="${esc(src)}" alt="" loading="lazy" decoding="async">` : '<i></i>'}${m.video ? '<em>영상</em>' : ''}${feat ? '<u>추천</u>' : ''}</span><b>${esc(p.label)}</b></button>`;
+    }).join('');
     dpkBind();
     requestAnimationFrame(() => { dpkSize(); dpkMark(DPK.cur); dpkGo(DPK.cur, true); dpkPaint(); });
+    if (!DPK_TH && !THUMB_MAKE) DPK_TH_READY.then(() => { if (!document.getElementById('dpk').hidden && Object.keys(DPK_TH || {}).length) renderDesignScreen(); }); // (그림 목록이 늦게 오면 다시 그림)
 }
 function dpkBind() {
     if (DPK.bound) return; DPK.bound = true;
@@ -14627,12 +14769,33 @@ function dpkBind() {
     ['touchend', 'touchcancel'].forEach(t => car.addEventListener(t, () => { DPK.touching = false; DPK.moved = Date.now(); }, { passive: true }));
     document.getElementById('dpkL').addEventListener('click', () => dpkStep(-1));
     document.getElementById('dpkR').addEventListener('click', () => dpkStep(1));
+    document.getElementById('dpkL2').addEventListener('click', () => dpkStep(-1));
+    document.getElementById('dpkR2').addEventListener('click', () => dpkStep(1));
+    const onePh = document.getElementById('dpkOnePh');
+    onePh.addEventListener('click', dpkOvOpen); onePh.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dpkOvOpen(); } });
+    const grid = document.getElementById('dpkGrid');
+    grid.addEventListener('click', e => { const c = e.target.closest('.dpk-card'); if (!c) return; dpkTouched(); if (c.dataset.id === DPK.cur) dpkOvOpen(); else dpkMark(c.dataset.id); });
+    // 격자 카드에 마우스를 올리면 카드 안에서 긴 그림이 아래까지 흘러감 (찍어 둔 그림이 있을 때만 - 그림만 움직여서 가벼움)
+    grid.addEventListener('mouseover', e => {
+        const c = e.target.closest('.dpk-card'); if (!c || c === DPK.hov) return;
+        if (DPK.hov) DPK.hov.classList.remove('hov'); DPK.hov = c; clearTimeout(DPK.hovT);
+        const th = dpkTh(c.dataset.id); if (!th) return;
+        DPK.hovT = setTimeout(() => {
+            const cv = c.querySelector('.cv'); let im = cv.querySelector('img.lg');
+            if (!im) { im = document.createElement('img'); im.className = 'lg'; im.alt = ''; im.decoding = 'async'; im.src = th.l; cv.appendChild(im); }
+            const ty = Math.min(0, -(th.h * cv.clientWidth / 390 - cv.clientHeight));
+            im.style.setProperty('--ty', ty.toFixed(1) + 'px'); im.style.setProperty('--dur', Math.max(3, -ty / 70).toFixed(1) + 's');
+            void im.offsetWidth; if (DPK.hov === c) c.classList.add('hov');
+        }, 220);
+    });
+    grid.addEventListener('mouseleave', () => { clearTimeout(DPK.hovT); if (DPK.hov) DPK.hov.classList.remove('hov'); DPK.hov = null; });
+    let rzT = 0; window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { if (document.getElementById('dpk').hidden || !document.getElementById('screenDesign').classList.contains('active')) return; if (dpkMode() !== DPK.mode) renderDesignScreen(); else if (DPK.mode !== 'car') { const o = document.getElementById('dpkOne'); delete o.dataset.k; dpkOneSync(); } }, 200); }); // (PC ↔ 휴대폰 폭이 바뀌면 화면 모양도)
     strip.addEventListener('click', e => { const b = e.target.closest('.dpk-sw'); if (b) { dpkTouched(); dpkGo(b.dataset.id); } });
     document.getElementById('dpkChips').addEventListener('click', e => {
         const b = e.target.closest('[data-f]'); if (!b) return;
         DPK.filt = b.dataset.f;
         document.querySelectorAll('#dpkChips [data-f]').forEach(x => x.classList.toggle('on', x === b));
-        document.querySelectorAll('#dpkCar .dpk-sl, #dpkStrip .dpk-sw').forEach(el => { el.hidden = !dpkFit(el.dataset.id, DPK.filt); });
+        document.querySelectorAll('#dpkCar .dpk-sl, #dpkStrip .dpk-sw, #dpkGrid .dpk-card').forEach(el => { el.hidden = !dpkFit(el.dataset.id, DPK.filt); });
         const v = dpkVis(); if (!v.includes(DPK.cur)) DPK.cur = v[0];
         dpkSize(); dpkMark(DPK.cur); dpkGo(DPK.cur, true); dpkPaint();
     });
@@ -14687,8 +14850,8 @@ function dpkOvPut(id, fade) {
         ov.querySelector('.pv').disabled = n <= 0; ov.querySelector('.nv').disabled = n >= v.length - 1;
         vw.innerHTML = ''; vw.scrollTop = 0;
         if (s) { const el = dpkIvEl(s); el.classList.remove('dpk-iv'); vw.appendChild(el); dpkWx(el, s); }
-        else vw.innerHTML = '<div class="dpk-sk">그리는 중…</div>';
-        if (!dpkHas(id, 'f')) dpkShot(id, 'f').then(() => { if (DPK.ovId === id && ov.classList.contains('show') && dpkHas(id, 'f')) dpkOvPut(id); dpkSync(); }); // 크게 보기는 전체 (그 디자인만 이때 다 그림)
+        else { const th = dpkTh(id); vw.innerHTML = th ? `<img class="dpk-ovim" src="${esc(th.l)}" alt="">` : '<div class="dpk-sk">그리는 중…</div>'; } // (찍어 둔 그림을 먼저 보여 주고 전체를 그림)
+        if (!dpkHas(id, 'f')) dpkShot(id, 'f').then(() => { if (DPK.ovId === id && DPK.ovOn && dpkHas(id, 'f')) dpkOvPut(id); dpkSync(); }); // 크게 보기는 전체 (그 디자인만 이때 다 그림)
         vw.classList.remove('fade');
     };
     if (fade) { vw.classList.add('fade'); setTimeout(put, 160); } else put();
@@ -14696,6 +14859,7 @@ function dpkOvPut(id, fade) {
 function dpkOvStep(k) { const v = dpkVis(), n = v.indexOf(DPK.ovId), id = v[n + k]; if (!id) return; dpkOvPut(id, true); document.querySelector('#dpkOv .dpk-swipe').classList.add('gone'); }
 function dpkOvOpen() {
     if (!DPK.cur) return;
+    DPK.ovOn = true; // (다 그린 게 'show'를 붙이기 전에 끝나도 바꿔 넣게)
     const ov = dpkOvEl(); dpkOvPut(DPK.cur);
     ov.querySelector('.dpk-swipe').classList.remove('gone');
     clearTimeout(DPK.swT); DPK.swT = setTimeout(() => ov.querySelector('.dpk-swipe').classList.add('gone'), 3500);
@@ -14704,9 +14868,130 @@ function dpkOvOpen() {
 }
 function dpkOvClose(picking) {
     const ov = document.getElementById('dpkOv'); if (!ov) return;
-    ov.classList.remove('show'); document.body.style.overflow = '';
+    DPK.ovOn = false; ov.classList.remove('show'); document.body.style.overflow = '';
     setTimeout(() => { if (!ov.classList.contains('show')) ov.querySelector('.dpk-vw').innerHTML = ''; }, 300);
     if (!picking && DPK.ovId && DPK.ovId !== DPK.cur) { dpkMark(DPK.ovId); dpkGo(DPK.ovId, true); dpkPaint(); }
+}
+// ===== 디자인 썸네일 만들기 (관리자 → 추천 디자인 → [썸네일 만들기] = 에디터 ?thumbs=make) =====
+//  디자인마다 dpkShot(위쪽 섹션까지)으로 그린 청첩장을 화면 왼쪽 위(390px 칸 .thm-cap)에 띄우고, '이 탭 공유'(getDisplayMedia)로
+//  화면을 그대로 찍어 첫 화면(390×844)·긴 화면(최대 2600px, 칸보다 길면 몇 번에 나눠 찍어 이어 붙임)을 WebP로 dpk_thumbs.php에 올림.
+//  (DOM을 그림으로 바꾸는 라이브러리는 마스크·color-mix·글꼴 등을 제대로 못 그려서 화면을 그대로 찍음 · PC 크롬·엣지만)
+//  찍기 전에 초록 칸을 띄워 동영상 속 그 칸의 자리를 찾아 맞춤(thmCalib) - 화면 배율·창 크기가 달라도 맞게
+const THM = { csrf: '', items: {}, st: {}, run: false, stop: false };
+const THM_MAX_H = 2600, THM_COVER_H = 844, THM_OUT = 1.5; // 그림 배율 (390px → 585px)
+const thm$ = id => document.getElementById(id);
+function thmMsg(t, bad) { const m = thm$('thmMsg'); if (m) { m.textContent = t || ''; m.classList.toggle('bad', !!bad); } }
+function thmIds() { return allDesigns().map(p => p.id); }
+function thmStat(id) { const t = THM.items[id]; return THM.st[id] || (!t ? 'no' : t.sig === dpkSig(id) ? 'ok' : 'old'); }
+const THM_LBL = { no: '그림 없음', old: '예전 그림', ok: '✓ 최신', run: '찍는 중…', up: '올리는 중…', done: '✓ 저장함', bad: '못 찍음' };
+function thmDraw(now) {
+    const ids = thmIds(), l = thm$('thmL'); if (!l) return;
+    l.innerHTML = ids.map(id => { const p = allDesigns().find(x => x.id === id) || {}, t = THM.items[id], st = thmStat(id);
+        return `<div class="thm-r${id === now ? ' now' : ''}">${t ? `<img src="${esc(t.c)}" alt="" loading="lazy">` : '<i></i>'}<b>${esc(p.label || id)}</b><small class="${st === 'done' ? 'ok' : st}">${THM_LBL[st] || ''}</small></div>`; }).join('');
+    const todo = ids.filter(id => ['no', 'old', 'bad'].includes(thmStat(id))).length;
+    const a = thm$('thmGoNew'), b = thm$('thmGoAll');
+    if (a) { a.textContent = todo ? `바뀐 것만 찍기 (${todo}개)` : '모두 최신이에요'; a.disabled = THM.run || !todo; }
+    if (b) { b.textContent = THM.run ? '멈추기' : `모두 다시 찍기 (${ids.length}개)`; b.disabled = false; }
+    if (now) { const r = l.querySelector('.thm-r.now'); if (r) r.scrollIntoView({ block: 'nearest' }); }
+}
+async function thmOpen() {
+    document.documentElement.classList.add('thm-on'); DPK.off = true; // (뒤 디자인 고르기 화면은 그리지 않음)
+    const el = document.createElement('div'); el.className = 'thm'; el.id = 'thm';
+    el.innerHTML = `<div class="thm-h"><b>디자인 썸네일 만들기</b><p>디자인마다 첫 화면·긴 화면 그림을 찍어 두면 고객 디자인 고르기 화면이 빨라져요. [찍기]를 누르면 크롬·엣지가 <b>'이 탭 공유'</b>를 물어요 → <b>[공유]</b>를 눌러 주세요. 다 찍을 때까지 이 창을 그대로 두세요 (다른 탭으로 가면 멈춰요).</p></div>
+        <p class="thm-msg" id="thmMsg">디자인 목록을 불러오는 중…</p><div class="thm-l" id="thmL"></div>
+        <div class="thm-f"><button type="button" class="main" id="thmGoNew" disabled>바뀐 것만 찍기</button><button type="button" id="thmGoAll" disabled>모두 다시 찍기</button><a href="admin_designs.php#thumbs">추천 디자인 관리로</a></div>`;
+    document.body.appendChild(el);
+    thm$('thmGoNew').addEventListener('click', () => thmRun(thmIds().filter(id => ['no', 'old', 'bad'].includes(thmStat(id)))));
+    thm$('thmGoAll').addEventListener('click', () => { if (THM.run) { THM.stop = true; thmMsg('지금 찍는 디자인까지만 하고 멈춰요…'); } else thmRun(thmIds()); });
+    const t0 = Date.now(); while (!(PRESETS_OK && SAMPLE_LIST_OK && DPK_SECDEF) && Date.now() - t0 < 8000) await new Promise(r => setTimeout(r, 150)); // (디자인·샘플·메인 사진 예시를 다 받은 뒤 - 지문이 고객 화면과 같게)
+    try { const j = await fetch('dpk_thumbs.php?csrf=1', { cache: 'no-store' }).then(r => r.json()); if (!j.ok || !j.csrf) throw 0; THM.csrf = j.csrf; }
+    catch (e) { thmMsg('관리자로 로그인한 뒤 다시 열어 주세요. (관리자 → 추천 디자인 → [썸네일 만들기])', true); return; }
+    try { const j = await fetch('dpk_thumbs.php', { cache: 'no-store' }).then(r => r.json()); THM.items = (j && j.items) || {}; } catch (e) {}
+    const okEnv = navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && window.innerWidth >= 820;
+    thmMsg(okEnv ? '' : (window.innerWidth < 820 ? '창을 더 넓게(820px 이상) 해 주세요.' : '이 브라우저는 화면을 찍을 수 없어요. PC 크롬이나 엣지에서 열어 주세요.'), !okEnv);
+    thmDraw();
+}
+// 화면을 찍을 칸 (왼쪽 위 390px) - 높이는 화면 높이까지
+function thmCapEl() { let c = thm$('thmCap'); if (!c) { c = document.createElement('div'); c.className = 'thm-cap'; c.id = 'thmCap'; document.body.appendChild(c); } c.style.height = Math.min(window.innerHeight, 1000) + 'px'; return c; }
+const thmWait = ms => new Promise(r => setTimeout(r, ms));
+// 바꾼 화면이 동영상에 들어올 때까지 기다림 (새 장면 두 번 또는 0.5초)
+async function thmFrame(v) {
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    await thmWait(90);
+    if (v.requestVideoFrameCallback) for (let i = 0; i < 2; i++) await Promise.race([new Promise(r => v.requestVideoFrameCallback(() => r())), thmWait(260)]);
+    else await thmWait(300);
+}
+// 초록 칸을 띄워 동영상 속 자리 찾기 → {x, y, w, h} (칸 390 × 높이 = 동영상의 이 네모)
+async function thmCalib(v, cap) {
+    cap.innerHTML = '<div style="position:absolute;inset:0;background:#00FF00"></div>';
+    await thmFrame(v);
+    const W = v.videoWidth, H = v.videoHeight; if (!W || !H) return null;
+    const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(v, 0, 0);
+    const d = x.getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = -1, y1 = -1;
+    for (let y = 0; y < H; y += 1) for (let i = (y * W) * 4, e = i + W * 4; i < e; i += 4) if (d[i] < 70 && d[i + 1] > 190 && d[i + 2] < 70) { const px = (i / 4) % W; if (px < x0) x0 = px; if (px > x1) x1 = px; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    cap.innerHTML = '';
+    if (x1 < 0 || x1 - x0 < 100) return null;
+    return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1, cw: 390, ch: cap.clientHeight, iw: window.innerWidth, ih: window.innerHeight };
+}
+async function thmImgs(root) {
+    const ims = [...root.querySelectorAll('img')];
+    await Promise.race([Promise.all(ims.map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; }))), thmWait(6000)]);
+    try { await Promise.race([document.fonts.ready, thmWait(3000)]); } catch (e) {}
+}
+const thmBlob = (cv, q) => new Promise(r => cv.toBlob(b => { if (b && b.type === 'image/webp') r(b); else cv.toBlob(r, 'image/jpeg', .84); }, 'image/webp', q));
+// 디자인 하나 찍기 → {c: Blob, l: Blob, h}
+async function thmShoot(id, v, cal) {
+    delete DPK.shots[id];
+    const s = await dpkShot(id, 's'); if (!s) throw new Error('그리지 못했어요');
+    const cap = thmCapEl(); cap.innerHTML = '';
+    const el = dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) }); el.style.animation = 'none'; cap.appendChild(el);
+    await thmImgs(el); await thmWait(700);
+    cap.querySelectorAll('*').forEach(n => { n.style.animationPlayState = 'paused'; }); // (장식 효과는 0.7초 흐른 모습 그대로)
+    const H = Math.min(THM_MAX_H, Math.max(THM_COVER_H, el.offsetHeight)), VH = cal.ch, kx = cal.w / cal.cw, ky = cal.h / cal.ch;
+    const OW = Math.round(390 * THM_OUT), full = document.createElement('canvas'); full.width = OW; full.height = Math.round(H * THM_OUT);
+    const fx = full.getContext('2d'), bg = getComputedStyle(el).backgroundColor; fx.fillStyle = !bg || /rgba\(0, 0, 0, 0\)|transparent/.test(bg) ? '#fff' : bg; fx.fillRect(0, 0, full.width, full.height);
+    for (let y = 0; y < H; y += VH) {
+        el.style.transform = `translateY(${-y}px)`;
+        await thmFrame(v);
+        const seg = Math.min(VH, H - y);
+        fx.drawImage(v, cal.x, cal.y, cal.w, seg * ky, 0, Math.round(y * THM_OUT), OW, Math.round(seg * THM_OUT));
+    }
+    const cov = document.createElement('canvas'); cov.width = OW; cov.height = Math.round(THM_COVER_H * THM_OUT);
+    cov.getContext('2d').drawImage(full, 0, 0, OW, cov.height, 0, 0, OW, cov.height);
+    cap.innerHTML = ''; delete DPK.shots[id];
+    return { c: await thmBlob(cov, .78), l: await thmBlob(full, .7), h: Math.round(H) };
+}
+async function thmRun(ids) {
+    if (THM.run || !ids.length) return;
+    let stream = null;
+    try { stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser', width: { ideal: 4096 }, height: { ideal: 4096 }, frameRate: 30 }, audio: false, preferCurrentTab: true, selfBrowserSurface: 'include', surfaceSwitching: 'exclude' }); }
+    catch (e) { thmMsg('화면 찍기를 허락하지 않았어요. 다시 누르고 \'이 탭 공유\'에서 [공유]를 눌러 주세요.', true); return; }
+    THM.run = true; THM.stop = false; thmDraw();
+    const track = stream.getVideoTracks()[0], v = document.createElement('video'); v.muted = true; v.playsInline = true; v.srcObject = stream;
+    let done = 0, fail = 0, cal = null;
+    try {
+        await v.play();
+        for (const id of ids) {
+            if (THM.stop || track.readyState === 'ended') break;
+            if (!cal || cal.iw !== window.innerWidth || cal.ih !== window.innerHeight) { cal = await thmCalib(v, thmCapEl()); if (!cal) { thmMsg('찍은 화면에서 이 탭을 찾지 못했어요. 다시 누르고 \'이 탭\'을 골라 주세요.', true); break; } } // (창 크기가 바뀌면 다시)
+            THM.st[id] = 'run'; thmDraw(id); thmMsg(`찍는 중… ${done + fail + 1} / ${ids.length}`);
+            try {
+                const r = await thmShoot(id, v, cal);
+                THM.st[id] = 'up'; thmDraw(id);
+                const fd = new FormData(); fd.append('csrf_token', THM.csrf); fd.append('act', 'put'); fd.append('id', id); fd.append('sig', dpkSig(id)); fd.append('h', String(r.h));
+                const ext = r.c.type === 'image/webp' ? 'webp' : 'jpg'; fd.append('c', r.c, `${id}-c.${ext}`); fd.append('l', r.l, `${id}-l.${ext}`);
+                const j = await fetch('dpk_thumbs.php', { method: 'POST', body: fd }).then(x => x.json());
+                if (!j.ok) throw new Error(j.error || '올리지 못했어요');
+                THM.items[id] = j.item; THM.st[id] = 'done'; done++;
+            } catch (e) { console.warn('[thm]', id, e); THM.st[id] = 'bad'; fail++; }
+            thmDraw(id);
+        }
+    } finally {
+        try { track.stop(); } catch (e) {}
+        const cap = thm$('thmCap'); if (cap) cap.remove();
+        THM.run = false; thmDraw();
+        if (!thm$('thmMsg').classList.contains('bad') || done) thmMsg(`${done}개 저장했어요${fail ? ` · ${fail}개는 못 찍었어요 (다시 눌러 보세요)` : ''}${THM.stop ? ' · 멈췄어요' : ''}. 고객 디자인 고르기 화면에 바로 반영돼요.`, !!fail);
+    }
 }
 // 샘플 미리보기: 그 디자인(관리자 샘플이 있으면 샘플 모습)을 잠깐 입혀서 에디터 미리보기를 화면 가득 보여줌
 //  [돌아가기] = 보기 전 상태 그대로 되돌림 / [이 샘플로 선택] = 그 디자인으로 시작 (startWithPreset)
@@ -14792,6 +15077,7 @@ document.querySelectorAll('[data-sg]').forEach(btn => btn.addEventListener('clic
 }));
 // 디자인 화면을 처음 보여줄 때 시작 가이드를 한 번 띄운다
 function showDesignScreenWithGuide() {
+    if (THUMB_MAKE) { startTrack = 'simple'; presetFilter = 'all'; fpAllOpen = false; renderDesignScreen(); showStartChoice(false); showScreen('design'); return; } // 디자인 썸네일 만들기 (관리자)
     // 휴대폰에서 새로 만들 땐 [간편 만들기 | 직접 만들기]를 묻지 않고 바로 간편 만들기 (관리자 손쉬운 제작 → 간편 만들기 전체 'mobileEasy')
     //  다 만든 뒤 목록 화면 '더 꾸미고 싶다면' 카드(spMoreTipHtml)가 전문가 모드를 알려 줌
     if (mobileEasyOnly()) {
@@ -17838,7 +18124,7 @@ async function bootstrapFromServer() {
     if (TESTBED_MODE) {
         showServerNotice('공용 테스트베드입니다 - 여기서 저장하는 내용은 이 링크로 접속하는 모두에게 공유/덮어써집니다. 실제 서비스 디자인이 아닙니다.', true);
     }
-    if (!EDIT_TOKEN) { showDesignScreenWithGuide(); return; }
+    if (!EDIT_TOKEN) { showDesignScreenWithGuide(); if (THUMB_MAKE) thmOpen(); return; }
     try {
         const res = await fetch(API_ENDPOINTS.load);
         const data = await res.json();

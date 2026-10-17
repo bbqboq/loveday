@@ -104,6 +104,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 휴대폰 간편 만들기 보기 방식 (① 반반 화면 / ② 떠 있는 돋보기 창 / 질문만) - 누르면 바로 저장
         $v = (string) ($_POST['view'] ?? '');
         $ok = in_array($v, SECTION_EASY_MVIEWS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['mobileView' => $v]);
+    } elseif ($act === 'easy_pcpick') {
+        // PC 디자인 고르기 화면 (한눈에 격자 / 필름 띠 / 넘겨 보기) - 누르면 바로 저장
+        $v = (string) ($_POST['view'] ?? '');
+        $ok = in_array($v, SECTION_EASY_PCPICKS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['pcPick' => $v]);
     } elseif ($act === 'easy_hero_pos') {
         // 메인 사진 예시에서 보일 부분·확대 (끌거나 확대하면 바로 저장)
         $ok = section_defaults_easy_hero() !== '' && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['heroPos' => ['focus' => (string) ($_POST['focus'] ?? ''), 'zoom' => (float) ($_POST['zoom'] ?? 1)]]);
@@ -145,7 +149,7 @@ $easyNow = section_defaults_easy();
 $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
-$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyVideo = section_defaults_easy_video();
+$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyVideo = section_defaults_easy_video();
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
 $easyInfo = [
@@ -716,6 +720,13 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-mview-peek .a { top: 40%; left: auto; right: 0; width: 6px; height: 22%; border-radius: 3px 0 0 3px; background: #2B2320; } .ez-mview-peek .b { left: auto; right: 9px; bottom: 6px; width: 52%; height: 46%; border-radius: 5px; background: linear-gradient(170deg, #C9BFB2, #8F8476); box-shadow: 0 2px 5px rgba(0,0,0,.25); animation: ezPeek 3.2s ease-in-out infinite; transform-origin: 100% 60%; }
 @keyframes ezPeek { 0%, 30% { transform: scale(.2); opacity: 0; } 40%, 78% { transform: none; opacity: 1; } 90%, 100% { transform: scale(.2); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .ez-mview-peek .b { animation: none; } }
+/* PC 디자인 고르기 화면 작은 그림 (가로 화면) */
+.ez-mview-ph.ez-pc { width: 80px; height: 52px; border-width: 2px; border-radius: 6px; }
+.ez-pc i { position: absolute; }
+.ez-pc-grid .a { left: 4px; top: 5px; width: 46px; height: 40px; background: repeating-linear-gradient(90deg, #CFC6BA 0 10px, transparent 10px 12px), repeating-linear-gradient(0deg, transparent 0 2px, #F6F3EE 2px 4px, transparent 4px 20px); background-size: 48px 19px; opacity: .9; }
+.ez-pc-grid .b { right: 6px; top: 5px; width: 18px; height: 34px; border-radius: 3px; background: linear-gradient(170deg, #C9BFB2, #8F8476); } .ez-pc-grid .c { right: 5px; bottom: 5px; width: 20px; height: 5px; border-radius: 2px; background: #2B2320; }
+.ez-pc-film .a { left: 34px; top: 4px; width: 16px; height: 30px; border-radius: 3px; background: linear-gradient(170deg, #C9BFB2, #8F8476); } .ez-pc-film .b { left: 4px; right: 4px; bottom: 4px; height: 9px; background: repeating-linear-gradient(90deg, #CFC6BA 0 6px, transparent 6px 8px); } .ez-pc-film .c { right: 5px; top: 8px; width: 14px; height: 18px; border-radius: 2px; background: #E5DED3; }
+.ez-pc-car .a { left: 30px; top: 4px; width: 18px; height: 36px; border-radius: 3px; background: linear-gradient(170deg, #C9BFB2, #8F8476); } .ez-pc-car .b { left: 13px; top: 9px; width: 12px; height: 26px; border-radius: 2px; background: #CFC6BA; box-shadow: 41px 0 0 #CFC6BA; opacity: .7; } .ez-pc-car .c { left: 20px; bottom: 4px; width: 38px; height: 4px; border-radius: 2px; background: repeating-linear-gradient(90deg, #8F8476 0 4px, transparent 4px 6px); }
 .ez-mview-off .a { top: 8%; left: 5px; right: 5px; height: 16%; border-radius: 4px; background: #fff; border: 1px solid #E5DED3; } .ez-mview-off .b { display: none; } .ez-mview-off .c { top: 36%; left: 5px; right: 5px; height: 6px; border-radius: 3px; background: #CFC6BA; box-shadow: 0 10px 0 #E5DED3, 0 20px 0 #E5DED3; }
 .ez-hero-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; } .ez-hero-t b { font-size: 14px; } .ez-hero-t small { font-size: 12px; color: #8A8278; line-height: 1.5; }
 .ez-hero-b { display: flex; gap: 6px; margin-top: 6px; }
@@ -792,6 +803,17 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
                     <?php foreach ([['split', '① 반반 화면', '위는 청첩장, 아래는 질문. 지금 고치는 곳으로 저절로 이동해요. 손잡이로 크기, 위 스위치로 켜고 꺼요.', ''], ['lens', '② 떠 있는 작은 창', '질문 화면은 그대로, 작은 창이 늘 떠서 지금 고치는 섹션 하나를 통째로(가로 전체·위아래 끝까지) 줄여 보여줘요. 끌어서 원하는 자리에 두고, 누르면 크게 봐요.', ''], ['lens2', '③ 작은 창 · 비켜서기 + 잠깐 보여 주기', '②처럼 섹션 하나를 통째로 보여 주는 작은 창이, 지금 만지는 칸(제목·설명 글·스위치·막대)을 피해 다른 모서리로 비켜요. 비킬 곳이 없으면 작은 동그라미로 접혔다가, 설정을 바꾸면 2초 동안 크게 나와 바뀐 모습을 보여 줘요.', ''], ['peek', '④ 누르면 잠깐 보여 주기', '평소엔 청첩장 창을 숨겨서 설정 글자를 가리지 않아요. 새 질문으로 넘어가거나 칸을 누르고 스위치·막대·고르기를 바꾸면, 그 섹션 하나를 통째로 줄인 작은 창이 2초 동안 나와 보여 주고 들어가요. 창이나 오른쪽 손잡이를 누르면 계속 펼쳐 둬요.', '추천'], ['off', '질문만 (예전 방식)', '청첩장은 위 \'지금 청첩장\' 카드를 눌러야 보여요.', '']] as [$mk, $mt, $md, $mb]): ?>
                     <button type="button" class="ez-mview-c<?= $easyMview === $mk ? ' on' : '' ?>" data-mview="<?= $mk ?>" role="radio" aria-checked="<?= $easyMview === $mk ? 'true' : 'false' ?>">
                         <span class="ez-mview-ph ez-mview-<?= $mk ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
+                        <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
+                    </button>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="ez-mview" id="ezPc">
+                <div class="ez-mview-h"><b>PC 디자인 고르기 화면</b><small>PC에서 간편 만들기를 시작할 때 디자인을 고르는 화면 모양이에요. 누르면 바로 저장돼요. (휴대폰은 늘 옆으로 넘겨 보기) 디자인 그림은 <a href="admin_designs.php#thumbs">추천 디자인 → 디자인 썸네일 만들기</a>에서 미리 찍어 두면 훨씬 빨라져요.</small></div>
+                <div class="ez-mview-g" role="radiogroup" aria-label="PC 디자인 고르기 화면">
+                    <?php foreach ([['grid', 'B 한눈에 격자', '디자인 그림 10~15개가 한 번에 보이고, 오른쪽 휴대폰에 고른 디자인이 천천히 흘러가요. 마우스를 올리면 카드 안에서도 아래까지 보여요.', '추천'], ['film', 'C 필름 띠', '가운데 큰 휴대폰 + 아래에 모든 디자인 표지가 한 줄로. 사진 앨범 보듯 ← → 로 넘겨요.', ''], ['car', '넘겨 보기 (예전)', '큰 휴대폰을 옆으로 넘기는 예전 화면 (휴대폰과 같은 모양).', '']] as [$mk, $mt, $md, $mb]): ?>
+                    <button type="button" class="ez-mview-c<?= $easyPcPick === $mk ? ' on' : '' ?>" data-pcpick="<?= $mk ?>" role="radio" aria-checked="<?= $easyPcPick === $mk ? 'true' : 'false' ?>">
+                        <span class="ez-mview-ph ez-pc ez-pc-<?= $mk ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
                         <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
                     </button>
                     <?php endforeach; ?>
@@ -1674,6 +1696,16 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             const pick = el => box.querySelectorAll('[data-mview]').forEach(x => { x.classList.toggle('on', x === el); x.setAttribute('aria-checked', String(x === el)); });
             pick(b);
             post({ act: 'easy_mview', view: b.dataset.mview }).then(() => toast('휴대폰 보기 방식을 저장했어요')).catch(err => { say(err.message); pick(prev); });
+        }));
+    })();
+    (function ezPcBox() { // PC 디자인 고르기 화면
+        const box = document.getElementById('ezPc'); if (!box) return;
+        box.querySelectorAll('[data-pcpick]').forEach(b => b.addEventListener('click', () => {
+            if (readonly) return;
+            const prev = box.querySelector('.ez-mview-c.on');
+            const pick = el => box.querySelectorAll('[data-pcpick]').forEach(x => { x.classList.toggle('on', x === el); x.setAttribute('aria-checked', String(x === el)); });
+            pick(b);
+            post({ act: 'easy_pcpick', view: b.dataset.pcpick }).then(() => toast('PC 디자인 고르기 화면을 저장했어요')).catch(err => { say(err.message); pick(prev); });
         }));
     })();
     (function ezHeroBox() {
