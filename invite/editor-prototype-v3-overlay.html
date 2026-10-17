@@ -521,6 +521,15 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .stks:hover { border-color: var(--wz-line2, #D6CEC3); }
 .stks-row { display: flex; gap: 14px; margin-top: 8px; }
 .stk-sets { padding: 2px 0 4px; } .stk-sethint { margin: 8px 2px 4px; font-size: 11.5px; color: #8A847B; line-height: 1.55; } .stk-sethint .stk-more { margin: 0; }
+/* 목록 화면 '더 꾸미고 싶다면' 카드 - 간편 만들기로 다 만든 뒤 전문가 모드를 알려 줌 (spMoreTipHtml) */
+.spb-more-tip { position: relative; background: var(--ui-tint, #FAF7F2); border: 1px solid var(--wz-line); border-radius: 16px; padding: 14px 16px 13px; display: grid; gap: 8px; }
+.spb-more-tip .mt-h { display: flex; align-items: center; gap: 8px; } .spb-more-tip .mt-h b { font-size: 14.5px; font-weight: 800; }
+.spb-more-tip .mt-h i { width: 26px; height: 26px; border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--ui-pointsoft, #F5EDE2); color: var(--ui-point, #B08A5A); font-style: normal; font-size: 14px; }
+.spb-more-tip p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--wz-sub); }
+.spb-more-tip ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; } .spb-more-tip li { font-size: 11.5px; padding: 4px 9px; border-radius: 99px; background: #fff; border: 1px solid var(--wz-line); color: #5E574F; }
+.spb-more-tip .mt-acts { display: flex; gap: 8px; margin-top: 2px; } .spb-more-tip .mt-acts .wz-next { flex: 1; min-height: 40px; font-size: 13.5px; }
+.spb-more-tip .mt-x { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border: 0; background: none; color: #A39B90; font-size: 18px; cursor: pointer; border-radius: 50%; }
+html.mob-easy-only #scBack { display: none; }
 /* 목록 맨 위 '발행 준비' 카드 (A안 - 발행 전·후 같은 목록 화면) */
 .spb-ready { background: #fff; border: 1px solid var(--wz-line); border-radius: 16px; padding: 15px 16px 14px; display: grid; gap: 9px; }
 .spb-ready.flash { animation: spReadyIn .6s cubic-bezier(.2, .8, .3, 1); }
@@ -1155,6 +1164,7 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
 @keyframes dpkScroll { 0%, 8% { translate: 0 0; } 50%, 58% { translate: 0 var(--dpk-end, 0px); } 100% { translate: 0 0; } }
 .dpk-sk { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--sk-ink, #6F6A63); font-size: 13px; font-weight: 600; text-align: center; padding: 12px; }
 .dpk-sk i { width: 70%; aspect-ratio: 3 / 4; border-radius: 10px; background: linear-gradient(170deg, var(--sk-acc, #CFC6BA), transparent 140%); opacity: .4; }
+.dpk-sk.img { justify-content: flex-start; padding: 0; gap: 0; } .dpk-sk.img img { width: 100%; height: 72%; object-fit: cover; display: block; } .dpk-sk.img span { flex: 1; display: grid; place-items: center; padding: 8px; }
 .dpk-arr { position: absolute; top: calc(50% - 20px); z-index: 3; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255,255,255,.95); box-shadow: 0 2px 10px rgba(0,0,0,.16); font-size: 19px; line-height: 1; color: #2B2320; cursor: pointer; }
 .dpk-arr.l { left: 14px; } .dpk-arr.r { right: 14px; }
 .dpk-arr:disabled { opacity: 0; pointer-events: none; }
@@ -1196,6 +1206,17 @@ html.pv-sample .spv-bar { display: flex; position: fixed; left: 0; right: 0; bot
     .dpk-foot button { flex: none; height: 48px; }
     .dpk-foot .dpk-view { width: 100%; height: 46px; }
     .dpk-side .note { margin: -2px 0 0; font-size: 12px; color: #8A847B; text-align: center; }
+}
+/* PC: 위쪽 글을 줄이고 휴대폰을 크게 (예전엔 화면 높이 - 330px까지라 작게 보였음) */
+@media (min-width: 861px) {
+    #startPick.dpk-on { max-width: 1360px; padding-top: 20px; padding-bottom: 14px; }
+    #startPick.dpk-on .onb-steps { margin-bottom: 6px; }
+    #startPick.dpk-on .sc-back { margin-bottom: 2px; }
+    #startPick.dpk-on .wizard-title { font-size: 22px; margin-bottom: 0; }
+    #startPick.dpk-on .wizard-sub { margin-bottom: 6px; }
+    .dpk { grid-template-columns: minmax(0, 1fr) 320px; }
+    .dpk-stage { height: clamp(440px, calc(100vh - 238px), 920px); }
+    .dpk-car { padding: 6px 0 8px; }
 }
 @media (max-width: 860px) {
     .dpk-side { display: contents; }
@@ -14444,44 +14465,49 @@ function dpkPoster(s) {
     t.content.querySelectorAll('.ambient-field, .ib-wx-tint, .ib-wx-badge').forEach(el => el.remove());
     return (s.poster = t.innerHTML);
 }
+// 아직 안 그린 휴대폰 = 그 디자인 첫 화면 사진 + 이름만 (가볍게 - 진짜로 그리는 건 가운데와 양옆 두 대씩만)
 function dpkSkHtml(id) {
-    const p = allDesigns().find(x => x.id === id) || {};
-    return `<div class="dpk-sk"><i></i>${esc(p.label || '')}</div>`;
+    const p = allDesigns().find(x => x.id === id) || {}, sm = SAMPLE_LIST[id], m = dpkMeta(p);
+    const img = (sm && sm.cover) || (!m.video && (p.heroImage || EASY_HERO_SAMPLE)) || '';
+    return `<div class="dpk-sk${img ? ' img' : ''}">${img ? `<img src="${esc(img)}" alt="" loading="lazy" decoding="async">` : '<i></i>'}<span>${esc(p.label || '')}</span></div>`;
 }
-function dpkNear() { const v = dpkVis(), i = v.indexOf(DPK.cur); return i < 0 ? [] : [v[i], v[i + 1], v[i - 1]].filter(Boolean); }
+// 진짜로 그릴 휴대폰: 가운데 = 위쪽 섹션까지('s', 천천히 흘러감) · 양옆 두 대씩 = 첫 화면 한 장('p') · 나머지는 사진 카드(dpkSkHtml)
+//  (1018x까지는 32개 디자인을 모두 차례로 그려서 PC에서 화면이 계속 멈췄음)
+const DPK_SIDE = 2;
+function dpkPlan() {
+    const v = dpkVis(), i = v.indexOf(DPK.cur); if (i < 0) return [];
+    const out = [[v[i], 's']];
+    for (let k = 1; k <= DPK_SIDE; k++) { if (v[i + k]) out.push([v[i + k], 'p']); if (v[i - k]) out.push([v[i - k], 'p']); }
+    return out;
+}
+function dpkNear() { return dpkPlan().map(x => x[0]); }
 function dpkSync() {
     if (DPK.off) return;
     const near = dpkNear();
     document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => {
         const id = sl.dataset.id, s = DPK.shots[id], ph = sl.querySelector('.dpk-ph');
-        if (near.includes(id) && s && s.lv !== 'p') { // 가운데·양옆 = 위쪽 6줄 (첫 화면만 그려 둔 것은 아래 첫 화면 한 장으로 먼저)
+        if (id === DPK.cur && s && s.lv !== 'p') { // 가운데 = 위쪽 6줄
             if (sl.dataset.filled === '1') return;
             ph.innerHTML = ''; const el = dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) }); ph.appendChild(el); dpkWx(el, s); sl.dataset.filled = '1';
-        } else if (s) { // 먼 휴대폰 = 첫 화면 한 장만 (가볍게 · 넘기는 동안에도 빈 휴대폰이 안 보이게)
+        } else if (s && (near.includes(id) || sl.dataset.filled)) { // 양옆 = 첫 화면 한 장 (한 번 그린 건 멀어져도 그대로 - 다시 그리지 않게)
             if (sl.dataset.filled === 'p') return;
             ph.innerHTML = ''; ph.appendChild(dpkIvEl({ cls: s.cls, style: s.style, html: dpkPoster(s) })); sl.dataset.filled = 'p'; sl.classList.remove('run');
-        } else if (sl.dataset.filled) { ph.innerHTML = dpkSkHtml(id); delete sl.dataset.filled; sl.classList.remove('run'); }
+        } else if (sl.dataset.filled && !s) { ph.innerHTML = dpkSkHtml(id); delete sl.dataset.filled; sl.classList.remove('run'); }
     });
-    dpkRun();
+    if (!DPK.runRaf) DPK.runRaf = requestAnimationFrame(() => { DPK.runRaf = 0; dpkRun(); }); // (흘러가기 길이 재기는 한 프레임에 한 번만 - 높이를 재면 그 자리에서 다시 그려서 무거웠음)
 }
 function dpkFill() { dpkSync(); }
-// 가운데 → 양옆 순서로, 넘기기가 멈춘 뒤 한가할 때 하나씩 그림
+// 가운데 → 양옆 순서로, 넘기기가 멈춘 뒤 한가할 때 하나씩 그림 (사이사이 쉬어서 마우스·키보드가 바로 먹게)
 function dpkQueue() {
     if (DPK.busy) return;
-    const idle = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 700 }) : setTimeout(fn, 60));
+    const idle = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 500 }) : setTimeout(fn, 60));
     const next = () => {
-        if (DPK.touching || Date.now() - (DPK.moved || 0) < 600) { DPK.busy = true; setTimeout(next, 250); return; } // 손가락이 닿아 있거나 넘긴 지 얼마 안 됐으면 쉬었다가 (끊기지 않게)
-        dpkSync(); // 멈춘 뒤에 가운데·양옆만 채우고 먼 것은 비움
-        const near = dpkNear().filter(id => !dpkHas(id, 's')); // 그 사이 넘겼으면 새 가운데부터
-        let far = false;
-        if (!near.length) { // 가까운 것을 다 그렸으면 나머지도 가까운 순서로 천천히 (첫 화면만 보여 줄 것)
-            const v = dpkVis(), i = Math.max(0, v.indexOf(DPK.cur));
-            DPK.todo = v.map((x, k) => [x, Math.abs(k - i)]).sort((a, b) => a[1] - b[1]).map(x => x[0]).filter(x => !DPK.shots[x]); far = true;
-        } else DPK.todo = near;
-        const id = DPK.todo.shift();
-        if (!id || DPK.off || !document.getElementById('screenDesign').classList.contains('active') || document.getElementById('dpk').hidden) { DPK.busy = false; return; }
+        if (DPK.touching || DPK.dragging || Date.now() - (DPK.moved || 0) < 500) { DPK.busy = true; setTimeout(next, 200); return; } // 넘기는 중이면 쉬었다가 (끊기지 않게)
+        dpkSync();
+        const job = dpkPlan().find(([id, lv]) => !dpkHas(id, lv)); // 그 사이 넘겼으면 새 가운데부터
+        if (!job || DPK.off || !document.getElementById('screenDesign').classList.contains('active') || document.getElementById('dpk').hidden) { DPK.busy = false; return; }
         DPK.busy = true;
-        idle(() => dpkShot(id, far ? 'p' : 's').then(() => { dpkSync(); setTimeout(next, far ? 250 : 30); }));
+        idle(() => dpkShot(job[0], job[1]).then(() => { dpkSync(); setTimeout(next, 90); }));
     };
     next();
 }
@@ -14496,6 +14522,8 @@ function dpkRun() {
     document.querySelectorAll('#dpkCar .dpk-sl').forEach(sl => {
         const on = sl.dataset.id === DPK.cur, iv = sl.querySelector('.dpk-iv');
         if (!on || !iv) { sl.classList.remove('run'); return; }
+        if (sl.classList.contains('run') && iv._dpkRun) return; // 이미 흘러가는 중이면 다시 재지 않음
+        iv._dpkRun = 1;
         const k = parseFloat(getComputedStyle(document.getElementById('dpkCar')).getPropertyValue('--dpk-k')) || .4, ph = sl.querySelector('.dpk-ph');
         const h = iv.offsetHeight, end = Math.min(0, -(h * k - ph.clientHeight));
         iv.style.setProperty('--dpk-end', end.toFixed(1) + 'px'); iv.style.setProperty('--dpk-dur', Math.max(14, Math.min(48, h / 260)).toFixed(1) + 's');
@@ -14750,10 +14778,19 @@ document.querySelectorAll('[data-sg]').forEach(btn => btn.addEventListener('clic
 }));
 // 디자인 화면을 처음 보여줄 때 시작 가이드를 한 번 띄운다
 function showDesignScreenWithGuide() {
+    // 휴대폰에서 새로 만들 땐 [간편 만들기 | 직접 만들기]를 묻지 않고 바로 간편 만들기 (관리자 손쉬운 제작 → 간편 만들기 전체 'mobileEasy')
+    //  다 만든 뒤 목록 화면 '더 꾸미고 싶다면' 카드(spMoreTipHtml)가 전문가 모드를 알려 줌
+    if (mobileEasyOnly()) {
+        startTrack = 'simple'; presetFilter = 'all'; fpAllOpen = false;
+        document.documentElement.classList.add('mob-easy-only');
+        renderDesignScreen(); renderOnbSteps(); showStartChoice(false); showScreen('design');
+        return;
+    }
     showStartChoice(true);
     renderDesignScreen();
     showScreen('design');
 }
+function mobileEasyOnly() { try { return !SAMPLE_ID && window.matchMedia('(max-width: 860px), (pointer: coarse) and (max-width: 1100px)').matches && spOpt('flow', 'mobileEasy'); } catch (e) { return false; } }
 // 첫 화면(두 갈래) ↔ 디자인 고르기
 function showStartChoice(on) {
     document.getElementById('startChoice').hidden = !on;
@@ -15695,7 +15732,7 @@ function spResumeStep() {
     return i >= 0 ? i : 0;
 }
 // 간편 만들기 진행 상태 (질문 화면/목록, 지금 질문, 답, 질문이 켠 섹션, 디자인에서 꺼 둔 섹션, 목록 묶음·순서) - 디자인과 같이 저장
-const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom'];
+const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom'];
 function spAddGo(k) {
     if (k === '#stk') { state.spView = 'list'; spOpenSet = new Set(['theme']); spRender(); setTimeout(() => { const el = document.getElementById('spStkSets'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 140); return; }
     const st = spSteps().find(x => x.k === k); if (!st) return;
@@ -15887,6 +15924,17 @@ function spBindListDrag(pane) {
 let spAddMore = false; // '더 넣을 수 있는 칸' 펼쳐 보기
 const SP_ADD_DESC = { gallery: '사진 여러 장을 모아 보여 줘요', venue: '지도와 길찾기 버튼', transport: '지하철·버스·주차 안내', greet: '청첩장을 열면 처음 읽는 짧은 글', account: '축의금 계좌 (하객이 눌러서 복사)', dday: '예식 날짜 달력 · 남은 날', notice: '포토부스·주차·답례품 같은 안내', rsvp: '하객이 참석·식사 인원을 알려 줘요', guestbook: '하객이 축하 글을 남겨요', video: '유튜브 영상 한 편', timeline: '처음 만난 날부터 결혼까지', interview: '두 사람에게 묻고 답하기', profile: '신랑·신부를 사진과 함께 소개', letter: '하객에게 전하는 손편지', together: '함께한 날이 며칠인지', ending: '청첩장 맨 끝 마무리 인사', guestsnap: '하객이 찍은 사진을 모아요', trip: '신혼여행 소식을 올려요', lottery: '하객 행운의 추첨', dayinfo: '예식 날 하객 안내', thanks: '예식 뒤 하객에게 감사 인사' };
 const spAddDesc = st => SP_ADD_DESC[st.k] || ((window.InviteBlocks && InviteBlocks.BLOCKS[st.k] && InviteBlocks.BLOCKS[st.k].desc) || '켜면 청첩장에 들어가요');
+// 간편 만들기로 다 만든 뒤(목록 화면) 한 번: '더 꾸미고 싶다면 전문가 모드' 안내 (닫거나 전문가 모드로 가면 state.spMoreSeen - 저장됨)
+//  관리자 손쉬운 제작 → 간편 만들기 전체 'moreTip' · 정보 버튼(in-place)으로 연 목록·샘플 편집에는 안 나옴
+function spMoreTipHtml() {
+    if (spInPlace || state.spMoreSeen || SAMPLE_ID || !spOpt('flow', 'moreTip')) return '';
+    const mob = window.innerWidth <= 860;
+    return `<div class="spb-more-tip" id="spMoreTip"><button type="button" class="mt-x" id="spMtX" aria-label="안내 닫기">×</button>
+        <div class="mt-h"><i aria-hidden="true">✦</i><b>기본은 다 됐어요! 더 꾸미고 싶다면</b></div>
+        <p>지금 청첩장 그대로 <b>전문가 모드</b>에서 더 자세히 꾸밀 수 있어요. 만든 내용은 그대로 남아요.${mob ? ' 화면이 넓은 PC에서 열면 더 편해요.' : ''}</p>
+        <ul><li>스티커 붙이기</li><li>글자 위치·크기</li><li>섹션 모양·스킨</li><li>섹션 더 넣기</li><li>나타나는 효과</li></ul>
+        <div class="mt-acts"><button type="button" class="wz-next" id="spMtGo">전문가 모드로 더 꾸미기</button><button type="button" class="wz-next ghost" id="spMtOk">이대로 충분해요</button></div></div>`;
+}
 function spRenderList() {
     const pane = document.getElementById('simplePane'); if (!pane) return;
     const keepPane = pane.scrollTop, keepWin = window.scrollY, again = pane._spKey === 'list';
@@ -15922,7 +15970,7 @@ function spRenderList() {
     spReadyFlash = false;
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 만들기</b></div>${spUdHtml()}</div>
         <div class="spb">
-            ${readyHtml}${ready ? '<!--' : ''}<div class="spb-prog"><div><b>꼭 필요한 것</b><span>${nDone} / ${must.length}</span></div><div class="spb-dots">${must.map(m => `<i class="${m[1] ? 'on' : ''}"></i>`).join('')}</div><p>${left.length ? esc(left.join(' · ')) + (left.length === 1 ? '만 넣으면 보낼 수 있어요.' : '을(를) 넣으면 보낼 수 있어요.') : '꼭 필요한 건 다 채웠어요. 나머지는 원할 때만 채우면 돼요.'}</p></div>${ready ? '-->' : ''}
+            ${readyHtml}${spMoreTipHtml()}${ready ? '<!--' : ''}<div class="spb-prog"><div><b>꼭 필요한 것</b><span>${nDone} / ${must.length}</span></div><div class="spb-dots">${must.map(m => `<i class="${m[1] ? 'on' : ''}"></i>`).join('')}</div><p>${left.length ? esc(left.join(' · ')) + (left.length === 1 ? '만 넣으면 보낼 수 있어요.' : '을(를) 넣으면 보낼 수 있어요.') : '꼭 필요한 건 다 채웠어요. 나머지는 원할 때만 채우면 돼요.'}</p></div>${ready ? '-->' : ''}
             ${groups}${addHtml}
             ${spOpt('flow', 'order') ? '' : '<!--'}<button type="button" class="spb-order" id="spOrderBtn"><span aria-hidden="true">⇅</span><span><b>섹션 순서 바꾸기</b><small>청첩장에 나오는 순서를 끌어서 바꿔요${window.innerWidth > 860 ? ' · 위 칸을 바로 끌어도 돼요' : ''}</small></span></button>${spOpt('flow', 'order') ? '' : '-->'}
         </div>
@@ -15932,6 +15980,8 @@ function spRenderList() {
     spBindListDrag(pane);
     pane.querySelector('#spReadyPv')?.addEventListener('click', () => pane.querySelector('#spListDone').click());
     pane.querySelector('#spReadyKk')?.addEventListener('click', () => kkSheetOpen()); // 카톡 공유 모양 (사진·제목·내용·버튼)
+    pane.querySelector('#spMtGo')?.addEventListener('click', () => { state.spMoreSeen = true; simpleToFull(); });
+    pane.querySelectorAll('#spMtX, #spMtOk').forEach(b => b.addEventListener('click', () => { state.spMoreSeen = true; const c = pane.querySelector('#spMoreTip'); if (c) c.remove(); scheduleSnapshot(); }));
     pane.querySelectorAll('#spReady [data-pc-go]').forEach(b => b.addEventListener('click', () => pubGo(b.dataset.pcGo)));
     pane.querySelectorAll('[data-sp-add]').forEach(b => b.addEventListener('click', () => spAddGo(b.dataset.spAdd)));
     pane.querySelector('#spAddMore')?.addEventListener('click', () => { spAddMore = true; spRender(); });

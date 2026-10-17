@@ -531,6 +531,7 @@
         const vv = global.visualViewport;
         const visBottom = vv ? vv.offsetTop + vv.height : global.innerHeight;
         document.querySelectorAll('.ib-next:not(.ib-next-free)').forEach(b => {
+            if (b.closest(NO_DOCK)) return; // (작게 줄여 보여 주는 복사본은 그대로)
             let bottom = visBottom;
             const pane = b.closest('.preview-pane'); // 에디터 PC: 미리보기 칸이 따로 스크롤됨
             if (pane && pane.scrollHeight > pane.clientHeight + 2) bottom = Math.min(bottom, pane.getBoundingClientRect().bottom);
@@ -559,7 +560,8 @@
         });
     }
     let dockRaf = 0;
-    function scheduleDock() { if (!dockRaf && typeof requestAnimationFrame !== 'undefined') dockRaf = requestAnimationFrame(() => { dockRaf = 0; dockNextButtons(); }); }
+    const NO_DOCK = '.dpk-car, .dpk-strip, .dpk-ov, .ssk, .ssk-iv, .dpk-iv, [data-no-dock]'; // 디자인 고르기 휴대폰·썸네일 (옆으로 넘길 때마다 모든 버튼을 다시 재서 무거웠음)
+    function scheduleDock(e) { if (e && e.type === 'scroll' && e.target && e.target.nodeType === 1 && e.target.closest(NO_DOCK)) return; if (!dockRaf && typeof requestAnimationFrame !== 'undefined') dockRaf = requestAnimationFrame(() => { dockRaf = 0; dockNextButtons(); }); }
     let nextBound = false;
     function bindNextButtons() {
         scheduleDock();
@@ -1237,9 +1239,14 @@
         (root || document).querySelectorAll(FIT_SEL).forEach(el => { try { fitOne(el); } catch (e) {} });
     }
     if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') { // 에디터 미리보기·레이아웃 카드·공개 페이지 어디서 그려도 저절로
-        let fitRaf = 0; const fitSoon = () => { if (!fitRaf) fitRaf = requestAnimationFrame(() => { fitRaf = 0; fitHeroArcs(document); fitTextLayers(document); }); };
+        // 새로 붙은 곳만 맞춤 (화면 크기·글꼴이 바뀌면 전체) - 예전엔 무엇이 붙든 문서 전체를 다시 재서 디자인 고르기 휴대폰을 넣을 때마다 무거웠음
+        let fitRaf = 0, fitAll = false; const fitRoots = new Set();
+        const fitSoon = r => { if (r && r.nodeType === 1) fitRoots.add(r); else fitAll = true;
+            if (!fitRaf) fitRaf = requestAnimationFrame(() => { fitRaf = 0; const all = fitAll, rs = [...fitRoots]; fitAll = false; fitRoots.clear();
+                if (all) { fitHeroArcs(document); fitTextLayers(document); return; }
+                rs.filter(n => n.isConnected && !rs.some(o => o !== n && o.contains(n))).forEach(n => { fitHeroArcs(n); fitTextLayers(n); }); }); };
         const hasFit = n => n.nodeType === 1 && (n.matches('svg.hl-arc, ' + FIT_SEL) || n.querySelector('svg.hl-arc, ' + FIT_SEL));
-        const startFit = () => { new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(hasFit))) fitSoon(); }).observe(document.documentElement, { childList: true, subtree: true }); fitSoon(); };
+        const startFit = () => { new MutationObserver(ms => { ms.forEach(m => m.addedNodes.forEach(n => { if (hasFit(n)) fitSoon(n.parentElement || n); })); }).observe(document.documentElement, { childList: true, subtree: true }); fitSoon(); };
         if (typeof window !== 'undefined') window.addEventListener('resize', fitSoon);
         document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', startFit) : startFit();
         if (document.fonts) { document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', fitSoon); document.fonts.ready && document.fonts.ready.then(fitSoon); }
