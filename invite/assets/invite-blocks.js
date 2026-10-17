@@ -1719,7 +1719,7 @@
                     { key: 'label', label: '교통수단', type: 'text', placeholder: '지하철 / 버스 / 자가용 / 대절버스' },
                     { key: 'text', label: '내용', type: 'textarea' },
                     { key: 'depart', label: '출발 시각 (대절·셔틀버스일 때만)', type: 'text', placeholder: '예: 09:30',
-                      hint: '적어 두면 하객이 "캘린더에 저장"을 눌렀을 때 버스 출발 30분 전에도 알림이 울려요. 예식 당일 기준이에요.' }
+                      hint: '적으면 교통 안내에 "09:30 출발"처럼 출발 시각이 보여요. 예식 당일 기준이에요.' }
                 ] }
             ],
             render(f) {
@@ -2337,7 +2337,7 @@
             { key: 'show', label: '하객에게 보이는 때', type: 'choice', options: [['after', '예식 다음 날부터'], ['day', '예식 당일부터'], ['always', '항상']],
               hint: '정한 때가 되기 전엔 하객에게 이 섹션이 안 보여요. 답례 문자에 같은 청첩장 링크를 보내면 돼요. 미리 확인하려면 주소 뒤에 ?thankstest=1 을 붙여 열어보세요.' },
             { key: 'toTop', label: '', type: 'check', checkLabel: '보일 때 맨 위로', hint: '하객에게 보일 때 대표 사진 바로 아래로 올라가요.' },
-            { key: 'hideRsvp', label: '', type: 'check', checkLabel: '예식 후 참석·안내 숨김', hint: '예식 다음 날부터 참석 의사·D-DAY 하객 안내·캘린더 버튼을 숨겨요.' },
+            { key: 'hideRsvp', label: '', type: 'check', checkLabel: '예식 후 참석·안내 숨김', hint: '예식 다음 날부터 참석 의사·D-DAY 하객 안내를 숨겨요.' },
             { key: 'anniv', label: '', type: 'check', checkLabel: '결혼기념일 띠', hint: '매년 결혼기념일에 "결혼 N주년" 띠가 맨 위에 떠요.' },
             { group: '모양' },
             { key: 'style', label: '모양', type: 'choice', options: [['card', '카드'], ['letter', '편지지'], ['photo', '사진 위 글자'], ['plain', '깔끔하게']] },
@@ -3442,7 +3442,7 @@
         if (shareBlock) { if (shareBlock.enabled && shareBlock.fields && shareBlock.fields.fab !== false) initShareFab(root, d, shareBlock.fields); }
         else if (sh.floatBtn !== false) initShareFab(root, d, {});
         initBgm(root, d.bgm);
-        initCalendar(root, d);
+        // (캘린더에 저장 버튼은 뺌 2026-10-17 - 휴대폰 캘린더 앱과 바로 이어지지 않아서. initCalendar는 남겨 둠)
         initTrip(root);
         initLottery(root);
         initAfterWedding(root, d);
