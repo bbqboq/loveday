@@ -16093,10 +16093,12 @@ function spLensXY(c, bx) {
     return { x: c[1] === 'l' ? 10 : bx.W - bx.w - 10, y: c[0] === 't' ? bx.top : bx.bottom - bx.h };
 }
 // 고른 모서리가 지금 질문의 적는 칸을 가리면 가리지 않는 모서리로 (위아래 → 좌우 → 대각선 순서, 다 가리면 고른 그대로)
+function spLensQKey() { return spCurSt ? [spViewNow(), spCurSt.k, spCurSt.part || ''].join('|') : ''; }
 function spLensCorner(bx, strict) {
     const hasPos = spMv.pos && typeof spMv.pos.px === 'number';
     if (document.documentElement.classList.contains('sp-kb')) return { px: hasPos ? spMv.pos.px : spMv.lens[1] === 'l' ? 0 : 1, py: 1 }; // 키보드가 올라오면 키보드 바로 위 (왼쪽·오른쪽은 고객이 둔 쪽) - 적는 칸은 창 위로 올림(spLensKbClear)
     const pref = hasPos ? spMv.pos : spMv.lens;
+    if (hasPos && spLensCorner.userQ && spLensCorner.userQ === spLensQKey()) return pref; // (이 질문·칸에서 고객이 직접 옮겨 놓았으면 그 자리 그대로 - 비키기 규칙이 되돌려 놓아 '안 끌린다'고 느껴졌음)
     const H = window.innerHeight, plain = spLensKind() === 'plain', sel = plain ? '#spBody' : '#simplePane';
     // ② 질문 칸의 적는 칸 모두 · ③④ 지금 만지는 칸 한 줄 전체(제목·설명 글·스위치·막대)만 - 모든 칸을 피하면 늘 접혀 버림
     const els = plain ? [...document.querySelectorAll(`${sel} input:not([type="hidden"]):not([type="file"]), ${sel} textarea, ${sel} select`)] : [spLensActiveRow()].filter(Boolean);
@@ -16204,6 +16206,19 @@ function spLensPlace(anim) {
 }
 // 고치는 곳을 겨눔 = 그 섹션으로 창을 다시 맞춤 (instant: 막대를 끄는 동안처럼 바로 · 아니면 부드럽게 + 반짝)
 function spLensAim(el, instant) { if (el) spLensEl = el; spLensPlace(!instant); }
+// 창 안 넘겨 보기: 끄는 동안은 transform을 직접 (변수 --sp-lens-tf를 바꾸면 청첩장 전체의 스타일을 다시 계산해서 휴대폰에서 끊겼음 + 움직임 효과 없이)
+function spLensTfStr(ss) { return `translate(${ss.tx.toFixed(1)}px, ${(ss.ty - ss.v).toFixed(1)}px) scale(${ss.sc.toFixed(4)})`; }
+function spLensTfLive(fr, ss) { if (!fr) return; fr.classList.add('sp-lens-now'); fr.style.transform = spLensTfStr(ss); }
+function spLensTfDone(fr, ss) { if (!fr) return; fr.style.setProperty('--sp-lens-tf', spLensTfStr(ss)); fr.style.transform = ''; requestAnimationFrame(() => fr.classList.remove('sp-lens-now')); }
+// 손을 뗀 뒤 조금 더 미끄러져 멈춤 (관성)
+function spLensFling(fr, ss, v) {
+    cancelAnimationFrame(spLensFling.r);
+    if (Math.abs(v) < 0.05) { spLensTfDone(fr, ss); return; }
+    let last = performance.now();
+    const step = now => { const dt = Math.min(40, now - last); last = now; ss.v = Math.max(ss.lo, Math.min(ss.hi, ss.v + v * dt)); v *= Math.pow(0.94, dt / 16);
+        spLensTfLive(fr, ss); if (Math.abs(v) < 0.03 || ss.v <= ss.lo || ss.v >= ss.hi) { spLensTfDone(fr, ss); return; } spLensFling.r = requestAnimationFrame(step); };
+    spLensFling.r = requestAnimationFrame(step);
+}
 function spLensBind() {
     const ui = document.getElementById('spLensUi'), dock = document.getElementById('spLensDock'), tab = document.getElementById('spLensTab'), pane = () => document.querySelector('#screenEditor .preview-pane');
     document.getElementById('spLensZ').addEventListener('pointerdown', e => e.stopPropagation());
@@ -16221,8 +16236,10 @@ function spLensBind() {
         const mv = ev => { const dx = ev.clientX - sx, dy = ev.clientY - sy; { const t = Date.now(); if (t > lt) { vx = vx * .4 + (ev.clientX - lx) / (t - lt) * .6; lx = ev.clientX; lt = t; } } if (!moved && Math.hypot(dx, dy) < (e.pointerType === 'touch' ? 14 : 8)) return; // (손가락은 조금 흔들려도 그냥 누른 걸로)
             // 위 이름표 줄을 끌면 창 옮기기 · 창 안을 위아래로 끌면 청첩장 넘겨 보기 · 옆으로 쓸면 숨기기 (사용자 요청 - 예전엔 창 안이 안 넘어갔음)
             if (!how) how = !onHead && Math.abs(dy) > Math.abs(dx) * 1.3 && ss.tx != null ? 'scroll' : 'move';
-            if (how === 'scroll') { moved = true; ss.v = Math.max(ss.lo, Math.min(ss.hi, sv0 - (dy - Math.sign(dy) * 14) * 0.6)); // (넘겨 보기는 손가락의 0.6배로 천천히 - 예전 1배는 너무 예민했음) fr.classList.add('sp-lens-now');
-                fr.style.setProperty('--sp-lens-tf', `translate(${ss.tx.toFixed(1)}px, ${(ss.ty - ss.v).toFixed(1)}px) scale(${ss.sc.toFixed(4)})`);
+            if (how === 'scroll') { moved = true; cancelAnimationFrame(spLensFling.r);
+                const nv = Math.max(ss.lo, Math.min(ss.hi, sv0 - (dy - Math.sign(dy) * 14) * 0.6)), t = performance.now(); // (넘겨 보기는 손가락의 0.6배로 천천히 - 예전 1배는 너무 예민했음)
+                if (ss.lt && t > ss.lt) ss.vy = (ss.vy || 0) * .5 + (nv - ss.v) / (t - ss.lt) * .5; ss.lt = t; ss.v = nv;
+                spLensTfLive(fr, ss);
                 if (spLensKind() !== 'plain' && !spLensPin) spLensPeekUntil = Math.max(spLensPeekUntil, Date.now() + 3000); return; }
             if (!moved) { moved = true; root.classList.add('sp-lens-drag'); }
             const x = x0 + dx, y = Math.max(bx.top - 6, Math.min(bx.bottom - bx.h + 6, y0 + dy));
@@ -16231,7 +16248,7 @@ function spLensBind() {
         const up = () => { ui.removeEventListener('pointermove', mv); ui.removeEventListener('pointerup', up); ui.removeEventListener('pointercancel', up);
             root.classList.remove('sp-lens-drag');
             if (!moved) { if (spLensKind() !== 'plain' && spLensWouldHide && !spLensPin) { spLensPin = true; spLensPlace(); return; } spOpenPreview(false); return; } // ③④ 잠깐 보이는 창을 누르면 계속 보이게
-            if (how === 'scroll') { fr.classList.remove('sp-lens-now'); if (spLensKind() !== 'plain' && !spLensPin) { spLensPeekUntil = Date.now() + 3000; clearTimeout(spLensPlace.pt); spLensPlace.pt = setTimeout(() => spLensPlace(), 3050); } return; }
+            if (how === 'scroll') { spLensFling(fr, ss, performance.now() - (ss.lt || 0) < 90 ? ss.vy || 0 : 0); ss.lt = 0; ss.vy = 0; if (spLensKind() !== 'plain' && !spLensPin) { spLensPeekUntil = Date.now() + 3000; clearTimeout(spLensPlace.pt); spLensPlace.pt = setTimeout(() => spLensPlace(), 3050); } return; }
             const x = ui.offsetLeft, dx = x - x0, dy = ui.offsetTop - y0;
             // 옆으로 쓸면(빠르게 밀거나 90px 넘게) 그쪽으로 사라지고 그쪽 끝에 '청첩장' 손잡이 (사용자 요청)
             const fling = Date.now() - lt < 100 && Math.abs(vx) > 1.6 && Math.sign(vx) === Math.sign(dx) && Math.abs(dx) > 90;
@@ -16245,15 +16262,15 @@ function spLensBind() {
                 return;
             }
             if (x < -bx.w * 0.35 || x + bx.w > bx.W + bx.w * 0.35) spMv.tuck = x < 0 ? 'l' : 'r';
-            else spMv.pos = { px: Math.max(0, Math.min(1, (x - 10) / Math.max(1, bx.W - bx.w - 20))), py: Math.max(0, Math.min(1, (ui.offsetTop - bx.top) / Math.max(1, bx.bottom - bx.h - bx.top))) }; // 놓은 자리 그대로 (예전엔 네 모서리 중 가까운 곳으로만)
+            else { spMv.pos = { px: Math.max(0, Math.min(1, (x - 10) / Math.max(1, bx.W - bx.w - 20))), py: Math.max(0, Math.min(1, (ui.offsetTop - bx.top) / Math.max(1, bx.bottom - bx.h - bx.top))) }; spLensCorner.userQ = spLensQKey(); } // 놓은 자리 그대로 (예전엔 네 모서리 중 가까운 곳으로만)
             if (spLensKind() !== 'plain' && spLensPeekUntil > Date.now()) spLensPeekUntil = Date.now() + 2000;
             spMvSave(); spLensPlace(); };
         ui.addEventListener('pointermove', mv); ui.addEventListener('pointerup', up); ui.addEventListener('pointercancel', up);
     });
     ui.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); spOpenPreview(false); } });
     ui.addEventListener('wheel', e => { const sy = spLensPlace.sy, fr = document.getElementById('phoneFrame'); if (!sy || sy.tx == null || !fr) return; e.preventDefault();
-        sy.v = Math.max(sy.lo, Math.min(sy.hi, sy.v + e.deltaY)); fr.classList.add('sp-lens-now'); fr.style.setProperty('--sp-lens-tf', `translate(${sy.tx.toFixed(1)}px, ${(sy.ty - sy.v).toFixed(1)}px) scale(${sy.sc.toFixed(4)})`);
-        clearTimeout(sy.wt); sy.wt = setTimeout(() => fr.classList.remove('sp-lens-now'), 150); if (spLensKind() !== 'plain' && !spLensPin) spLensPeekUntil = Math.max(spLensPeekUntil, Date.now() + 3000); }, { passive: false });
+        sy.v = Math.max(sy.lo, Math.min(sy.hi, sy.v + e.deltaY)); spLensTfLive(fr, sy);
+        clearTimeout(sy.wt); sy.wt = setTimeout(() => spLensTfDone(fr, sy), 150); if (spLensKind() !== 'plain' && !spLensPin) spLensPeekUntil = Math.max(spLensPeekUntil, Date.now() + 3000); }, { passive: false });
     tab.addEventListener('click', () => { if (spMv.tuck) { spMv.tuck = ''; spMvSave(); } else if (spLensKind() !== 'plain') spLensPin = true; spLensPlace(); });
     const lx = document.getElementById('spLensX');
     lx.addEventListener('pointerdown', e => e.stopPropagation());
