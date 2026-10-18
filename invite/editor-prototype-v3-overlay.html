@@ -15975,7 +15975,7 @@ function spLensPrompt() {
 }
 function spLensSnap() { const r = document.documentElement; r.classList.add('sp-lens-snap'); clearTimeout(spLensSnap.t); spLensSnap.t = setTimeout(() => r.classList.remove('sp-lens-snap'), 500); }
 // 창이 필요 없는 질문 (예식 일시 - 사용자 요청)
-function spLensOff() { return !!(spCurSt && ((spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick') || spCurSt.k === 'account')); } // (예식 일시 질문 · 축의금 계좌 칸 = 작은 창 없음 - 사용자 요청)
+function spLensOff() { return !!(spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick'); }
 const SP_LENS_HOLD = 900; // 섹션 전체를 보여 주는 시간 (그다음 글자로 다가감)
 const spLensTxt = { key: '', at: 0, view: '', sec: '', t: 0, z: 0, seen: new Set() };
 // 옵션(적는 칸) 하나 = 지금 질문 + 그 칸 이름 (같은 칸이면 다가가는 모습은 한 번만)
@@ -16182,7 +16182,7 @@ function spLensBind() {
     lx.addEventListener('pointerdown', e => e.stopPropagation());
     lx.addEventListener('click', e => { e.stopPropagation(); spLensPin = false; spLensPeekUntil = 0; spLensPlace(); });
     // ③④ 만지는 칸 기억 + 바꾸면 잠깐 보여 주기 (질문·목록 칸 안 스위치·막대·고르기 버튼 · 글자는 다 적고 1.2초 뒤)
-    const inPane = t => t && t.closest && t.closest('#simplePane') && !t.closest('.sp-nav, .sp-head, .sp-ask-top') && !(spCurSt && spCurSt.k === 'music' && !t.closest('[data-ask]')) && !(t.closest('.wz-banks, .wz-bankbtn')); // (계좌 은행 고르기는 미리보기가 필요 없음 - 사용자 요청) // (배경음악: 곡·자동 재생 등을 눌러도 창은 안 뜸 - 넣을게요·넣지 않을게요만)
+    const inPane = t => t && t.closest && t.closest('#simplePane') && !t.closest('.sp-nav, .sp-head, .sp-ask-top') && !(spCurSt && spCurSt.k === 'music' && !t.closest('[data-ask]')) && !(t.closest('.wz-banks, .wz-bankbtn')) && !(spCurSt && spCurSt.k === 'account' && t.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea')); // (계좌 은행 고르기·계좌번호·예금주·송금 링크를 적을 땐 창 없음 - 표시 방식·카드 디자인 같은 옵션은 보여 줌, 사용자 요청) // (배경음악: 곡·자동 재생 등을 눌러도 창은 안 뜸 - 넣을게요·넣지 않을게요만)
     const lensOn = () => spMvMode() === 'lens' && spLensKind() !== 'plain';
     ['pointerdown', 'focusin'].forEach(ev => document.addEventListener(ev, e => { if (lensOn() && inPane(e.target)) spLensAct = e.target; }, true));
     const isTxt = t => t.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable=""]');
