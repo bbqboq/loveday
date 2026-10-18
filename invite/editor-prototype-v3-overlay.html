@@ -938,6 +938,8 @@ html.mob-easy-only #scBack { display: none; }
     /* 섹션 전체 → 적는 글자로 다가가기: 창 크기·자리와 확대를 같은 속도로 천천히 (어지럽지 않게) */
     html.sp-lens-zoom.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane, html.sp-lens-zoom.sp-mv-lens:not(.sp-pv) .sp-lens-ui { transition: left .9s cubic-bezier(.45,0,.2,1), top .9s cubic-bezier(.45,0,.2,1), width .9s cubic-bezier(.45,0,.2,1), height .9s cubic-bezier(.45,0,.2,1), opacity .22s ease !important; }
     html.sp-lens-zoom.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane > .phone-frame { transition: transform .9s cubic-bezier(.45,0,.2,1) !important; }
+    html.sp-lens-snap.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane, html.sp-lens-snap.sp-mv-lens:not(.sp-pv) .sp-lens-ui { transition: opacity .2s ease !important; }
+    html.sp-lens-none .sp-lens-tab { display: none !important; }
     html.sp-lens-zoom-fast.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane, html.sp-lens-zoom-fast.sp-mv-lens:not(.sp-pv) .sp-lens-ui, html.sp-lens-zoom-fast.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane > .phone-frame { transition-duration: .45s !important; }
     /* 질문 칸을 스크롤하는 동안은 반투명 (멈추면 다시 또렷하게) */
     html.sp-lens-scrolling.sp-mv-lens:not(.sp-pv):not(.sp-lens-auto-hide):not(.sp-lens-tucked) #screenEditor .preview-pane, html.sp-lens-scrolling.sp-mv-lens:not(.sp-pv):not(.sp-lens-auto-hide):not(.sp-lens-tucked) .sp-lens-ui { opacity: .5; }
@@ -4805,14 +4807,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 </style>
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z14">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018z14">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z15">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018z15">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018z14"></script>
-<script src="assets/tip-demos.js?v=1018z14"></script>
-<script src="assets/ld-dialog.js?v=1018z14"></script>
+<script src="assets/invite-blocks.js?v=1018z15"></script>
+<script src="assets/tip-demos.js?v=1018z15"></script>
+<script src="assets/ld-dialog.js?v=1018z15"></script>
 </head>
 <body>
 
@@ -15770,7 +15772,7 @@ function spMvUi() {
         const root = document.documentElement, H = vv ? vv.height : window.innerHeight;
         root.style.setProperty('--sp-vvh', H + 'px'); root.style.setProperty('--sp-vvt', (vv ? vv.offsetTop : 0) + 'px');
         const kb = H < window.innerHeight * 0.78 && document.activeElement && document.activeElement.matches && document.activeElement.matches('input, textarea, [contenteditable="true"]');
-        if (kb !== root.classList.contains('sp-kb')) { root.classList.toggle('sp-kb', !!kb); if (spMvMode() === 'split') { spSplitSet(kb ? Math.min(26, spMv.h) : spMv.h); setTimeout(spMvRefollow, 320); } if (spMvMode() === 'lens') spLensPlace(); }
+        if (kb !== root.classList.contains('sp-kb')) { root.classList.toggle('sp-kb', !!kb); if (spMvMode() === 'split') { spSplitSet(kb ? Math.min(26, spMv.h) : spMv.h); setTimeout(spMvRefollow, 320); } if (spMvMode() === 'lens') { spLensSnap(); spLensKbNeed = kb ? Date.now() + 900 : 0; spLensPlace(); } }
         if (kb && spMvMode() === 'split') { clearTimeout(spKbT); spKbT = setTimeout(spKbShowField, 340); } // 키보드가 올라오면 적는 칸이 보이게 (아래 [다음] 줄에 가려지던 것)
     };
     if (vv) { vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); } window.addEventListener('resize', () => { fit(); spMvApply(); });
@@ -15797,7 +15799,8 @@ function spMvLabel(st) {
     const t = st ? (st.k === 'names' ? (st.part === 'date' ? '예식 일시' : '이름') : st.k === 'hero' ? '첫 화면' : ((SP_STEP_DEFS[st.k] || {}).t || st.t || '')) : '';
     const l = document.getElementById('spShL'); if (l) l.textContent = t ? '지금 고치는 곳 · ' + t : '지금 청첩장';
     const lt = document.getElementById('spLensT'); if (lt) { lt.textContent = t || '지금 청첩장'; lt.dataset.base = lt.textContent; }
-    if (spMvMode() === 'lens') setTimeout(() => { spLensPlace(); spLensPeek(2500); }, 120); // (새 질문의 적는 칸을 가리지 않게 · ③④는 새 질문의 섹션을 잠깐 보여 줌)
+    const nk = st ? st.k + (st.part || '') + '|' + spViewNow() : '', fresh = nk !== spMvLabel._k; spMvLabel._k = nk;
+    if (spMvMode() === 'lens') setTimeout(() => { spLensPlace(); if (fresh) spLensPeek(2500); }, 120); // (③④는 새 질문으로 넘어갔을 때만 그 섹션을 잠깐 보여 줌 - 같은 질문 안에서 다시 그릴 때마다 뜨던 것)
 }
 // 지금 질문에서 보여줄 자리: 이름·날짜 질문은 첫 화면 안의 그 글자, 그 밖엔 그 섹션
 let spPvHint = null; // 방금 바꾼 옵션이 보이는 자리 {sel, t} (지도 켜기·높이·가로 꽉 → 지도) - 3초 동안
@@ -15899,12 +15902,19 @@ function spLensSec(el) {
     return el.classList.contains('col') ? el : (el.closest('#previewRoot .col[data-block-id]') || null);
 }
 // 키보드 위 작은 창이 적는 칸을 가리면 질문 칸을 올려서 칸이 창 바로 위에 보이게
-function spLensKbClear(winTop) {
+let spLensKbNeed = 0;
+function spLensKbClear(winTop, winX, winW) {
     const a = document.activeElement; if (!a || !a.closest || !a.closest('#simplePane')) return;
-    const r = a.getBoundingClientRect(), d = r.bottom - (winTop - 10); if (d <= 2 || r.top - d < 50) return;
+    const r = a.getBoundingClientRect(); if (winX != null && (r.right < winX + 4 || r.left > winX + winW - 4)) return; // (가로로 안 겹치면 그대로)
+    if (r.top > winTop + 40) return; // (창보다 아래쪽 칸은 건드리지 않음)
+    const d = r.bottom - (winTop - 10); if (d <= 2 || r.top - d < 50) return;
     let sc = a.parentElement; while (sc && sc !== document.body && !(sc.scrollHeight > sc.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
     if (sc && sc !== document.body) sc.scrollBy(0, d); else window.scrollBy(0, d);
 }
+// 키보드가 오르내리거나 보이는 화면이 바뀔 땐 창을 미끄러뜨리지 않고 바로 그 자리에 (미끄러지면 '튀는' 것처럼 보였음)
+function spLensSnap() { const r = document.documentElement; r.classList.add('sp-lens-snap'); clearTimeout(spLensSnap.t); spLensSnap.t = setTimeout(() => r.classList.remove('sp-lens-snap'), 500); }
+// 창이 필요 없는 질문 (예식 일시 - 사용자 요청)
+function spLensOff() { return !!(spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick'); }
 const SP_LENS_HOLD = 900; // 섹션 전체를 보여 주는 시간 (그다음 글자로 다가감)
 const spLensTxt = { key: '', at: 0, view: '', sec: '', t: 0, z: 0, seen: new Set() };
 // 옵션(적는 칸) 하나 = 지금 질문 + 그 칸 이름 (같은 칸이면 다가가는 모습은 한 번만)
@@ -15919,7 +15929,7 @@ function spLensBox() {
     const W = window.innerWidth, H = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sp-vvh')) || window.innerHeight;
     const kb = document.documentElement.classList.contains('sp-kb'), z = kb ? 's' : spMv.lz;
     const wMax = Math.round(W * SP_LENS[z][0] / 100), top = 58 + 8, nav = document.querySelector('#simplePane .sp-nav'), bottom = H - (nav && !kb ? nav.offsetHeight : 0) - 10;
-    const hMax = Math.round((bottom - top) * (kb ? 0.34 : 0.62)) - SP_LENS_HEAD; // (창은 작게 - 긴 섹션은 더 줄여서 통째로)
+    const hMax = Math.round((bottom - top) * (kb ? 0.52 : 0.62)) - SP_LENS_HEAD; // (키보드가 올라와도 너무 작지 않게) // (창은 작게 - 긴 섹션은 더 줄여서 통째로)
     const fr = document.getElementById('phoneFrame'), FW = (fr && fr.offsetWidth) || W, sec = spLensSec();
     // 글자(이름·날짜·글귀 등 자유 배치 글자 칸)를 고치는 중이면 그 글자를 크게 (섹션 통째 말고) - 사용자 요청 2026-10-17
     const tg = spLensEl && spLensEl.isConnected ? spLensEl : null;
@@ -15929,7 +15939,7 @@ function spLensBox() {
         const key = spLensKeyOf(tg, sec), T = spLensTxt;
         if (key !== T.key) {
             const hidden = document.documentElement.classList.contains('sp-lens-auto-hide'), fid = spLensFid(key), r = document.documentElement;
-            const direct = (!hidden && T.view === 'text' && T.sec === sec.dataset.blockId) || T.seen.has(fid); // 같은 칸(옵션)은 다가가는 모습을 한 번만 - 그다음부터는 확대된 모습 그대로
+            const direct = (!hidden && T.view === 'text' && T.sec === sec.dataset.blockId) || T.seen.has(fid) || (spCurSt && spCurSt.k === 'account'); // 같은 칸(옵션)은 다가가는 모습을 한 번만 - 그다음부터는 확대된 모습 그대로 · 계좌는 처음부터 바로 확대
             const fast = tg.classList.contains('sp-bgm-spot'); // 배경음악 버튼 = 기다리지 않고 바로 빠르게 다가감
             T.seen.add(fid); T.key = key; T.at = direct || fast ? 0 : Date.now() + SP_LENS_HOLD; clearTimeout(T.t);
             if (fast && !direct) { r.classList.add('sp-lens-zoom', 'sp-lens-zoom-fast'); clearTimeout(T.z); T.z = setTimeout(() => r.classList.remove('sp-lens-zoom', 'sp-lens-zoom-fast'), 520); }
@@ -15970,6 +15980,7 @@ function spLensXY(c, bx) {
 // 고른 모서리가 지금 질문의 적는 칸을 가리면 가리지 않는 모서리로 (위아래 → 좌우 → 대각선 순서, 다 가리면 고른 그대로)
 function spLensCorner(bx, strict) {
     const pref = spMv.pos && typeof spMv.pos.px === 'number' ? spMv.pos : document.documentElement.classList.contains('sp-kb') ? 't' + spMv.lens[1] : spMv.lens;
+    { const ae = document.activeElement; if (ae && ae.closest && ae.closest('#simplePane') && ae.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable=""]')) return pref; } // 글자를 적는 중엔 비키지 않음 (칸을 창 위로 올림 - spLensKbClear)
     const H = window.innerHeight, plain = spLensKind() === 'plain', sel = plain ? '#spBody' : '#simplePane';
     // ② 질문 칸의 적는 칸 모두 · ③④ 지금 만지는 칸 한 줄 전체(제목·설명 글·스위치·막대)만 - 모든 칸을 피하면 늘 접혀 버림
     const els = plain ? [...document.querySelectorAll(`${sel} input:not([type="hidden"]):not([type="file"]), ${sel} textarea, ${sel} select`)] : [spLensActiveRow()].filter(Boolean);
@@ -15988,7 +15999,7 @@ function spLensActiveRow() {
 }
 // ③④: 바꾼 모습을 잠깐(2초) 보여 주기 - 막대를 끄는 동안은 계속, 손을 떼면 2초 뒤 들어감 · 창을 누르면 고정(spLensPin)
 function spLensPeek(ms) {
-    if (spMvMode() !== 'lens' || spLensKind() === 'plain' || spMv.tuck) return;
+    if (spMvMode() !== 'lens' || spLensKind() === 'plain' || spMv.tuck || spLensOff()) return;
     ms = ms || 2000; spLensPeekUntil = Date.now() + ms;
     clearTimeout(spLensPeekT); spLensPeekT = setTimeout(spLensPlace, ms + 40);
     spLensPlace();
@@ -16003,19 +16014,21 @@ function spLensPlace(anim) {
     spLensTxt.view = bx.text ? 'text' : 'sec'; spLensTxt.sec = bx.sec && bx.sec.dataset ? bx.sec.dataset.blockId || '' : '';
     if (!bx.text && !(spLensEl && spLensEl.isConnected && !spLensEl.classList.contains('col'))) spLensTxt.key = ''; // (섹션을 보는 중이면 다음 글자는 다시 섹션 → 글자 순서로)
     // ③ 비킬 모서리가 없으면 접힘 · ④ 평소엔 숨음 → 바꾸면 잠깐(peeking) 또는 창을 눌러 고정(spLensPin)일 때만 보임
-    spLensWouldHide = kind === 'peek' || (kind === 'cd' && !c);
-    const hide = spLensWouldHide && !peeking && !spLensPin && !spMv.tuck;
+    const off = spLensOff(); root.classList.toggle('sp-lens-none', off);
+    spLensWouldHide = kind === 'peek' || (kind === 'cd' && !c) || off;
+    const hide = off || (spLensWouldHide && !peeking && !spLensPin && !spMv.tuck);
     if (!c) c = spLensCorner(bx);
     const p = spLensXY(c, bx), kbUp = root.classList.contains('sp-kb'), vv = window.visualViewport;
-    const vt = vv ? vv.offsetTop : 0, vh = vv ? vv.height : window.innerHeight;
-    if (kbUp) { p.x = bx.W - bx.w - 10; p.y = vt + vh - bx.h - 8; } // 키보드가 올라오면 키보드 바로 위 오른쪽 (작게)
-    else p.y = Math.max(vt + 6, Math.min(vt + vh - bx.h - 6, p.y + vt)); // 늘 보이는 화면 안 (스크롤·주소창 때문에 가려지지 않게)
+    const vt = vv ? vv.offsetTop : 0, vh = vv ? vv.height : window.innerHeight, vl = vv ? vv.offsetLeft : 0, vw = vv ? vv.width : window.innerWidth;
+    // 늘 보이는 화면(visualViewport) 안 - 고객이 놓은 자리 그대로, 키보드가 올라오면 키보드 위 16px 띄움 (예전엔 키보드에 딱 붙거나 오른쪽이 잘렸음)
+    p.x = Math.max(vl + 8, Math.min(vl + vw - bx.w - 8, p.x + vl));
+    p.y = Math.max(vt + (kbUp ? 8 : 6), Math.min(vt + vh - bx.h - (kbUp ? 16 : 6), p.y + vt));
     root.classList.toggle('sp-lens-tucked', !!spMv.tuck);
     root.classList.toggle('sp-lens-auto-hide', hide);
     root.classList.toggle('sp-lens-peeking', !hide && peeking && !spLensPin && spLensWouldHide);
     root.classList.toggle('sp-lens-pinned', spLensPin && kind !== 'plain');
     root.style.setProperty('--sp-lens-pad', (kbUp ? bx.h + 16 : !spMv.tuck && !hide && !spLensWouldHide && p.y + bx.h / 2 > (bx.top + bx.bottom) / 2 ? bx.h + 12 : 0) + 'px');
-    if (kbUp && !hide) spLensKbClear(p.y); // 적는 칸이 창에 가리면 칸을 창 위로 // 창이 아래에 있으면 질문 칸 맨 아래도 창 위로 올려 볼 수 있게 (잠깐 보이는 창은 빼고)
+    if (spLensKbNeed && !hide && Date.now() < spLensKbNeed) { spLensKbNeed = 0; spLensKbClear(p.y, p.x, bx.w); } // 칸을 눌렀을 때·키보드가 올라올 때만: 적는 칸이 창에 가리면 칸을 창 위로 (창은 그 자리 그대로 - 예전엔 창이 비켜 가며 튀었음) // 창이 아래에 있으면 질문 칸 맨 아래도 창 위로 올려 볼 수 있게 (잠깐 보이는 창은 빼고)
     [pane, ui].forEach(el => { el.style.left = p.x + 'px'; el.style.top = p.y + 'px'; el.style.width = bx.w + 'px'; el.style.height = bx.h + 'px'; });
     const tab = document.getElementById('spLensTab'); if (tab) { const fold = hide && kind === 'cd'; tab.className = 'sp-lens-tab ' + (fold ? 'fold' : spMv.tuck || 'r'); tab.textContent = fold ? '청첩장' : spMv.tuck === 'l' ? '› 청첩장' : '청첩장 ‹'; }
     const lf = document.getElementById('spLensF'); if (lf) lf.textContent = kind !== 'plain' && spLensWouldHide && !spLensPin ? '누르면 계속 보여요' : '누르면 크게 · 끌면 옮겨요';
@@ -16071,7 +16084,7 @@ function spLensBind() {
     lx.addEventListener('pointerdown', e => e.stopPropagation());
     lx.addEventListener('click', e => { e.stopPropagation(); spLensPin = false; spLensPeekUntil = 0; spLensPlace(); });
     // ③④ 만지는 칸 기억 + 바꾸면 잠깐 보여 주기 (질문·목록 칸 안 스위치·막대·고르기 버튼 · 글자는 다 적고 1.2초 뒤)
-    const inPane = t => t && t.closest && t.closest('#simplePane') && !t.closest('.sp-nav, .sp-head, .sp-ask-top');
+    const inPane = t => t && t.closest && t.closest('#simplePane') && !t.closest('.sp-nav, .sp-head, .sp-ask-top') && !(spCurSt && spCurSt.k === 'music' && !t.closest('[data-ask]')); // (배경음악: 곡·자동 재생 등을 눌러도 창은 안 뜸 - 넣을게요·넣지 않을게요만)
     const lensOn = () => spMvMode() === 'lens' && spLensKind() !== 'plain';
     ['pointerdown', 'focusin'].forEach(ev => document.addEventListener(ev, e => { if (lensOn() && inPane(e.target)) spLensAct = e.target; }, true));
     const isTxt = t => t.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable=""]');
@@ -16092,7 +16105,8 @@ function spLensBind() {
     if (pr && window.ResizeObserver) { let rt = 0; new ResizeObserver(() => { if (spMvMode() !== 'lens' || document.documentElement.classList.contains('sp-lens-drag')) return; clearTimeout(rt); rt = setTimeout(() => spLensPlace(), 120); }).observe(pr); }
     // 질문 칸을 스크롤하는 동안 창은 반투명 → 멈추면 또렷하게 + 보이는 화면 안으로 따라옴
     document.addEventListener('scroll', e => { if (spMvMode() !== 'lens' || (e.target && e.target.closest && e.target.closest('.preview-pane'))) return; const r = document.documentElement; r.classList.add('sp-lens-scrolling'); clearTimeout(spLensSc); spLensSc = setTimeout(() => { r.classList.remove('sp-lens-scrolling'); spLensPlace(); }, 180); }, { passive: true, capture: true });
-    if (window.visualViewport) { let vr = 0; const vf = () => { if (spMvMode() !== 'lens') return; cancelAnimationFrame(vr); vr = requestAnimationFrame(() => spLensPlace()); }; visualViewport.addEventListener('resize', vf); visualViewport.addEventListener('scroll', vf); } // (키보드·주소창으로 보이는 화면이 바뀌면 따라감)
+    document.addEventListener('focusin', e => { if (spMvMode() === 'lens' && e.target.closest && e.target.closest('#simplePane') && e.target.matches('input, textarea, [contenteditable]')) spLensKbNeed = Date.now() + 1200; });
+    if (window.visualViewport) { let vr = 0; const vf = () => { if (spMvMode() !== 'lens') return; spLensSnap(); cancelAnimationFrame(vr); vr = requestAnimationFrame(() => spLensPlace()); }; visualViewport.addEventListener('resize', vf); visualViewport.addEventListener('scroll', vf); } // (키보드·주소창으로 보이는 화면이 바뀌면 따라감)
 }
 // 미리보기를 ↓ 스크롤 버튼이 보이는 자리로 (버튼 모양을 고를 때 - 맨 위로 올라가 버튼이 안 보이던 문제)
 function spScrollToNextBtn() {
@@ -16990,7 +17004,7 @@ function spHero(box) {
     if (hb) spBindHeroLayout(box, hb);
     if (part) { // 질문 하나에 필요한 칸만 남김
         const fieldOf = sel => [...box.querySelectorAll(sel)].map(x => x.closest('.wz-field') || x);
-        const drop = part === 'media' ? ['.hl-row', '.hl-lines', '#spCropBox', '#spVfpBox', '.sp-shade', '#spToScroll', ':scope > .wz-hint'] : ['[data-sp-kind]', '.sp-hero', '.sp-bigup', '#spYt'];
+        const drop = part === 'media' ? ['.hl-row', '.hl-lines', '#spCropBox', '#spVfpBox', '.sp-shade', '#spToScroll', ':scope > .wz-hint'] : ['[data-sp-kind]', '.sp-hero', '.sp-bigup', '#spYt', '.sp-shade']; // ('글자 잘 보이게'는 [다음] 뒤 스크롤 버튼 화면에 있어서 첫 화면 꾸미기에선 뺌)
         drop.forEach(sel => fieldOf(sel).forEach(x => x.remove()));
         box.querySelectorAll('.sp-n').forEach(x => x.remove());
     }
@@ -17146,7 +17160,7 @@ const SSK_PART = { greeting: '.free-canvas', family: '.ib-title-canvas', dday: '
 //  만드는 도구: 저장소 tools/ssk-sprites.js (섹션 모양 CSS나 디자인을 바꾸면 다시 돌릴 것) · 목록 assets/ssk/manifest.json
 //  지금 디자인을 따라 달라지는 카드('디자인 따라' 스킨 · '테마 모양' 모양)와 목록에 없는 카드(새로 넣은 디자인 등)만 그 자리에서 그림
 let SSK_SPR = null;
-try { fetch('assets/ssk/manifest.json?v=1018z14').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
+try { fetch('assets/ssk/manifest.json?v=1018z15').then(r => r.ok ? r.json() : null).then(j => { if (j && j.k) SSK_SPR = j; }).catch(() => {}); } catch (e) {}
 // '디자인 따라' 스킨 = 지금 디자인의 디자인 스킨 그림 · '테마 모양' = 지금 디자인 꾸밈의 모양 그림 (색을 바꾸지 않았고 디자인이 정한 섹션 테마가 없을 때만 - 아니면 그 자리에서 그림)
 function sskAlias(b, spec) {
     try { if (InviteBlocks.colorChanged && InviteBlocks.colorChanged()) return null; } catch (e) { return null; }

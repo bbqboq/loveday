@@ -829,6 +829,7 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
     opacity: var(--next-op, .85); -webkit-tap-highlight-color: transparent; transition: opacity .2s ease, transform .2s ease;
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .ib-next:hover, .ib-next:focus-visible { opacity: 1; }
+.ib-next:not(.ib-docked):not(#previewRoot *) { opacity: 0 !important; } /* 자리를 잡기 전엔 숨김 (dockNextButtons) */
 /* 크기 효과(퐁·물결·별가루·말풍선 = scale 속성, 누를 때 살짝 작아짐)가 버튼 한가운데를 기준으로 커지게:
    가운데 맞춤을 transform:translateX(-50%)로 하고 있어서, 기준점을 왼쪽 끝(=옮긴 뒤의 한가운데)에 둔다.
    (기준점이 가운데면 버튼이 오른쪽 옆에서 커지며 왼쪽으로 미끄러져 들어오는 것처럼 보였음) */

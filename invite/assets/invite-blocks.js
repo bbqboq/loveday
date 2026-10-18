@@ -531,7 +531,7 @@
         const vv = global.visualViewport;
         const visBottom = vv ? vv.offsetTop + vv.height : global.innerHeight;
         document.querySelectorAll('.ib-next:not(.ib-next-free)').forEach(b => {
-            if (b.closest(NO_DOCK)) return; // (작게 줄여 보여 주는 복사본은 그대로)
+            if (b.closest(NO_DOCK)) { b.classList.add('ib-docked'); return; } // (작게 줄여 보여 주는 복사본은 그대로)
             let bottom = visBottom;
             const pane = b.closest('.preview-pane'); // 에디터 PC: 미리보기 칸이 따로 스크롤됨
             if (pane && pane.scrollHeight > pane.clientHeight + 2) bottom = Math.min(bottom, pane.getBoundingClientRect().bottom);
@@ -557,6 +557,7 @@
             if (b.closest('#previewRoot')) dock = 0;
             dock = Math.max(0, Math.round(dock));
             if (dock !== cur) { b._dock = dock; b.style.translate = dock ? `0 ${-dock}px` : ''; }
+            if (!b.classList.contains('ib-docked')) requestAnimationFrame(() => b.classList.add('ib-docked')); // 처음 자리를 잡은 뒤에 보임 (휴대폰에서 원래 자리에 잠깐 보였다가 위로 튀던 것)
         });
     }
     let dockRaf = 0;
@@ -573,7 +574,7 @@
         document.addEventListener('load', e => { if (e.target && e.target.tagName === 'IMG') scheduleDock(); }, true);
         if (typeof MutationObserver !== 'undefined' && document.body) new MutationObserver(muts => { if (muts.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && (n.matches('.ib-next, .col, .row-flex') || n.querySelector && n.querySelector('.ib-next'))))) scheduleDock(); })
             .observe(document.body, { childList: true, subtree: true });
-        setTimeout(scheduleDock, 600); setTimeout(scheduleDock, 1800);
+        setTimeout(scheduleDock, 600); setTimeout(scheduleDock, 1800); setTimeout(() => document.querySelectorAll('.ib-next:not(.ib-docked)').forEach(b => b.classList.add('ib-docked')), 2600); // (혹시 자리 잡기가 안 돌아도 보이게)
         document.addEventListener('click', e => {
             const b = e.target.closest && e.target.closest('[data-ib-next]'); if (!b) return;
             e.preventDefault(); e.stopPropagation();
