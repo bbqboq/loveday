@@ -15836,7 +15836,7 @@ function spPvTargetRaw(st) {
     if (spPvHint && Date.now() - spPvHint.t < 3000) { const h = col.querySelector(spPvHint.sel); if (h && h.offsetWidth) return h; }
     // 지금 적고 있는 칸 (신부 이름을 적는데 신랑 이름이 빛나던 것 - 포커스된 칸 기준으로)
     const act = document.activeElement, inPane = act && act.closest && act.closest('#simplePane');
-    const fk = inPane ? (act.dataset.wi || act.dataset.fam || act.dataset.ct || ((act.closest('[data-k]') || {}).dataset || {}).k || '') : '';
+    const fk = inPane ? (act.dataset.hl || act.dataset.wi || act.dataset.fam || act.dataset.ct || ((act.closest('[data-k]') || {}).dataset || {}).k || '') : '';
     const vis = el => !!(el && el.offsetWidth);
     if (st.k === 'ending' && inPane) { const w = spLensPrompt(); if (w) return w; }
     if (st.k === 'account' && inPane) { const w = act.closest('.wz-acc[data-k]'); if (w) { const K = w.dataset.k, a = spAccCache[K] || {};
@@ -15975,7 +15975,7 @@ function spLensPrompt() {
 }
 function spLensSnap() { const r = document.documentElement; r.classList.add('sp-lens-snap'); clearTimeout(spLensSnap.t); spLensSnap.t = setTimeout(() => r.classList.remove('sp-lens-snap'), 500); }
 // 창이 필요 없는 질문 (예식 일시 - 사용자 요청)
-function spLensOff() { return !!(spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick'); }
+function spLensOff() { return !!(spCurSt && ((spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick') || spCurSt.k === 'account')); } // (예식 일시 질문 · 축의금 계좌 칸 = 작은 창 없음 - 사용자 요청)
 const SP_LENS_HOLD = 900; // 섹션 전체를 보여 주는 시간 (그다음 글자로 다가감)
 const spLensTxt = { key: '', at: 0, view: '', sec: '', t: 0, z: 0, seen: new Set() };
 // 옵션(적는 칸) 하나 = 지금 질문 + 그 칸 이름 (같은 칸이면 다가가는 모습은 한 번만)
@@ -16034,7 +16034,8 @@ function spLensBox() {
     if (fr && sec) { const fr0 = fr.getBoundingClientRect(), k = fr0.width / FW || 1, r = sec.getBoundingClientRect(); let t = r.top, bt = r.bottom;
         // 자유 배치 글자 칸은 섹션 밖으로 넘칠 수 있음 (글이 길어지면 위아래로 늘어남) → 넘친 글자까지 들어가게
         sec.querySelectorAll('.drag-part, .ib-title-layer, [data-part]').forEach(n => { if (!n.offsetWidth) return; const q = n.getBoundingClientRect(); if (q.top < t) t = q.top; if (q.bottom > bt) bt = q.bottom; });
-        secTop = (t - fr0.top) / k; secH = Math.max(60, (bt - t) / k); sc = Math.min(wMax / FW, hMax / secH); }
+        secTop = (t - fr0.top) / k; secH = Math.max(60, (bt - t) / k); sc = Math.min(wMax / FW, hMax / secH);
+        const minW = Math.min(wMax, Math.round(W * 0.34)); if (FW * sc < minW) sc = minW / FW; } // (화면 가득한 첫 화면처럼 긴 섹션은 너무 가늘어져 양옆이 하얗게 비었음 - 폭은 지키고 아래를 자름)
     const w = Math.max(96, Math.round(FW * sc)), h = Math.round(Math.min(secH * sc, hMax)) + SP_LENS_HEAD;
     return { W, w, h, top, bottom, z, sc, secTop, FW, sec };
 }
