@@ -15941,6 +15941,27 @@ function spLensKbClear(winTop, winX, winW) {
     let sc = a.parentElement; while (sc && sc !== document.body && !(sc.scrollHeight > sc.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
     if (sc && sc !== document.body) sc.scrollBy(0, d); else window.scrollBy(0, d);
 }
+// PC: 섹션 편집창(전문가 #fieldEditor · 간편 목록 칸)에서 옵션을 누르거나 바꾸면 미리보기가 그 섹션(알 수 있으면 그 부분)으로 따라감 (사용자 보고 - 휴대폰만 따라갔음)
+function pcPvFollow(t) {
+    if (window.innerWidth <= 860) return;
+    const pane = document.querySelector('#screenEditor .preview-pane') || document.querySelector('.preview-pane'), root = document.getElementById('previewRoot'); if (!pane || !root || pane.scrollHeight <= pane.clientHeight + 2) return;
+    let el = null;
+    if (t.closest('#simplePane')) { if (!spCurSt) return; try { el = spPvTargetEl(spCurSt); } catch (e) {} if (!el) el = (spCurSt.s || []).map(id => root.querySelector(`.col[data-block-id="${id}"]`)).find(Boolean); }
+    else { if (!selectedId) return; const col = root.querySelector(`.col[data-block-id="${selectedId}"]`); if (!col) return;
+        const k = (t.closest('[data-sf]') || {}).dataset?.sf || (t.closest('[data-f]') || {}).dataset?.f || '', base = k.split('.')[0];
+        el = (base && col.querySelector(`[data-part="${CSS.escape(base)}"]`)) || col; }
+    if (!el || !el.isConnected) return;
+    const pr = pane.getBoundingClientRect(), r = el.getBoundingClientRect(), pad = 24;
+    if (r.top >= pr.top + 8 && r.bottom <= pr.bottom - 8) return; // 이미 보이면 그대로
+    if (el.classList.contains('col') && r.top < pr.bottom - 80 && r.bottom > pr.top + 80) return; // 섹션이 화면에 충분히 걸쳐 있으면 그대로 (옵션마다 움찔하지 않게)
+    const top = pane.scrollTop + (r.height > pr.height - pad * 2 ? r.top - pr.top - pad : r.top - pr.top - (pr.height - r.height) / 2);
+    pane.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    const col = el.closest('.col'); if (col) { col.classList.remove('sp-flash'); void col.offsetWidth; col.classList.add('sp-flash'); }
+}
+(() => { let tm = 0; const go = e => { const t = e.target; if (!t || !t.closest || window.innerWidth <= 860 || !t.closest('#fieldEditor, #simplePane') || t.closest('.sp-nav, .sp-head')) return;
+    if (e.type === 'input' && !(t.type === 'range')) return; // (글자는 칠 때마다 말고 - 바꾼 뒤 change에서)
+    clearTimeout(tm); tm = setTimeout(() => { try { pcPvFollow(t); } catch (er) {} }, 300); };
+    ['click', 'change', 'input'].forEach(ev => document.addEventListener(ev, go, true)); })();
 // 휴대폰 간편 만들기: 글자 칸을 누르면 그 칸이 키보드·[다음] 줄에 가리지 않게 필요한 만큼만 부드럽게 스크롤 (사용자 요청 - 칸 위의 예시 문구 카드 등이 화면을 차지하고 칸은 아래에 끼어 있었음)
 //  키보드가 올라오는 동안 화면이 줄어서 몇 번 다시 맞춤 · 반반 화면은 spKbShowField가 따로
 function spFieldTop(a, smooth) {
