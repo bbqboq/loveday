@@ -963,9 +963,9 @@ html.mob-easy-only #scBack { display: none; }
     html.sp-lens-drag .sp-lens-ui { transition: none; cursor: grabbing; }
     .sp-lens-ui.flash { animation: spLensFlash .7s ease; }
     @keyframes spLensFlash { 0% { box-shadow: inset 0 0 0 2px #fff, 0 0 0 0 rgba(233, 201, 143, .95); } 100% { box-shadow: inset 0 0 0 2px #fff, 0 0 0 12px rgba(233, 201, 143, 0); } }
-    .sp-lens-t { position: absolute; left: 0; right: 0; top: 0; height: 24px; padding: 0 64px 0 10px; border-radius: 16px 16px 0 0; background: rgba(32, 25, 21, .9); color: #fff; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; } /* 창 위 이름표 줄 (섹션은 그 아래 SP_LENS_HEAD부터 - 섹션을 가리지 않게) */
+    .sp-lens-t { position: absolute; left: 0; right: 0; top: 0; height: 24px; padding: 0 80px 0 10px; border-radius: 16px 16px 0 0; background: rgba(32, 25, 21, .9); color: #fff; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; } /* 창 위 이름표 줄 (섹션은 그 아래 SP_LENS_HEAD부터 - 섹션을 가리지 않게) */
     .sp-lens-t::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 50%; background: #E9C98F; }
-    .sp-lens-z { position: absolute; right: 4px; top: 2px; width: 26px; height: 20px; border: 0; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; font-size: 13px; cursor: pointer; }
+    .sp-lens-z { position: absolute; right: 4px; top: 2px; min-width: 34px; height: 20px; padding: 0 7px; border: 0; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; font: inherit; font-size: 10.5px; font-weight: 700; cursor: pointer; } .sp-lens-z[hidden] { display: none; }
     .sp-lens-map { display: none; position: absolute; right: 4px; top: 38px; bottom: 32px; width: 3px; border-radius: 99px; background: rgba(0,0,0,.14); }
     .sp-lens-map b { position: absolute; left: -2px; width: 7px; height: 16px; margin-top: -8px; border-radius: 99px; background: var(--ui-point, #B8925A); transition: top .45s cubic-bezier(.3,.8,.3,1); }
     .sp-lens-f { display: none !important; position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 6px 6px; border-radius: 0 0 16px 16px; text-align: center; font-size: 10px; font-weight: 700; color: #fff; background: linear-gradient(rgba(20,14,10,0), rgba(20,14,10,.6)); }
@@ -984,8 +984,8 @@ html.mob-easy-only #scBack { display: none; }
     html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane, html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-mv-lens:not(.sp-pv) .sp-lens-ui { transform-origin: 100% 60%; transition: left .34s cubic-bezier(.3,.8,.3,1), top .34s cubic-bezier(.3,.8,.3,1), width .3s ease, height .3s ease, opacity .22s ease, transform .3s cubic-bezier(.3,1.3,.5,1); }
     html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-lens-auto-hide #screenEditor .preview-pane, html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-lens-auto-hide .sp-lens-ui { transform: scale(.3); }
     .sp-lens-tab.fold { top: auto; bottom: 86px; right: 12px; width: 60px; height: 60px; border-radius: 50%; writing-mode: horizontal-tb; letter-spacing: 0; font-size: 11.5px; box-shadow: 0 6px 18px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.18); }
-    .sp-lens-x { display: none; position: absolute; right: 34px; top: 2px; width: 26px; height: 20px; border: 0; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; font-size: 12px; cursor: pointer; place-items: center; }
-    html.sp-lens-pinned .sp-lens-x { display: grid; }
+    .sp-lens-x { display: none; position: absolute; right: 44px; top: 2px; width: 26px; height: 20px; border: 0; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; font-size: 12px; cursor: pointer; place-items: center; }
+    html.sp-lens-pinned .sp-lens-x { display: grid; } .sp-lens-z[hidden] + .sp-lens-x { right: 4px; }
     .sp-lens-cd { display: none; position: absolute; left: 24%; right: 24%; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.35); overflow: hidden; }
     html.sp-lens-peeking .sp-lens-cd { display: block; }
     .sp-lens-cd.run::after { content: ''; position: absolute; inset: 0; background: #fff; transform-origin: 0 50%; animation: spLensCd var(--cd, 2s) linear forwards; }
@@ -15757,7 +15757,7 @@ function spMvUi() {
         <span class="sp-sh-l" id="spShL">지금 고치는 곳</span><span class="sp-sh-g"><i></i><b id="spShSz">반</b><i></i></span>
         <button type="button" class="sp-sh-b" id="spShRet" hidden>↺ 고치는 곳</button><button type="button" class="sp-sh-b" id="spShBig" title="청첩장을 화면 가득 보기">⤢ 전체</button></div>
         <button type="button" class="sp-split-back" id="spSplitBack">질문으로 돌아가기</button>`);
-    document.body.insertAdjacentHTML('beforeend', `<div class="sp-lens-ui" id="spLensUi" role="button" tabindex="0" aria-label="청첩장 크게 보기"><span class="sp-lens-t" id="spLensT">지금 청첩장</span><button type="button" class="sp-lens-z" id="spLensZ" aria-label="창 크기 바꾸기">⤢</button><button type="button" class="sp-lens-x" id="spLensX" aria-label="청첩장 창 숨기기" title="숨기기">✕</button><i class="sp-lens-map"><b id="spLensDot"></b></i><span class="sp-lens-f" id="spLensF">누르면 크게 · 끌면 옮겨요</span><i class="sp-lens-cd" id="spLensCd"></i><span class="sp-lens-ghost" id="spLensGhost" hidden>여기에 있었어요</span></div>
+    document.body.insertAdjacentHTML('beforeend', `<div class="sp-lens-ui" id="spLensUi" role="button" tabindex="0" aria-label="청첩장 크게 보기"><span class="sp-lens-t" id="spLensT">지금 청첩장</span><button type="button" class="sp-lens-z" id="spLensZ" aria-label="창 크기 바꾸기">크게</button><button type="button" class="sp-lens-x" id="spLensX" aria-label="청첩장 창 숨기기" title="숨기기">✕</button><i class="sp-lens-map"><b id="spLensDot"></b></i><span class="sp-lens-f" id="spLensF">누르면 크게 · 끌면 옮겨요</span><i class="sp-lens-cd" id="spLensCd"></i><span class="sp-lens-ghost" id="spLensGhost" hidden>여기에 있었어요</span></div>
         <div class="sp-lens-dock" id="spLensDock"><i data-c="tl"></i><i data-c="tr"></i><i data-c="bl"></i><i data-c="br"></i></div><button type="button" class="sp-lens-tab" id="spLensTab">청첩장 ‹</button>`);
     const tg = document.getElementById('spSplitTg');
     tg.addEventListener('click', () => { spMv.off = !spMv.off; spMvSave(); spMvApply(); if (!spMv.off) setTimeout(spMvRefollow, 320); });
@@ -16177,7 +16177,7 @@ function spLensPlace(anim) {
     [pane, ui].forEach(el => { el.style.left = p.x + 'px'; el.style.top = p.y + 'px'; el.style.width = bx.w + 'px'; el.style.height = bx.h + 'px'; });
     const tab = document.getElementById('spLensTab'); if (tab) { const fold = hide && kind === 'cd'; const sd = spMv.tuck || spMv.side || 'r'; tab.className = 'sp-lens-tab ' + (fold ? 'fold' : sd); tab.textContent = fold ? '청첩장' : sd === 'l' ? '› 청첩장' : '청첩장 ‹'; }
     const lf = document.getElementById('spLensF'); if (lf) lf.textContent = kind !== 'plain' && spLensWouldHide && !spLensPin ? '누르면 계속 보여요' : '누르면 크게 · 위 줄을 끌면 옮겨요';
-    const z = document.getElementById('spLensZ'); if (z) z.textContent = spMv.lz === 's' ? '⤢' : '↙';
+    const z = document.getElementById('spLensZ'); if (z) { z.textContent = spMv.lz === 's' ? '크게' : '작게'; z.title = spMv.lz === 's' ? '작은 창을 크게' : '작은 창을 작게'; z.hidden = !!(bx.text || kbUp || root.classList.contains('sp-lens-pr')); } // (창 크기 버튼 - 글자를 크게 보거나 키보드가 올라와 있을 땐 크기가 정해져 있어 눌러도 그대로라 숨김, 예전 ⤢·↙ 그림은 뭔지 몰랐음)
     const lt = document.getElementById('spLensT');
     if (lt && lt.dataset.base) lt.textContent = spCurSt && spPvGone(spCurSt) ? `${lt.dataset.base} · 뺐어요` : lt.dataset.base; // (넣지 않기로 한 섹션 = 다음 섹션을 보여 줌)
     // 섹션을 창에 맞춤: 가로 100% (창이 더 넓으면 가운데) · 섹션 맨 위가 이름표 줄 바로 아래
@@ -16216,10 +16216,10 @@ function spLensBind() {
         const dk = [...dock.querySelectorAll('i')];
         dk.forEach(d => { const p = spLensXY(d.dataset.c, bx); Object.assign(d.style, { left: p.x + 'px', top: p.y + 'px', width: bx.w + 'px', height: bx.h + 'px' }); });
         const near = (x, y) => dk.reduce((best, d) => { const p = spLensXY(d.dataset.c, bx), dd = Math.hypot(p.x - x, p.y - y); return !best || dd < best[1] ? [d, dd] : best; }, null)[0];
-        const mv = ev => { const dx = ev.clientX - sx, dy = ev.clientY - sy; { const t = Date.now(); if (t > lt) { vx = vx * .4 + (ev.clientX - lx) / (t - lt) * .6; lx = ev.clientX; lt = t; } } if (!moved && Math.hypot(dx, dy) < 7) return;
+        const mv = ev => { const dx = ev.clientX - sx, dy = ev.clientY - sy; { const t = Date.now(); if (t > lt) { vx = vx * .4 + (ev.clientX - lx) / (t - lt) * .6; lx = ev.clientX; lt = t; } } if (!moved && Math.hypot(dx, dy) < (e.pointerType === 'touch' ? 14 : 8)) return; // (손가락은 조금 흔들려도 그냥 누른 걸로)
             // 위 이름표 줄을 끌면 창 옮기기 · 창 안을 위아래로 끌면 청첩장 넘겨 보기 · 옆으로 쓸면 숨기기 (사용자 요청 - 예전엔 창 안이 안 넘어갔음)
-            if (!how) how = !onHead && Math.abs(dy) > Math.abs(dx) && ss.tx != null ? 'scroll' : 'move';
-            if (how === 'scroll') { moved = true; ss.v = Math.max(ss.lo, Math.min(ss.hi, sv0 - dy)); fr.classList.add('sp-lens-now');
+            if (!how) how = !onHead && Math.abs(dy) > Math.abs(dx) * 1.3 && ss.tx != null ? 'scroll' : 'move';
+            if (how === 'scroll') { moved = true; ss.v = Math.max(ss.lo, Math.min(ss.hi, sv0 - (dy - Math.sign(dy) * 14) * 0.6)); // (넘겨 보기는 손가락의 0.6배로 천천히 - 예전 1배는 너무 예민했음) fr.classList.add('sp-lens-now');
                 fr.style.setProperty('--sp-lens-tf', `translate(${ss.tx.toFixed(1)}px, ${(ss.ty - ss.v).toFixed(1)}px) scale(${ss.sc.toFixed(4)})`);
                 if (spLensKind() !== 'plain' && !spLensPin) spLensPeekUntil = Math.max(spLensPeekUntil, Date.now() + 3000); return; }
             if (!moved) { moved = true; root.classList.add('sp-lens-drag'); }
@@ -16232,8 +16232,8 @@ function spLensBind() {
             if (how === 'scroll') { fr.classList.remove('sp-lens-now'); if (spLensKind() !== 'plain' && !spLensPin) { spLensPeekUntil = Date.now() + 3000; clearTimeout(spLensPlace.pt); spLensPlace.pt = setTimeout(() => spLensPlace(), 3050); } return; }
             const x = ui.offsetLeft, dx = x - x0, dy = ui.offsetTop - y0;
             // 옆으로 쓸면(빠르게 밀거나 90px 넘게) 그쪽으로 사라지고 그쪽 끝에 '청첩장' 손잡이 (사용자 요청)
-            const fling = Date.now() - lt < 100 && Math.abs(vx) > 1.1 && Math.sign(vx) === Math.sign(dx) && Math.abs(dx) > 50;
-            const offEdge = x < 4 - bx.w * 0.25 || x + bx.w > bx.W + bx.w * 0.25; // (화면 끝 밖으로 밀어냄)
+            const fling = Date.now() - lt < 100 && Math.abs(vx) > 1.6 && Math.sign(vx) === Math.sign(dx) && Math.abs(dx) > 90;
+            const offEdge = x < 4 - bx.w * 0.4 || x + bx.w > bx.W + bx.w * 0.4; // (화면 끝 밖으로 밀어냄)
             if (Math.abs(dx) > Math.max(36, Math.abs(dy) * 1.2) && (offEdge || fling)) { // (조금 옮기는 건 그 자리에 둠 - 예전엔 90px만 밀어도·살짝 빨라도 숨어서 '왼쪽 벽에 붙는' 것처럼 보였음)
                 const side = dx < 0 ? 'l' : 'r';
                 if (spLensKind() === 'peek') { spMv.side = side; spLensPin = false; spLensPeekUntil = 0; } else spMv.tuck = side; // (④ 잠깐 보여 주기는 다음에 바꿀 때 또 나옴 - 손잡이만 그쪽으로)
