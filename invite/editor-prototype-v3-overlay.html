@@ -963,8 +963,8 @@ html.mob-easy-only #scBack { display: none; }
     html.sp-lens-drag .sp-lens-ui { transition: none; cursor: grabbing; }
     .sp-lens-ui.flash { animation: spLensFlash .7s ease; }
     @keyframes spLensFlash { 0% { box-shadow: inset 0 0 0 2px #fff, 0 0 0 0 rgba(233, 201, 143, .95); } 100% { box-shadow: inset 0 0 0 2px #fff, 0 0 0 12px rgba(233, 201, 143, 0); } }
-    .sp-lens-t { position: absolute; left: 0; right: 0; top: 0; height: 24px; padding: 0 80px 0 10px; border-radius: 16px 16px 0 0; background: rgba(32, 25, 21, .9); color: #fff; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; } /* 창 위 이름표 줄 (섹션은 그 아래 SP_LENS_HEAD부터 - 섹션을 가리지 않게) */
-    .sp-lens-t::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 50%; background: #E9C98F; }
+    .sp-lens-t { position: absolute; left: 0; right: 0; top: 0; height: 24px; padding: 0 80px 0 10px; border-radius: 16px 16px 0 0; background: rgba(32, 25, 21, .9); color: #fff; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; line-height: 24px; } /* (flex면 말줄임표가 안 돼 글자가 ✕·크게 버튼 밑으로 들어갔음) */ /* 창 위 이름표 줄 (섹션은 그 아래 SP_LENS_HEAD부터 - 섹션을 가리지 않게) */
+    .sp-lens-t::before { content: ''; display: inline-block; vertical-align: 1px; margin-right: 6px; width: 6px; height: 6px; border-radius: 50%; background: #E9C98F; }
     .sp-lens-z { position: absolute; right: 4px; top: 2px; min-width: 34px; height: 20px; padding: 0 7px; border: 0; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; font: inherit; font-size: 10.5px; font-weight: 700; cursor: pointer; } .sp-lens-z[hidden] { display: none; }
     .sp-lens-map { display: none; position: absolute; right: 4px; top: 38px; bottom: 32px; width: 3px; border-radius: 99px; background: rgba(0,0,0,.14); }
     .sp-lens-map b { position: absolute; left: -2px; width: 7px; height: 16px; margin-top: -8px; border-radius: 99px; background: var(--ui-point, #B8925A); transition: top .45s cubic-bezier(.3,.8,.3,1); }
@@ -15743,7 +15743,7 @@ function spMvApply() {
     if (!lens) { const pane = document.querySelector('#screenEditor .preview-pane'); if (pane) ['left', 'top', 'width', 'height'].forEach(k => { pane.style[k] = ''; }); r.classList.remove('sp-lens-tucked', 'sp-lens-auto-hide', 'sp-lens-peeking'); }
     if (!(v === 'split' && !spMv.off)) r.classList.remove('sp-split-big');
     spMvUi();
-    const tg = document.getElementById('spSplitTg'); if (tg) { tg.hidden = v !== 'split'; tg.classList.toggle('on', !spMv.off); tg.setAttribute('aria-pressed', String(!spMv.off)); }
+    const tg = document.getElementById('spSplitTg'); if (tg) { const on = lens ? !spMv.lensOff : !spMv.off; tg.hidden = !(v === 'split' || lens); tg.classList.toggle('on', on); tg.setAttribute('aria-pressed', String(on)); } // (작은 창 방식에서도 머리줄 [청첩장 보기] 스위치로 창을 켜고 끔 - 사용자 요청)
     if (v === 'split' && !spMv.off) spSplitSet(spMv.h, true);
     if (lens) requestAnimationFrame(() => spLensPlace());
 }
@@ -15760,7 +15760,9 @@ function spMvUi() {
     document.body.insertAdjacentHTML('beforeend', `<div class="sp-lens-ui" id="spLensUi" role="button" tabindex="0" aria-label="청첩장 크게 보기"><span class="sp-lens-t" id="spLensT">지금 청첩장</span><button type="button" class="sp-lens-z" id="spLensZ" aria-label="창 크기 바꾸기">크게</button><button type="button" class="sp-lens-x" id="spLensX" aria-label="청첩장 창 숨기기" title="숨기기">✕</button><i class="sp-lens-map"><b id="spLensDot"></b></i><span class="sp-lens-f" id="spLensF">누르면 크게 · 끌면 옮겨요</span><i class="sp-lens-cd" id="spLensCd"></i><span class="sp-lens-ghost" id="spLensGhost" hidden>여기에 있었어요</span></div>
         <div class="sp-lens-dock" id="spLensDock"><i data-c="tl"></i><i data-c="tr"></i><i data-c="bl"></i><i data-c="br"></i></div><button type="button" class="sp-lens-tab" id="spLensTab">청첩장 ‹</button>`);
     const tg = document.getElementById('spSplitTg');
-    tg.addEventListener('click', () => { spMv.off = !spMv.off; spMvSave(); spMvApply(); if (!spMv.off) setTimeout(spMvRefollow, 320); });
+    tg.addEventListener('click', () => {
+        if (document.documentElement.classList.contains('sp-mv-lens')) { spMv.lensOff = !spMv.lensOff; spMvSave(); spLensPin = !spMv.lensOff && spLensKind() !== 'plain'; spLensPeekUntil = 0; spMvApply(); spLensSnap(); spLensPlace(); return; } // (켜면 창이 바로 보이게 고정, 끄면 창·손잡이 모두 숨김)
+        spMv.off = !spMv.off; spMvSave(); spMvApply(); if (!spMv.off) setTimeout(spMvRefollow, 320); });
     // 손잡이 끌기 → 가까운 자리(작게·반·크게)에 멈춤
     const hd = document.getElementById('spSplitHd');
     hd.addEventListener('pointerdown', e => {
@@ -16022,7 +16024,7 @@ function spLensPrompt() {
 }
 function spLensSnap() { const r = document.documentElement; r.classList.add('sp-lens-snap'); clearTimeout(spLensSnap.t); spLensSnap.t = setTimeout(() => r.classList.remove('sp-lens-snap'), 500); }
 // 창이 필요 없는 질문 (예식 일시 - 사용자 요청)
-function spLensOff() { return !!(spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick'); }
+function spLensOff() { return !!(spMv.lensOff || spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick'); } // (머리줄 [청첩장 보기]를 끄면 창 없음)
 const SP_LENS_HOLD = 900; // 섹션 전체를 보여 주는 시간 (그다음 글자로 다가감)
 const spLensTxt = { key: '', at: 0, view: '', sec: '', t: 0, z: 0, seen: new Set() };
 // 옵션(적는 칸) 하나 = 지금 질문 + 그 칸 이름 (같은 칸이면 다가가는 모습은 한 번만)
