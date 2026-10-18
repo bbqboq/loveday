@@ -680,7 +680,7 @@ html.mob-easy-only #scBack { display: none; }
 .sp-sw { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--wz-line); background: #fff; border-radius: 14px; margin-bottom: 10px; cursor: pointer; }
 .sp-sw > span { flex: 1; display: flex; flex-direction: column; gap: 3px; } .sp-sw b { font-size: 14px; } .sp-sw small { font-size: 12px; color: var(--wz-mute); }
 .sp-sw input { position: absolute; opacity: 0; pointer-events: none; left: 0; top: 0; width: 1px !important; height: 1px !important; min-width: 0 !important; margin: 0 !important; padding: 0 !important; } .sp-sw { position: relative; } /* (숨긴 체크 칸이 전문가 칸 모양(폭 100%)을 물려받아 화면 밖까지 넓어져, 누르면 화면이 옆으로 밀렸음 - 엔딩·감사 인사 등 공용 칸) */
-@media (max-width: 860px) { html.sp-ftop.simple-mode:not(.sp-mv-split) body::after { content: ''; display: block; height: 70vh; } } /* 글자 칸을 화면 위쪽으로 올릴 수 있게 아래 여유 (spFieldTop) */
+@media (max-width: 860px) { html.sp-ftop.simple-mode:not(.sp-mv-split) body::after { content: ''; display: block; height: 45vh; } } /* 글자 칸을 화면 위쪽으로 올릴 수 있게 아래 여유 (spFieldTop) */
 .sp-sw i { flex: none; width: 44px; height: 26px; border-radius: 99px; background: var(--ui-line, #DED8CF); position: relative; transition: background .2s; }
 .sp-sw i::after { content: ''; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s; }
 .sp-sw input:checked + i { background: #1B1A18; } .sp-sw input:checked + i::after { transform: translateX(18px); }
@@ -15941,23 +15941,26 @@ function spLensKbClear(winTop, winX, winW) {
     let sc = a.parentElement; while (sc && sc !== document.body && !(sc.scrollHeight > sc.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
     if (sc && sc !== document.body) sc.scrollBy(0, d); else window.scrollBy(0, d);
 }
-// 휴대폰 간편 만들기: 글자 칸을 누르면 바로 그 칸이 화면 위쪽으로 오게 스크롤 (사용자 요청 - 칸 위의 예시 문구 카드 등이 화면을 차지하고 칸은 아래에 끼어 있었음)
+// 휴대폰 간편 만들기: 글자 칸을 누르면 그 칸이 키보드·[다음] 줄에 가리지 않게 필요한 만큼만 부드럽게 스크롤 (사용자 요청 - 칸 위의 예시 문구 카드 등이 화면을 차지하고 칸은 아래에 끼어 있었음)
 //  키보드가 올라오는 동안 화면이 줄어서 몇 번 다시 맞춤 · 반반 화면은 spKbShowField가 따로
-function spFieldTop(a) {
+function spFieldTop(a, smooth) {
     if (!a || !a.isConnected || document.activeElement !== a || document.documentElement.classList.contains('sp-mv-split')) return;
     const vv = window.visualViewport, vt = vv ? vv.offsetTop : 0, vh = vv ? vv.height : window.innerHeight, w = a.closest('.wz-field, .field'), r0 = a.getBoundingClientRect(), wr = w && w.getBoundingClientRect(), r = wr && r0.top - wr.top < 60 && wr.height < vh - 120 ? wr : r0; // (칸 이름 줄까지 같이)
     let top = vt; { let n = document.elementFromPoint(Math.round(window.innerWidth / 2), Math.round(vt + 4)); // 위에 붙어 있는 머리줄(고정) 아래로
         while (n && n !== document.body && n !== a.closest('#simplePane')) { const ps = getComputedStyle(n).position; if (ps === 'fixed' || ps === 'sticky') { top = Math.max(top, n.getBoundingClientRect().bottom); break; } n = n.parentElement; } }
-    const want = top + 12;
-    if (Math.abs(r.top - want) < 6) return;
+    let bot = vt + vh; const nav = document.querySelector('#simplePane .sp-nav'), nr = nav && nav.getBoundingClientRect(); if (nr && nr.height && nr.top > r.top && nr.top < bot) bot = nr.top; // ([다음] 줄 위까지)
+    top += 12; bot -= 12;
+    // 이미 다 보이면 그대로 · 아래가 가리면 칸 아래 끝이 보일 만큼만 · 칸이 보이는 칸보다 크면 칸 위 끝을 위로 (사용자 요청 - 예전엔 늘 맨 위로 올려 너무 많이 올라갔음)
+    let d = 0; if (r.top >= top && r.bottom <= bot) return; d = r.bottom - r.top > bot - top ? r.top - top : r.bottom > bot ? r.bottom - bot : r.top - top;
+    if (Math.abs(d) < 6) return;
     let sc = a.parentElement; while (sc && sc !== document.body && !(sc.scrollHeight > sc.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
-    if (sc && sc !== document.body) sc.scrollBy(0, r.top - want); else window.scrollBy(0, r.top - want);
+    const o = { top: d, behavior: smooth ? 'smooth' : 'auto' }; if (sc && sc !== document.body) sc.scrollBy(o); else window.scrollBy(o);
 }
 document.addEventListener('focusin', e => {
     const a = e.target; if (window.innerWidth > 860 || !a.closest || !a.closest('#simplePane') || a.closest('.sp-nav, .sp-head, .sp-ask-top')) return;
     if (!a.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]), textarea, [contenteditable="true"], [contenteditable=""]')) return;
     document.documentElement.classList.add('sp-ftop'); // (아래 여유 자리 - 칸이 맨 아래쪽이어도 위로 올라올 수 있게)
-    const t0 = Date.now(); [0, 260, 600, 1000].forEach(t => setTimeout(() => { if ((spFieldTop.mv || 0) < t0) spFieldTop(a); }, t)); // (그 사이 손으로 넘기면 그만)
+    const t0 = Date.now(); [350, 900].forEach(t => setTimeout(() => { if ((spFieldTop.mv || 0) < t0) spFieldTop(a, true); }, t)); // (키보드가 다 올라온 뒤 부드럽게) // (그 사이 손으로 넘기면 그만)
 });
 document.addEventListener('touchmove', () => { spFieldTop.mv = Date.now(); }, { passive: true, capture: true });
 document.addEventListener('focusout', () => setTimeout(() => { const x = document.activeElement; if (!(x && x.closest && x.closest('#simplePane') && x.matches('input, textarea, [contenteditable]'))) document.documentElement.classList.remove('sp-ftop'); }, 200));
@@ -16069,7 +16072,7 @@ function spLensXY(c, bx) {
 // 고른 모서리가 지금 질문의 적는 칸을 가리면 가리지 않는 모서리로 (위아래 → 좌우 → 대각선 순서, 다 가리면 고른 그대로)
 function spLensCorner(bx, strict) {
     const hasPos = spMv.pos && typeof spMv.pos.px === 'number';
-    if (document.documentElement.classList.contains('sp-kb')) return { px: hasPos ? (spMv.pos.px < 0.5 ? 0 : 1) : spMv.lens[1] === 'l' ? 0 : 1, py: 1 }; // 키보드가 올라오면 키보드 바로 위 (왼쪽·오른쪽은 고객이 둔 쪽) - 적는 칸은 창 위로 올림(spLensKbClear)
+    if (document.documentElement.classList.contains('sp-kb')) return { px: hasPos ? spMv.pos.px : spMv.lens[1] === 'l' ? 0 : 1, py: 1 }; // 키보드가 올라오면 키보드 바로 위 (왼쪽·오른쪽은 고객이 둔 쪽) - 적는 칸은 창 위로 올림(spLensKbClear)
     const pref = hasPos ? spMv.pos : spMv.lens;
     const H = window.innerHeight, plain = spLensKind() === 'plain', sel = plain ? '#spBody' : '#simplePane';
     // ② 질문 칸의 적는 칸 모두 · ③④ 지금 만지는 칸 한 줄 전체(제목·설명 글·스위치·막대)만 - 모든 칸을 피하면 늘 접혀 버림
@@ -16208,8 +16211,9 @@ function spLensBind() {
             if (how === 'scroll') { fr.classList.remove('sp-lens-now'); if (spLensKind() !== 'plain' && !spLensPin) { spLensPeekUntil = Date.now() + 3000; clearTimeout(spLensPlace.pt); spLensPlace.pt = setTimeout(() => spLensPlace(), 3050); } return; }
             const x = ui.offsetLeft, dx = x - x0, dy = ui.offsetTop - y0;
             // 옆으로 쓸면(빠르게 밀거나 90px 넘게) 그쪽으로 사라지고 그쪽 끝에 '청첩장' 손잡이 (사용자 요청)
-            const fling = Date.now() - lt < 120 && Math.abs(vx) > .45 && Math.sign(vx) === Math.sign(dx);
-            if (Math.abs(dx) > Math.max(36, Math.abs(dy) * 1.2) && (Math.abs(dx) > 90 || fling)) {
+            const fling = Date.now() - lt < 100 && Math.abs(vx) > 1.1 && Math.sign(vx) === Math.sign(dx) && Math.abs(dx) > 50;
+            const offEdge = x < 4 - bx.w * 0.25 || x + bx.w > bx.W + bx.w * 0.25; // (화면 끝 밖으로 밀어냄)
+            if (Math.abs(dx) > Math.max(36, Math.abs(dy) * 1.2) && (offEdge || fling)) { // (조금 옮기는 건 그 자리에 둠 - 예전엔 90px만 밀어도·살짝 빨라도 숨어서 '왼쪽 벽에 붙는' 것처럼 보였음)
                 const side = dx < 0 ? 'l' : 'r';
                 if (spLensKind() === 'peek') { spMv.side = side; spLensPin = false; spLensPeekUntil = 0; } else spMv.tuck = side; // (④ 잠깐 보여 주기는 다음에 바꿀 때 또 나옴 - 손잡이만 그쪽으로)
                 [ui, pane()].forEach(el => { el.style.transition = 'left .22s ease-in, opacity .22s ease-in'; el.style.left = (side === 'l' ? -bx.w - 30 : bx.W + 30) + 'px'; el.style.opacity = '0'; });
