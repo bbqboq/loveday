@@ -679,7 +679,7 @@ html.mob-easy-only #scBack { display: none; }
 .sp-decmark { margin-top: 16px; }
 .sp-sw { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--wz-line); background: #fff; border-radius: 14px; margin-bottom: 10px; cursor: pointer; }
 .sp-sw > span { flex: 1; display: flex; flex-direction: column; gap: 3px; } .sp-sw b { font-size: 14px; } .sp-sw small { font-size: 12px; color: var(--wz-mute); }
-.sp-sw input { position: absolute; opacity: 0; pointer-events: none; }
+.sp-sw input { position: absolute; opacity: 0; pointer-events: none; left: 0; top: 0; width: 1px !important; height: 1px !important; min-width: 0 !important; margin: 0 !important; padding: 0 !important; } .sp-sw { position: relative; } /* (숨긴 체크 칸이 전문가 칸 모양(폭 100%)을 물려받아 화면 밖까지 넓어져, 누르면 화면이 옆으로 밀렸음 - 엔딩·감사 인사 등 공용 칸) */
 .sp-sw i { flex: none; width: 44px; height: 26px; border-radius: 99px; background: var(--ui-line, #DED8CF); position: relative; transition: background .2s; }
 .sp-sw i::after { content: ''; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s; }
 .sp-sw input:checked + i { background: #1B1A18; } .sp-sw input:checked + i::after { transform: translateX(18px); }
