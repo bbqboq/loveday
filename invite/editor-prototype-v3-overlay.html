@@ -680,6 +680,7 @@ html.mob-easy-only #scBack { display: none; }
 .sp-sw { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--wz-line); background: #fff; border-radius: 14px; margin-bottom: 10px; cursor: pointer; }
 .sp-sw > span { flex: 1; display: flex; flex-direction: column; gap: 3px; } .sp-sw b { font-size: 14px; } .sp-sw small { font-size: 12px; color: var(--wz-mute); }
 .sp-sw input { position: absolute; opacity: 0; pointer-events: none; left: 0; top: 0; width: 1px !important; height: 1px !important; min-width: 0 !important; margin: 0 !important; padding: 0 !important; } .sp-sw { position: relative; } /* (숨긴 체크 칸이 전문가 칸 모양(폭 100%)을 물려받아 화면 밖까지 넓어져, 누르면 화면이 옆으로 밀렸음 - 엔딩·감사 인사 등 공용 칸) */
+@media (max-width: 860px) { html.sp-ftop.simple-mode:not(.sp-mv-split) body::after { content: ''; display: block; height: 70vh; } } /* 글자 칸을 화면 위쪽으로 올릴 수 있게 아래 여유 (spFieldTop) */
 .sp-sw i { flex: none; width: 44px; height: 26px; border-radius: 99px; background: var(--ui-line, #DED8CF); position: relative; transition: background .2s; }
 .sp-sw i::after { content: ''; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s; }
 .sp-sw input:checked + i { background: #1B1A18; } .sp-sw input:checked + i::after { transform: translateX(18px); }
@@ -15940,6 +15941,26 @@ function spLensKbClear(winTop, winX, winW) {
     let sc = a.parentElement; while (sc && sc !== document.body && !(sc.scrollHeight > sc.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
     if (sc && sc !== document.body) sc.scrollBy(0, d); else window.scrollBy(0, d);
 }
+// 휴대폰 간편 만들기: 글자 칸을 누르면 바로 그 칸이 화면 위쪽으로 오게 스크롤 (사용자 요청 - 칸 위의 예시 문구 카드 등이 화면을 차지하고 칸은 아래에 끼어 있었음)
+//  키보드가 올라오는 동안 화면이 줄어서 몇 번 다시 맞춤 · 반반 화면은 spKbShowField가 따로
+function spFieldTop(a) {
+    if (!a || !a.isConnected || document.activeElement !== a || document.documentElement.classList.contains('sp-mv-split')) return;
+    const vv = window.visualViewport, vt = vv ? vv.offsetTop : 0, vh = vv ? vv.height : window.innerHeight, w = a.closest('.wz-field, .field'), r0 = a.getBoundingClientRect(), wr = w && w.getBoundingClientRect(), r = wr && r0.top - wr.top < 60 && wr.height < vh - 120 ? wr : r0; // (칸 이름 줄까지 같이)
+    let top = vt; { let n = document.elementFromPoint(Math.round(window.innerWidth / 2), Math.round(vt + 4)); // 위에 붙어 있는 머리줄(고정) 아래로
+        while (n && n !== document.body && n !== a.closest('#simplePane')) { const ps = getComputedStyle(n).position; if (ps === 'fixed' || ps === 'sticky') { top = Math.max(top, n.getBoundingClientRect().bottom); break; } n = n.parentElement; } }
+    const want = top + 12;
+    if (Math.abs(r.top - want) < 6) return;
+    let sc = a.parentElement; while (sc && sc !== document.body && !(sc.scrollHeight > sc.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
+    if (sc && sc !== document.body) sc.scrollBy(0, r.top - want); else window.scrollBy(0, r.top - want);
+}
+document.addEventListener('focusin', e => {
+    const a = e.target; if (window.innerWidth > 860 || !a.closest || !a.closest('#simplePane') || a.closest('.sp-nav, .sp-head, .sp-ask-top')) return;
+    if (!a.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]), textarea, [contenteditable="true"], [contenteditable=""]')) return;
+    document.documentElement.classList.add('sp-ftop'); // (아래 여유 자리 - 칸이 맨 아래쪽이어도 위로 올라올 수 있게)
+    const t0 = Date.now(); [0, 260, 600, 1000].forEach(t => setTimeout(() => { if ((spFieldTop.mv || 0) < t0) spFieldTop(a); }, t)); // (그 사이 손으로 넘기면 그만)
+});
+document.addEventListener('touchmove', () => { spFieldTop.mv = Date.now(); }, { passive: true, capture: true });
+document.addEventListener('focusout', () => setTimeout(() => { const x = document.activeElement; if (!(x && x.closest && x.closest('#simplePane') && x.matches('input, textarea, [contenteditable]'))) document.documentElement.classList.remove('sp-ftop'); }, 200));
 // 키보드가 오르내리거나 보이는 화면이 바뀔 땐 창을 미끄러뜨리지 않고 바로 그 자리에 (미끄러지면 '튀는' 것처럼 보였음)
 function spLensSettle(ms) {
     if (spMvMode() !== 'lens') return;
@@ -15954,8 +15975,8 @@ function spLensSettle(ms) {
 // A안 말풍선 (관리자 손쉬운 제작 → 간편 만들기 전체 flow.lensBub - 끄면 예전 키보드 위 가로 띠) · F안 엔딩 프롬프터 (flow.lensPrompt)
 function spLensTypingEl() { const a = document.activeElement; return a && a.closest && a.closest('#simplePane') && a.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable=""]') ? a : null; }
 function spLensBubOn() { try { return spOpt('flow', 'lensBub') && !!spLensTypingEl() && !(Date.now() < (spMvShowSec.until || 0)); } catch (e) { return false; } }
-// 인사말을 직접 적는 칸 · 예식장 이름 칸은 작은 창 없음 (사용자 요청 - 적는 동안 창이 오히려 가림)
-function spLensNoType(t) { t = t || spLensTypingEl(); return !!(t && spCurSt && (spCurSt.k === 'greet' || spCurSt.k === 'venue' && t.matches('[data-f="venue"]')) && t.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"], [contenteditable=""]')); }
+// 인사말을 직접 적는 칸 · 예식장 이름 · 층·홀 이름 칸은 작은 창 없음 (사용자 요청 - 적는 동안 창이 오히려 가림)
+function spLensNoType(t) { t = t || spLensTypingEl(); return !!(t && spCurSt && (spCurSt.k === 'greet' || spCurSt.k === 'venue' && t.matches('[data-f="venue"], [data-f="addressDetail"]')) && t.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"], [contenteditable=""]')); }
 // 엔딩 크레딧 줄 칸(creditRows.n.*)을 적는 중이면: 미리보기 크레딧을 멈추고 그 줄을 가운데로 굴려 놓고(앞뒤 줄은 흐리게) 창은 크레딧 칸을 보여 줌
 function spLensPrompt() {
     const root = document.getElementById('previewRoot'), a = spLensTypingEl(), html = document.documentElement;
