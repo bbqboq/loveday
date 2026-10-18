@@ -16130,7 +16130,7 @@ function spLensPlace(anim) {
     root.style.setProperty('--sp-lens-pad', (kbUp ? bx.h + 16 : !spMv.tuck && !hide && !spLensWouldHide && p.y + bx.h / 2 > (bx.top + bx.bottom) / 2 ? bx.h + 12 : 0) + 'px');
     if (kbUp && !hide && !bub && ((spLensKbNeed && Date.now() < spLensKbNeed) || p.y !== spLensPlace.ky)) { spLensKbNeed = 0; spLensKbClear(p.y, p.x, bx.w); } spLensPlace.ky = kbUp && !hide ? p.y : null; // (창이 커져 위로 올라오면 다시) // 칸을 눌렀을 때·키보드가 올라올 때만: 적는 칸이 창에 가리면 칸을 창 위로 (창은 그 자리 그대로 - 예전엔 창이 비켜 가며 튀었음) // 창이 아래에 있으면 질문 칸 맨 아래도 창 위로 올려 볼 수 있게 (잠깐 보이는 창은 빼고)
     [pane, ui].forEach(el => { el.style.left = p.x + 'px'; el.style.top = p.y + 'px'; el.style.width = bx.w + 'px'; el.style.height = bx.h + 'px'; });
-    const tab = document.getElementById('spLensTab'); if (tab) { const fold = hide && kind === 'cd'; tab.className = 'sp-lens-tab ' + (fold ? 'fold' : spMv.tuck || 'r'); tab.textContent = fold ? '청첩장' : spMv.tuck === 'l' ? '› 청첩장' : '청첩장 ‹'; }
+    const tab = document.getElementById('spLensTab'); if (tab) { const fold = hide && kind === 'cd'; const sd = spMv.tuck || spMv.side || 'r'; tab.className = 'sp-lens-tab ' + (fold ? 'fold' : sd); tab.textContent = fold ? '청첩장' : sd === 'l' ? '› 청첩장' : '청첩장 ‹'; }
     const lf = document.getElementById('spLensF'); if (lf) lf.textContent = kind !== 'plain' && spLensWouldHide && !spLensPin ? '누르면 계속 보여요' : '누르면 크게 · 끌면 옮겨요';
     const z = document.getElementById('spLensZ'); if (z) z.textContent = spMv.lz === 's' ? '⤢' : '↙';
     const lt = document.getElementById('spLensT');
@@ -16158,12 +16158,12 @@ function spLensBind() {
     document.getElementById('spLensZ').addEventListener('click', e => { e.stopPropagation(); spMv.lz = spMv.lz === 's' ? 'l' : 's'; spMvSave(); spLensPlace(); });
     ui.addEventListener('pointerdown', e => {
         if (e.button > 0) return;
-        const bx = spLensBox(), x0 = ui.offsetLeft, y0 = ui.offsetTop, sx = e.clientX, sy = e.clientY, root = document.documentElement; let moved = false;
+        const bx = spLensBox(), x0 = ui.offsetLeft, y0 = ui.offsetTop, sx = e.clientX, sy = e.clientY, root = document.documentElement; let moved = false, vx = 0, lx = e.clientX, lt = Date.now();
         try { ui.setPointerCapture(e.pointerId); } catch (er) {}
         const dk = [...dock.querySelectorAll('i')];
         dk.forEach(d => { const p = spLensXY(d.dataset.c, bx); Object.assign(d.style, { left: p.x + 'px', top: p.y + 'px', width: bx.w + 'px', height: bx.h + 'px' }); });
         const near = (x, y) => dk.reduce((best, d) => { const p = spLensXY(d.dataset.c, bx), dd = Math.hypot(p.x - x, p.y - y); return !best || dd < best[1] ? [d, dd] : best; }, null)[0];
-        const mv = ev => { const dx = ev.clientX - sx, dy = ev.clientY - sy; if (!moved && Math.hypot(dx, dy) < 7) return;
+        const mv = ev => { const dx = ev.clientX - sx, dy = ev.clientY - sy; { const t = Date.now(); if (t > lt) { vx = vx * .4 + (ev.clientX - lx) / (t - lt) * .6; lx = ev.clientX; lt = t; } } if (!moved && Math.hypot(dx, dy) < 7) return;
             if (!moved) { moved = true; root.classList.add('sp-lens-drag'); }
             const x = x0 + dx, y = Math.max(bx.top - 6, Math.min(bx.bottom - bx.h + 6, y0 + dy));
             [ui, pane()].forEach(el => { el.style.left = x + 'px'; el.style.top = y + 'px'; });
@@ -16171,7 +16171,17 @@ function spLensBind() {
         const up = () => { ui.removeEventListener('pointermove', mv); ui.removeEventListener('pointerup', up); ui.removeEventListener('pointercancel', up);
             root.classList.remove('sp-lens-drag');
             if (!moved) { if (spLensKind() !== 'plain' && spLensWouldHide && !spLensPin) { spLensPin = true; spLensPlace(); return; } spOpenPreview(false); return; } // ③④ 잠깐 보이는 창을 누르면 계속 보이게
-            const x = ui.offsetLeft;
+            const x = ui.offsetLeft, dx = x - x0, dy = ui.offsetTop - y0;
+            // 옆으로 쓸면(빠르게 밀거나 90px 넘게) 그쪽으로 사라지고 그쪽 끝에 '청첩장' 손잡이 (사용자 요청)
+            const fling = Date.now() - lt < 120 && Math.abs(vx) > .45 && Math.sign(vx) === Math.sign(dx);
+            if (Math.abs(dx) > Math.max(36, Math.abs(dy) * 1.2) && (Math.abs(dx) > 90 || fling)) {
+                const side = dx < 0 ? 'l' : 'r';
+                if (spLensKind() === 'peek') { spMv.side = side; spLensPin = false; spLensPeekUntil = 0; } else spMv.tuck = side; // (④ 잠깐 보여 주기는 다음에 바꿀 때 또 나옴 - 손잡이만 그쪽으로)
+                [ui, pane()].forEach(el => { el.style.transition = 'left .22s ease-in, opacity .22s ease-in'; el.style.left = (side === 'l' ? -bx.w - 30 : bx.W + 30) + 'px'; el.style.opacity = '0'; });
+                spMvSave();
+                setTimeout(() => { spLensSnap(); spLensPlace(); setTimeout(() => [ui, pane()].forEach(el => { el.style.transition = ''; el.style.opacity = ''; }), 260); }, 230);
+                return;
+            }
             if (x < -bx.w * 0.35 || x + bx.w > bx.W + bx.w * 0.35) spMv.tuck = x < 0 ? 'l' : 'r';
             else spMv.pos = { px: Math.max(0, Math.min(1, (x - 10) / Math.max(1, bx.W - bx.w - 20))), py: Math.max(0, Math.min(1, (ui.offsetTop - bx.top) / Math.max(1, bx.bottom - bx.h - bx.top))) }; // 놓은 자리 그대로 (예전엔 네 모서리 중 가까운 곳으로만)
             if (spLensKind() !== 'plain' && spLensPeekUntil > Date.now()) spLensPeekUntil = Date.now() + 2000;
