@@ -15975,8 +15975,8 @@ function spLensSettle(ms) {
 // A안 말풍선 (관리자 손쉬운 제작 → 간편 만들기 전체 flow.lensBub - 끄면 예전 키보드 위 가로 띠) · F안 엔딩 프롬프터 (flow.lensPrompt)
 function spLensTypingEl() { const a = document.activeElement; return a && a.closest && a.closest('#simplePane') && a.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable=""]') ? a : null; }
 function spLensBubOn() { try { return spOpt('flow', 'lensBub') && !!spLensTypingEl() && !(Date.now() < (spMvShowSec.until || 0)); } catch (e) { return false; } }
-// 인사말을 직접 적는 칸 · 예식장 이름 · 층·홀 이름 칸은 작은 창 없음 (사용자 요청 - 적는 동안 창이 오히려 가림)
-function spLensNoType(t) { t = t || spLensTypingEl(); return !!(t && spCurSt && (spCurSt.k === 'greet' || spCurSt.k === 'venue' && t.matches('[data-f="venue"], [data-f="addressDetail"]')) && t.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"], [contenteditable=""]')); }
+// 인사말을 직접 적는 칸 · 예식장 이름 · 층·홀 이름 · 계좌(은행·예금주·계좌번호) 칸은 작은 창 없음 - 창을 눌러 고정해 둔 때도 숨김 (사용자 요청 - 적는 동안 창이 오히려 가림)
+function spLensNoType(t) { t = t || spLensTypingEl(); return !!(t && spCurSt && (spCurSt.k === 'greet' || spCurSt.k === 'venue' && t.matches('[data-f="venue"], [data-f="addressDetail"]') || spCurSt.k === 'account' && t.closest('.wz-acc, .wz-banks')) && t.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"], [contenteditable=""]')); }
 // 엔딩 크레딧 줄 칸(creditRows.n.*)을 적는 중이면: 미리보기 크레딧을 멈추고 그 줄을 가운데로 굴려 놓고(앞뒤 줄은 흐리게) 창은 크레딧 칸을 보여 줌
 function spLensPrompt() {
     const root = document.getElementById('previewRoot'), a = spLensTypingEl(), html = document.documentElement;
@@ -16185,7 +16185,9 @@ function spLensBind() {
     ui.addEventListener('pointerdown', e => {
         if (e.button > 0) return;
         const bx = spLensBox(), x0 = ui.offsetLeft, y0 = ui.offsetTop, sx = e.clientX, sy = e.clientY, root = document.documentElement; let moved = false, vx = 0, lx = e.clientX, lt = Date.now(), how = '';
-        const onHead = e.clientY - ui.getBoundingClientRect().top < SP_LENS_HEAD + 6, ss = spLensPlace.sy || { v: 0 }, sv0 = ss.v || 0, fr = document.getElementById('phoneFrame');
+        const ur = ui.getBoundingClientRect(), edge = 22, ss0 = spLensPlace.sy || {};
+        // 창 옮기기: 위 이름 줄 + 아래 18px까지 · 양옆·아래 가장자리 · 넘겨 볼 게 없는 창은 어디든 (사용자 보고 '잘 안 끌린다' - 예전엔 이름 줄 24px만)
+        const onHead = e.clientY - ur.top < SP_LENS_HEAD + 18 || e.clientX - ur.left < edge || ur.right - e.clientX < edge || ur.bottom - e.clientY < edge || !((ss0.lo || 0) < -4 || (ss0.hi || 0) > 4), ss = spLensPlace.sy || { v: 0 }, sv0 = ss.v || 0, fr = document.getElementById('phoneFrame');
         try { ui.setPointerCapture(e.pointerId); } catch (er) {}
         const dk = [...dock.querySelectorAll('i')];
         dk.forEach(d => { const p = spLensXY(d.dataset.c, bx); Object.assign(d.style, { left: p.x + 'px', top: p.y + 'px', width: bx.w + 'px', height: bx.h + 'px' }); });
