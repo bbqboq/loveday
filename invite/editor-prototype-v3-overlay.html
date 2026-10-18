@@ -940,6 +940,10 @@ html.mob-easy-only #scBack { display: none; }
     html.sp-lens-zoom.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane > .phone-frame { transition: transform .9s cubic-bezier(.45,0,.2,1) !important; }
     html.sp-lens-snap.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane, html.sp-lens-snap.sp-mv-lens:not(.sp-pv) .sp-lens-ui { transition: opacity .2s ease !important; }
     html.sp-lens-none .sp-lens-tab { display: none !important; }
+    .sp-gen .sf-crows, .sp-gen .sf-cr { min-width: 0; max-width: 100%; }
+    .sp-gen .sf-cr > * { min-width: 0; } .sp-gen .sf-cr input { width: 100%; min-width: 0; box-sizing: border-box; }
+    .sp-gen .sf-cr .sf-cr-b { display: flex; gap: 0; } .sp-gen .sf-cr .sf-cr-b button { width: 22px; padding: 0; }
+    html.simple-mode #simplePane, html.simple-mode #simplePane .sp-body { overflow-x: clip; }
     /* A안 말풍선: 적는 칸에 꼬리 달고 붙음 (--sp-tail-x = 칸 쪽 꼬리 자리) */
     html.sp-lens-bub.sp-mv-lens:not(.sp-pv) .sp-lens-ui::after { content: ''; position: absolute; left: var(--sp-tail-x, 30px); width: 14px; height: 14px; margin-left: -7px; border-radius: 3px; transform: rotate(45deg); pointer-events: none; }
     html.sp-lens-bub .sp-lens-ui[data-tail="up"]::after { top: -6px; background: #2E2622; }
@@ -16007,12 +16011,13 @@ function spLensBox() {
     if (fr && isText) {
         const pr = tg.classList.contains('sp-pr-me') && tg.closest('.ib-cr-win'); // (엔딩 프롬프터: 굴러가는 중에도 늘 크레딧 칸 가운데 + 앞뒤 줄이 조금 보이게)
         const fr0 = fr.getBoundingClientRect(), k = fr0.width / FW || 1, q = (pr || tg).getBoundingClientRect();
-        let pw = Math.max(20, q.width / k), ph = pr ? Math.min(q.height / k, 96) : Math.max(12, q.height / k), cx = (q.left + q.width / 2 - fr0.left) / k, cy = (q.top + q.height / 2 - fr0.top) / k;
+        let pw = Math.max(20, q.width / k), ph = pr ? Math.min(q.height / k, 70) : Math.max(12, q.height / k), cx = (q.left + q.width / 2 - fr0.left) / k, cy = (q.top + q.height / 2 - fr0.top) / k;
         if (pr) { const xs = [...tg.children].filter(n => n.offsetWidth && n.textContent.trim()).map(n => { const r = document.createRange(); r.selectNodeContents(n); const z = r.getBoundingClientRect(); return [z.left, z.right]; }); // (줄 글자 폭만큼만 - 크레딧 칸 전체 폭으로 맞추면 글자가 너무 작았음)
             if (xs.length) { const l = Math.min(...xs.map(x => x[0])), rr = Math.max(...xs.map(x => x[1])); pw = Math.max(120, (rr - l) / k + 24); cx = ((l + rr) / 2 - fr0.left) / k; } }
-        const bub = spLensBubOn(), w = bub ? Math.round(Math.min(W - 24, W * 0.78)) : kb ? W - 16 : Math.max(wMax, Math.round(W * 0.5)), sc = Math.min(1.3, (w * 0.88) / pw, ((bub ? Math.min(hMax, 150) : hMax) * 0.8) / ph); // (글자는 창을 조금 넓게, 너무 크게는 안 함 · 키보드가 올라오면 키보드 위 가로 띠 - 칸은 창 위로 올라가서 가로를 다 써도 됨)
+        const bub = spLensBubOn(), w = bub ? Math.round(Math.min(W - 24, W * 0.78)) : kb ? W - 16 : Math.max(wMax, Math.round(W * 0.5)), sc = Math.min(tg.classList.contains('sp-pr-me') ? 1.1 : 1.3, (w * 0.88) / pw, ((bub ? Math.min(hMax, 150) : hMax) * 0.8) / ph); // (글자는 창을 조금 넓게, 너무 크게는 안 함 · 키보드가 올라오면 키보드 위 가로 띠 - 칸은 창 위로 올라가서 가로를 다 써도 됨)
         const h = Math.round(Math.min(hMax, Math.max(bub ? 54 : 96, ph * sc + (bub ? 26 : 40)))) + SP_LENS_HEAD; // (너무 납작한 창은 답답해서 96px부터)
-        return { W, w, h, top, bottom, z, sc, FW, sec, text: true, cx, cy };
+        const w2 = Math.min(w, Math.max(96, Math.round(FW * sc))); // (청첩장 폭 × 확대가 창보다 좁으면 창을 그만큼 - 오른쪽 빈칸 없이)
+        return { W, w: w2, h, top, bottom, z, sc, FW, sec, text: true, cx, cy };
     }
     let sc = wMax / FW, secTop = 0, secH = hMax / sc;
     // 넣지 않기로 해서 섹션이 빠졌으면: 빠진 자리(앞 섹션 끝 ~ 다음 섹션 시작)를 보여 주고 그 자리에 금색 줄
@@ -16042,15 +16047,20 @@ function spLensCorner(bx, strict) {
     const hasPos = spMv.pos && typeof spMv.pos.px === 'number';
     if (document.documentElement.classList.contains('sp-kb')) return { px: hasPos ? (spMv.pos.px < 0.5 ? 0 : 1) : spMv.lens[1] === 'l' ? 0 : 1, py: 1 }; // 키보드가 올라오면 키보드 바로 위 (왼쪽·오른쪽은 고객이 둔 쪽) - 적는 칸은 창 위로 올림(spLensKbClear)
     const pref = hasPos ? spMv.pos : spMv.lens;
-    { const ae = document.activeElement; if (ae && ae.closest && ae.closest('#simplePane') && ae.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable=""]')) return pref; } // 글자를 적는 중엔 비키지 않음 (칸을 창 위로 올림 - spLensKbClear)
     const H = window.innerHeight, plain = spLensKind() === 'plain', sel = plain ? '#spBody' : '#simplePane';
     // ② 질문 칸의 적는 칸 모두 · ③④ 지금 만지는 칸 한 줄 전체(제목·설명 글·스위치·막대)만 - 모든 칸을 피하면 늘 접혀 버림
     const els = plain ? [...document.querySelectorAll(`${sel} input:not([type="hidden"]):not([type="file"]), ${sel} textarea, ${sel} select`)] : [spLensActiveRow()].filter(Boolean);
     const fields = els.map(e => e.getBoundingClientRect()).filter(r => r.width && r.height && r.bottom > 0 && r.top < H);
     const hit = c => { const p = spLensXY(c, bx); return fields.some(r => r.right > p.x + 4 && r.left < p.x + bx.w - 4 && r.bottom > p.y + 4 && r.top < p.y + bx.h - 4); };
-    if (typeof pref === 'object') { const alt = [pref, { px: pref.px, py: 1 - pref.py }, { px: 1 - pref.px, py: pref.py }, { px: 1 - pref.px, py: 1 - pref.py }]; return alt.find(c => !hit(c)) || (strict ? null : pref); } // 놓은 자리가 가리면 위아래·좌우 반대쪽으로
+    // 질문 칸 버튼·스위치·막대·적는 칸을 덜 가리는 쪽으로 (아래에 관련 버튼이 있으면 위로 - 사용자 요청)
+    const ctrls = plain ? [] : [...document.querySelectorAll('#simplePane .sp-body :is(input:not([type="hidden"]):not([type="file"]), textarea, select, label.sp-sw, .sp-range, button)')]
+        .map(e => e.getBoundingClientRect()).filter(r => r.width > 4 && r.height > 4 && r.bottom > 50 && r.top < H);
+    const ov = c => { const p = spLensXY(c, bx); return ctrls.reduce((t, r) => t + Math.max(0, Math.min(r.right, p.x + bx.w) - Math.max(r.left, p.x)) * Math.max(0, Math.min(r.bottom, p.y + bx.h) - Math.max(r.top, p.y)), 0); };
+    const less = (a, b) => (b && !hit(b) && ov(b) < ov(a) * 0.6 - 400 ? b : a); // (조금 덜 가리는 정도로는 안 옮김 - 자주 오락가락하지 않게)
+    if (typeof pref === 'object') { const alt = [pref, { px: pref.px, py: 1 - pref.py }, { px: 1 - pref.px, py: pref.py }, { px: 1 - pref.px, py: 1 - pref.py }], c = alt.find(x => !hit(x)); return c ? less(c, { px: c.px, py: 1 - c.py }) : (strict ? null : pref); } // 놓은 자리가 가리면 위아래·좌우 반대쪽으로
     const v = x => (x === 't' ? 'b' : 't'), hz = x => (x === 'l' ? 'r' : 'l');
-    return [pref, v(pref[0]) + pref[1], pref[0] + hz(pref[1]), v(pref[0]) + hz(pref[1])].find(c => !hit(c)) || (strict ? null : pref);
+    const c = [pref, v(pref[0]) + pref[1], pref[0] + hz(pref[1]), v(pref[0]) + hz(pref[1])].find(x => !hit(x));
+    return c ? less(c, v(c[0]) + c[1]) : (strict ? null : pref);
 }
 // 휴대폰: 고르기 버튼을 눌렀는데 브라우저가 click을 안 보내는 경우(스크롤이 덜 멈췄을 때 등 - 배경음악 '자동 재생' 두 번 눌러야 됐음) 손을 뗀 자리로 한 번 눌러 줌
 (() => { let d = null, got = 0;
@@ -16069,8 +16079,10 @@ function spLensActiveRow() {
     return t.closest('label.sp-sw, .sp-range, .wz-field, .spb-h') || t;
 }
 // ③④: 바꾼 모습을 잠깐(2초) 보여 주기 - 막대를 끄는 동안은 계속, 손을 떼면 2초 뒤 들어감 · 창을 누르면 고정(spLensPin)
+let spLensQuiet = 0; // (계좌 은행을 고른 뒤 계좌번호 칸으로 저절로 넘어갈 때는 창을 안 띄움)
+document.addEventListener('pointerdown', e => { if (e.target.closest && e.target.closest('#simplePane :is(.wz-banks, .wz-bankbtn)')) spLensQuiet = Date.now() + 1500; }, true);
 function spLensPeek(ms) {
-    if (spMvMode() !== 'lens' || spLensKind() === 'plain' || spMv.tuck || spLensOff()) return;
+    if (spMvMode() !== 'lens' || spLensKind() === 'plain' || spMv.tuck || spLensOff() || Date.now() < spLensQuiet) return;
     ms = ms || 2000; spLensPeekUntil = Date.now() + ms;
     clearTimeout(spLensPeekT); spLensPeekT = setTimeout(spLensPlace, ms + 40);
     spLensPlace();
@@ -16169,7 +16181,7 @@ function spLensBind() {
     lx.addEventListener('pointerdown', e => e.stopPropagation());
     lx.addEventListener('click', e => { e.stopPropagation(); spLensPin = false; spLensPeekUntil = 0; spLensPlace(); });
     // ③④ 만지는 칸 기억 + 바꾸면 잠깐 보여 주기 (질문·목록 칸 안 스위치·막대·고르기 버튼 · 글자는 다 적고 1.2초 뒤)
-    const inPane = t => t && t.closest && t.closest('#simplePane') && !t.closest('.sp-nav, .sp-head, .sp-ask-top') && !(spCurSt && spCurSt.k === 'music' && !t.closest('[data-ask]')); // (배경음악: 곡·자동 재생 등을 눌러도 창은 안 뜸 - 넣을게요·넣지 않을게요만)
+    const inPane = t => t && t.closest && t.closest('#simplePane') && !t.closest('.sp-nav, .sp-head, .sp-ask-top') && !(spCurSt && spCurSt.k === 'music' && !t.closest('[data-ask]')) && !(t.closest('.wz-banks, .wz-bankbtn')); // (계좌 은행 고르기는 미리보기가 필요 없음 - 사용자 요청) // (배경음악: 곡·자동 재생 등을 눌러도 창은 안 뜸 - 넣을게요·넣지 않을게요만)
     const lensOn = () => spMvMode() === 'lens' && spLensKind() !== 'plain';
     ['pointerdown', 'focusin'].forEach(ev => document.addEventListener(ev, e => { if (lensOn() && inPane(e.target)) spLensAct = e.target; }, true));
     const isTxt = t => t.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable=""]');
