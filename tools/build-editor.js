@@ -29,7 +29,7 @@ for (const f of FILES) {
     if (check) {
         if (cur !== code) { console.error(`  ${f.out}이(가) ${f.src}과(와) 달라요 → node tools/build-editor.js`); bad++; }
         else if (html2 !== html) { console.error(`  에디터 HTML의 ${f.out}?v= 값이 옛날 거예요 → node tools/build-editor.js`); bad++; }
-        else console.log(`  ✓ ${f.out} (${(code.length / 1024).toFixed(0)}KB, v=${v})`);
+        else console.log(`  ✓ ${f.out} (${(Buffer.byteLength(code) / 1024).toFixed(0)}KB, v=${v})`);
         continue;
     }
     if (cur !== code) fs.writeFileSync(outPath, code);
