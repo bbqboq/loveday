@@ -1152,7 +1152,7 @@
         return v;
     }
     // 오시는 길: 예식장 이름·주소가 디자인 예시 그대로인지 (간편 만들기로 시작했을 때 design.venueDemo·venueDemoAddr)
-    function isVenueDemo(f) { const d = CUR_DESIGN || {}; f = f || {}; return { v: !!(d.venueDemo && (f.venue || '') === d.venueDemo), a: !!(d.venueDemoAddr && (f.address || '') === d.venueDemoAddr) }; }
+    function isVenueDemo(f) { const d = CUR_DESIGN || {}; f = f || {}; return { v: !!(d.venueDemo && (f.venue || '') === d.venueDemo), a: !!(d.venueDemoAddr && ((f.address || '') === d.venueDemoAddr || (!!f.addressBase && f.addressBase === d.venueDemoAddr))) }; } // (주소는 예시 그대로 두고 층·홀만 적어도 예시 주소)
     function creditVars() {
         const bl = (CUR_DESIGN && CUR_DESIGN.blocks) || [], fd = id => ((bl.find(b => b.id === id && b.enabled !== false) || bl.find(b => b.id === id) || {}).fields) || {};
         const h = Object.assign({}, fd('heroVideo'), fd('hero')), d = fd('dday'), loc = fd('location');

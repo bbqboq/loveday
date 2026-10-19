@@ -11400,7 +11400,7 @@ let spLaterShow = false, spLaterWas = false, spLaterNew = false;
 //  '다 채움'은 그 섹션 옵션대로 (pubChecks - 계좌는 적은 사람만 보고, 적다 만 사람이 있으면 덜 채움)
 let spDoneShow = false; const spGone = new Set(), spLeaveT = {}, spLeaveWait = new Set();
 function spHideDone(bads) { return !!(spOpt('flow', 'hideDone') && bads.length && !isPublished && !spInPlace && !SAMPLE_ID && !spDoneShow); }
-const spTypingIn = el => { const a = document.activeElement; return !!(a && el && el.contains(a) && (a.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]), textarea, select') || a.isContentEditable)); };
+const spTypingIn = el => { const a = document.activeElement; return !!(a && el && el.contains(a) && (a.matches('input:not([readonly]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]), textarea, select') || a.isContentEditable)); };
 function spLeaveSoon(k, ms) {
     if (spLeaveWait.has(k)) return; // (칸에서 손을 떼기를 기다리는 중)
     clearTimeout(spLeaveT[k]);
@@ -11408,6 +11408,7 @@ function spLeaveSoon(k, ms) {
         const pane = document.getElementById('simplePane'), li = pane && [...pane.querySelectorAll('.spb-grp:not(.spb-add) .spb-li[data-li]')].find(x => x.dataset.li === k);
         delete spLeaveT[k];
         if (!li || !li.classList.contains('done') || spGone.has(k) || state.spView !== 'list') return;
+        if (document.querySelector('#addrModal.active')) return spLeaveSoon(k, 600); // (주소 찾기 창이 떠 있는 동안은 기다림)
         if (spTypingIn(li)) { spLeaveWait.add(k); // 적는 중 → 칸에서 손을 뗀 뒤
             li.addEventListener('focusout', () => setTimeout(() => { spLeaveWait.delete(k); spLeaveSoon(k, spTypingIn(li) ? 300 : 700); }, 0), { once: true }); return; }
         li.style.maxHeight = li.offsetHeight + 'px'; void li.offsetHeight; li.classList.add('spb-leave');
@@ -12792,12 +12793,13 @@ function spMusic(box) {
     });
 }
 // 3. 예식장
+const spPostcodeOk = () => typeof daum !== 'undefined' && !!daum.Postcode;
 function spVenue(box) {
     const lb = spBlock('location'), f = lb.fields, vdm = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; // (디자인 예시 예식장·주소면 칸은 비워서 시작)
     if (!lb.enabled) { box.innerHTML = spH('어디에서 예식을 올리나요?', '주소를 찾으면 지도와 길찾기 버튼이 자동으로 만들어져요.') + spInclHtml('location') + spOffNote(); return; }
     box.innerHTML = spH('어디에서 예식을 올리나요?', '주소를 찾으면 지도와 길찾기 버튼이 자동으로 만들어져요.') + `
         <div class="wz-field"><div class="wz-lab">예식장 이름</div><input class="wz-inp" data-f="venue" value="${vdm.v ? '' : wzEsc(f.venue)}" placeholder="예: ○○웨딩홀, ○○호텔"></div>
-        <div class="wz-field"><div class="wz-lab">주소</div><div class="wz-addr"><input class="wz-inp" data-f="addressBase" value="${vdm.a ? '' : wzEsc(f.addressBase || f.address)}" placeholder="주소 찾기를 눌러주세요"><button type="button" class="wz-btn2" id="spAddr">주소 찾기</button></div></div>
+        <div class="wz-field"><div class="wz-lab">주소</div><div class="wz-addr"><input class="wz-inp sp-addr-in" data-f="addressBase" value="${vdm.a ? '' : wzEsc(f.addressBase || f.address)}" placeholder="주소 찾기를 눌러주세요"${spPostcodeOk() ? ' readonly' : ''}><button type="button" class="wz-btn2" id="spAddr">주소 찾기</button></div></div>
         ${spOpt('venue', 'detail') ? `<div class="wz-field"><div class="wz-lab">층 · 홀 이름 <small>선택</small></div><input class="wz-inp" data-f="addressDetail" value="${wzEsc(f.addressDetail)}" placeholder="예: 5층 그랜드홀"></div>` : ''}
         ${spOpt('venue', 'phone') ? `<div class="wz-field"><div class="wz-lab">예식장 전화 <small>선택</small></div><input class="wz-inp" data-f="phone" value="${wzEsc(f.phone)}" inputmode="tel" placeholder="02-000-0000"></div>` : ''}
         ${spOpt('venue', 'map') ? `<div class="wz-field"><div class="wz-lab">지도</div>
@@ -12820,8 +12822,10 @@ function spVenue(box) {
     box.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => {
         f[inp.dataset.f] = inp.value; f.address = [f.addressBase, f.addressDetail].filter(Boolean).join(' '); spChanged(['location']);
     }));
+    // 주소 칸을 눌러도 주소 찾기 (주소 검색을 못 불러왔을 때만 직접 적기 - 예전엔 칸에 한 글자만 적어도 '다 됨'이 되고 칸이 사라졌음)
+    const ai = box.querySelector('.sp-addr-in'); if (ai && ai.readOnly) ai.addEventListener('click', () => box.querySelector('#spAddr').click());
     box.querySelector('#spAddr').addEventListener('click', () => {
-        if (typeof daum === 'undefined' || !daum.Postcode) { LD.alert('주소 검색을 불러오지 못했어요', { message: '인터넷 연결을 확인한 뒤 다시 시도해주세요.' }); return; }
+        if (!spPostcodeOk()) { if (ai) { ai.readOnly = false; ai.focus(); } LD.alert('주소 검색을 불러오지 못했어요', { message: '인터넷 연결을 확인한 뒤 다시 시도해주세요. 주소 칸에 직접 적어도 돼요.' }); return; }
         document.getElementById('addrModal').classList.add('active');
         const layer = document.getElementById('addrLayer'); layer.innerHTML = '';
         new daum.Postcode({ oncomplete: d => { f.addressBase = d.roadAddress || d.jibunAddress; if ((!f.venue || (InviteBlocks.isVenueDemo && InviteBlocks.isVenueDemo(f).v)) && d.buildingName) f.venue = d.buildingName; f.address = [f.addressBase, f.addressDetail].filter(Boolean).join(' '); document.getElementById('addrModal').classList.remove('active'); spChanged(['location']); spRender(); }, width: '100%', height: '100%' }).embed(layer);

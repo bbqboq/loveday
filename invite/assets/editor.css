@@ -1544,6 +1544,7 @@ body:has(#screenInfo.active) #undoTab, body:has(#screenDesign.active) #undoTab {
 .wz-when b { color: var(--wz-ink); font-weight: 600; }
 .wz-addr { display: flex; gap: 8px; }
 .wz-addr .wz-inp { flex: 1; min-width: 0; }
+.wz-addr .sp-addr-in[readonly] { cursor: pointer; }
 .wz-btn2 { height: 52px; padding: 0 18px; border-radius: 14px; border: 1px solid var(--wz-ink); background: var(--wz-card); font: inherit; font-weight: 600; font-size: 14px; white-space: nowrap; cursor: pointer; color: var(--wz-ink); }
 .wz-btn2:hover { background: var(--wz-ink); color: #fff; }
 .wz-tones { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
