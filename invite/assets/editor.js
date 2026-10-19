@@ -9805,9 +9805,11 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     const quick = final === 'quick'; final = final === true;
     if (final) state.spPvSeen = true; // (발행 준비 C안 ② 확인하기 = 완성본을 한 번 봤음)
     const root = document.documentElement, seq = ++spPvSeq;
-    root.classList.add('sp-pv');
-    document.getElementById('spPvMsg').textContent = final ? (isPublished ? '발행한 청첩장이에요. 고친 내용은 저장되면 하객 화면에도 바로 바뀌어요.' : '완성본이에요! 저장해 뒀어요. 발행하면 주소가 생겨요.') : quick ? '이렇게 만들어졌어요! 닫으면 나머지를 하나씩 고칠 수 있어요.' : '하객에게 이렇게 보여요. 저장해 뒀어요.';
+    root.classList.add('sp-pv'); spPvWatchScroll.hand = false;
+    spPvSay(final ? (isPublished ? '발행한 청첩장이에요' : '완성본이에요') : quick ? '이렇게 만들어졌어요!' : '하객에게 이렇게 보여요', final ? (isPublished ? '고친 내용은 저장되면 하객 화면에도 바로 바뀌어요.' : '하객이 보는 화면 그대로예요. 저장해 뒀어요.\n발행하면 하객에게 보낼 주소가 생겨요.') : quick ? '닫으면 나머지를 하나씩 고칠 수 있어요.' : '저장해 뒀어요.', final && isPublished ? 'pub' : '');
     document.getElementById('spPvPub').hidden = !final || isPublished; // (이미 발행했으면 [발행하기] 없음)
+    document.getElementById('spPvCopy').hidden = !(final && isPublished && spPubUrl()); // (발행했으면 그 자리에 [주소 복사하기])
+    spPvMin(false); // (열 때는 늘 아래 카드 C안)
     document.getElementById('spPvKk').hidden = !(final || isPublished); // 카톡 공유 모양 (발행 전·후)
     document.getElementById('spPvOpen').hidden = true;
     document.getElementById('spPvBack').textContent = final ? '수정하기' : quick ? '닫기' : '돌아가기';
@@ -9815,12 +9817,12 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     const real = !!EDIT_TOKEN && !SAMPLE_ID && saveGateOk(); // 아직 저장 전(이름을 안 적음)이면 에디터 미리보기로
     root.classList.toggle('sp-pv-real', real);
     if (!real) {
-        if (EDIT_TOKEN && !SAMPLE_ID) document.getElementById('spPvMsg').textContent = final ? '완성본 미리보기예요. [발행하기]를 누르면 저장하고 주소가 생겨요.' : '하객에게 이렇게 보여요. (두 분 이름을 적으면 그때부터 저장돼요)';
+        if (EDIT_TOKEN && !SAMPLE_ID) { if (final) spPvSay('완성본 미리보기예요', '[발행하기]를 누르면 저장하고 하객에게 보낼 주소가 생겨요.'); else spPvSay('하객에게 이렇게 보여요', '두 분 이름을 적으면 그때부터 저장돼요.'); }
         try { renderPreview(); } catch (e) {} const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0; return; }
     box.innerHTML = '<div class="sp-pvload">불러오는 중…</div>';
     const ok = saved || await saveToServer(false, true);
     if (seq !== spPvSeq || !root.classList.contains('sp-pv')) return; // 그새 닫았음
-    if (!ok) { document.getElementById('spPvMsg').textContent = '저장하지 못했어요'; document.getElementById('spPvPub').hidden = true; box.innerHTML = `<div class="sp-pvload">저장하지 못했어요. 닫고 잠시 뒤 다시 눌러 주세요.${lastSaveErr ? `<br><small>${esc(lastSaveErr)}</small>` : ''}</div>`; return; }
+    if (!ok) { spPvSay('저장하지 못했어요', '인터넷 연결을 확인하고 닫았다가 잠시 뒤 다시 눌러 주세요.', 'err'); document.getElementById('spPvPub').hidden = true; document.getElementById('spPvCopy').hidden = true; box.innerHTML = `<div class="sp-pvload">저장하지 못했어요. 닫고 잠시 뒤 다시 눌러 주세요.${lastSaveErr ? `<br><small>${esc(lastSaveErr)}</small>` : ''}</div>`; return; }
     const fr = document.createElement('iframe');
     fr.title = '완성본 미리보기'; fr.setAttribute('allow', 'autoplay; fullscreen; clipboard-write; web-share');
     fr.src = `invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}&_=${Date.now()}`;
@@ -9830,7 +9832,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
         box.innerHTML = ''; root.classList.remove('sp-pv-real');
         try { renderPreview(); } catch (e) {} const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0;
         const ob = document.getElementById('spPvOpen'); if (ob) ob.hidden = false;
-        document.getElementById('spPvMsg').textContent = final ? '완성본 · 저장했어요' : '미리보기'; // (버튼이 셋이라 짧게)
+        spPvSay(final ? '완성본 · 저장했어요' : '미리보기', '이 화면 안에 실제 화면을 띄울 수 없어서 편집 화면으로 보여 드려요. [새 창으로 보기]로 하객 화면을 볼 수 있어요.', isPublished && final ? 'pub' : '');
     };
     const guard = setTimeout(fallback, 9000); // (아예 안 열리면)
     fr.addEventListener('load', () => { // 배경음악을 켰으면 바로 틀기 (실제 화면의 음악 버튼과 같은 음악)
@@ -9838,6 +9840,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
         let okFrame = false; try { const d = fr.contentDocument; okFrame = !!(d && d.body && d.body.children.length && /invite_view/.test(d.location.href)); } catch (e) {}
         if (!okFrame) return fallback();
         const box2 = box.querySelector('.sp-pvload'); if (box2) box2.remove();
+        try { spPvWatchScroll(fr.contentWindow, () => fr.contentWindow.scrollY || fr.contentDocument.documentElement.scrollTop || 0); } catch (e) {}
         const g = state.bgm || {}; if (!(g.enabled && g.url)) return;
         let n = 0; const t = setInterval(() => {
             let a = null; try { a = fr.contentWindow && fr.contentWindow.__ibBgmAudio; } catch (e) { clearInterval(t); return; }
@@ -9849,7 +9852,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
 function spClosePreview() {
     spPvSeq++; stopAllBgm();
     const box = document.getElementById('spPvReal'); if (box) box.innerHTML = ''; // 실제 화면을 지우면 그 음악도 멈춤
-    document.documentElement.classList.remove('sp-pv', 'sp-pv-real'); try { renderPreview(); } catch (e) {}
+    document.documentElement.classList.remove('sp-pv', 'sp-pv-real', 'sp-pvb-min'); try { renderPreview(); } catch (e) {}
     if (spPvMode === 'quick') { spPvMode = null; spRender(); window.scrollTo(0, 0); }
     else if (spPvMode === true && document.getElementById('spReady')) { try { spRender(); } catch (e) {} } // (발행 준비 C안: 완성본을 봤으면 ③ 발행하기로)
 }
@@ -9857,6 +9860,36 @@ document.getElementById('spPvBack').addEventListener('click', spClosePreview);
 document.getElementById('spPvOpen').addEventListener('click', () => { if (EDIT_TOKEN) window.open(`invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}`, '_blank', 'noopener'); }); // (창 안에 못 띄울 때 - 하객이 보는 화면을 새 창으로)
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('sp-pv')) spClosePreview(); });
 document.getElementById('spPvKk').addEventListener('click', () => kkSheetOpen());
+// 완성본 화면 아래 카드 (C안) ↔ 접힘 (B안: 위 알림 + 아래 버튼 줄) - 카드를 끌어내리거나 손잡이를 누르거나, 청첩장을 아래로 넘기면 접힘 · 맨 위로 돌아오면 다시 카드
+function spPvSay(title, sub, kind) {
+    document.getElementById('spPvTitle').textContent = title; const m = document.getElementById('spPvMsg'); m.textContent = sub || ''; m.style.whiteSpace = 'pre-line';
+    const r = document.documentElement; r.classList.toggle('sp-pvb-pub', kind === 'pub'); r.classList.toggle('sp-pvb-err', kind === 'err');
+}
+function spPvMin(on) {
+    const r = document.documentElement, g = document.getElementById('spPvGrab'); r.classList.toggle('sp-pvb-min', !!on);
+    if (g) { g.setAttribute('aria-label', on ? '안내 크게 보기' : '안내 접기'); g.title = on ? '안내 크게 보기' : '안내 접기'; }
+}
+function spPvWatchScroll(target, getY) { // 청첩장을 아래로 넘기면 접고, 맨 위로 돌아오면 다시 카드
+    let last = 0; target.addEventListener('scroll', () => { const y = getY(); if (y > 60 && y > last) spPvMin(true); else if (y < 8 && !spPvWatchScroll.hand) spPvMin(false); last = y; }, { passive: true });
+}
+(function spPvBarBind() {
+    const bar = document.getElementById('spPvBar'), grab = document.getElementById('spPvGrab');
+    grab.addEventListener('click', () => { spPvWatchScroll.hand = !document.documentElement.classList.contains('sp-pvb-min'); spPvMin(!document.documentElement.classList.contains('sp-pvb-min')); });
+    // 카드를 아래로 끌면 접힘 · 접힌 띠를 위로 끌면 펼침 (버튼을 누른 건 그대로 버튼)
+    bar.addEventListener('pointerdown', e => {
+        if (e.button > 0 || (e.target.closest('button') && e.target.closest('button') !== grab)) return;
+        const y0 = e.clientY, min = document.documentElement.classList.contains('sp-pvb-min'); let dy = 0;
+        const mv = ev => { dy = ev.clientY - y0; if (!min && dy > 0) bar.style.transform = `translateY(${Math.min(dy, 160)}px)`; };
+        const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); bar.style.transform = '';
+            if (!min && dy > 40) { spPvWatchScroll.hand = true; spPvMin(true); } else if (min && dy < -30) { spPvWatchScroll.hand = false; spPvMin(false); } };
+        window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+    });
+    const pane = document.querySelector('#screenEditor .preview-pane'); // (실제 화면을 못 띄울 때 - 에디터 미리보기)
+    if (pane) spPvWatchScroll(pane, () => document.documentElement.classList.contains('sp-pv') ? pane.scrollTop : 0);
+    document.getElementById('spPvCopy').addEventListener('click', async e => { const b = e.currentTarget, u = spPubUrl(); if (!u) return; let ok = false;
+        try { await navigator.clipboard.writeText(u); ok = true; } catch (er) { try { const ta = document.createElement('textarea'); ta.value = u; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (e2) {} }
+        b.textContent = ok ? '주소를 복사했어요 ✓' : '복사하지 못했어요'; clearTimeout(b._t); b._t = setTimeout(() => { b.textContent = '주소 복사하기'; }, 2400); });
+})();
 document.getElementById('spPvPub').addEventListener('click', e => {
     const b = e.currentTarget; if (b.disabled) return;
     pubCheckThen(async () => { // 빠진 것이 있으면 먼저 '발행 전에 확인해요'

@@ -417,25 +417,47 @@ body:has(.desktop-fullscreen-backdrop.active) #screenEditor > .action-bar { z-in
 .simple-mode body { padding-bottom: 0; } /* (아래 버튼 줄 자리 비우기 - 간편 만들기엔 그 줄이 없음) */
 @media (min-width: 861px) { .simple-mode #screenEditor .layout { height: calc(100vh - var(--sp-top-h, 62px)); } }
 /* 미리보기 화면: 청첩장만 화면 가득 + 아래 띠 (안내 · 돌아가기) */
-.simple-mode.sp-pv .preview-pane { display: flex !important; position: fixed; inset: 0 0 56px; z-index: 750; background: var(--ui-soft, #EDE9E3); }
-.simple-mode.sp-pv .sp-pvbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 760; height: 56px; align-items: center; justify-content: space-between; gap: 10px; padding-left: 18px; background: rgba(62,58,55,.96); color: #fff; font-size: 13px; font-weight: 600; }
-.sp-pvbar span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sp-pvbar-b { display: flex; flex: none; height: 100%; }
-.sp-pvbar button { height: 100%; border: 0; padding: 0 clamp(18px, 6vw, 40px); background: #2A2725; color: #fff; font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
-.sp-pvbar button:hover { background: #1B1917; } #spPvPub { background: #7C4650; } #spPvPub:hover { background: #6A3A44; } #spPvOpen { background: #3D3936; font-weight: 600; }
+.simple-mode.sp-pv .preview-pane { display: flex !important; position: fixed; inset: 0 0 68px; z-index: 750; background: var(--ui-soft, #EDE9E3); }
+/* 완성본 화면 아래 = C안 카드 (안내 + 큰 [발행하기] + 수정하기·카톡 두 칸) → 끌어내리거나 청첩장을 아래로 넘기면(sp-pvb-min) B안: 위 알림 카드 + 아래 버튼 줄 (예전 한 줄 띠는 휴대폰에서 안내 글이 잘렸음) */
+.simple-mode.sp-pv .sp-pvbar { display: flex; flex-direction: column; gap: 12px; position: fixed; left: 10px; right: 10px; bottom: 10px; z-index: 760; max-width: 440px; margin: 0 auto; box-sizing: border-box; padding: 6px 16px 16px; border-radius: 22px; background: #fff; color: var(--ink, #231F1D); box-shadow: 0 10px 34px rgba(0,0,0,.26); font-size: 13px; touch-action: none; user-select: none; -webkit-user-select: none; transition: transform .28s cubic-bezier(.3,.8,.3,1); }
+.sp-pvbar .pvb-grab { align-self: center; width: 64px; height: 16px; border: 0; padding: 0; background: none; display: grid; place-items: center; cursor: grab; }
+.sp-pvbar .pvb-grab i { display: block; width: 40px; height: 4px; border-radius: 4px; background: #D9CFC8; }
+.sp-pvbar .pvb-msg { display: flex; align-items: center; gap: 10px; }
+.sp-pvbar .pvb-ic { flex: none; width: 26px; height: 26px; border-radius: 50%; background: #6F9068; color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+html.sp-pvb-pub .sp-pvbar .pvb-ic { background: #9A5B66; } html.sp-pvb-err .sp-pvbar .pvb-ic { background: #B0603F; }
+.sp-pvbar .pvb-tx { flex: 1; min-width: 0; display: grid; gap: 2px; } .sp-pvbar .pvb-tx b { font-size: 16px; font-weight: 800; } .sp-pvbar .pvb-tx span { font-size: 12.5px; line-height: 1.5; color: #6E625C; }
+.sp-pvbar .pvb-tx span:empty { display: none; }
+.sp-pvbar .pvb-main { height: 52px; border: 0; border-radius: 14px; background: #9A5B66; color: #fff; font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; }
+.sp-pvbar .pvb-main:hover { background: #874C57; } .sp-pvbar .pvb-main:disabled { opacity: .7; cursor: default; }
+.sp-pvbar .pvb-main[hidden] { display: none; }
+.sp-pvbar-b { display: flex; gap: 8px; } .sp-pvbar-b button { flex: 1; min-width: 0; height: 44px; border: 1px solid #E3D8D2; border-radius: 12px; background: #fff; color: var(--ink, #231F1D); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; }
+.sp-pvbar-b button:hover { background: #F7F3EF; } .sp-pvbar-b button[hidden] { display: none; }
+#spPvBack::before { content: '‹ '; }
+html.simple-mode.sp-pv body::after { content: ''; display: block; position: fixed; left: 0; right: 0; bottom: 0; height: 68px !important; z-index: 755; background: var(--ui-soft, #EDE9E3); } /* (청첩장 아래 68px - 카드일 때 편집 화면이 비쳐 보이지 않게) */
+/* B안 (접힘): 안내 = 위 흰 알림 카드, 아래 = 진한 버튼 줄 (수정하기 · 카톡 · 발행하기 넓게), 손잡이를 누르면 다시 카드 */
+html.sp-pvb-min.simple-mode.sp-pv .sp-pvbar { left: 0; right: 0; bottom: 0; max-width: none; flex-direction: row; align-items: center; gap: 8px; height: 68px; padding: 12px 12px 12px; border-radius: 0; background: #2B2724; box-shadow: none; }
+html.sp-pvb-min .sp-pvbar .pvb-grab { position: absolute; left: 50%; top: -22px; transform: translateX(-50%); width: 56px; height: 22px; border-radius: 12px 12px 0 0; background: #2B2724; }
+html.sp-pvb-min .sp-pvbar .pvb-grab i { width: 22px; height: 3px; background: rgba(255,255,255,.55); }
+html.sp-pvb-min .sp-pvbar .pvb-msg { position: fixed; top: 12px; left: 12px; right: 12px; max-width: 440px; margin: 0 auto; padding: 10px 14px; border-radius: 16px; background: rgba(255,255,255,.95); box-shadow: 0 6px 20px rgba(0,0,0,.18); color: var(--ink, #231F1D); animation: pvbNoteIn .3s ease; }
+html.sp-pvb-min .sp-pvbar .pvb-ic { width: 22px; height: 22px; font-size: 12px; } html.sp-pvb-min .sp-pvbar .pvb-tx b { font-size: 14px; } html.sp-pvb-min .sp-pvbar .pvb-tx span { font-size: 12px; }
+@keyframes pvbNoteIn { from { opacity: 0; transform: translateY(-8px); } }
+html.sp-pvb-min .sp-pvbar .sp-pvbar-b { display: contents; } html.sp-pvb-min .sp-pvbar-b button { flex: none; width: auto; height: 44px; padding: 0 14px; border: 0; background: #3D3833; color: #fff; }
+html.sp-pvb-min .sp-pvbar-b button:hover { background: #4A443E; }
+html.sp-pvb-min .sp-pvbar .pvb-main { order: 5; flex: 1; height: 44px; border-radius: 12px; font-size: 15px; }
+html.sp-pvb-min #spPvBack { order: 1; } html.sp-pvb-min #spPvKk { order: 2; } html.sp-pvb-min #spPvOpen { order: 3; }
+@media (min-width: 861px) { html.sp-pvb-min.simple-mode.sp-pv .sp-pvbar { justify-content: center; padding-left: max(12px, calc(50% - 230px)); padding-right: max(12px, calc(50% - 230px)); } }
 .simple-mode.sp-pv #previewRoot .section-ruler, .simple-mode.sp-pv #previewRoot .hb-area, .simple-mode.sp-pv #previewRoot .hb-handle, .simple-mode.sp-pv #previewRoot .hb-ok, .simple-mode.sp-pv #previewRoot .hh-group, .simple-mode.sp-pv.sp-pv body:not(.sp-x) #undoTab { display: none !important; }
 .simple-mode.sp-pv #previewRoot .col.sp-live { pointer-events: none; }
 .simple-mode.sp-pv #previewRoot .col.selected { outline: none !important; box-shadow: none !important; }
 /* 완성본 보기 = 하객이 보는 실제 화면 (invite_view.php?preview_t, 전문가 모드 [미리보기]와 같은 페이지) - 고칠 수 없고 음악도 나옴 */
 .sp-pvreal { display: none; }
 .simple-mode.sp-pv.sp-pv-real .preview-pane { display: none !important; }
-.simple-mode.sp-pv.sp-pv-real .sp-pvreal { display: flex; position: fixed; inset: 0 0 56px; z-index: 750; justify-content: center; background: var(--ui-soft, #EDE9E3); }
+.simple-mode.sp-pv.sp-pv-real .sp-pvreal { display: flex; position: fixed; inset: 0 0 68px; z-index: 750; justify-content: center; background: var(--ui-soft, #EDE9E3); }
 .sp-pvreal iframe { width: 100%; height: 100%; border: 0; background: #fff; }
 .sp-pvreal .sp-pvload { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; color: #8A847C; pointer-events: none; }
 @media (min-width: 861px) { .sp-pvreal iframe { width: 430px; max-width: 100%; box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 12px 40px rgba(0,0,0,.12); } }
 /* (실제 화면을 못 띄울 때 - 샘플 편집 등 - 에디터 미리보기는 통째로 보기만) */
 .simple-mode.sp-pv #previewRoot, .simple-mode.sp-pv #previewRoot * { pointer-events: none !important; }
-@media (max-width: 860px) { .sp-pvbar { font-size: 12px; padding-left: 14px; } .sp-pvbar span:first-child { white-space: normal; line-height: 1.35; } .sp-pvbar button { padding: 0 16px; font-size: 14px; } }
 .simple-mode .simple-pane { --wz-ink: #1B1A18; --wz-sub: #6F6A63; --wz-mute: #A39D95; --wz-line: var(--ui-line, #EAE6E0); --wz-line2: var(--ui-line, #DED8CF); --wz-soft: var(--ui-soft, #F1EDE7); --wz-card: #fff; --wz-acc: #8A4B55; --wz-acc-soft: #F5EDEC; --wz-sun: #B5545F;
     display: flex; flex-direction: column; width: 440px; flex: none; background: var(--ui-page, #F6F4F1); border-right: 1px solid var(--line); overflow-y: auto; color: var(--wz-ink); }
 .simple-mode .editor-pane, .simple-mode #pcSettingsBtn, .simple-mode #pcWidthIcons, .simple-mode .topbar-icons, .simple-mode #backToInfo, .simple-mode #addTextTopBtn,
