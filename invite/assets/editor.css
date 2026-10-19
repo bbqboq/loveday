@@ -623,6 +623,12 @@ html.mob-easy-only #scBack { display: none; }
 .spb-later > i { width: 32px; height: 32px; flex: none; border-radius: 10px; background: #fff; display: grid; place-items: center; font-style: normal; font-size: 14px; color: var(--ui-point, #B08A5A); }
 .spb-later > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .spb-later b { font-size: 14px; font-weight: 700; } .spb-later small { font-size: 12px; color: var(--wz-sub); }
 .spb-later > button { flex: none; height: 36px; padding: 0 14px; border: 1px solid var(--wz-line, #E5DED3); border-radius: 999px; background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: var(--wz-ink); cursor: pointer; }
+/* 채우는 동안 다 채운 칸: 접히며 사라짐 → '다 채운 칸 n개' 줄 (spLeaveSoon · spDoneRowHtml) */
+.spb-li.spb-leave { overflow: hidden; max-height: 0 !important; opacity: 0; transition: max-height .45s ease, opacity .3s ease; }
+.spb-donerow { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px 12px 16px; border: 1px solid var(--wz-line, #E5DED3); border-radius: 16px; background: #fff; font: inherit; color: var(--wz-ink); text-align: left; cursor: pointer; }
+.spb-donerow > .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .spb-donerow b { font-size: 14px; font-weight: 700; } .spb-donerow small { font-size: 12px; color: var(--wz-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spb-donerow > .go { flex: none; font-size: 13px; font-weight: 700; color: var(--wz-ink); }
+@media (prefers-reduced-motion: reduce) { .spb-li.spb-leave { transition: none; } }
 .spb-grp.spb-new { animation: spbNew .6s ease both; } @keyframes spbNew { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .spb-grp.spb-new { animation: none; } }
 .spb-t.spb-t-sw { cursor: default; } /* (스위치만 있는 줄 - PC 그림자) */
