@@ -9806,8 +9806,8 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     if (final) state.spPvSeen = true; // (발행 준비 C안 ② 확인하기 = 완성본을 한 번 봤음)
     const root = document.documentElement, seq = ++spPvSeq;
     root.classList.add('sp-pv');
-    document.getElementById('spPvMsg').textContent = final ? '완성본이에요! 저장해 뒀어요. 발행하면 주소가 생겨요.' : quick ? '이렇게 만들어졌어요! 닫으면 나머지를 하나씩 고칠 수 있어요.' : '하객에게 이렇게 보여요. 저장해 뒀어요.';
-    document.getElementById('spPvPub').hidden = !final;
+    document.getElementById('spPvMsg').textContent = final ? (isPublished ? '발행한 청첩장이에요. 고친 내용은 저장되면 하객 화면에도 바로 바뀌어요.' : '완성본이에요! 저장해 뒀어요. 발행하면 주소가 생겨요.') : quick ? '이렇게 만들어졌어요! 닫으면 나머지를 하나씩 고칠 수 있어요.' : '하객에게 이렇게 보여요. 저장해 뒀어요.';
+    document.getElementById('spPvPub').hidden = !final || isPublished; // (이미 발행했으면 [발행하기] 없음)
     document.getElementById('spPvKk').hidden = !(final || isPublished); // 카톡 공유 모양 (발행 전·후)
     document.getElementById('spPvOpen').hidden = true;
     document.getElementById('spPvBack').textContent = final ? '수정하기' : quick ? '닫기' : '돌아가기';
@@ -9820,7 +9820,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     box.innerHTML = '<div class="sp-pvload">불러오는 중…</div>';
     const ok = saved || await saveToServer(false, true);
     if (seq !== spPvSeq || !root.classList.contains('sp-pv')) return; // 그새 닫았음
-    if (!ok) { box.innerHTML = `<div class="sp-pvload">저장하지 못했어요. 닫고 잠시 뒤 다시 눌러 주세요.${lastSaveErr ? `<br><small>${esc(lastSaveErr)}</small>` : ''}</div>`; return; }
+    if (!ok) { document.getElementById('spPvMsg').textContent = '저장하지 못했어요'; document.getElementById('spPvPub').hidden = true; box.innerHTML = `<div class="sp-pvload">저장하지 못했어요. 닫고 잠시 뒤 다시 눌러 주세요.${lastSaveErr ? `<br><small>${esc(lastSaveErr)}</small>` : ''}</div>`; return; }
     const fr = document.createElement('iframe');
     fr.title = '완성본 미리보기'; fr.setAttribute('allow', 'autoplay; fullscreen; clipboard-write; web-share');
     fr.src = `invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}&_=${Date.now()}`;
@@ -11294,15 +11294,9 @@ const spAddDesc = st => SP_ADD_DESC[st.k] || ((window.InviteBlocks && InviteBloc
 //  관리자 손쉬운 제작 → 간편 만들기 전체 'moreTip' · 정보 버튼(in-place)으로 연 목록·샘플 편집에는 안 나옴
 // [완성본 보기]: 저장 → 하객 화면. 아직 처음 저장 전(두 분 이름을 직접 안 적음)이면 저장 실패가 아니니 미리보기를 그대로 열고 [발행하기]로 갈 수 있게
 //  (예전엔 이때도 '저장하지 못했어요'가 떠서 발행까지 못 갔음 - 발행 전 점검이 '예시 이름이에요'를 먼저 물어봄)
-function spShowFinal(b) {
-    if (!EDIT_TOKEN || SAMPLE_ID || !saveGateOk()) { spOpenPreview(true, false); return; }
-    if (b) { b.disabled = true; b.textContent = '저장 중…'; }
-    saveToServer(false, true).then(ok => {
-        if (b) { b.disabled = false; b.textContent = '완성본 보기'; }
-        if (ok) spOpenPreview(true, true);
-        else showServerNotice('저장하지 못했어요. 인터넷 연결을 확인하고 잠시 뒤 다시 눌러 주세요.' + (lastSaveErr ? ' (' + esc(lastSaveErr) + ')' : ''));
-    });
-}
+//  완성본 화면을 바로 열고('불러오는 중…') 그 안에서 저장 → 실제 화면 (저장이 안 되면 그 화면에 까닭을 보여 줌)
+//  (예전엔 저장을 다 끝낸 뒤에 열어서, 누른 버튼이 화면 밖 아래 버튼이 아니면 저장하는 동안 아무 표시가 없었음 - 실서버에서 '완성본 보기를 눌러도 안 뜬다' 보고)
+function spShowFinal(b) { spOpenPreview(true, false); }
 // 발행 준비 C안 (관리자 손쉬운 제작 → 발행 준비 카드 'next'): ① 채우기 → ② 확인하기 → ③ 발행하기 막대 + 지금 할 일 하나만 큰 버튼으로
 // ① = 발행 전 점검(pubChecks)에서 고칠 것 → 하나씩 pubGo · ② = 완성본을 한 번 봄(state.spPvSeen) · ③ = 발행 · 발행 뒤엔 주소 복사
 const SP_NEXT_DO = { names: '두 분 이름 적기', date: '예식 날짜 정하기', venue: '예식장 넣기', hero: '', gallery: '갤러리 사진 넣기', greet: '인사말 쓰기', account: '계좌 다시 보기', contact: '연락처 번호 고치기' };
