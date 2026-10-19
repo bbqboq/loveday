@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($act === 'easy_nb') {
         // 간편 만들기 ↓ 스크롤 버튼 칸 모양 (1 이름표 줄 / 2 버튼 그림 / 3 미리보기 중심 / 예전) - 누르면 바로 저장
         $v = (string) ($_POST['view'] ?? '');
-        $ok = in_array($v, SECTION_EASY_NBS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['nbPanel' => $v]);
+        $ok = defined('SECTION_EASY_NBS') && in_array($v, SECTION_EASY_NBS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['nbPanel' => $v]);
     } elseif ($act === 'easy_ready') {
         // 목록 화면 발행 준비 카드 모양 (C안 큰 버튼 하나 / 예전 막대) - 누르면 바로 저장
         $v = (string) ($_POST['view'] ?? '');
@@ -157,7 +157,7 @@ $easyNow = section_defaults_easy();
 $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
-$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyNb = section_defaults_easy_nb(); $easyVideo = section_defaults_easy_video();
+$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyNb = function_exists('section_defaults_easy_nb') ? section_defaults_easy_nb() : 'rows'; // (section_defaults.php를 같이 안 올렸어도 페이지가 열리게) $easyVideo = section_defaults_easy_video();
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
 $easyInfo = [
