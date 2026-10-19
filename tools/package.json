@@ -1,0 +1,12 @@
+{
+  "name": "loveday-tools",
+  "private": true,
+  "description": "LOVE DAY 개발 도구 (저장소 밖으로 배포하지 않음) - build-editor.js: 에디터 CSS·JS 압축본 만들기",
+  "scripts": {
+    "build": "node build-editor.js",
+    "check": "node build-editor.js --check"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0"
+  }
+}
