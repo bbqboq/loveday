@@ -998,7 +998,7 @@ html.mob-easy-only #scBack { display: none; }
     html.sp-lens-drag .sp-lens-dock { display: none; position: fixed; inset: 0; z-index: 639; pointer-events: none; }
     .sp-lens-dock i { position: absolute; border-radius: 16px; border: 2px dashed rgba(184, 146, 90, .75); background: rgba(184, 146, 90, .08); }
     .sp-lens-dock i.near { border-style: solid; background: rgba(184, 146, 90, .2); }
-    html.sp-mv-lens:is(.sp-lens-tucked, .sp-lens-auto-hide) #screenEditor .preview-pane, html.sp-mv-lens:is(.sp-lens-tucked, .sp-lens-auto-hide) .sp-lens-ui { opacity: 0; pointer-events: none; }
+    html.sp-mv-lens:is(.sp-lens-tucked, .sp-lens-auto-hide):not(.sp-pv) #screenEditor .preview-pane, html.sp-mv-lens:is(.sp-lens-tucked, .sp-lens-auto-hide) .sp-lens-ui { opacity: 0; pointer-events: none; }
     html.sp-mv-lens:is(.sp-lens-tucked, .sp-lens-auto-hide):not(.sp-pv) .sp-lens-tab { display: block; position: fixed; z-index: 641; top: 46%; width: 30px; height: 100px; border: 0; background: var(--wz-ink, #2B2320); color: #fff; font: inherit; font-size: 11.5px; font-weight: 700; writing-mode: vertical-rl; letter-spacing: .1em; box-shadow: 0 6px 16px rgba(0,0,0,.2); }
     html.sp-mv-lens:not(.sp-pv) .sp-body { padding-bottom: calc(40px + var(--sp-lens-pad, 0px)); }
     .sp-lens-tab.r { right: 0; border-radius: 12px 0 0 12px; }
@@ -1008,7 +1008,7 @@ html.mob-easy-only #scBack { display: none; }
     #previewRoot .col.sp-ghost-at { box-shadow: inset 0 3px 0 0 var(--ui-point, #B8925A); } /* 넣지 않기로 한 섹션이 있던 자리 (다음 섹션 위쪽 금색 줄) */ .sp-lens-tab.l { left: 0; border-radius: 0 12px 12px 0; }
     /* ③ 비켜서고 접힘 + 잠깐 보여 주기 · ④ 평소엔 숨고 바꾸면 2초 (spLensKind 'cd' / 'peek') - 숨을 땐 오른쪽으로 작아지며 들어감 */
     html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane, html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-mv-lens:not(.sp-pv) .sp-lens-ui { transform-origin: 100% 60%; transition: left .34s cubic-bezier(.3,.8,.3,1), top .34s cubic-bezier(.3,.8,.3,1), width .3s ease, height .3s ease, opacity .22s ease, transform .3s cubic-bezier(.3,1.3,.5,1); }
-    html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-lens-auto-hide #screenEditor .preview-pane, html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-lens-auto-hide .sp-lens-ui { transform: scale(.3); }
+    html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-lens-auto-hide:not(.sp-pv) #screenEditor .preview-pane, html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-lens-auto-hide .sp-lens-ui { transform: scale(.3); }
     .sp-lens-tab.fold { top: auto; bottom: 86px; right: 12px; width: 60px; height: 60px; border-radius: 50%; writing-mode: horizontal-tb; letter-spacing: 0; font-size: 11.5px; box-shadow: 0 6px 18px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.18); }
     .sp-lens-x { display: none; position: absolute; right: 44px; top: 2px; width: 26px; height: 20px; border: 0; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; font-size: 12px; cursor: pointer; place-items: center; }
     html:is(.sp-lens-pinned, .sp-lens-peeking) .sp-lens-x { display: grid; } .sp-lens-z[hidden] + .sp-lens-x { right: 4px; }

@@ -8861,7 +8861,7 @@ function showScreen(name) {
 let startTrack = 'simple';
 const ONB_STEPS_BY = { simple: ['디자인', '칸 채우기', '발행'], custom: ['바탕', '두 사람', '꾸미기'] };
 let onboardingActive = false;
-let SAVE_OK = false; const NAME_SET = new Set(), NAME_DEMO = {}; // 처음 저장 관문 (saveGateOk - 디자인을 고르고 두 분 이름을 직접 적은 뒤에)
+let SAVE_OK = false, DATE_SET = false, DATE_DEMO = null; const NAME_SET = new Set(), NAME_DEMO = {}; // 처음 저장 관문 (saveGateOk - 디자인을 고르고 두 분 이름 + 예식 날짜를 정한 뒤에)
 function renderOnbSteps() {
     const ONB_STEPS = ONB_STEPS_BY[startTrack] || ONB_STEPS_BY.simple;
     document.querySelectorAll('.onb-steps[data-onb-step]').forEach(el => {
@@ -9817,7 +9817,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     const real = !!EDIT_TOKEN && !SAMPLE_ID && saveGateOk(); // 아직 저장 전(이름을 안 적음)이면 에디터 미리보기로
     root.classList.toggle('sp-pv-real', real);
     if (!real) {
-        if (EDIT_TOKEN && !SAMPLE_ID) { if (final) spPvSay('완성본 미리보기예요', '[발행하기]를 누르면 저장하고 하객에게 보낼 주소가 생겨요.'); else spPvSay('하객에게 이렇게 보여요', '두 분 이름을 적으면 그때부터 저장돼요.'); }
+        if (EDIT_TOKEN && !SAMPLE_ID) { if (final) spPvSay('완성본 미리보기예요', '[발행하기]를 누르면 저장하고 하객에게 보낼 주소가 생겨요.'); else spPvSay('하객에게 이렇게 보여요', '두 분 이름과 예식 날짜를 정하면 그때부터 저장돼요.'); }
         try { renderPreview(); } catch (e) {} const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0; return; }
     box.innerHTML = '<div class="sp-pvload">불러오는 중…</div>';
     const ok = saved || await saveToServer(false, true);
@@ -9939,7 +9939,7 @@ function dtCalendar(box, cur, onPick) {
         box.innerHTML = `<div class="dt-cal-h"><button type="button" data-cm="-1" aria-label="이전 달"${y === t0.getFullYear() && m <= t0.getMonth() ? ' disabled' : ''}>‹</button><b>${y}년 ${m + 1}월</b><button type="button" data-cm="1" aria-label="다음 달">›</button></div>
             <div class="dt-cal-g">${g}</div><div class="dt-cal-f"><span>지난 날짜는 고를 수 없어요</span><button type="button" data-cm="0">이번 달로</button></div>`;
         box.querySelectorAll('[data-cm]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const v = +b.dataset.cm; if (v) view.setMonth(view.getMonth() + v); else { const t = new Date(); view.setFullYear(t.getFullYear(), t.getMonth(), 1); } draw(); }));
-        box.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => { sel = b.dataset.d; draw(); onPick(sel); }));
+        box.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => { sel = b.dataset.d; DATE_SET = true; draw(); onPick(sel); })); // (DATE_SET = 고객이 예식 날짜를 정함 - 처음 저장 관문)
     };
     draw();
 }
@@ -11120,7 +11120,7 @@ function spAskSteps() { // 관리자 "손쉬운 제작 → 처음 만들 때 질
 }
 // 질문을 넘길 때마다 서버에 저장 (답한 내용 + 지금 질문 자리) - 새로고침하거나 나갔다 와도 거기서부터
 let spAskSaveT = 0;
-function spAskAutoSave() { if (!EDIT_TOKEN) return; clearTimeout(spAskSaveT); spAskSaveT = setTimeout(() => { try { saveToServer(false, true); } catch (e) {} }, 700); }
+function spAskAutoSave() { if (!EDIT_TOKEN) return; clearTimeout(spAskSaveT); spAskSaveT = setTimeout(() => { try { if (document.documentElement.classList.contains('simple-mode')) spAutoSaveSoon(0); else saveToServer(false, true); } catch (e) {} }, 700); } // (간편 만들기는 spSaveRun 한 줄로 - 저장이 겹치지 않게)
 // 저장된 질문 자리(state.spAt)를 지금 질문 목록의 번호로 (없어진 질문이면 그 앞 질문들 중 마지막 자리 → 못 찾으면 처음)
 function spResumeStep() {
     if (state.spView !== 'quick' || !state.spAt) return 0;
@@ -13285,6 +13285,7 @@ async function bootstrapFromServer() {
             wizardData.groomName = data.groom_name || wizardData.groomName;
             wizardData.brideName = data.bride_name || wizardData.brideName;
             if (String(data.groom_name || '').trim()) NAME_SET.add('groom'); if (String(data.bride_name || '').trim()) NAME_SET.add('bride'); // 주문 때 받은 이름 = 고객이 적은 이름
+            if (data.wedding_datetime && !isNaN(new Date(String(data.wedding_datetime).replace(' ', 'T')))) DATE_SET = true; // 주문 때 받은 예식 날짜도
             wizardData.venue = data.venue_name || wizardData.venue;
             wizardData.addressBase = data.venue_address || wizardData.addressBase;
             if (data.wedding_datetime) {
@@ -13573,8 +13574,11 @@ document.addEventListener('input', e => {
     const t = e.target; if (!t || !t.matches) return;
     const k = t.matches('[data-wi="groom"], [data-wfield="groomName"], [data-part="groomName"]') ? 'groom' : t.matches('[data-wi="bride"], [data-wfield="brideName"], [data-part="brideName"]') ? 'bride' : '';
     if (k && String(t.value != null ? t.value : t.textContent || '').trim()) NAME_SET.add(k);
+    if (t.matches('[data-wi="date"], [data-wfield="weddingDate"]') && String(t.value || '').trim()) DATE_SET = true;
 }, true);
-function nameDemoMark() { const wi = weddingInfo() || {}; ['groom', 'bride'].forEach(k => { if (!NAME_SET.has(k)) NAME_DEMO[k] = String(wi[k] || '').trim(); }); }
+function nameDemoMark() { const wi = weddingInfo() || {}; ['groom', 'bride'].forEach(k => { if (!NAME_SET.has(k)) NAME_DEMO[k] = String(wi[k] || '').trim(); }); if (!DATE_SET) DATE_DEMO = String(wi.date || ''); }
+// 예식 날짜를 정했는지: 달력에서 골랐거나 · 디자인 예시 날짜와 다르거나 · '아직 일정을 잡지 않았어요'를 골랐음
+function dateTyped(wi) { wi = wi || weddingInfo() || {}; if (wi.undecided) return true; const d = String(wi.date || ''); return !!d && (DATE_SET || (DATE_DEMO != null && d !== DATE_DEMO)); }
 // 그 이름 칸을 고객이 정했는지: 직접 적었거나(어느 칸이든) 디자인 예시 이름과 다름 (예전엔 '직접 적었는지'만 봐서, 지켜보지 않는 칸에 적으면 발행까지 막혔음)
 function nameTyped(k, wi) { if (NAME_SET.has(k)) return true; const v = String((wi || weddingInfo() || {})[k] || '').trim(); return !!v && NAME_DEMO[k] != null && v !== NAME_DEMO[k]; }
 function saveGateOk(loose) { // loose = [발행하기] (발행 전 점검에서 '예시 이름'을 보여 준 뒤 - 그래도 발행하면 이름이 있기만 하면 됨)
@@ -13584,34 +13588,43 @@ function saveGateOk(loose) { // loose = [발행하기] (발행 전 점검에서 
     const wi = weddingInfo();
     if (!(wi && String(wi.groom || '').trim() && String(wi.bride || '').trim())) return false;
     if (!loose && !(nameTyped('groom', wi) && nameTyped('bride', wi))) return false;
+    if (loose ? !(wi.date || wi.undecided) : !dateTyped(wi)) return false; // 예식 날짜도 정한 뒤에 (사용자 결정 2026-10-19)
     SAVE_OK = true; return true;
 }
 let lastSaveErr = ''; // 조용한 저장(silent)이 실패한 까닭 - 안내 문구에 같이 보여 줌
+// 서버에 보내는 저장 내용 (saveToServer · 창을 닫을 때 keepalive가 같이 씀)
+function saveBody(publish) {
+    return JSON.stringify({
+        edit_token: EDIT_TOKEN,
+        design: { skin: state.skin, presetId: state.presetId || null, palette: (({ label, ...rest }) => rest)(skins[state.skin] || skins.classic), customFont: state.customFont, customBg: state.customBg, paper: state.paper || undefined, sectionLook: state.sectionLook || undefined, lookStyle: state.lookStyle === 'old' ? 'old' : undefined, backdrop: typeof state.backdrop === 'string' ? state.backdrop : undefined, themePal: themePalOf() || undefined, customAccent: state.customAccent || undefined, desktopSideBg: state.desktopSideBg, desktopShadow: state.desktopShadow, effects: state.effects, stickers: state.stickers, customTexts: state.customTexts, intro: state.intro, bgm: state.bgm, share: state.share, labels: state.labels, extras: state.extras, imgFocus: state.imgFocus, imgZoom: state.imgZoom, info: state.info, blocks: state.blocks, mode: state.mode || undefined, ...Object.fromEntries(SP_KEEP.filter(k => state[k] !== undefined && state[k] !== null).map(k => [k, state[k]])), sampleId: state.sampleId || undefined, simpleSnap: state.simpleSnap || undefined, fullSnap: state.fullSnap || undefined },
+        // 대시보드·관리자 목록에 쓰는 이름 - 지금 "예식 정보"에 적힌 이름으로 갱신 (비어 있으면 불러온 값 유지)
+        groom_name: (String(weddingInfo().groom || '').split('\n')[0].trim() || lastLoadedMeta.groom_name).slice(0, 50),
+        bride_name: (String(weddingInfo().bride || '').split('\n')[0].trim() || lastLoadedMeta.bride_name).slice(0, 50),
+        publish: !!publish
+    });
+}
+let lastSavedBody = ''; // 마지막으로 저장한 내용 (publish 빼고) - 조용한 저장은 같으면 안 보냄
 async function saveToServer(publish, silent) {
     lastSaveErr = '';
     if (!EDIT_TOKEN) {
         if (!silent) showServerNotice('편집 링크(토큰) 없이 열려서 서버에 저장할 수 없습니다. 내 청첩장 화면에서 들어와주세요.');
         return false;
     }
-    if (!saveGateOk(!!publish && !silent)) { if (!silent) showServerNotice(publish ? '두 분 이름을 적어야 발행할 수 있어요.' : '두 분 이름을 적으면 그때부터 저장돼요. (지금은 디자인 예시 이름이에요)'); return false; }
+    if (!saveGateOk(!!publish && !silent)) { if (!silent) showServerNotice(publish ? '두 분 이름과 예식 날짜를 정해야 발행할 수 있어요.' : '두 분 이름과 예식 날짜를 정하면 그때부터 저장돼요.'); return false; }
     const btn = silent ? null : document.getElementById(publish ? 'publishBtn' : 'saveDraftBtn');
     const originalText = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = '저장 중...'; }
     try {
+        const body = saveBody(publish), same = body.replace(/"publish":(true|false)\}$/, '');
+        if (silent && !publish && same === lastSavedBody) return true; // (바뀐 게 없음 - 고칠 때마다 저장해서 같은 내용을 여러 번 보내지 않게)
         const res = await fetch(API_ENDPOINTS.save, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                edit_token: EDIT_TOKEN,
-                design: { skin: state.skin, presetId: state.presetId || null, palette: (({ label, ...rest }) => rest)(skins[state.skin] || skins.classic), customFont: state.customFont, customBg: state.customBg, paper: state.paper || undefined, sectionLook: state.sectionLook || undefined, lookStyle: state.lookStyle === 'old' ? 'old' : undefined, backdrop: typeof state.backdrop === 'string' ? state.backdrop : undefined, themePal: themePalOf() || undefined, customAccent: state.customAccent || undefined, desktopSideBg: state.desktopSideBg, desktopShadow: state.desktopShadow, effects: state.effects, stickers: state.stickers, customTexts: state.customTexts, intro: state.intro, bgm: state.bgm, share: state.share, labels: state.labels, extras: state.extras, imgFocus: state.imgFocus, imgZoom: state.imgZoom, info: state.info, blocks: state.blocks, mode: state.mode || undefined, ...Object.fromEntries(SP_KEEP.filter(k => state[k] !== undefined && state[k] !== null).map(k => [k, state[k]])), sampleId: state.sampleId || undefined, simpleSnap: state.simpleSnap || undefined, fullSnap: state.fullSnap || undefined },
-                // 대시보드·관리자 목록에 쓰는 이름 - 지금 "예식 정보"에 적힌 이름으로 갱신 (비어 있으면 불러온 값 유지)
-                groom_name: (String(weddingInfo().groom || '').split('\n')[0].trim() || lastLoadedMeta.groom_name).slice(0, 50),
-                bride_name: (String(weddingInfo().bride || '').split('\n')[0].trim() || lastLoadedMeta.bride_name).slice(0, 50),
-                publish: !!publish
-            })
+            body
         });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error || '저장 실패');
+        lastSavedBody = same;
         if (silent) return true; // 미리보기용 조용한 저장은 알림 없이 성공만 알려준다
         if (publish && viewSlug) {
             isPublished = true;
@@ -13656,6 +13669,7 @@ function pubChecks() {
     if (wi.undecided || state.dateTbd) out.push({ id: 'date', t: "예식 날짜가 아직 '미정'이에요", s: '날짜를 정했으면 적어 주세요 · 디데이·달력이 저절로 만들어져요', go: '날짜 적기' });
     else if (!wi.date) out.push({ id: 'date', t: '예식 날짜가 비어 있어요', s: '날짜를 적으면 디데이·달력이 저절로 만들어져요', go: '날짜 적기' });
     else if (new Date(wi.date + 'T00:00:00') < today) out.push({ id: 'date', t: '예식 날짜가 이미 지났어요', s: dtDateText(wi.date) + ' · 날짜를 다시 확인해 주세요', go: '날짜 고치기' });
+    else if (!SAVE_OK && !dateTyped(wi)) out.push({ id: 'date', t: '예식 날짜가 아직 디자인 예시 날짜예요', s: dtDateText(wi.date) + ' · 우리 예식 날짜로 골라 주세요', go: '날짜 고르기' });
     else out.push({ id: 'date', ok: 1, t: '예식 날짜', s: dtDateText(wi.date) + (wi.time ? ' ' + wi.time : '') });
     if (on('location')) {
         const f = F('location'), vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {};
@@ -14647,7 +14661,29 @@ function ldhIntro(force) {
 function ldhMaybeIntro() { clearTimeout(ldhMaybeIntro.t); ldhMaybeIntro.t = setTimeout(() => { const ed = ldh$('#screenEditor'); if (ed && ed.classList.contains('active') && !ldhIntro(false)) { let seen = {}; try { seen = JSON.parse(localStorage.getItem('ld-help-seen') || '{}'); } catch (e) {} if (!seen[ldhIntroKind()] && ldhOn('helpIntro')) ldhMaybeIntro(); } }, 1600); }
 // 간편 만들기: 고친 뒤 몇 초 지나면 저절로 저장 (목록 화면에서 고치고 창을 닫아도 남게 - 도움말 '저장은 저절로' 그대로)
 let ldhSaveT = 0;
-function spAutoSaveSoon() { try { if (!EDIT_TOKEN) return; } catch (e) { return; } if (!document.documentElement.classList.contains('simple-mode')) return; /* (불러오기 전엔 EDIT_TOKEN이 아직 없음) */ clearTimeout(ldhSaveT); ldhSaveT = setTimeout(() => { try { saveToServer(false, true); } catch (e) {} }, 4000); }
+// 간편 만들기: 고칠 때마다 저절로 저장 (사용자 요청 2026-10-19 - 예전엔 4초 뒤라 그 사이 새로고침하면 고친 게 사라졌음)
+//  고친 뒤 0.8초 · 저장 중에 또 고치면 끝난 뒤 한 번 더 · 바뀐 게 없으면 안 보냄(saveToServer) · 처음 저장 관문(이름 + 예식 날짜) 전엔 안 보냄
+let spSaveBusy = false, spSaveAgain = false, spSaveDirty = false;
+function spAutoSaveSoon(ms) { try { if (!EDIT_TOKEN) return; } catch (e) { return; } if (!document.documentElement.classList.contains('simple-mode')) return; /* (불러오기 전엔 EDIT_TOKEN이 아직 없음) */
+    spSaveDirty = true; clearTimeout(ldhSaveT); ldhSaveT = setTimeout(spSaveRun, ms == null ? 800 : ms); }
+async function spSaveRun() {
+    if (spSaveBusy) { spSaveAgain = true; return; }
+    if (!saveGateOk()) return; // (이름·날짜를 정하기 전 - 정하는 순간 다음 고침에서 저장)
+    spSaveBusy = true; spSaveDirty = false;
+    let ok = false; try { ok = await saveToServer(false, true); } catch (e) {}
+    spSaveBusy = false; if (!ok) spSaveDirty = true;
+    if (spSaveAgain) { spSaveAgain = false; spSaveRun(); }
+}
+// 간편 만들기 칸에서 스위치·고르기 버튼·막대·글자를 바꾸면 (되돌리기 기록에 안 남는 고침도) 저장
+['change', 'click'].forEach(ev => document.addEventListener(ev, e => {
+    const t = e.target; if (!t || !t.closest || !t.closest('#simplePane')) return;
+    if (ev === 'click' && !t.closest('button, label, [role="button"], [data-v], [data-k], .sp-chips *, .sp-pick')) return;
+    setTimeout(() => { try { if (histJSON() !== lastSnapshotJSON) scheduleSnapshot(); else spAutoSaveSoon(); } catch (er) {} }, 60);
+}, true));
+// 창을 닫거나 새로고침하는데 아직 안 보낸 고침이 있으면: 작으면 바로 보내고(keepalive), 크면 브라우저가 '나가시겠어요?'를 물음
+function spUnsaved() { if (!(spSaveDirty || spSaveBusy) || !document.documentElement.classList.contains('simple-mode') || !saveGateOk()) return null; try { const b = saveBody(false); return b.replace(/"publish":(true|false)\}$/, '') === lastSavedBody ? null : b; } catch (e) { return null; } }
+window.addEventListener('pagehide', () => { const b = spUnsaved(); if (b && !spSaveBusy && b.length < 60000) { clearTimeout(ldhSaveT); try { fetch(API_ENDPOINTS.save, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: b, keepalive: true }); } catch (e) {} } });
+window.addEventListener('beforeunload', e => { const b = spUnsaved(); if (b && (spSaveBusy || b.length >= 60000)) { spSaveRun(); e.preventDefault(); e.returnValue = ''; } });
 
 try { ldhInit(); } catch (e) { console.warn(e); }
 // ===== 커스텀 편집팁 (관리자 → 커스텀 편집팁 admin_tip_tours.php) =====
