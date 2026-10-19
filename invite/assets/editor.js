@@ -3536,7 +3536,21 @@ function nbxHtml(f, v, o) {
         + (T.length ? `<div class="nbx-pills" style="--n:${T.length}">${T.map(([k, t, val]) => `<button type="button" class="${tab === k ? 'on' : ''}" data-nx-tab="${k}" aria-expanded="${tab === k}">${t}<small>${val}</small></button>`).join('')}</div>${body ? `<div class="nbx-dr">${body}</div>` : ''}` : '') + '</div>';
 }
 // after(true) = 값이 바뀜(미리보기·되돌리기 기록까지) · after(false) = 칸만 다시 그림 (열고 닫기)
-function nbxBind(box, f, after) {
+// 다시 그려도 화면 자리 그대로: 옆으로 넘기는 줄(모양·등장 효과)과 칸을 감싼 스크롤 위치를 기억했다가 되돌림
+//  (예전엔 누를 때마다 줄이 맨 앞으로 돌아가서 '직접'·'손가락 톡'처럼 뒤에 있는 걸 다시 찾아 넘겨야 했음)
+const NBX_ROWS = '.nbx .nbx-sws, .nbx .nbx-chips';
+function nbxKeep(box) {
+    const rows = [...document.querySelectorAll(NBX_ROWS)].map(r => r.scrollLeft), sc = [], wy = window.scrollY;
+    for (let n = box.parentElement; n && n !== document.documentElement; n = n.parentElement) if (n.scrollTop) sc.push([n, n.scrollTop]);
+    const back = () => {
+        document.querySelectorAll(NBX_ROWS).forEach((r, i) => { if (rows[i] != null && Math.abs(r.scrollLeft - rows[i]) > 1) r.scrollLeft = rows[i]; });
+        sc.forEach(([el, t]) => { if (el.isConnected && Math.abs(el.scrollTop - t) > 2) el.scrollTop = t; });
+        if (Math.abs(window.scrollY - wy) > 2) window.scrollTo(window.scrollX, wy);
+    };
+    return () => { back(); requestAnimationFrame(back); setTimeout(back, 90); };
+}
+function nbxBind(box, f, after0) {
+    const after = ch => { const back = nbxKeep(box); after0(ch); back(); };
     const setSt = v => {
         if (v === 'none') f.nextBtn = false; else { f.nextBtn = true; f.nextStyle = v; feFx.playNext = true; }
         if (v === 'custom' && !f.nextShape) { f.nextShape = 'none'; f.nextIcon = f.nextIcon || 'dbl'; }
