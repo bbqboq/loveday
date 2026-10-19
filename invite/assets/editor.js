@@ -2917,7 +2917,7 @@ function renderFieldEditorRaw() {
             <p class="band-hint">↕ 미리보기 사진 아래 <b>노란 칸</b>을 끌어서 글자 칸 높이를 정해요 <small>(끝까지 올리면 글자는 사진 위에만)</small></p>
             <p class="field-hint">이름·날짜는 사진 위·아래 어디든 끌어 놓을 수 있어요. 글자색은 놓인 자리에 맞춰 자동으로 바뀌어요 (사진 위는 흰 글자).</p>
         </div>` : ''}
-        ${InviteBlocks.heroTextOn(block.fields, 'hero') ? shadeFieldHtml(block.fields, 'hero') : ''}` : '');
+        ${InviteBlocks.heroTextOn(block.fields, 'hero') ? shadeFieldHtml(block.fields, 'hero', block) : ''}` : '');
     if (block.id === 'location') {
         document.getElementById('locAddressSearchBtn').addEventListener('click', () => openLocationAddressSearch(block));
         document.getElementById('locAddressDetail').addEventListener('input', e => {
@@ -3236,7 +3236,7 @@ function appendVideoTextControls(wrap, block) {
         <p class="field-hint">글자색은 놓인 자리에 맞춰 자동으로 바뀌어요 (영상 위는 흰 글자, 아래 칸은 테마색).</p>`;
     wrap.appendChild(box);
     if (on) { // 글자가 영상 위면 "글자 잘 보이게" 그라데이션
-        const t = document.createElement('div'); t.innerHTML = shadeFieldHtml(f, 'video');
+        const t = document.createElement('div'); t.innerHTML = shadeFieldHtml(f, 'video', block);
         const sf = t.firstElementChild; wrap.appendChild(sf); bindShadeField(sf, block);
     }
 }
@@ -3323,17 +3323,71 @@ function showTextAutoCard(kind, on, why) {
     c.addEventListener('click', bye);
     setTimeout(bye, 2600);
 }
-// "글자 잘 보이게" 그라데이션 (사진·영상 뒤쪽) - 프리셋 + 진하기
-function shadeFieldHtml(f, kind) {
-    const cur = InviteBlocks.heroShadeOf(f, kind);
-    const lv = ['1', '2', '3'].includes(String(f.heroShadeLv)) ? String(f.heroShadeLv) : (kind === 'video' && !f.heroShade ? '3' : '2');
-    return `<div class="field shade-field"><label>글자 잘 보이게 <small style="font-weight:400;opacity:.7">(사진·영상 뒤 그라데이션)</small></label>
-        <div class="width-row">${InviteBlocks.HERO_SHADES.map(([v, l]) => `<button type="button" class="width-btn ${cur === v ? 'active' : ''}" data-shade="${v}"><span class="opt-pic shp shp-${v}"></span>${l}</button>`).join('')}</div>
-        ${cur !== 'none' ? `<div class="mini-label" style="margin:10px 0 6px;">진하기</div><div class="width-row">${InviteBlocks.HERO_SHADE_LV.map(([v, l]) => `<button type="button" class="width-btn ${lv === v ? 'active' : ''}" data-shade-lv="${v}">${l}</button>`).join('')}</div>` : ''}</div>`;
+// "글자 잘 보이게" 그라데이션 (사진·영상 뒤쪽) - E안 (2026-10-19, 목업 AAECY1TsbEuj7drske6NSu: B 어디·얼마나 + C 알아서·전후 비교)
+//  heroShadeAuto(없으면 켜짐 - 예전에 직접 고른 heroShade가 있으면 꺼짐) = 글자 자리를 보고 저절로 (shadeAutoPick) · 어디를 = 한 줄 그림 버튼 6칸(높이 30px)
+//  · 얼마나 = 막대 heroShadePct 10~100 (끄는 동안은 미리보기 --sh만 바꿈) · 글자가 잘 보이는지 4칸 표시 · 간편 만들기는 작은 전·후 비교 그림
+const SHADE_IC = { none: '', bottom: '<i style="bottom:0;height:48%;background:linear-gradient(to top,#2B2420,transparent)"></i>', top: '<i style="top:0;height:40%;background:linear-gradient(to bottom,#2B2420,transparent)"></i>', both: '<i style="top:0;height:32%;background:linear-gradient(to bottom,#2B2420,transparent)"></i><i style="bottom:0;height:32%;background:linear-gradient(to top,#2B2420,transparent)"></i>', full: '<i style="inset:0;background:rgba(43,36,32,.45)"></i>', light: '<i style="bottom:0;height:48%;background:linear-gradient(to top,#fff,transparent)"></i>' };
+const SHADE_LONG = { none: '없음 · 사진 그대로', bottom: '아래쪽 어둡게', top: '위쪽 어둡게', both: '위·아래 어둡게', full: '전체 살짝 어둡게', light: '아래쪽 밝게 (진한 글자)' };
+const shadeAutoOn = f => f.heroShadeAuto != null ? !!f.heroShadeAuto : !f.heroShade;
+const shadePct = (f, kind) => { const n = Number(f.heroShadePct); if (n >= 10 && n <= 100) return Math.round(n); return { 1: 45, 2: 70, 3: 90 }[f.heroShadeLv] || (kind === 'video' ? 78 : 70); };
+// 알아서: 미리보기에서 그 섹션 글자(이름·날짜·문구)가 사진 위 어디에 있는지 보고 고름 (진한 글자면 아래 밝게)
+function shadeAutoPick(block, kind) {
+    const f = block.fields, col = document.querySelector(`#previewRoot .col[data-block-id="${block.id}"]`), pct = kind === 'video' ? 75 : 60;
+    if (!col) return { k: 'bottom', p: pct };
+    const media = col.querySelector('.hero-box, .hero-vbox, .hb-ph, .hero-photo-wrap, .video-cover-wrap, .hero-full-wrap') || col, mr = media.getBoundingClientRect();
+    if (!mr.height) return { k: 'bottom', p: pct };
+    let top = 0, mid = 0, bot = 0, dark = 0, n = 0;
+    col.querySelectorAll('.drag-part, .ib-title-layer, [data-part^="hl_"]').forEach(el => {
+        const r = el.getBoundingClientRect(); if (!r.height || !String(el.textContent || '').trim()) return;
+        const y = (r.top + r.height / 2 - mr.top) / mr.height; if (y < -0.05 || y > 1.05) return;
+        n++; if (y < .34) top++; else if (y > .58) bot++; else mid++;
+        const m = String(getComputedStyle(el).color).match(/\d+(\.\d+)?/g); if (m && (0.299 * m[0] + 0.587 * m[1] + 0.114 * m[2]) < 110) dark++;
+    });
+    if (n && dark > n / 2) return { k: 'light', p: 70 };
+    if (top && bot) return { k: 'both', p: pct };
+    if (bot) return { k: 'bottom', p: pct };
+    if (top) return { k: 'top', p: pct };
+    if (mid) return { k: 'full', p: 55 };
+    return { k: 'bottom', p: pct };
+}
+function shadeAutoApply(block, kind) { // 알아서 켜져 있으면 지금 글자 자리로 다시 정함 → 바뀌었으면 true
+    const f = block.fields; if (!shadeAutoOn(f)) return false;
+    const a = shadeAutoPick(block, kind); if (f.heroShade === a.k && Number(f.heroShadePct) === a.p) return false;
+    f.heroShade = a.k; f.heroShadePct = a.p; return true;
+}
+function shadeLegib(k, p) { if (k === 'none') return 1; const v = ({ bottom: 1, both: 1, light: 1, full: .78, top: .55 }[k] || 0) * p / 100; return v > .62 ? 4 : v > .42 ? 3 : v > .22 ? 2 : 1; }
+const SHADE_LV_TXT = ['', '글자가 잘 안 보일 수 있어요', '글자가 조금 보여요', '글자가 잘 보여요', '글자가 아주 잘 보여요'];
+const shadeMeter = (k, p) => { const l = shadeLegib(k, p); return `<div class="shz-meter l${l}"><span><i></i><i></i><i></i><i></i></span>${SHADE_LV_TXT[l]}</div>`; };
+function shadeMiniHtml(block, kind, k, p, split) { // 간편 만들기: 작은 전·후 비교 (지금 레이아웃 작은 그림 + 같은 그라데이션)
+    let mini = ''; try { const lay = spHeroLayouts().find(l => l.id === block.fields.heroLayout) || { parts: {} }; mini = spHeroLayoutMini(lay, block, kind === 'video' ? 'video' : 'photo'); } catch (e) { return ''; }
+    const sh = k && k !== 'none' ? `<i class="ib-shade ib-shade-${k}" style="--sh:${p / 100}"></i>` : '';
+    return `<div class="shz-cmp" style="--shz-x:${split}%">${mini}<div class="shz-after">${mini}${sh}</div><b class="l">전</b><b class="r">후</b><span class="shz-split"></span><input type="range" min="0" max="100" value="${split}" aria-label="전·후 비교"></div>`;
+}
+let shadeSplit = 50;
+function shadeFieldHtml(f, kind, block) {
+    if (block && shadeAutoApply(block, kind)) setTimeout(() => renderPreview(), 0);
+    const auto = shadeAutoOn(f), k = InviteBlocks.heroShadeOf(f, kind), p = shadePct(f, kind);
+    const easy = document.documentElement.classList.contains('simple-mode') && block;
+    const note = auto ? `글자 자리를 보고 <b>${SHADE_LONG[k]}</b>${k === 'none' ? '' : `(${p}%)`}로 했어요` : '직접 고른 대로예요 · 켜면 다시 알아서 해요';
+    const side = `<div class="shz-side"><label class="shz-auto"><span>알아서 잘 보이게</span><input type="checkbox" data-shade-auto ${auto ? 'checked' : ''} aria-label="알아서 잘 보이게"></label><div class="shz-note">${note}</div>${shadeMeter(k, p)}</div>`;
+    const pzv = (auto ? '알아서 · ' : '') + ({ none: '없음', bottom: '아래', top: '위', both: '위·아래', full: '전체', light: '아래 밝게' }[k] || '') + (k === 'none' ? '' : ' ' + p + '%'); // (전문가 모드 타일에 보이는 요약)
+    return `<div class="field shade-field shz${auto ? ' is-auto' : ''}" data-pz-value="${esc(pzv)}"><label>글자 잘 보이게 <small style="font-weight:400;opacity:.7">(사진·영상 뒤를 살짝 어둡게)</small></label>
+        ${easy ? `<div class="shz-top">${shadeMiniHtml(block, kind, k, p, shadeSplit)}${side}</div>` : side}
+        <div class="shz-l">어디를 <small>${SHADE_LONG[k]}</small></div>
+        <div class="shz-seg" role="group" aria-label="어디를 어둡게">${InviteBlocks.HERO_SHADES.map(([v, l]) => `<button type="button" class="${k === v ? 'on' : ''}" data-shade="${v}" title="${SHADE_LONG[v] || l}" aria-label="${SHADE_LONG[v] || l}" aria-pressed="${k === v}"><span class="shz-ic${v === 'none' ? ' x' : ''}">${SHADE_IC[v] || ''}</span></button>`).join('')}</div>
+        ${k !== 'none' ? `<div class="shz-l">얼마나 <small data-shade-pv>${p}%</small></div><div class="shz-rng"><span>연하게</span><input type="range" min="10" max="100" step="5" value="${p}" data-shade-pct aria-label="얼마나 어둡게"><span>진하게</span></div>` : ''}</div>`;
 }
 function bindShadeField(scope, block) {
-    scope.querySelectorAll('[data-shade]').forEach(b => b.addEventListener('click', () => { block.fields.heroShade = b.dataset.shade; renderFieldEditor(); renderPreview(); scheduleSnapshot(); }));
-    scope.querySelectorAll('[data-shade-lv]').forEach(b => b.addEventListener('click', () => { block.fields.heroShadeLv = b.dataset.shadeLv; renderFieldEditor(); renderPreview(); scheduleSnapshot(); }));
+    const f = block.fields, kind = block.id === 'heroVideo' ? 'video' : 'hero', redraw = () => { renderFieldEditor(); renderPreview(); scheduleSnapshot(); if (document.documentElement.classList.contains('simple-mode')) setTimeout(() => spRender(), 0); };
+    scope.querySelectorAll('[data-shade]').forEach(b => b.addEventListener('click', () => { f.heroShade = b.dataset.shade; f.heroShadeAuto = false; if (!(Number(f.heroShadePct) >= 10)) f.heroShadePct = shadePct(f, kind); redraw(); }));
+    scope.querySelectorAll('[data-shade-auto]').forEach(c => c.addEventListener('change', () => { f.heroShadeAuto = c.checked; if (c.checked) shadeAutoApply(block, kind); redraw(); }));
+    scope.querySelectorAll('[data-shade-pct]').forEach(r => {
+        r.addEventListener('input', () => { const v = +r.value; f.heroShadePct = v; if (shadeAutoOn(f)) { f.heroShadeAuto = false; const w = r.closest('.shz'); if (w) { w.classList.remove('is-auto'); const a = w.querySelector('[data-shade-auto]'); if (a) a.checked = false; const nt = w.querySelector('.shz-note'); if (nt) nt.textContent = '직접 고른 대로예요 · 켜면 다시 알아서 해요'; } }
+            const w = r.closest('.shz'); if (w) { const pv = w.querySelector('[data-shade-pv]'); if (pv) pv.textContent = v + '%'; const m = w.querySelector('.shz-meter'); if (m) m.outerHTML = shadeMeter(InviteBlocks.heroShadeOf(f, kind), v); w.querySelectorAll('.shz-after .ib-shade').forEach(x => x.style.setProperty('--sh', v / 100)); }
+            document.querySelectorAll(`#previewRoot .col[data-block-id="${block.id}"] .ib-shade`).forEach(x => x.style.setProperty('--sh', v / 100)); });
+        r.addEventListener('change', () => { renderPreview(); scheduleSnapshot(); if (document.documentElement.classList.contains('simple-mode')) setTimeout(() => spRender(), 0); });
+    });
+    scope.querySelectorAll('.shz-cmp input').forEach(r => r.addEventListener('input', () => { shadeSplit = +r.value; r.closest('.shz-cmp').style.setProperty('--shz-x', shadeSplit + '%'); }));
 }
 // 스크롤 버튼(↓) 고르기 (관리자 → 편집창 모양 → 세부 모양 "스크롤 ↓" 버튼)
 //  N5 모양 칩 한 줄: 없음 · 유리 · 어둡게 · 밝게 · 포인트 · 선 · 직접 - 누르면 켜기와 모양 고르기가 한 번에
@@ -8933,8 +8987,8 @@ const HL_ST = ['x', 'y', 'fontSize', 'scaleX', 'widthAuto', 'width', 'rotation',
 function heroLayoutFromBlock(b) { // 지금 메인 화면 → 레이아웃 (글자 칸 자리·모양 + 화면 크기만, 사진·이름은 안 담음)
     const f = b.fields, isV = b.id === 'heroVideo', L = f.layout || {};
     const pick = (o, ks) => { const r = {}; ks.forEach(k => { if (o && o[k] !== undefined && o[k] !== null) r[k] = o[k]; }); return r; };
-    const photo = isV ? { heroWidth: 'full', heroRatio: f.heightMode === 'full' ? 'screen' : 'auto', heroTextOver: true, heroShade: f.heroShade, heroShadeLv: f.heroShadeLv } : pick(f, ['heroWidth', 'heroRatio', 'heroHeightPx', 'heroFrame', 'heroTextOver', 'heroTextSpace', 'heroShade', 'heroShadeLv']);
-    const video = isV ? pick(f, ['heightMode', 'videoTextOver', 'heroShade', 'heroShadeLv']) : { heightMode: f.heroRatio === 'screen' ? 'full' : '3/4', videoTextOver: true, heroShade: f.heroShade, heroShadeLv: f.heroShadeLv };
+    const photo = isV ? { heroWidth: 'full', heroRatio: f.heightMode === 'full' ? 'screen' : 'auto', heroTextOver: true, heroShade: f.heroShade, heroShadeLv: f.heroShadeLv, heroShadePct: f.heroShadePct, heroShadeAuto: f.heroShadeAuto } : pick(f, ['heroWidth', 'heroRatio', 'heroHeightPx', 'heroFrame', 'heroTextOver', 'heroTextSpace', 'heroShade', 'heroShadeLv', 'heroShadePct', 'heroShadeAuto']);
+    const video = isV ? pick(f, ['heightMode', 'videoTextOver', 'heroShade', 'heroShadeLv', 'heroShadePct', 'heroShadeAuto']) : { heightMode: f.heroRatio === 'screen' ? 'full' : '3/4', videoTextOver: true, heroShade: f.heroShade, heroShadeLv: f.heroShadeLv };
     const parts = {}; ['groomName', 'heart', 'brideName', 'datetime'].forEach(k => { if (L[k]) parts[k] = pick(L[k], HL_ST); });
     const hide = (f.hideParts || []).slice(); if (f.hideHeart) hide.push('heart');
     const layers = (f.heroLayers || []).filter(k => L[k]).map(k => Object.assign({ text: f[k] || '' }, pick(L[k], HL_ST)));
@@ -11824,7 +11878,7 @@ function spHeroScroll(box) {
     }
     box.innerHTML = spH('↓ 스크롤 버튼', '전체화면 아래쪽에 "아래로 내려보세요" 버튼을 띄울지 골라요. 누르면 다음 섹션으로 넘어가요.') +
         `<div class="sp-sum sp-in"><span><b>${what}</b> · 전체화면</span><button type="button" class="sp-link" id="spHeroBack">← 다시 고르기</button></div>
-        ${shadeOn ? `<div class="sp-shade sp-in" data-blk="${b.id}">${shadeFieldHtml(f, kind === 'video' ? 'video' : 'hero')}</div>` : ''}
+        ${shadeOn ? `<div class="sp-shade sp-in" data-blk="${b.id}">${shadeFieldHtml(f, kind === 'video' ? 'video' : 'hero', b)}</div>` : ''}
         <div class="wz-field sp-in"><div class="wz-lab"><span><span class="sp-n">4</span>버튼 모양</span></div><div class="sp-nbp">${chip('none', '없음')}${NBP_STY.filter(([k]) => k !== 'custom' || spOpt('hero', 'scrollCustom') || st === 'custom').map(([k, l]) => chip(k, l)).join('')}</div></div>
         ${on ? (spOpt('hero', 'scrollCustom') ? custom : '') + (spOpt('hero', 'scrollSize') ? pick('nextSize', IB.NEXT_SIZES, sz, '버튼 크기') : '')
             + (spOpt('hero', 'scrollOpacity') ? `<div class="wz-field sp-in"><div class="wz-lab"><span>진하기</span><small id="spNbOpV">${f.nextOpacity || 85}%</small></div><div class="sp-range"><span>흐리게</span><input type="range" id="spNbOp" min="30" max="100" step="5" value="${f.nextOpacity || 85}"><span>진하게</span></div></div>` : '')
@@ -12076,12 +12130,12 @@ function spHero(box) {
             : `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 1}</span>대표 사진</span></div>
             <div class="sp-hero">${f.heroImage ? `<img src="${esc(InviteBlocks.imgUrl(f.heroImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" data-sp-up="hero">${real ? '사진 바꾸기' : '사진 올리기'}</button></div></div>`) + `
             ${spIsReal(f.heroImage) && HO('crop') ? `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 2}</span>보일 부분 · 확대</span><small>사진을 끌어서 옮겨요</small></div><div id="spCropBox"></div></div>` : ''}
-            ${HO('shade') && InviteBlocks.heroTextOn(f, 'hero') ? `<div class="sp-shade" data-blk="hero">${shadeFieldHtml(f, 'hero')}</div>` : ''}`;
+            ${HO('shade') && InviteBlocks.heroTextOn(f, 'hero') ? `<div class="sp-shade" data-blk="hero">${shadeFieldHtml(f, 'hero', spBlock('hero'))}</div>` : ''}`;
     } else if (hv) {
         const f = hv.fields;
         html += `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 1}</span>유튜브 주소 </span><small>영상 주소를 그대로 붙여 넣어요</small></div><input class="wz-inp" id="spYt" value="${wzEsc(f.youtubeId ? 'https://youtu.be/' + f.youtubeId : '')}" placeholder="https://youtu.be/..." inputmode="url"></div>
             ${f.youtubeId && HO('crop') ? `<div class="wz-field"><div class="wz-lab"><span><span class="sp-n">${n0 + 2}</span>보일 부분 · 확대</span><small>밝은 창을 끌어서 옮겨요</small></div><div id="spVfpBox"></div></div>` : ''}
-            ${HO('shade') && InviteBlocks.heroTextOn(f, 'video') ? `<div class="sp-shade" data-blk="heroVideo">${shadeFieldHtml(f, 'video')}</div>` : ''}`;
+            ${HO('shade') && InviteBlocks.heroTextOn(f, 'video') ? `<div class="sp-shade" data-blk="heroVideo">${shadeFieldHtml(f, 'video', spBlock('heroVideo'))}</div>` : ''}`;
     }
     if (spViewNow() !== 'quick' && spHeroScrollOk()) html += '<button type="button" class="sp-link" id="spToScroll">↓ 스크롤 버튼 모양 바꾸기</button>'; // 목록 화면에서 스크롤 버튼 고르기로
     html += '<p class="wz-hint">글자 위치·그림자 같은 세부 모양은 <b>전문가 모드</b>에서 바꿀 수 있어요.</p>';

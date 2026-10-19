@@ -454,7 +454,7 @@
     function heroShadeHtml(f, kind) {
         const sh = heroShadeOf(f, kind);
         if (sh === 'none') return '';
-        const lv = { 1: .45, 2: .7, 3: .9 }[f.heroShadeLv] || (kind === 'video' ? .78 : .7);
+        const pc = Number(f.heroShadePct), lv = pc >= 5 && pc <= 100 ? pc / 100 : ({ 1: .45, 2: .7, 3: .9 }[f.heroShadeLv] || (kind === 'video' ? .78 : .7)); // (heroShadePct = 막대 10~100, 예전 저장분은 약하게·보통·진하게)
         return `<i class="ib-shade ib-shade-${sh}" style="--sh:${lv}" aria-hidden="true"></i>`;
     }
     // 히어로(사진/프레임) 이름·날짜 글자 칸
