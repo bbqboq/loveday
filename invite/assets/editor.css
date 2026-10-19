@@ -618,6 +618,14 @@ html.mob-easy-only #scBack { display: none; }
 .spb-order { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border: 1px dashed var(--wz-line2, #DED8CF); border-radius: 16px; background: #fff; font: inherit; color: var(--wz-ink); text-align: left; cursor: pointer; }
 .spb-order > span:first-child { width: 32px; height: 32px; flex: none; border-radius: 10px; background: var(--wz-soft); display: grid; place-items: center; font-size: 16px; }
 .spb-order > span:last-child { display: flex; flex-direction: column; gap: 2px; } .spb-order b { font-size: 14px; font-weight: 700; } .spb-order small { font-size: 12px; color: var(--wz-sub); }
+/* 채우기를 끝내기 전: 꾸미기 · 칸 더 넣기 · 순서 바꾸기는 접어 둔 줄 하나 (spListLater) */
+.spb-later { display: flex; align-items: center; gap: 12px; padding: 14px 14px 14px 16px; border: 1px dashed var(--wz-line2, #DED8CF); border-radius: 16px; background: var(--ui-tint, #FAF7F2); color: var(--wz-ink); }
+.spb-later > i { width: 32px; height: 32px; flex: none; border-radius: 10px; background: #fff; display: grid; place-items: center; font-style: normal; font-size: 14px; color: var(--ui-point, #B08A5A); }
+.spb-later > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .spb-later b { font-size: 14px; font-weight: 700; } .spb-later small { font-size: 12px; color: var(--wz-sub); }
+.spb-later > button { flex: none; height: 36px; padding: 0 14px; border: 1px solid var(--wz-line, #E5DED3); border-radius: 999px; background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: var(--wz-ink); cursor: pointer; }
+.spb-grp.spb-new { animation: spbNew .6s ease both; } @keyframes spbNew { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .spb-grp.spb-new { animation: none; } }
+.spb-t.spb-t-sw { cursor: default; } /* (스위치만 있는 줄 - PC 그림자) */
 .spo { padding: 6px 20px 8px; display: flex; flex-direction: column; gap: 6px; }
 .spo-hint { margin: 0 0 6px; font-size: 12.5px; line-height: 1.5; color: var(--wz-sub); }
 .spo-fix { padding: 11px 14px; border-radius: 12px; background: var(--wz-soft); font-size: 13px; font-weight: 600; color: var(--wz-sub); }
