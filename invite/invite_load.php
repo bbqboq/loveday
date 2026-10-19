@@ -91,4 +91,5 @@ echo json_encode([
     'status'      => $invite['status'],
     'view_slug'   => $invite['view_slug'],
     'expiry'      => invite_expiry_info($invite),
+    'trial'       => ($invite['storage_plan'] ?? 'trial') === 'trial', // 무료체험 - 미리보기 계좌번호 앞뒤 두 자리를 XX로 (guest_secure.php와 같게)
 ], JSON_UNESCAPED_UNICODE);

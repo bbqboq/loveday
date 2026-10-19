@@ -2833,7 +2833,7 @@ function renderFieldEditorRaw() {
     if (!block) { lastAutoFocusedId = null; wrap.innerHTML = '<p class="empty">왼쪽 목록에서 섹션을 클릭하면 여기서 내용을 편집할 수 있어요.</p>'; return; }
     requestAnimationFrame(() => autoFocusSection(block.id)); // 자동 포커스 - 새로 고른 섹션이면 미리보기를 그 위치로
     if (block.id === 'gallery') { renderGalleryEditor(wrap, block); appendSectionSpacingControls(wrap, block); return; }
-    if (block.id === 'account') { renderAccountEditor(wrap, block); appendSectionSpacingControls(wrap, block); return; }
+    if (block.id === 'account') { renderAccountEditor(wrap, block); if (window.LD_ACC_TRIAL) wrap.insertAdjacentHTML('afterbegin', `<div class="sp-acc-trial">${accTrialNote()}</div>`); appendSectionSpacingControls(wrap, block); return; }
     if (block.id === 'dday') { renderDdayEditor(wrap, block); appendSectionSpacingControls(wrap, block); return; }
     if (block.id === 'timeline') { renderTimelineEditor(wrap, block); appendSectionSpacingControls(wrap, block); return; }
     if (block.id === 'interview') { renderInterviewEditor(wrap, block); appendSectionSpacingControls(wrap, block); return; }
@@ -3872,6 +3872,8 @@ function deceasedTileHtml(f) {
 
 // 계좌 전용 편집기: 은행은 드롭다운으로 고르고 계좌번호·예금주만 입력하면 자동으로 조합됨
 const accOpenRoles = new Set(); // 칩으로 켰지만 아직 계좌를 안 적은 부모님 칸 (다시 그려도 열린 채로)
+// 무료체험 안내 (계좌 칸 맨 위 - 간편·전문가 같이)
+function accTrialNote() { return '<b>무료체험 중이에요</b>적은 계좌번호는 그대로 저장되지만, 하객 화면에는 앞 두 자리·뒤 두 자리가 <b class="x">XX</b>로 보이고 복사하면 임의 번호가 복사돼요. 결제하면 바로 제 번호로 보여요.'; }
 function renderAccountEditor(wrap, block) {
     const f = block.fields;
     // 예금주를 아직 안 적었으면(계좌번호만 입력하고 예금주는 비워둔 경우 등) 신랑/신부 이름으로
@@ -11449,7 +11451,7 @@ const SP_TASKS = [
       cut: b => { const f = b.querySelector(':scope > .wz-field'); spKeepOnly(b, c => c === f); } },
     { id: 'greet:text', k: 'greet', ask: 'greet', t: () => '인사말', chk: 'greet', sum: () => (spSum(spSteps().find(x => x.k === 'greet') || {})[0] || ''), cut: () => {} },
     { id: 'account:fill', k: 'account', ask: 'account', t: () => '계좌', chk: 'account', sum: () => (spSum(spSteps().find(x => x.k === 'account') || {})[0] || ''),
-      cut: b => spKeepOnly(b, c => c.matches('.wz-acc, #spPar, #spParents')) }, // (표시 방식·카드 모양은 다 채운 뒤에)
+      cut: b => spKeepOnly(b, c => c.matches('.wz-acc, #spPar, #spParents, .sp-acc-trial')) }, // (표시 방식·카드 모양은 다 채운 뒤에)
     { id: 'contact:phone', k: 'family', t: () => '연락처 번호', chk: 'contact', sum: () => '번호를 고쳤어요', cut: b => b.querySelectorAll(':scope > .sp-incl').forEach(x => x.remove()) },
 ];
 let spLastChecks = [];
@@ -12858,7 +12860,7 @@ function spAccount(box) {
             <div class="wz-acc-g"><button type="button" class="wz-bankbtn" data-bank>${a.bank ? wzEsc(a.bank) : '<span class="ph">은행</span>'}${WZ_DOWN_SVG}</button>
             <input class="wz-inp" data-af="holder" value="${wzEsc(a.holder)}" placeholder="${wzEsc(nm || '예금주')}"><input class="wz-inp full" data-af="number" inputmode="numeric" value="${wzEsc(a.number)}" placeholder="계좌번호 (- 없이 숫자만)">
             <div class="wz-banks">${bankList.map(b => `<button type="button" class="${a.bank === b ? 'on' : ''}" data-pick="${b}">${b}</button>`).join('')}</div></div></div>`; };
-    box.innerHTML = spH('마음 전하실 곳', '계좌번호는 하객이 [복사]를 눌러야만 보이고, 서버에는 암호화해서 저장돼요.') + spInclHtml('account') + roles.slice(0, 2).map(r => card(r)).join('') +
+    box.innerHTML = spH('마음 전하실 곳', '계좌번호는 하객이 [복사]를 눌러야만 보이고, 서버에는 암호화해서 저장돼요.') + spInclHtml('account') + (window.LD_ACC_TRIAL ? `<div class="sp-acc-trial">${accTrialNote()}</div>` : '') + roles.slice(0, 2).map(r => card(r)).join('') +
         (spOpt('account', 'parents') ? `<button type="button" class="wz-addacc" id="spPar">${parentsOpen ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'}</button><div class="wz-parents${parentsOpen ? ' on' : ''}" id="spParents">${roles.slice(2).map(r => card(r, true)).join('')}</div>` : '') +
         (spOpt('account', 'display') ? spChoiceRow('표시 방식', 'display', [['free', '자유 배치'], ['cards', '카드형 (복사 버튼)']], f.display === 'cards' ? 'cards' : 'free') +
             (f.display === 'cards' ? spChoiceRow('카드 디자인', 'accStyle', (InviteBlocks.ACC_STYLES || [['basic', '기본 카드']]).map(([v, l]) => [v === 'basic' ? '' : v, l]), f.accStyle || '') + spChoiceRow('보여주기', 'accCollapse', [[false, '펼치기'], [true, '가리기 (눌러서 열기)']], !!f.accCollapse) : '') : '') +
@@ -13311,6 +13313,7 @@ async function bootstrapFromServer() {
         lastLoadedMeta = { groom_name: data.groom_name || '', bride_name: data.bride_name || '' };
         if (SAMPLE_ID && data.sample_label) { const n = document.getElementById('sampleBarName'); if (n) n.textContent = data.sample_label; }
         if (data.expiry) ExpiryWatch.start(data.expiry); // 자동 삭제 카운트다운
+        window.LD_ACC_TRIAL = !!data.trial; // 무료체험: 미리보기 계좌번호 앞뒤 두 자리를 XX로 (InviteBlocks.accHtml · 하객 화면은 guest_secure.php가 가려서 줌)
         personalStickers = data.personal_stickers || [];
         renderPersonalStickerSections();
         serverCsrfToken = data.csrf_token || null;

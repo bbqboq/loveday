@@ -54,8 +54,21 @@ if (!empty($inv['account_info_enc'])) {
     $dec = json_decode(decrypt_data((string) $inv['account_info_enc']), true);
     if (is_array($dec)) foreach ($dec as $k => $v) if (is_string($k) && is_string($v) && $v !== '') $accounts[$k] = $v;
 }
+// 무료체험(storage_plan 'trial') 청첩장: 계좌번호 앞 두 자리·뒤 두 자리를 X로 바꿔서 건넨다 - 진짜 번호는 결제한 뒤에만 나감
+//  (하객 화면엔 XX로 보이고, 복사하면 invite-blocks.js가 X를 임의 숫자로 바꿔 복사함 · 결제하면 바로 제 번호)
+$trial = ($inv['storage_plan'] ?? 'trial') === 'trial';
+if ($trial) foreach ($accounts as $k => $v) $accounts[$k] = gs_trial_mask($v);
+function gs_trial_mask(string $v): string
+{
+    if (!preg_match_all('/\d/', $v, $m, PREG_OFFSET_CAPTURE)) return $v;
+    $pos = array_column($m[0], 1);
+    $n = count($pos);
+    $hide = $n >= 5 ? [$pos[0], $pos[1], $pos[$n - 2], $pos[$n - 1]] : $pos; // (숫자가 너무 짧으면 다 가림)
+    foreach ($hide as $p) $v[$p] = 'X';
+    return $v;
+}
 // 연락처: 연락하기 섹션의 전화번호
 $design = json_decode((string) ($inv['design_json'] ?? ''), true);
 $phones = is_array($design) ? guest_secure_phones($design) : [];
 
-echo json_encode(['ok' => true, 'accounts' => (object) $accounts, 'phones' => (object) $phones], JSON_UNESCAPED_UNICODE);
+echo json_encode(['ok' => true, 'accounts' => (object) $accounts, 'phones' => (object) $phones, 'trial' => $trial], JSON_UNESCAPED_UNICODE);
