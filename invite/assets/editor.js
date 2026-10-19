@@ -11130,7 +11130,7 @@ function spResumeStep() {
     return i >= 0 ? i : 0;
 }
 // 간편 만들기 진행 상태 (질문 화면/목록, 지금 질문, 답, 질문이 켠 섹션, 디자인에서 꺼 둔 섹션, 목록 묶음·순서) - 디자인과 같이 저장
-const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spPvSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom'];
+const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spPvSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom', 'spTaskOk'];
 function spAddGo(k) {
     if (k === '#stk') { state.spView = 'list'; spOpenSet = new Set(['theme']); spRender(); setTimeout(() => { const el = document.getElementById('spStkSets'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 140); return; }
     const st = spSteps().find(x => x.k === k); if (!st) return;
@@ -11413,13 +11413,58 @@ function spLeaveSoon(k, ms) {
             if (!li.isConnected || !li.classList.contains('done')) { li.classList.remove('spb-leave'); li.style.maxHeight = ''; return; }
             spGone.add(k);
             let nx = null, st = null;
-            if (spOpenSet.has(k) || !spOpenSet.size) { try { const b = pubChecks().find(c => !c.ok && !c.info); nx = b && (PUB_GO[b.id] || [])[1]; } catch (e) {}
-                st = nx && nx !== k ? spSteps().find(x => x.k === nx) : null; spOpenSet = st ? new Set([nx]) : new Set();
+            if (spOpenSet.has(k) || !spOpenSet.size) {
+                const nr = [...pane.querySelectorAll('.spb-grp:not(.spb-add) .spb-li[data-li].warn, .spb-grp:not(.spb-add) .spb-li[data-task].todo')].find(x => x.dataset.li !== k); // (화면에서 다음 할 일)
+                if (nr) nx = nr.dataset.li; else { try { const b = pubChecks().find(c => !c.ok && !c.info); nx = b && (PUB_GO[b.id] || [])[1]; } catch (e) {} }
+                const ntk = nx && SP_TASKS.find(x => x.id === nx);
+                st = nx && nx !== k ? spSteps().find(x => x.k === (ntk ? ntk.k : nx)) : null; spOpenSet = st ? new Set([nx]) : new Set();
                 if (st) { spHeroPhase = 'pick'; try { spSelectStep(st); } catch (e) {} } }
             spRender();
             if (st) setTimeout(() => { try { spScrollPreview(st.s || []); } catch (e) {} const el = [...document.querySelectorAll('#simplePane .spb-li[data-li]')].find(x => x.dataset.li === nx); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 80);
         }, 460);
     }, ms);
+}
+// 채우는 동안 할 일 = 옵션 하나씩 (사용자 요청 2026-10-19: 이름만 · 날짜만 · 사진 올리기 · 사진 편집 따로, 관리자 flow.oneByOne)
+//  할 일 칸 하나 = 그 섹션 편집 칸에서 그 옵션만 남김(cut) · 다 되면 접히며 사라짐(spLeaveSoon) · 채우기가 끝나면 예전처럼 섹션 칸
+//  chk = 발행 전 점검(pubChecks) id → 고칠 것 / bad·todo = 따로 보는 것 (todo = 안 해도 되는 할 일) · ok = '이대로 좋아요'로 넘긴 것(state.spTaskOk)
+const spFldHas = sel => c => !!(c.matches && (c.matches(sel) || c.querySelector(sel)));
+const spKeepOnly = (body, keep) => [...body.children].forEach(c => { if (!keep(c)) c.remove(); });
+const spTaskOk = id => Array.isArray(state.spTaskOk) && state.spTaskOk.includes(id);
+const spLocF = () => (spBlock('location') || {}).fields || {};
+const SP_TASKS = [
+    { id: 'names:name', k: 'names', ask: 'names:name', t: () => '두 분 이름', chk: 'names', sum: () => { const w = weddingInfo(); return `${w.groom} · ${w.bride}`; },
+      cut: b => spKeepOnly(b, spFldHas('[data-wi="groom"]')) },
+    { id: 'names:date', k: 'names', ask: 'names:date', t: () => weddingInfo().time ? '예식 날짜' : '예식 날짜 · 시간', chk: 'date', sum: () => { const w = weddingInfo(); return w.undecided ? '예식 일정 미정' : w.date ? dtDateText(w.date) + (w.time ? ' ' + w.time : '') : ''; },
+      cut: b => { const tm = !!weddingInfo().time; spKeepOnly(b, c => spFldHas('#spDateBtn, #spTbd')(c) || (!tm && spFldHas('#spTime')(c))); } }, // (앞에서 시간을 정했으면 시간은 안 보임)
+    { id: 'venue:name', k: 'venue', ask: 'venue', t: () => '예식장 이름', bad: () => { const f = spLocF(), vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; return vd.v ? '예식장이 디자인 예시 그대로예요' : !f.venue ? '예식장 이름을 적어 주세요' : ''; }, sum: () => spLocF().venue,
+      cut: b => spKeepOnly(b, spFldHas('[data-f="venue"]')) },
+    { id: 'venue:addr', k: 'venue', ask: 'venue', t: () => '예식장 주소', bad: () => { const f = spLocF(), vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; return vd.a ? '주소가 디자인 예시 그대로예요' : ''; },
+      todo: () => !(spLocF().address || spLocF().addressBase), hint: '주소를 넣으면 지도와 길찾기 버튼이 생겨요', sum: () => spLocF().address || spLocF().addressBase,
+      cut: b => spKeepOnly(b, spFldHas('[data-f="addressBase"]')) },
+    { id: 'hero:photo', k: 'hero', ask: 'hero:media', part: 'media', t: () => spHeroKind() === 'video' ? '첫 화면 영상' : '첫 화면 사진', chk: 'hero', sum: () => spHeroKind() === 'video' ? '영상을 넣었어요' : '사진을 넣었어요',
+      cut: b => b.querySelectorAll(':scope > .wz-h, :scope > .wz-lead').forEach(x => x.remove()) },
+    { id: 'hero:edit', k: 'hero', ask: 'hero:media', t: () => '사진 보일 부분 · 확대', show: () => spHeroKind() !== 'video' && !spChecksBad('hero'), todo: () => !spTaskOk('hero:edit'), hint: '사진을 끌어서 얼굴이 잘 보이게 맞춰요 · 그대로 둬도 돼요', sum: () => '맞췄어요',
+      cut: b => spKeepOnly(b, c => c.matches('.wz-field') && /보일 부분/.test((c.querySelector('.wz-lab') || {}).textContent || '')), after: b => spTaskOkBtn(b, 'hero:edit', '이대로 좋아요') },
+    { id: 'gallery:photos', k: 'gallery', t: () => '갤러리 사진', chk: 'gallery', sum: () => (spSum(spSteps().find(x => x.k === 'gallery') || {})[0] || ''),
+      cut: b => { const f = b.querySelector(':scope > .wz-field'); spKeepOnly(b, c => c === f); } },
+    { id: 'greet:text', k: 'greet', ask: 'greet', t: () => '인사말', chk: 'greet', sum: () => (spSum(spSteps().find(x => x.k === 'greet') || {})[0] || ''), cut: () => {} },
+    { id: 'account:fill', k: 'account', ask: 'account', t: () => '계좌', chk: 'account', sum: () => (spSum(spSteps().find(x => x.k === 'account') || {})[0] || ''),
+      cut: b => spKeepOnly(b, c => c.matches('.wz-acc, #spPar, #spParents')) }, // (표시 방식·카드 모양은 다 채운 뒤에)
+    { id: 'contact:phone', k: 'family', t: () => '연락처 번호', chk: 'contact', sum: () => '번호를 고쳤어요', cut: b => b.querySelectorAll(':scope > .sp-incl').forEach(x => x.remove()) },
+];
+let spLastChecks = [];
+const spChecksBad = id => spLastChecks.some(c => c.id === id && !c.ok && !c.info);
+const spTasksOf = k => SP_TASKS.filter(t => t.k === k);
+function spTaskState(tk) {
+    const c = tk.chk ? spLastChecks.find(x => x.id === tk.chk && !x.ok && !x.info) : null, why = tk.bad ? tk.bad() : '';
+    if (c || why) return { stt: 'warn', sum: why || c.t, on: true };
+    if (tk.todo && tk.todo()) return { stt: 'todo', sum: tk.hint || '', on: true };
+    return { stt: 'done', sum: (tk.sum && tk.sum()) || '다 채웠어요', on: true };
+}
+function spTaskOkBtn(b, id, label) {
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'wz-next ghost sp-task-ok'; x.textContent = label;
+    x.addEventListener('click', () => { if (!Array.isArray(state.spTaskOk)) state.spTaskOk = []; if (!state.spTaskOk.includes(id)) state.spTaskOk.push(id); scheduleSnapshot(); spListLiveSoon(0); });
+    b.appendChild(x);
 }
 function spDoneRowHtml(names, bads) {
     if (!(spOpt('flow', 'hideDone') && bads.length && !isPublished && !spInPlace && !SAMPLE_ID) || !(names.length || spDoneShow)) return '';
@@ -11437,9 +11482,12 @@ function spListLive() {
     const pane = document.getElementById('simplePane');
     if (!pane || state.spView !== 'list' || pane._spKey !== 'list' || spOrderMode || !document.documentElement.classList.contains('simple-mode')) return;
     let checks = []; try { checks = pubChecks(); } catch (e) { return; }
+    spLastChecks = checks;
     const bads = checks.filter(c => !c.ok && !c.info), all = checks.filter(c => !c.info).length, ready = spOpt('flow', 'summary') && all > 0;
     const typing = () => { const a = document.activeElement; return a && pane.contains(a) && (a.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]), textarea') || a.isContentEditable); };
     const later = spListLater(ready, bads);
+    if (pane._task && !typing() && SP_TASKS.some(tk => (!tk.show || tk.show()) && spTaskState(tk).stt !== 'done' && !spGone.has(tk.id) && !pane.querySelector(`.spb-li[data-li="${tk.id}"]`) && pane.querySelector(`.spb-li[data-k="${tk.k}"]`))) { spRender(); return; } // (사진을 올리면 '보일 부분' 할 일이 새로 생김)
+    if (!!pane._task !== !!(spHideDone(bads) && spOpt('flow', 'oneByOne')) && !typing()) { spRender(); return; }
     if (later !== !!pane._later) { spLaterWas = !!pane._later; // 다 채움(또는 다시 빠짐) → 목록을 다시 그림 (적는 중이면 칸에서 손을 뗀 뒤)
         if (typing()) { if (!pane._liveWait) { pane._liveWait = true; document.addEventListener('focusout', () => { pane._liveWait = false; setTimeout(spListLive, 60); }, { once: true }); } return; }
         spRender(); return;
@@ -11448,10 +11496,13 @@ function spListLive() {
     if (old && html) { const t = document.createElement('div'); t.innerHTML = html; const nw = t.firstElementChild; if (nw && nw.outerHTML !== old.outerHTML) { old.replaceWith(nw); pane.querySelectorAll('#spReady [data-pc-go]').forEach(b => b.addEventListener('click', () => pubGo(b.dataset.pcGo))); spNextBind(pane); pane.querySelector('#spReadyPv')?.addEventListener('click', () => pane.querySelector('#spListDone').click()); pane.querySelector('#spReadyKk')?.addEventListener('click', () => kkSheetOpen()); } }
     const warnOf = {}; bads.forEach(c => { const k = (PUB_GO[c.id] || [])[1]; if (k && !warnOf[k]) warnOf[k] = c.t; });
     const steps = spSteps(), hideD = spHideDone(bads);
+    const goneBad = k => warnOf[k] || (() => { const tk = SP_TASKS.find(x => x.id === k); return !!(tk && (!tk.show || tk.show()) && spTaskState(tk).stt !== 'done'); })();
+    if (pane._task && [...spGone].some(goneBad) && !typing()) { [...spGone].forEach(k => { if (goneBad(k)) spGone.delete(k); }); spRender(); return; }
     if ([...spGone].some(k => warnOf[k]) && !typing()) { [...spGone].forEach(k => { if (warnOf[k]) spGone.delete(k); }); spRender(); return; } // 접어 둔 칸이 다시 덜 채워짐 → 다시 보이게
     pane.querySelectorAll('.spb-grp:not(.spb-add) .spb-li[data-li]').forEach(li => {
-        const st = steps.find(x => x.k === li.dataset.li); if (!st) return;
-        const sw = li.querySelector('[data-li-sw]'), r = spLiState(st, sw ? sw.dataset.liSw : null, warnOf);
+        const tk = li.dataset.task ? SP_TASKS.find(x => x.id === li.dataset.li) : null, st = tk ? null : steps.find(x => x.k === li.dataset.li); if (!tk && !st) return;
+        const sw = li.querySelector('[data-li-sw]'), r = tk ? spTaskState(tk) : spLiState(st, sw ? sw.dataset.liSw : null, warnOf);
+        if (tk) { const b = li.querySelector('.spb-tx b'), t = tk.t(); if (b && b.textContent !== t) b.textContent = t; }
         if (!r.on) return; // (꺼진 칸은 다시 그릴 때 '더 넣을 수 있는 칸'으로)
         const was = li.classList.contains('done');
         if (r.stt === 'done' && !was && hideD) spLeaveSoon(li.dataset.li, 1100); // 방금 다 채움 → 접히며 사라짐
@@ -11472,6 +11523,9 @@ function spRenderList() {
     // 발행 준비: 발행 전 점검(pubChecks)에서 고칠 것 → 그 칸에 ! 표시 + 이유 (A안 - 발행 전·후 같은 목록 화면)
     let checks = []; try { checks = pubChecks(); } catch (e) {}
     const bads = checks.filter(c => !c.ok && !c.info), warnOf = {}; bads.forEach(c => { const k = (PUB_GO[c.id] || [])[1]; if (k && !warnOf[k]) warnOf[k] = c.t; });
+    spLastChecks = checks;
+    const taskItem = (tk, st) => { const sw = swOf(st), open = spOpenSet.has(tk.id), r = spTaskState(tk);
+        return `<section class="spb-li spb-task ${r.stt}${open ? ' open' : ''}" data-li="${tk.id}" data-task="1" data-k="${st.k}"><div class="spb-h"><button type="button" class="spb-t" data-li-tog="${tk.id}" aria-expanded="${open}"><span class="spb-st spb-${r.stt}" aria-hidden="true"></span><span class="spb-tx"><b>${esc(tk.t())}</b><small>${esc(r.sum)}</small></span><span class="spb-chev" aria-hidden="true"></span></button>${sw ? `<label class="sp-li-sw" title="끄면 청첩장에서 빠져요"><input type="checkbox" data-li-sw="${sw}" aria-label="${esc(st.t)} 끄기" checked><i></i></label>` : ''}</div>${open ? `<div class="sp-li-b" data-li-body="${tk.id}"></div>` : ''}</section>`; };
     const item = (st, add) => { const sw = swOf(st), on = sw ? spBlock(sw).enabled : true, open = on && spOpenSet.has(st.k);
         const { sum, stt } = spLiState(st, sw, warnOf);
         const mov = !add && !hideD && spListDragOk() && spMovIds(st).length;
@@ -11482,22 +11536,28 @@ function spRenderList() {
     const isOff = st => { const sw = swOf(st); return !!(sw && !spBlock(sw).enabled); };
     // 채우기를 다 끝내기 전엔 꾸미기 · 더 넣을 수 있는 칸 · 섹션 순서 바꾸기를 접어 둠 (사용자 요청 2026-10-19, 관리자 flow.later) - 고칠 것이 있는 꾸미기 칸만 보임
     const all = checks.filter(c => !c.info).length, nOk = all - bads.length, ready = spOpt('flow', 'summary') && all > 0;
-    const later = spListLater(ready, bads), hideD = spHideDone(bads);
+    const later = spListLater(ready, bads), hideD = spHideDone(bads), taskMode = hideD && spOpt('flow', 'oneByOne');
     // 다 채운 칸 숨기기: 지난번에 보이던 칸이 다 채워졌으면 잠깐 두었다가 접고, 처음부터 다 채워져 있던 칸은 바로 '다 채운 칸'으로
     const shownBefore = again && pane._shown ? pane._shown : null, shownNow = new Set(), doneNames = [];
     const liVis = (st, g) => { const r = spLiState(st, swOf(st), warnOf);
         if (!hideD || r.stt !== 'done' || g === 'deco') { /* (꾸미기 칸은 늘 '다 됨'이라 숨기지 않음 - 채우는 칸만) */ spGone.delete(st.k); shownNow.add(st.k); return true; }
         if (!spGone.has(st.k) && shownBefore && shownBefore.has(st.k)) { spLeaveSoon(st.k, 1100); shownNow.add(st.k); return true; }
         spGone.add(st.k); doneNames.push(st.k === 'finish' ? '인트로' : st.t); return false; };
+    const taskVis = tk => { if (tk.show && !tk.show()) return false; const r = spTaskState(tk);
+        if (r.stt !== 'done') { spGone.delete(tk.id); shownNow.add(tk.id); return true; }
+        if (!spGone.has(tk.id) && shownBefore && shownBefore.has(tk.id)) { spLeaveSoon(tk.id, 1100); shownNow.add(tk.id); return true; }
+        spGone.add(tk.id); doneNames.push(tk.t()); return false; };
     const deskSh = spOpt('flow', 'deskShadow') ? `<section class="spb-li done" data-li="#shadow"><div class="spb-h"><span class="spb-t spb-t-sw"><span class="spb-st spb-done" aria-hidden="true"></span><span class="spb-tx"><b>PC 그림자</b><small>PC로 볼 때 청첩장 양옆에 은은한 그림자</small></span></span><label class="sp-li-sw" title="PC로 볼 때 청첩장 양옆에 그림자"><input type="checkbox" id="spLiShadow" aria-label="PC 그림자 켜고 끄기" ${state.desktopShadow ? 'checked' : ''}><i></i></label></div></section>` : '';
-    const groups = SP_GROUPS.map(([g, t, sub]) => { const its = spSortByBlocks(steps.filter(st => !designOff(st) && !isOff(st) && spListGroup(st) === g && !(later && g === 'deco' && !warnOf[st.k]) && liVis(st, g))); const tail = g === 'deco' && !later ? deskSh : ''; return its.length || tail ? `<div class="spb-grp spb-${g}${g === 'deco' && spLaterNew ? ' spb-new' : ''}" data-g="${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${its.map(st => item(st)).join('')}${tail}</div></div>` : ''; }).join('')
+    const groups = SP_GROUPS.map(([g, t, sub]) => { const base = spSortByBlocks(steps.filter(st => !designOff(st) && !isOff(st) && spListGroup(st) === g && !(later && g === 'deco' && !warnOf[st.k]))), rows = [];
+        base.forEach(st => { const tks = taskMode && g !== 'deco' ? spTasksOf(st.k) : []; if (tks.length) tks.forEach(tk => { if (taskVis(tk)) rows.push(taskItem(tk, st)); }); else if (liVis(st, g)) rows.push(item(st)); }); // (할 일 칸이 있는 섹션은 옵션 하나씩)
+        const tail = g === 'deco' && !later ? deskSh : ''; return rows.length || tail ? `<div class="spb-grp spb-${g}${g === 'deco' && spLaterNew ? ' spb-new' : ''}" data-g="${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${rows.join('')}${tail}</div></div>` : ''; }).join('')
         + spDoneRowHtml(doneNames, bads) + (later ? `<div class="spb-later" id="spLater"><i aria-hidden="true">✦</i><span><b>꾸미기 · 칸 더 넣기</b><small>섹션 순서 바꾸기도 · 위 칸을 다 채우면 나와요</small></span><button type="button" id="spLaterOpen">먼저 보기</button></div>` : '');
     // 더 넣을 수 있는 칸 (꺼진 칸 + 디자인에서 꺼 둔 칸 · 스위치를 켜면 제 묶음으로 가서 펼쳐짐) - 예전 정리 화면 '기능 더 넣기'
     const adds = steps.filter(isOff), stkAdd = spOpt('flow', 'stkset') && !stkSetCur() && steps.some(x => x.k === 'theme') && stkSetList().length > 0;
     const addN = 5, addAll = spAddMore || adds.length <= addN + 1;
     const addHtml = later && !spDoneShow ? '' : adds.length || stkAdd ? `<div class="spb-grp spb-add" data-g="add"><div class="spb-gh"><b>더 넣을 수 있는 칸</b><small>켜면 청첩장에 들어가요</small></div><div class="spb-card">${(addAll ? adds : adds.slice(0, addN)).map(st => item(st, true)).join('')}${stkAdd ? `<section class="spb-li off" data-li="#stk"><div class="spb-h"><button type="button" class="spb-t" data-sp-add="#stk"><span class="spb-st spb-plus" aria-hidden="true"></span><span class="spb-tx"><b>스티커 꾸미기</b><small>하트·꽃·별 스티커를 세트 하나로 한 번에</small></span><span class="spb-chev" aria-hidden="true"></span></button></div></section>` : ''}${addAll ? '' : `<button type="button" class="spb-addmore" id="spAddMore">${adds.length - addN}개 더 보기</button>`}</div></div>` : '';
     // 맨 위 '발행 준비' 카드 (관리자 손쉬운 제작 → 간편 만들기 전체 'summary'를 끄면 예전 '꼭 필요한 것' 칸)
-    spLaterNew = false; pane._later = later; pane._shown = shownNow;
+    spLaterNew = false; pane._later = later; pane._shown = shownNow; pane._task = taskMode;
     const readyHtml = spReadyHtmlOf(checks, bads);
     spReadyFlash = false;
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 만들기</b></div>${spUdHtml()}</div>
@@ -11524,7 +11584,7 @@ function spRenderList() {
     pane.querySelector('#spAskAgain')?.addEventListener('click', () => { stopAllBgm(); state.spView = 'quick'; spStep = 0; spAskLast = -1; pane._spKey = null; spRender(); spAskAutoSave(); });
     pane.querySelector('#spListDone').addEventListener('click', e => spShowFinal(e.currentTarget));
     pane.querySelectorAll('[data-li-tog]').forEach(b => b.addEventListener('click', () => {
-        const k = b.dataset.liTog, st = steps.find(x => x.k === k), sw = st && swOf(st); stopAllBgm();
+        const k = b.dataset.liTog, tk = SP_TASKS.find(x => x.id === k), st = steps.find(x => x.k === (tk ? tk.k : k)), sw = st && swOf(st); stopAllBgm();
         if (sw && !spBlock(sw).enabled) { spBlock(sw).enabled = true; try { renderBlockList(); } catch (e) {} spChanged([sw]); scheduleSnapshot(); } // 꺼진 칸을 누르면 켜고 펼침
         if (spOpenSet.has(k)) spOpenSet = new Set(); else { spOpenSet = new Set([k]); if (st) { spHeroPhase = 'pick'; spSelectStep(st); setTimeout(() => spScrollPreview(st.s || []), 80); } }
         spRender();
@@ -11546,6 +11606,15 @@ function spRenderList() {
         if (st.k === 'finish') body.querySelectorAll('.wz-hint').forEach(x => x.remove());
         body.querySelectorAll('.sp-in').forEach(x => { x.style.animation = 'none'; });
         last = st;
+    });
+    SP_TASKS.forEach(tk => { // 할 일 칸: 그 섹션 편집 칸을 그린 뒤 그 옵션만 남김
+        const body = pane.querySelector(`[data-li-body="${tk.id}"]`), st = steps.find(x => x.k === tk.k); if (!body || !st) return;
+        spHeroPart = tk.part || ''; try { st.fn(body); } catch (e) { console.warn(e); } finally { spHeroPart = ''; }
+        spBindIncl(body); spTrimBody(body, swOf(st));
+        try { tk.cut(body); } catch (e) { console.warn(e); }
+        body.querySelectorAll(':scope > .wz-h, :scope > .wz-lead, :scope > .wz-hint, .sp-n').forEach(x => x.remove());
+        if (tk.after) tk.after(body);
+        body.classList.add('sp-task-b'); last = st;
     });
     if (last) spSelectStep(last); else if (spCurSt) spSelectStep(steps.find(x => x.k === spCurSt.k) || spCurSt);
     if (again) { pane.scrollTop = keepPane; window.scrollTo(0, keepWin); requestAnimationFrame(() => { pane.style.minHeight = ''; pane.scrollTop = keepPane; window.scrollTo(0, keepWin); }); }
@@ -14516,7 +14585,10 @@ function ldhCtx() {
 function ldhEasyGo(askId, listK) {
     if (spViewNow() === 'quick') { const i = spAskSteps().findIndex(s => spAskId(s) === askId); if (i >= 0) { spAskLast = spStep; spStep = i; spRender(); return; } }
     state.spView = 'list'; spOpenSet = new Set([listK]); spRender();
-    setTimeout(() => { const el = ldh$(`#simplePane [data-li="${listK}"]`); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); const st = spSteps().find(x => x.k === listK); if (st) spScrollPreview(st.s || []); }, 140);
+    { const rows = [...document.querySelectorAll('#simplePane .spb-li[data-task]')].filter(x => x.dataset.k === listK); // 할 일 칸(옵션 하나씩)이면 그 질문의 할 일 → 고칠 것이 있는 할 일
+      const tk = SP_TASKS.find(t => t.ask === askId && rows.some(x => x.dataset.li === t.id && !x.classList.contains('done'))), r = tk ? rows.find(x => x.dataset.li === tk.id) : rows.find(x => x.classList.contains('warn')) || rows[0];
+      if (r) { listK = r.dataset.li; spOpenSet = new Set([listK]); spRender(); } }
+    setTimeout(() => { const el = ldh$(`#simplePane [data-li="${listK}"]`); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); const tk0 = SP_TASKS.find(t => t.id === listK), st = spSteps().find(x => x.k === (tk0 ? tk0.k : listK)); if (st) spScrollPreview(st.s || []); }, 140);
 }
 // 전문가 모드: 그 섹션 편집 칸을 열어 줌 (휴대폰은 섹션 목록 창째로)
 function ldhExpertOpen(id) {

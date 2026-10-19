@@ -629,6 +629,9 @@ html.mob-easy-only #scBack { display: none; }
 .spb-donerow > .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .spb-donerow b { font-size: 14px; font-weight: 700; } .spb-donerow small { font-size: 12px; color: var(--wz-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .spb-donerow > .go { flex: none; font-size: 13px; font-weight: 700; color: var(--wz-ink); }
 @media (prefers-reduced-motion: reduce) { .spb-li.spb-leave { transition: none; } }
+/* 할 일 칸 = 옵션 하나씩 (SP_TASKS) */
+.sp-task-b > .wz-field:first-child { margin-top: 0; }
+.sp-task-ok { display: block; width: 100%; margin-top: 12px; }
 .spb-grp.spb-new { animation: spbNew .6s ease both; } @keyframes spbNew { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .spb-grp.spb-new { animation: none; } }
 .spb-t.spb-t-sw { cursor: default; } /* (스위치만 있는 줄 - PC 그림자) */
