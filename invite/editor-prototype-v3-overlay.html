@@ -960,7 +960,7 @@ html.mob-easy-only #scBack { display: none; }
     /* 질문 칸을 스크롤하는 동안은 반투명 (멈추면 다시 또렷하게) */
     html.sp-lens-scrolling.sp-mv-lens:not(.sp-pv):not(.sp-lens-auto-hide):not(.sp-lens-tucked) #screenEditor .preview-pane, html.sp-lens-scrolling.sp-mv-lens:not(.sp-pv):not(.sp-lens-auto-hide):not(.sp-lens-tucked) .sp-lens-ui { opacity: .5; }
     html.sp-mv-lens:not(.sp-pv) .sp-lens-ui { display: block; position: fixed; z-index: 641; border-radius: 16px; box-shadow: inset 0 0 0 2px #fff; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; transition: left .34s cubic-bezier(.3,.8,.3,1), top .34s cubic-bezier(.3,.8,.3,1), width .3s ease, height .3s ease; }
-    html.sp-lens-drag .sp-lens-ui { transition: none; cursor: grabbing; }
+    html.sp-lens-drag .sp-lens-ui, html.sp-lens-drag.sp-mv-lens:not(.sp-pv) .sp-lens-ui { transition: none !important; cursor: grabbing; } /* (③④ 창의 left·top 움직임 효과가 이 줄보다 강해서 끄는 동안 0.34초씩 늦게 따라왔음 - '저항이 크다') */
     .sp-lens-ui.flash { animation: spLensFlash .7s ease; }
     @keyframes spLensFlash { 0% { box-shadow: inset 0 0 0 2px #fff, 0 0 0 0 rgba(233, 201, 143, .95); } 100% { box-shadow: inset 0 0 0 2px #fff, 0 0 0 12px rgba(233, 201, 143, 0); } }
     .sp-lens-t { position: absolute; left: 0; right: 0; top: 0; height: 24px; padding: 0 80px 0 10px; border-radius: 16px 16px 0 0; background: rgba(32, 25, 21, .9); color: #fff; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; line-height: 24px; } /* (flex면 말줄임표가 안 돼 글자가 ✕·크게 버튼 밑으로 들어갔음) */ /* 창 위 이름표 줄 (섹션은 그 아래 SP_LENS_HEAD부터 - 섹션을 가리지 않게) */
@@ -985,7 +985,7 @@ html.mob-easy-only #scBack { display: none; }
     html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-lens-auto-hide #screenEditor .preview-pane, html:is(.sp-lens-k-cd, .sp-lens-k-peek).sp-lens-auto-hide .sp-lens-ui { transform: scale(.3); }
     .sp-lens-tab.fold { top: auto; bottom: 86px; right: 12px; width: 60px; height: 60px; border-radius: 50%; writing-mode: horizontal-tb; letter-spacing: 0; font-size: 11.5px; box-shadow: 0 6px 18px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.18); }
     .sp-lens-x { display: none; position: absolute; right: 44px; top: 2px; width: 26px; height: 20px; border: 0; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; font-size: 12px; cursor: pointer; place-items: center; }
-    html.sp-lens-pinned .sp-lens-x { display: grid; } .sp-lens-z[hidden] + .sp-lens-x { right: 4px; }
+    html:is(.sp-lens-pinned, .sp-lens-peeking) .sp-lens-x { display: grid; } .sp-lens-z[hidden] + .sp-lens-x { right: 4px; }
     .sp-lens-cd { display: none; position: absolute; left: 24%; right: 24%; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.35); overflow: hidden; }
     html.sp-lens-peeking .sp-lens-cd { display: block; }
     .sp-lens-cd.run::after { content: ''; position: absolute; inset: 0; background: #fff; transform-origin: 0 50%; animation: spLensCd var(--cd, 2s) linear forwards; }
@@ -15761,7 +15761,7 @@ function spMvUi() {
         <div class="sp-lens-dock" id="spLensDock"><i data-c="tl"></i><i data-c="tr"></i><i data-c="bl"></i><i data-c="br"></i></div><button type="button" class="sp-lens-tab" id="spLensTab">청첩장 ‹</button>`);
     const tg = document.getElementById('spSplitTg');
     tg.addEventListener('click', () => {
-        if (document.documentElement.classList.contains('sp-mv-lens')) { spMv.lensOff = !spMv.lensOff; spMvSave(); spLensPin = !spMv.lensOff && spLensKind() !== 'plain'; spLensPeekUntil = 0; spMvApply(); spLensSnap(); spLensPlace(); return; } // (켜면 창이 바로 보이게 고정, 끄면 창·손잡이 모두 숨김)
+        if (document.documentElement.classList.contains('sp-mv-lens')) { spMv.lensOff = !spMv.lensOff; spMvSave(); spLensPin = false; spLensPeekUntil = 0; spMvApply(); spLensSnap(); spLensPlace(); if (!spMv.lensOff && spLensKind() !== 'plain') spLensShow(SP_PEEK); return; } // (켜면 창을 3초 보여 주고 들어감 - 예전엔 켜면 계속 떠 있었음(고정), 끄면 창·손잡이 모두 숨김)
         spMv.off = !spMv.off; spMvSave(); spMvApply(); if (!spMv.off) setTimeout(spMvRefollow, 320); });
     // 손잡이 끌기 → 가까운 자리(작게·반·크게)에 멈춤
     const hd = document.getElementById('spSplitHd');
@@ -15820,7 +15820,7 @@ function spMvLabel(st) {
     const l = document.getElementById('spShL'); if (l) l.textContent = t ? '지금 고치는 곳 · ' + t : '지금 청첩장';
     const lt = document.getElementById('spLensT'); if (lt) { lt.textContent = t || '지금 청첩장'; lt.dataset.base = lt.textContent; }
     const nk = st ? st.k + (st.part || '') + '|' + spViewNow() : '', fresh = nk !== spMvLabel._k; spMvLabel._k = nk;
-    if (spMvMode() === 'lens') setTimeout(() => { spLensPlace(); if (fresh) spLensPeek(2500); }, 120); // (③④는 새 질문으로 넘어갔을 때만 그 섹션을 잠깐 보여 줌 - 같은 질문 안에서 다시 그릴 때마다 뜨던 것)
+    if (spMvMode() === 'lens') setTimeout(() => { spLensPlace(); if (fresh) spLensPeek(SP_PEEK); }, 120); // (③④는 새 질문으로 넘어갔을 때만 그 섹션을 잠깐 보여 줌 - 같은 질문 안에서 다시 그릴 때마다 뜨던 것)
 }
 // 지금 질문에서 보여줄 자리: 이름·날짜 질문은 첫 화면 안의 그 글자, 그 밖엔 그 섹션
 let spPvHint = null; // 방금 바꾼 옵션이 보이는 자리 {sel, t} (지도 켜기·높이·가로 꽉 → 지도) - 3초 동안
@@ -16043,7 +16043,7 @@ function spLensBox() {
     const fr = document.getElementById('phoneFrame'), FW = (fr && fr.offsetWidth) || W, sec = spLensSec();
     // 글자(이름·날짜·글귀 등 자유 배치 글자 칸)를 고치는 중이면 그 글자를 크게 (섹션 통째 말고) - 사용자 요청 2026-10-17
     const tg = spLensEl && spLensEl.isConnected ? spLensEl : null;
-    let isText = tg && sec && tg !== sec && !tg.classList.contains('col') && !tg.matches('.location-map') && !!tg.closest('#previewRoot');
+    let isText = tg && sec && tg !== sec && !tg.classList.contains('col') && !tg.matches('.location-map') && !!tg.closest('#previewRoot') && !(spCurSt && spCurSt.k === 'account'); // (계좌는 늘 섹션 통째 - 적을 땐 창이 숨고, 다 적은 뒤 계좌 한 줄만 확대해 잘려 보이던 것)
     // 처음 글자를 고칠 땐 섹션 전체를 먼저 보여 주고(SP_LENS_HOLD) 그 글자로 천천히 다가감 - 같은 섹션 글자끼리는 바로 옮겨 감
     if (isText) {
         const key = spLensKeyOf(tg, sec), T = spLensTxt;
@@ -16133,9 +16133,15 @@ function spLensActiveRow() {
 // ③④: 바꾼 모습을 잠깐(2초) 보여 주기 - 막대를 끄는 동안은 계속, 손을 떼면 2초 뒤 들어감 · 창을 누르면 고정(spLensPin)
 let spLensQuiet = 0; // (계좌 은행을 고른 뒤 계좌번호 칸으로 저절로 넘어갈 때는 창을 안 띄움)
 document.addEventListener('pointerdown', e => { if (e.target.closest && e.target.closest('#simplePane :is(.wz-banks, .wz-bankbtn)')) spLensQuiet = Date.now() + 1500; }, true);
+// 잠깐 보여 주는 시간 (사용자 요청 2026-10-19): 섹션 → 글자로 다가가는 창 6초 · 그냥 보여 주는 창 3초 - 그 뒤엔 꼭 들어감 (창을 눌러도 6초 더 보여 줄 뿐 계속 떠 있지 않음)
+const SP_PEEK = 3000, SP_PEEK_ZOOM = 6000;
 function spLensPeek(ms) {
     if (spMvMode() !== 'lens' || spLensKind() === 'plain' || spMv.tuck || spLensOff() || spLensNoType() || Date.now() < spLensQuiet) return;
-    ms = ms || 2000; spLensPeekUntil = Date.now() + ms;
+    spLensShow(ms || SP_PEEK);
+}
+function spLensShow(ms) {
+    if (spMvMode() !== 'lens' || spLensOff()) return;
+    spLensPin = false; spLensPeekUntil = Date.now() + ms;
     clearTimeout(spLensPeekT); spLensPeekT = setTimeout(spLensPlace, ms + 40);
     spLensPlace();
     const cd = document.getElementById('spLensCd'); if (cd) { cd.style.setProperty('--cd', ms + 'ms'); cd.classList.remove('run'); void cd.offsetWidth; cd.classList.add('run'); }
@@ -16175,12 +16181,13 @@ function spLensPlace(anim) {
     root.classList.toggle('sp-lens-tucked', !!spMv.tuck);
     root.classList.toggle('sp-lens-auto-hide', hide);
     root.classList.toggle('sp-lens-peeking', !hide && peeking && !spLensPin && spLensWouldHide);
+    if (peeking) { clearTimeout(spLensPeekT); spLensPeekT = setTimeout(spLensPlace, spLensPeekUntil - Date.now() + 40); } // (넘겨 보기·휠·옮기기로 시간을 늘린 뒤 다시 재지 않아 창이 계속 떠 있던 것)
     root.classList.toggle('sp-lens-pinned', spLensPin && kind !== 'plain');
     root.style.setProperty('--sp-lens-pad', (kbUp ? bx.h + 16 : !spMv.tuck && !hide && !spLensWouldHide && p.y + bx.h / 2 > (bx.top + bx.bottom) / 2 ? bx.h + 12 : 0) + 'px');
     if (kbUp && !hide && !bub && ((spLensKbNeed && Date.now() < spLensKbNeed) || p.y !== spLensPlace.ky)) { spLensKbNeed = 0; spLensKbClear(p.y, p.x, bx.w); } spLensPlace.ky = kbUp && !hide ? p.y : null; // (창이 커져 위로 올라오면 다시) // 칸을 눌렀을 때·키보드가 올라올 때만: 적는 칸이 창에 가리면 칸을 창 위로 (창은 그 자리 그대로 - 예전엔 창이 비켜 가며 튀었음) // 창이 아래에 있으면 질문 칸 맨 아래도 창 위로 올려 볼 수 있게 (잠깐 보이는 창은 빼고)
     [pane, ui].forEach(el => { el.style.left = p.x + 'px'; el.style.top = p.y + 'px'; el.style.width = bx.w + 'px'; el.style.height = bx.h + 'px'; });
     const tab = document.getElementById('spLensTab'); if (tab) { const fold = hide && kind === 'cd'; const sd = spMv.tuck || spMv.side || 'r'; tab.className = 'sp-lens-tab ' + (fold ? 'fold' : sd); tab.textContent = fold ? '청첩장' : sd === 'l' ? '› 청첩장' : '청첩장 ‹'; }
-    const lf = document.getElementById('spLensF'); if (lf) lf.textContent = kind !== 'plain' && spLensWouldHide && !spLensPin ? '누르면 계속 보여요' : '누르면 크게 · 위 줄을 끌면 옮겨요';
+    const lf = document.getElementById('spLensF'); if (lf) lf.textContent = kind !== 'plain' && spLensWouldHide && !spLensPin ? '누르면 조금 더 보여요' : '누르면 크게 · 위 줄을 끌면 옮겨요';
     const z = document.getElementById('spLensZ'); if (z) { z.textContent = spMv.lz === 's' ? '크게' : '작게'; z.title = spMv.lz === 's' ? '작은 창을 크게' : '작은 창을 작게'; z.hidden = !!(bx.text || kbUp || root.classList.contains('sp-lens-pr')); } // (창 크기 버튼 - 글자를 크게 보거나 키보드가 올라와 있을 땐 크기가 정해져 있어 눌러도 그대로라 숨김, 예전 ⤢·↙ 그림은 뭔지 몰랐음)
     const lt = document.getElementById('spLensT');
     if (lt && lt.dataset.base) lt.textContent = spCurSt && spPvGone(spCurSt) ? `${lt.dataset.base} · 뺐어요` : lt.dataset.base; // (넣지 않기로 한 섹션 = 다음 섹션을 보여 줌)
@@ -16233,11 +16240,11 @@ function spLensBind() {
         const dk = [...dock.querySelectorAll('i')];
         dk.forEach(d => { const p = spLensXY(d.dataset.c, bx); Object.assign(d.style, { left: p.x + 'px', top: p.y + 'px', width: bx.w + 'px', height: bx.h + 'px' }); });
         const near = (x, y) => dk.reduce((best, d) => { const p = spLensXY(d.dataset.c, bx), dd = Math.hypot(p.x - x, p.y - y); return !best || dd < best[1] ? [d, dd] : best; }, null)[0];
-        const mv = ev => { const dx = ev.clientX - sx, dy = ev.clientY - sy; { const t = Date.now(); if (t > lt) { vx = vx * .4 + (ev.clientX - lx) / (t - lt) * .6; lx = ev.clientX; lt = t; } } if (!moved && Math.hypot(dx, dy) < (e.pointerType === 'touch' ? 14 : 8)) return; // (손가락은 조금 흔들려도 그냥 누른 걸로)
+        const mv = ev => { const dx = ev.clientX - sx, dy = ev.clientY - sy; { const t = Date.now(); if (t > lt) { vx = vx * .4 + (ev.clientX - lx) / (t - lt) * .6; lx = ev.clientX; lt = t; } } if (!moved && Math.hypot(dx, dy) < (e.pointerType === 'touch' ? 8 : 5)) return; // (손가락은 조금 흔들려도 그냥 누른 걸로)
             // 위 이름표 줄을 끌면 창 옮기기 · 창 안을 위아래로 끌면 청첩장 넘겨 보기 · 옆으로 쓸면 숨기기 (사용자 요청 - 예전엔 창 안이 안 넘어갔음)
             if (!how) how = !onHead && Math.abs(dy) > Math.abs(dx) * 1.3 && ss.tx != null ? 'scroll' : 'move';
             if (how === 'scroll') { moved = true; cancelAnimationFrame(spLensFling.r);
-                const nv = Math.max(ss.lo, Math.min(ss.hi, sv0 - (dy - Math.sign(dy) * 14) * 0.6)), t = performance.now(); // (넘겨 보기는 손가락의 0.6배로 천천히 - 예전 1배는 너무 예민했음)
+                const nv = Math.max(ss.lo, Math.min(ss.hi, sv0 - (dy - Math.sign(dy) * 8) * 0.85)), t = performance.now(); // (넘겨 보기는 손가락의 0.6배로 천천히 - 예전 1배는 너무 예민했음)
                 if (ss.lt && t > ss.lt) ss.vy = (ss.vy || 0) * .5 + (nv - ss.v) / (t - ss.lt) * .5; ss.lt = t; ss.v = nv;
                 spLensTfLive(fr, ss);
                 if (spLensKind() !== 'plain' && !spLensPin) spLensPeekUntil = Math.max(spLensPeekUntil, Date.now() + 3000); return; }
@@ -16247,7 +16254,7 @@ function spLensBind() {
             const n = near(x, y); dk.forEach(d => d.classList.toggle('near', d === n)); };
         const up = () => { ui.removeEventListener('pointermove', mv); ui.removeEventListener('pointerup', up); ui.removeEventListener('pointercancel', up);
             root.classList.remove('sp-lens-drag');
-            if (!moved) { if (spLensKind() !== 'plain' && spLensWouldHide && !spLensPin) { spLensPin = true; spLensPlace(); return; } spOpenPreview(false); return; } // ③④ 잠깐 보이는 창을 누르면 계속 보이게
+            if (!moved) { if (spLensKind() !== 'plain' && spLensWouldHide) { spLensShow(SP_PEEK_ZOOM); return; } spOpenPreview(false); return; } // ③④ 잠깐 보이는 창을 누르면 계속 보이게
             if (how === 'scroll') { spLensFling(fr, ss, performance.now() - (ss.lt || 0) < 90 ? ss.vy || 0 : 0); ss.lt = 0; ss.vy = 0; if (spLensKind() !== 'plain' && !spLensPin) { spLensPeekUntil = Date.now() + 3000; clearTimeout(spLensPlace.pt); spLensPlace.pt = setTimeout(() => spLensPlace(), 3050); } return; }
             const x = ui.offsetLeft, dx = x - x0, dy = ui.offsetTop - y0;
             // 옆으로 쓸면(빠르게 밀거나 90px 넘게) 그쪽으로 사라지고 그쪽 끝에 '청첩장' 손잡이 (사용자 요청)
@@ -16271,7 +16278,7 @@ function spLensBind() {
     ui.addEventListener('wheel', e => { const sy = spLensPlace.sy, fr = document.getElementById('phoneFrame'); if (!sy || sy.tx == null || !fr) return; e.preventDefault();
         sy.v = Math.max(sy.lo, Math.min(sy.hi, sy.v + e.deltaY)); spLensTfLive(fr, sy);
         clearTimeout(sy.wt); sy.wt = setTimeout(() => spLensTfDone(fr, sy), 150); if (spLensKind() !== 'plain' && !spLensPin) spLensPeekUntil = Math.max(spLensPeekUntil, Date.now() + 3000); }, { passive: false });
-    tab.addEventListener('click', () => { if (spMv.tuck) { spMv.tuck = ''; spMvSave(); } else if (spLensKind() !== 'plain') spLensPin = true; spLensPlace(); });
+    tab.addEventListener('click', () => { if (spMv.tuck) { spMv.tuck = ''; spMvSave(); } else if (spLensKind() !== 'plain') { spLensShow(SP_PEEK_ZOOM); return; } spLensPlace(); });
     const lx = document.getElementById('spLensX');
     lx.addEventListener('pointerdown', e => e.stopPropagation());
     lx.addEventListener('click', e => { e.stopPropagation(); spLensPin = false; spLensPeekUntil = 0; spLensPlace(); });
@@ -16280,15 +16287,15 @@ function spLensBind() {
     const lensOn = () => spMvMode() === 'lens' && spLensKind() !== 'plain';
     ['pointerdown', 'focusin'].forEach(ev => document.addEventListener(ev, e => { if (lensOn() && inPane(e.target)) spLensAct = e.target; }, true));
     const isTxt = t => t.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable=""]');
-    document.addEventListener('focusin', e => { const t = e.target; if (lensOn() && inPane(t) && isTxt(t)) setTimeout(() => spLensPeek(4000), 420); }); // 적는 칸을 누르면 그 섹션 전체 → 글자로 다가감 (글자는 4초 - 다가가는 시간이 있어서 2배)
+    document.addEventListener('focusin', e => { const t = e.target; if (lensOn() && inPane(t) && isTxt(t)) setTimeout(() => spLensPeek(SP_PEEK_ZOOM), 420); }); // 적는 칸을 누르면 그 섹션 전체 → 글자로 다가감 (글자는 4초 - 다가가는 시간이 있어서 2배)
     let typeT = 0;
     document.addEventListener('input', e => { const t = e.target; if (!lensOn() || !inPane(t)) return;
-        if (t.type === 'range') spLensPeek(2000); else if (isTxt(t)) { clearTimeout(typeT); typeT = setTimeout(() => spLensPeek(4400), 260); } }, true);
+        if (t.type === 'range') spLensPeek(SP_PEEK); else if (isTxt(t)) { clearTimeout(typeT); typeT = setTimeout(() => spLensPeek(SP_PEEK_ZOOM), 260); } }, true);
     // 글자를 칠 때마다 다시 겨눔 (공용 편집 칸 - 감사 인사 서명 등 - 은 미리보기만 다시 그리고 겨누지 않아서 확대가 안 됐음)
     let refT = 0;
     document.addEventListener('input', e => { const t = e.target; if (!spMvMode() || !inPane(t) || !isTxt(t) || !spCurSt) return; clearTimeout(refT); refT = setTimeout(() => { const el = spPvTargetEl(spCurSt); if (!el) return; if (spMvMode() === 'lens') { spLensEl = el; spLensPlace(); } else spSplitScroll(el, false, true); }, 340); }, true);
-    document.addEventListener('change', e => { const t = e.target; if (!lensOn() || !inPane(t) || t.type === 'range' || t.type === 'file') return; setTimeout(() => spLensPeek(2000), 260); }, true);
-    document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button, [role="button"]'); if (!lensOn() || !b || !inPane(b) || b.matches('label input')) return; setTimeout(() => spLensPeek(2000), 260); }, true);
+    document.addEventListener('change', e => { const t = e.target; if (!lensOn() || !inPane(t) || t.type === 'range' || t.type === 'file') return; setTimeout(() => spLensPeek(SP_PEEK), 260); }, true);
+    document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button, [role="button"]'); if (!lensOn() || !b || !inPane(b) || b.matches('label input')) return; setTimeout(() => spLensPeek(SP_PEEK), 260); }, true);
     // 적는 칸을 누르거나 질문 칸을 넘기면 다시 자리 잡기 (적는 칸을 가리지 않게 - spLensCorner)
     document.addEventListener('focusin', e => { if (spMvMode() === 'lens' && e.target.closest && e.target.closest('#simplePane')) setTimeout(spLensPlace, 380); });
     document.addEventListener('focusout', e => { if (spMvMode() === 'lens' && e.target.closest && e.target.closest('#simplePane')) setTimeout(() => { if (!spLensTypingEl()) { const r = document.documentElement; if (r.classList.contains('sp-lens-bub') || r.classList.contains('sp-lens-pr')) { spLensSnap(); spLensPlace(); } else if (spLensNoType(e.target) || spCurSt && (spCurSt.k === 'greet' || spCurSt.k === 'venue')) spLensPlace(); } }, 120); });
@@ -16306,7 +16313,7 @@ function spScrollToNextBtn() {
     const pane = document.querySelector('.preview-pane'), nb = document.querySelector('#previewRoot .ib-next');
     if (!pane) return;
     const mv = spMvMode(); // 휴대폰 작은 창·반반 화면: 그 버튼을 겨눔 (예전엔 미리보기 칸만 스크롤해서 작은 창엔 버튼이 안 보였음)
-    if (mv) { const t = nb || document.querySelector('#previewRoot .col[data-block-id="heroVideo"], #previewRoot .col[data-block-id="hero"]'); if (!t) return; if (mv === 'lens') { spLensAim(t.closest('.col') || t); spLensPeek(2000); } else spSplitScroll(t, false); return; } // (작은 창은 확대 없이 첫 화면 전체 - 사용자 요청)
+    if (mv) { const t = nb || document.querySelector('#previewRoot .col[data-block-id="heroVideo"], #previewRoot .col[data-block-id="hero"]'); if (!t) return; if (mv === 'lens') { spLensAim(t.closest('.col') || t); spLensPeek(SP_PEEK); } else spSplitScroll(t, false); return; } // (작은 창은 확대 없이 첫 화면 전체 - 사용자 요청)
     const col = document.querySelector('#previewRoot .col[data-block-id="heroVideo"], #previewRoot .col[data-block-id="hero"]');
     const t = nb || col; if (!t) return;
     const pr = pane.getBoundingClientRect(), r = t.getBoundingClientRect();
@@ -16969,7 +16976,7 @@ function spMvShowSec(id) {
     // 글자 칸을 적다가 보일 부분을 끌면: 칸에서 손을 떼게 해서(키보드 내림) 창이 글자 말풍선 ↔ 섹션 전체를 오가며 튀지 않게
     const a = spLensTypingEl(); if (a) { a.blur(); spLensSnap(); }
     spMvShowSec.until = Date.now() + 900;
-    if (mv === 'lens') { spLensEl = el; spLensPeek(2000); } else spSplitScroll(el, false, true);
+    if (mv === 'lens') { spLensEl = el; spLensPeek(SP_PEEK); } else spSplitScroll(el, false, true);
 }
 function spMiniFocus(key) {
     if (spMiniRaf) return;
@@ -19752,8 +19759,8 @@ const LDH_EASY = [
     { t: '저장은 어떻게 하나요?', d: '따로 안 눌러도 저절로 저장돼요', steps: ['고치면 몇 초 뒤 저절로 저장돼요. 질문을 넘길 때도 저장돼요.', '창을 닫았다가 다시 들어와도 하던 질문부터 이어서 해요.', '이미 발행한 청첩장이면 고친 내용이 하객 화면에도 바로 바뀌어요.'] },
     { t: '위 청첩장 화면 쓰는 법', d: '크기 바꾸기 · 끄고 켜기', when: c => c.mv === 'split', steps: ['위는 내 청첩장, 아래는 적는 곳이에요. 아래에 적으면 위가 바로 바뀌고, 고치는 곳으로 저절로 움직여요.', '가운데 줄을 위아래로 끌면 크기가 바뀌어요. [⤢ 전체]를 누르면 청첩장을 크게 봐요.', '글자를 적느라 키보드가 올라오면 위 칸이 작아지고 적는 칸이 가운데로 와요.', '맨 위 [청첩장 보기]를 끄면 적는 곳만 크게 보여요.'], show: () => ldhIntroSteps('easy-split') },
     { t: '작은 청첩장 창 쓰는 법', d: '숨었다가 잠깐 나와요', when: c => c.mv === 'lens' && spLensKind() !== 'plain', steps: () => spLensKind() === 'peek'
-        ? ['평소엔 청첩장 창이 숨어 있어서 설정 글자를 가리지 않아요.', '스위치·막대·고르기를 바꾸면 창이 2초 동안 나와 바뀐 모습을 보여 줘요.', '창이나 오른쪽 \'청첩장\' 손잡이를 누르면 계속 보여요. ✕를 누르면 다시 숨어요.']
-        : ['작은 창이 지금 만지는 칸을 피해 다른 모서리로 비켜요.', '비킬 곳이 없으면 오른쪽 아래 \'청첩장\' 동그라미로 접혀요. 설정을 바꾸면 2초 동안 나와서 바뀐 모습을 보여 줘요.', '동그라미를 누르면 계속 보여요. ✕를 누르면 다시 접혀요.'], show: () => ldhIntroSteps('easy-lens') },
+        ? ['평소엔 청첩장 창이 숨어 있어서 설정 글자를 가리지 않아요.', '스위치·막대·고르기를 바꾸면 창이 3초 동안 나와 바뀐 모습을 보여 줘요. 글자를 적을 땐 6초 동안 보여 줘요.', '창이나 오른쪽 \'청첩장\' 손잡이를 누르면 6초 더 보여요. ✕를 누르면 바로 숨어요.']
+        : ['작은 창이 지금 만지는 칸을 피해 다른 모서리로 비켜요.', '비킬 곳이 없으면 오른쪽 아래 \'청첩장\' 동그라미로 접혀요. 설정을 바꾸면 3초 동안 나와서 바뀐 모습을 보여 줘요.', '동그라미를 누르면 6초 동안 보여요. ✕를 누르면 바로 접혀요.'], show: () => ldhIntroSteps('easy-lens') },
     { t: '작은 청첩장 창 쓰는 법', d: '옮기기 · 크게 보기', when: c => c.mv === 'lens' && spLensKind() === 'plain', steps: ['작은 창에 지금 고치는 곳이 크게 보여요.', '창을 끌면 원하는 자리로 옮겨져요. 옆 끝으로 밀면 숨어요.', '창을 누르면 청첩장 전체가 크게 보여요.'], show: () => ldhIntroSteps('easy-lens') },
     { t: '글자 위치 · 스티커까지 바꾸고 싶어요', d: '전문가 모드에서 자세히 꾸며요', steps: ['[전문가 모드]에서는 글자를 끌어서 옮기고, 스티커를 하나씩 붙이고, 칸 모양을 더 자세히 바꿀 수 있어요.', '지금 적은 내용은 그대로 옮겨져요. 언제든 간편 만들기로 돌아올 수 있어요.', '[전문가 모드] 버튼은 질문을 다 마치면 위에 나와요. 지금 가려면 아래 버튼을 눌러요.'], go: ['전문가 모드로 가기', () => { closeLdh(); spInPlace ? spExitInPlace() : simpleToFull(); }] },
 ];
@@ -19824,7 +19831,7 @@ function ldhIntroSteps(kind) {
     if (kind === 'easy-lens') return [
         spLensKind() === 'plain' || !document.documentElement.classList.contains('sp-lens-auto-hide')
             ? { el: () => ldh$('#spLensUi'), t: '작은 청첩장 창', x: spLensKind() === 'plain' ? '지금 고치는 곳이 여기 크게 보여요. 창 안을 위아래로 끌면 넘겨 보고, 위 이름 줄을 끌면 옮겨지고, 옆으로 쓸면 숨어요. 누르면 전체가 보여요.' : '지금 고치는 곳이 여기 보여요. 창 안을 위아래로 끌면 넘겨 보고, 옆으로 쓸면 숨어요.' }
-            : { el: () => ldh$('#spLensTab'), t: '청첩장 창', x: '평소엔 여기 숨어 있어요. 설정을 바꾸면 2초 동안 나와 바뀐 모습을 보여 주고, 누르면 계속 보여요.' }, help];
+            : { el: () => ldh$('#spLensTab'), t: '청첩장 창', x: '평소엔 여기 숨어 있어요. 설정을 바꾸면 3초 동안 나와 바뀐 모습을 보여 주고, 누르면 6초 동안 보여요.' }, help];
     if (kind === 'easy-pc') return [
         { el: () => ldh$('#phoneFrame'), t: '여기가 내 청첩장', x: '오른쪽에 적으면 여기 청첩장이 바로 바뀌어요.' },
         { el: ldhUndoEl, t: '잘못 고쳤으면', x: '이 화살표를 누르면 바로 전으로 돌아가요.' }, help];
