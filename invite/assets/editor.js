@@ -8863,7 +8863,7 @@ function showScreen(name) {
 let startTrack = 'simple';
 const ONB_STEPS_BY = { simple: ['디자인', '칸 채우기', '발행'], custom: ['바탕', '두 사람', '꾸미기'] };
 let onboardingActive = false;
-let SAVE_OK = false, DATE_SET = false, DATE_DEMO = null; const NAME_SET = new Set(), NAME_DEMO = {}; // 처음 저장 관문 (saveGateOk - 디자인을 고르고 두 분 이름 + 예식 날짜를 정한 뒤에)
+let SAVE_OK = false, DATE_SET = false, DATE_DEMO = null, TIME_SET = false; const NAME_SET = new Set(), NAME_DEMO = {}; // 처음 저장 관문 (saveGateOk - 디자인을 고르고 두 분 이름 + 예식 날짜를 정한 뒤에)
 function renderOnbSteps() {
     const ONB_STEPS = ONB_STEPS_BY[startTrack] || ONB_STEPS_BY.simple;
     document.querySelectorAll('.onb-steps[data-onb-step]').forEach(el => {
@@ -9948,6 +9948,7 @@ function dtCalendar(box, cur, onPick) {
 // 시간: 오전/오후 + 30분 단위 칩 + "다른 시간"(10분 단위). 고르면 onPick('HH:MM')
 const DT_SLOTS = { am: ['10:00', '10:30', '11:00', '11:30'], pm: ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30'] };
 function dtTimePicker(box, cur, onPick) {
+    { const pick0 = onPick; onPick = v => { TIME_SET = true; delete state.timeDemo; pick0(v); }; } // (고객이 예식 시간을 골랐음 - 디자인 예시 시간과 구분)
     let t = cur || '', ap = t && +t.split(':')[0] < 12 ? 'am' : 'pm';
     const all = DT_SLOTS.am.concat(DT_SLOTS.pm);
     let custom = !!t && !all.includes(t);
@@ -11132,7 +11133,7 @@ function spResumeStep() {
     return i >= 0 ? i : 0;
 }
 // 간편 만들기 진행 상태 (질문 화면/목록, 지금 질문, 답, 질문이 켠 섹션, 디자인에서 꺼 둔 섹션, 목록 묶음·순서) - 디자인과 같이 저장
-const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spPvSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom', 'spTaskOk'];
+const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spPvSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom', 'spTaskOk', 'timeDemo'];
 function spAddGo(k) {
     if (k === '#stk') { state.spView = 'list'; spOpenSet = new Set(['theme']); spRender(); setTimeout(() => { const el = document.getElementById('spStkSets'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 140); return; }
     const st = spSteps().find(x => x.k === k); if (!st) return;
@@ -11334,14 +11335,14 @@ const spAddDesc = st => SP_ADD_DESC[st.k] || ((window.InviteBlocks && InviteBloc
 function spShowFinal(b) { spOpenPreview(true, false); }
 // 발행 준비 C안 (관리자 손쉬운 제작 → 발행 준비 카드 'next'): ① 채우기 → ② 확인하기 → ③ 발행하기 막대 + 지금 할 일 하나만 큰 버튼으로
 // ① = 발행 전 점검(pubChecks)에서 고칠 것 → 하나씩 pubGo · ② = 완성본을 한 번 봄(state.spPvSeen) · ③ = 발행 · 발행 뒤엔 주소 복사
-const SP_NEXT_DO = { names: '두 분 이름 적기', date: '예식 날짜 정하기', venue: '예식장 넣기', hero: '', gallery: '갤러리 사진 넣기', greet: '인사말 쓰기', account: '계좌 다시 보기', contact: '연락처 번호 고치기' };
+const SP_NEXT_DO = { names: '두 분 이름 적기', date: '예식 날짜 정하기', time: '예식 시간 고르기', venue: '예식장 넣기', hero: '', gallery: '갤러리 사진 넣기', greet: '인사말 쓰기', account: '계좌 다시 보기', contact: '연락처 번호 고치기' };
 function spPubUrl() { return viewSlug ? `${location.origin}/${encodeURIComponent(viewSlug)}` : ''; }
 function spNextHtml(bads, all, nOk, short) {
     const step = bads.length ? 1 : isPublished ? 4 : state.spPvSeen ? 3 : 2, url = spPubUrl();
     const fill = Math.round(nOk / Math.max(1, all) * 100);
     const seg = n => `<i class="${step > n ? 'done' : step === n ? 'cur' : ''}"${n === 1 && step === 1 ? ` style="--f:${fill}%"` : ''}></i>`;
     const lab = (n, t) => `<span class="${step > n ? 'done' : step === n ? 'cur' : ''}">${step > n ? '✓' : n} ${t}</span>`;
-    const doOf = c => c.id === 'hero' ? (spHeroKind() === 'video' ? '첫 화면 영상 넣기' : '첫 화면 사진 넣기') : SP_NEXT_DO[c.id] || c.t;
+    const doOf = c => c.task ? (SP_TASK_DO[c.task] || c.t) : c.id === 'hero' ? (spHeroKind() === 'video' ? '첫 화면 영상 넣기' : '첫 화면 사진 넣기') : SP_NEXT_DO[c.id] || c.t;
     let cap, t, after, act, sub = '';
     if (step === 1) { const c = bads[0]; cap = `다음 할 일 · ${bads.length}개 남음`; t = doOf(c); act = `data-pc-go="${c.id}"`;
         after = bads.length > 1 ? '이어서 ' + bads.slice(1, 4).map(x => short[x.id] || x.t).join(' · ') + (bads.length > 4 ? ' …' : '') : '이것만 하면 채우기 끝이에요';
@@ -11379,8 +11380,8 @@ function spMoreTipHtml() {
 }
 // 맨 위 '발행 준비' 카드 html (목록을 그릴 때 · 고칠 때마다 spListLive가 이것만 바꿈)
 function spReadyHtmlOf(checks, bads) {
-    const all = checks.filter(c => !c.info).length, nOk = all - bads.length, ready = spOpt('flow', 'summary') && all > 0;
-    const short = { names: '이름', date: '날짜', venue: '예식장', hero: spHeroKind() === 'video' ? '첫 화면 영상' : '첫 화면 사진', gallery: '갤러리', greet: '인사말', account: '계좌', contact: '연락처' };
+    const all = checks.filter(c => !c.info).length + bads.filter(b => b.task).length, nOk = all - bads.length, ready = spOpt('flow', 'summary') && all > 0;
+    const short = { names: '이름', date: '날짜', time: '시간', venue: '예식장', hero: spHeroKind() === 'video' ? '첫 화면 영상' : '첫 화면 사진', gallery: '갤러리', greet: '인사말', account: '계좌', contact: '연락처' };
     const readyHtml = ready && EASY_READY === 'next' ? spNextHtml(bads, all, nOk, short) : ready ? `<div class="spb-ready${bads.length ? '' : ' ok'}${spReadyFlash ? ' flash' : ''}" id="spReady"><div class="r1"><b>${isPublished ? '발행한 청첩장' : bads.length ? '발행 준비' : '발행 준비 다 됐어요'}</b><span>${nOk} / ${all}</span></div>
         <p>${bads.length ? `아래 ${bads.length}개를 채우면 좋아요 · 눌러서 바로 채워요` : isPublished ? '고친 내용은 저장되면 하객 화면에도 바로 바뀌어요' : '이제 완성본을 보고 발행하면 돼요'}</p><div class="bar"><i style="width:${Math.round(nOk / all * 100)}%"></i></div>
         ${bads.length ? `<div class="chips">${bads.map(c => `<button type="button" data-pc-go="${c.id}" title="${esc(c.t)}">${esc(short[c.id] || c.t)}</button>`).join('')}</div>` : ''}
@@ -11436,17 +11437,23 @@ const spLocF = () => (spBlock('location') || {}).fields || {};
 const SP_TASKS = [
     { id: 'names:name', k: 'names', ask: 'names:name', t: () => '두 분 이름', chk: 'names', sum: () => { const w = weddingInfo(); return `${w.groom} · ${w.bride}`; },
       cut: b => spKeepOnly(b, spFldHas('[data-wi="groom"]')) },
-    { id: 'names:date', k: 'names', ask: 'names:date', t: () => weddingInfo().time ? '예식 날짜' : '예식 날짜 · 시간', chk: 'date', sum: () => { const w = weddingInfo(); return w.undecided ? '예식 일정 미정' : w.date ? dtDateText(w.date) + (w.time ? ' ' + w.time : '') : ''; },
-      cut: b => { const tm = !!weddingInfo().time; spKeepOnly(b, c => spFldHas('#spDateBtn, #spTbd')(c) || (!tm && spFldHas('#spTime')(c))); } }, // (앞에서 시간을 정했으면 시간은 안 보임)
+    { id: 'names:date', k: 'names', ask: 'names:date', t: () => '예식 날짜', chk: 'date', sum: () => { const w = weddingInfo(); return w.undecided ? '예식 일정 미정' : w.date ? dtDateText(w.date) : ''; },
+      cut: b => spKeepOnly(b, spFldHas('#spDateBtn, #spTbd')) },
+    { id: 'names:time', k: 'names', ask: 'names:date', t: () => '예식 시간', chk: 'time', sum: () => weddingInfo().time || '', // (앞에서 시간을 골랐으면 다 채운 칸으로 - 디자인 예시 시간은 고른 게 아님)
+      cut: b => spKeepOnly(b, spFldHas('#spTime')) },
     { id: 'venue:name', k: 'venue', ask: 'venue', t: () => '예식장 이름', bad: () => { const f = spLocF(), vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; return vd.v ? '예식장이 디자인 예시 그대로예요' : !f.venue ? '예식장 이름을 적어 주세요' : ''; }, sum: () => spLocF().venue,
       cut: b => spKeepOnly(b, spFldHas('[data-f="venue"]')) },
     { id: 'venue:addr', k: 'venue', ask: 'venue', t: () => '예식장 주소', bad: () => { const f = spLocF(), vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; return vd.a ? '주소가 디자인 예시 그대로예요' : ''; },
-      todo: () => !(spLocF().address || spLocF().addressBase), hint: '주소를 넣으면 지도와 길찾기 버튼이 생겨요', sum: () => spLocF().address || spLocF().addressBase,
-      cut: b => spKeepOnly(b, spFldHas('[data-f="addressBase"]')) },
+      todo: () => !(spLocF().address || spLocF().addressBase) && !spTaskOk('venue:addr'), hint: '주소를 넣으면 지도와 길찾기 버튼이 생겨요', sum: () => spLocF().address || spLocF().addressBase || '주소 없이 둘게요',
+      cut: b => spKeepOnly(b, spFldHas('[data-f="addressBase"]')), after: b => { if (!(spLocF().address || spLocF().addressBase)) spTaskOkBtn(b, 'venue:addr', '주소 없이 둘게요'); } },
     { id: 'hero:photo', k: 'hero', ask: 'hero:media', part: 'media', t: () => spHeroKind() === 'video' ? '첫 화면 영상' : '첫 화면 사진', chk: 'hero', sum: () => spHeroKind() === 'video' ? '영상을 넣었어요' : '사진을 넣었어요',
       cut: b => b.querySelectorAll(':scope > .wz-h, :scope > .wz-lead').forEach(x => x.remove()) },
     { id: 'hero:edit', k: 'hero', ask: 'hero:media', t: () => '사진 보일 부분 · 확대', show: () => spHeroKind() !== 'video' && !spChecksBad('hero'), todo: () => !spTaskOk('hero:edit'), hint: '사진을 끌어서 얼굴이 잘 보이게 맞춰요 · 그대로 둬도 돼요', sum: () => '맞췄어요',
       cut: b => spKeepOnly(b, c => c.matches('.wz-field') && /보일 부분/.test((c.querySelector('.wz-lab') || {}).textContent || '')), after: b => spTaskOkBtn(b, 'hero:edit', '이대로 좋아요') },
+    { id: 'hero:layout', k: 'hero', ask: 'hero:look', t: () => '첫 화면 글자 모양', show: () => !spChecksBad('hero'), todo: () => !spTaskOk('hero:layout'), hint: '사진 위에 올릴 글자 모양을 골라요 · 그대로 둬도 돼요', sum: () => '골랐어요',
+      cut: b => spKeepOnly(b, c => c.matches('.wz-field') && /레이아웃/.test((c.querySelector('.wz-lab') || {}).textContent || '')), after: b => spTaskOkBtn(b, 'hero:layout', '이대로 좋아요') },
+    { id: 'hero:shade', k: 'hero', ask: 'hero:look', t: () => spHeroKind() === 'video' ? '영상 위 글자 잘 보이게' : '사진 위 글자 잘 보이게', show: () => !spChecksBad('hero'), todo: () => !spTaskOk('hero:shade'), hint: '사진이 밝으면 글자 뒤를 살짝 어둡게 해요 · 그대로 둬도 돼요', sum: () => '골랐어요',
+      cut: b => spKeepOnly(b, c => c.matches('.sp-shade')), after: b => spTaskOkBtn(b, 'hero:shade', '이대로 좋아요') },
     { id: 'gallery:photos', k: 'gallery', t: () => '갤러리 사진', chk: 'gallery', sum: () => (spSum(spSteps().find(x => x.k === 'gallery') || {})[0] || ''),
       cut: b => { const f = b.querySelector(':scope > .wz-field'); spKeepOnly(b, c => c === f); } },
     { id: 'greet:text', k: 'greet', ask: 'greet', t: () => '인사말', chk: 'greet', sum: () => (spSum(spSteps().find(x => x.k === 'greet') || {})[0] || ''), cut: () => {} },
@@ -11455,6 +11462,14 @@ const SP_TASKS = [
     { id: 'contact:phone', k: 'family', t: () => '연락처 번호', chk: 'contact', sum: () => '번호를 고쳤어요', cut: b => b.querySelectorAll(':scope > .sp-incl').forEach(x => x.remove()) },
 ];
 let spLastChecks = [];
+// 채우기에 남은 것 = 고칠 것(pubChecks) + 아직 안 고른 할 일(todo: 사진 보일 부분 · 첫 화면 글자 모양 · 글자 잘 보이게 · 예식장 주소) - 할 일도 [이대로 좋아요]를 눌러야 채우기 끝
+//  (발행 준비 카드 '다음 할 일'에도 나옴: id 'task:<할 일 id>' → pubGo)
+const SP_TASK_DO = { 'venue:addr': '예식장 주소 넣기', 'hero:edit': '사진 보일 부분 맞추기', 'hero:layout': '첫 화면 글자 모양 고르기', 'hero:shade': '사진 위 글자 잘 보이게' };
+function spFillLeft(bads) {
+    if (!spOpt('flow', 'oneByOne') || !spOpt('flow', 'hideDone') || spInPlace || SAMPLE_ID || isPublished) return bads;
+    const ks = new Set(spSteps().map(x => x.k)), on = k => k === 'venue' ? !!(spBlock('location') || {}).enabled : true;
+    return bads.concat(SP_TASKS.filter(tk => tk.todo && ks.has(tk.k) && on(tk.k) && (!tk.show || tk.show()) && spTaskState(tk).stt === 'todo').map(tk => ({ id: 'task:' + tk.id, t: tk.t(), task: tk.id })));
+}
 const spChecksBad = id => spLastChecks.some(c => c.id === id && !c.ok && !c.info);
 const spTasksOf = k => SP_TASKS.filter(t => t.k === k);
 function spTaskState(tk) {
@@ -11485,19 +11500,19 @@ function spListLive() {
     if (!pane || state.spView !== 'list' || pane._spKey !== 'list' || spOrderMode || !document.documentElement.classList.contains('simple-mode')) return;
     let checks = []; try { checks = pubChecks(); } catch (e) { return; }
     spLastChecks = checks;
-    const bads = checks.filter(c => !c.ok && !c.info), all = checks.filter(c => !c.info).length, ready = spOpt('flow', 'summary') && all > 0;
+    const bads = checks.filter(c => !c.ok && !c.info), all = checks.filter(c => !c.info).length, ready = spOpt('flow', 'summary') && all > 0, fill = spFillLeft(bads);
     const typing = () => { const a = document.activeElement; return a && pane.contains(a) && (a.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]), textarea') || a.isContentEditable); };
-    const later = spListLater(ready, bads);
+    const later = spListLater(ready, fill);
     if (pane._task && !typing() && SP_TASKS.some(tk => (!tk.show || tk.show()) && spTaskState(tk).stt !== 'done' && !spGone.has(tk.id) && !pane.querySelector(`.spb-li[data-li="${tk.id}"]`) && pane.querySelector(`.spb-li[data-k="${tk.k}"]`))) { spRender(); return; } // (사진을 올리면 '보일 부분' 할 일이 새로 생김)
-    if (!!pane._task !== !!(spHideDone(bads) && spOpt('flow', 'oneByOne')) && !typing()) { spRender(); return; }
+    if (!!pane._task !== !!(spHideDone(fill) && spOpt('flow', 'oneByOne')) && !typing()) { spRender(); return; }
     if (later !== !!pane._later) { spLaterWas = !!pane._later; // 다 채움(또는 다시 빠짐) → 목록을 다시 그림 (적는 중이면 칸에서 손을 뗀 뒤)
         if (typing()) { if (!pane._liveWait) { pane._liveWait = true; document.addEventListener('focusout', () => { pane._liveWait = false; setTimeout(spListLive, 60); }, { once: true }); } return; }
         spRender(); return;
     }
-    const old = pane.querySelector('#spReady'), html = spReadyHtmlOf(checks, bads);
+    const old = pane.querySelector('#spReady'), html = spReadyHtmlOf(checks, fill);
     if (old && html) { const t = document.createElement('div'); t.innerHTML = html; const nw = t.firstElementChild; if (nw && nw.outerHTML !== old.outerHTML) { old.replaceWith(nw); pane.querySelectorAll('#spReady [data-pc-go]').forEach(b => b.addEventListener('click', () => pubGo(b.dataset.pcGo))); spNextBind(pane); pane.querySelector('#spReadyPv')?.addEventListener('click', () => pane.querySelector('#spListDone').click()); pane.querySelector('#spReadyKk')?.addEventListener('click', () => kkSheetOpen()); } }
     const warnOf = {}; bads.forEach(c => { const k = (PUB_GO[c.id] || [])[1]; if (k && !warnOf[k]) warnOf[k] = c.t; });
-    const steps = spSteps(), hideD = spHideDone(bads);
+    const steps = spSteps(), hideD = spHideDone(fill);
     const goneBad = k => warnOf[k] || (() => { const tk = SP_TASKS.find(x => x.id === k); return !!(tk && (!tk.show || tk.show()) && spTaskState(tk).stt !== 'done'); })();
     if (pane._task && [...spGone].some(goneBad) && !typing()) { [...spGone].forEach(k => { if (goneBad(k)) spGone.delete(k); }); spRender(); return; }
     if ([...spGone].some(k => warnOf[k]) && !typing()) { [...spGone].forEach(k => { if (warnOf[k]) spGone.delete(k); }); spRender(); return; } // 접어 둔 칸이 다시 덜 채워짐 → 다시 보이게
@@ -11526,6 +11541,7 @@ function spRenderList() {
     let checks = []; try { checks = pubChecks(); } catch (e) {}
     const bads = checks.filter(c => !c.ok && !c.info), warnOf = {}; bads.forEach(c => { const k = (PUB_GO[c.id] || [])[1]; if (k && !warnOf[k]) warnOf[k] = c.t; });
     spLastChecks = checks;
+    const fill = spFillLeft(bads);
     const taskItem = (tk, st) => { const sw = swOf(st), open = spOpenSet.has(tk.id), r = spTaskState(tk);
         return `<section class="spb-li spb-task ${r.stt}${open ? ' open' : ''}" data-li="${tk.id}" data-task="1" data-k="${st.k}"><div class="spb-h"><button type="button" class="spb-t" data-li-tog="${tk.id}" aria-expanded="${open}"><span class="spb-st spb-${r.stt}" aria-hidden="true"></span><span class="spb-tx"><b>${esc(tk.t())}</b><small>${esc(r.sum)}</small></span><span class="spb-chev" aria-hidden="true"></span></button>${sw ? `<label class="sp-li-sw" title="끄면 청첩장에서 빠져요"><input type="checkbox" data-li-sw="${sw}" aria-label="${esc(st.t)} 끄기" checked><i></i></label>` : ''}</div>${open ? `<div class="sp-li-b" data-li-body="${tk.id}"></div>` : ''}</section>`; };
     const item = (st, add) => { const sw = swOf(st), on = sw ? spBlock(sw).enabled : true, open = on && spOpenSet.has(st.k);
@@ -11538,7 +11554,7 @@ function spRenderList() {
     const isOff = st => { const sw = swOf(st); return !!(sw && !spBlock(sw).enabled); };
     // 채우기를 다 끝내기 전엔 꾸미기 · 더 넣을 수 있는 칸 · 섹션 순서 바꾸기를 접어 둠 (사용자 요청 2026-10-19, 관리자 flow.later) - 고칠 것이 있는 꾸미기 칸만 보임
     const all = checks.filter(c => !c.info).length, nOk = all - bads.length, ready = spOpt('flow', 'summary') && all > 0;
-    const later = spListLater(ready, bads), hideD = spHideDone(bads), taskMode = hideD && spOpt('flow', 'oneByOne');
+    const later = spListLater(ready, fill), hideD = spHideDone(fill), taskMode = hideD && spOpt('flow', 'oneByOne');
     // 다 채운 칸 숨기기: 지난번에 보이던 칸이 다 채워졌으면 잠깐 두었다가 접고, 처음부터 다 채워져 있던 칸은 바로 '다 채운 칸'으로
     const shownBefore = again && pane._shown ? pane._shown : null, shownNow = new Set(), doneNames = [];
     const liVis = (st, g) => { const r = spLiState(st, swOf(st), warnOf);
@@ -11553,14 +11569,14 @@ function spRenderList() {
     const groups = SP_GROUPS.map(([g, t, sub]) => { const base = spSortByBlocks(steps.filter(st => !designOff(st) && !isOff(st) && spListGroup(st) === g && !(later && g === 'deco' && !warnOf[st.k]))), rows = [];
         base.forEach(st => { const tks = taskMode && g !== 'deco' ? spTasksOf(st.k) : []; if (tks.length) tks.forEach(tk => { if (taskVis(tk)) rows.push(taskItem(tk, st)); }); else if (liVis(st, g)) rows.push(item(st)); }); // (할 일 칸이 있는 섹션은 옵션 하나씩)
         const tail = g === 'deco' && !later ? deskSh : ''; return rows.length || tail ? `<div class="spb-grp spb-${g}${g === 'deco' && spLaterNew ? ' spb-new' : ''}" data-g="${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${rows.join('')}${tail}</div></div>` : ''; }).join('')
-        + spDoneRowHtml(doneNames, bads) + (later ? `<div class="spb-later" id="spLater"><i aria-hidden="true">✦</i><span><b>꾸미기 · 칸 더 넣기</b><small>섹션 순서 바꾸기도 · 위 칸을 다 채우면 나와요</small></span><button type="button" id="spLaterOpen">먼저 보기</button></div>` : '');
+        + spDoneRowHtml(doneNames, fill) + (later ? `<div class="spb-later" id="spLater"><i aria-hidden="true">✦</i><span><b>꾸미기 · 칸 더 넣기</b><small>섹션 순서 바꾸기도 · 위 칸을 다 채우면 나와요</small></span><button type="button" id="spLaterOpen">먼저 보기</button></div>` : '');
     // 더 넣을 수 있는 칸 (꺼진 칸 + 디자인에서 꺼 둔 칸 · 스위치를 켜면 제 묶음으로 가서 펼쳐짐) - 예전 정리 화면 '기능 더 넣기'
     const adds = steps.filter(isOff), stkAdd = spOpt('flow', 'stkset') && !stkSetCur() && steps.some(x => x.k === 'theme') && stkSetList().length > 0;
     const addN = 5, addAll = spAddMore || adds.length <= addN + 1;
     const addHtml = later && !spDoneShow ? '' : adds.length || stkAdd ? `<div class="spb-grp spb-add" data-g="add"><div class="spb-gh"><b>더 넣을 수 있는 칸</b><small>켜면 청첩장에 들어가요</small></div><div class="spb-card">${(addAll ? adds : adds.slice(0, addN)).map(st => item(st, true)).join('')}${stkAdd ? `<section class="spb-li off" data-li="#stk"><div class="spb-h"><button type="button" class="spb-t" data-sp-add="#stk"><span class="spb-st spb-plus" aria-hidden="true"></span><span class="spb-tx"><b>스티커 꾸미기</b><small>하트·꽃·별 스티커를 세트 하나로 한 번에</small></span><span class="spb-chev" aria-hidden="true"></span></button></div></section>` : ''}${addAll ? '' : `<button type="button" class="spb-addmore" id="spAddMore">${adds.length - addN}개 더 보기</button>`}</div></div>` : '';
     // 맨 위 '발행 준비' 카드 (관리자 손쉬운 제작 → 간편 만들기 전체 'summary'를 끄면 예전 '꼭 필요한 것' 칸)
     spLaterNew = false; pane._later = later; pane._shown = shownNow; pane._task = taskMode;
-    const readyHtml = spReadyHtmlOf(checks, bads);
+    const readyHtml = spReadyHtmlOf(checks, fill);
     spReadyFlash = false;
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 만들기</b></div>${spUdHtml()}</div>
         <div class="spb">
@@ -13452,7 +13468,7 @@ async function bootstrapFromServer() {
             wizardData.groomName = data.groom_name || wizardData.groomName;
             wizardData.brideName = data.bride_name || wizardData.brideName;
             if (String(data.groom_name || '').trim()) NAME_SET.add('groom'); if (String(data.bride_name || '').trim()) NAME_SET.add('bride'); // 주문 때 받은 이름 = 고객이 적은 이름
-            if (data.wedding_datetime && !isNaN(new Date(String(data.wedding_datetime).replace(' ', 'T')))) DATE_SET = true; // 주문 때 받은 예식 날짜도
+            if (data.wedding_datetime && !isNaN(new Date(String(data.wedding_datetime).replace(' ', 'T')))) { DATE_SET = true; TIME_SET = true; } // 주문 때 받은 예식 날짜도
             wizardData.venue = data.venue_name || wizardData.venue;
             wizardData.addressBase = data.venue_address || wizardData.addressBase;
             if (data.wedding_datetime) {
@@ -13743,7 +13759,9 @@ document.addEventListener('input', e => {
     if (k && String(t.value != null ? t.value : t.textContent || '').trim()) NAME_SET.add(k);
     if (t.matches('[data-wi="date"], [data-wfield="weddingDate"]') && String(t.value || '').trim()) DATE_SET = true;
 }, true);
-function nameDemoMark() { const wi = weddingInfo() || {}; ['groom', 'bride'].forEach(k => { if (!NAME_SET.has(k)) NAME_DEMO[k] = String(wi[k] || '').trim(); }); if (!DATE_SET) DATE_DEMO = String(wi.date || ''); }
+function nameDemoMark() { const wi = weddingInfo() || {}; ['groom', 'bride'].forEach(k => { if (!NAME_SET.has(k)) NAME_DEMO[k] = String(wi[k] || '').trim(); }); if (!DATE_SET) DATE_DEMO = String(wi.date || ''); if (!TIME_SET) { if (wi.time) state.timeDemo = String(wi.time); else delete state.timeDemo; } }
+// 예식 시간을 정했는지: 시간을 골랐거나 · 디자인 예시 시간(state.timeDemo, SP_KEEP로 저장 - 새로고침해도 기억)과 다름
+function timeTyped(wi) { wi = wi || weddingInfo() || {}; return !!wi.time && (TIME_SET || !state.timeDemo || String(wi.time) !== state.timeDemo); }
 // 예식 날짜를 정했는지: 달력에서 골랐거나 · 디자인 예시 날짜와 다르거나 · '아직 일정을 잡지 않았어요'를 골랐음
 function dateTyped(wi) { wi = wi || weddingInfo() || {}; if (wi.undecided) return true; const d = String(wi.date || ''); return !!d && (DATE_SET || (DATE_DEMO != null && d !== DATE_DEMO)); }
 // 그 이름 칸을 고객이 정했는지: 직접 적었거나(어느 칸이든) 디자인 예시 이름과 다름 (예전엔 '직접 적었는지'만 봐서, 지켜보지 않는 칸에 적으면 발행까지 막혔음)
@@ -13838,6 +13856,8 @@ function pubChecks() {
     else if (new Date(wi.date + 'T00:00:00') < today) out.push({ id: 'date', t: '예식 날짜가 이미 지났어요', s: dtDateText(wi.date) + ' · 날짜를 다시 확인해 주세요', go: '날짜 고치기' });
     else if (!SAVE_OK && !dateTyped(wi)) out.push({ id: 'date', t: '예식 날짜가 아직 디자인 예시 날짜예요', s: dtDateText(wi.date) + ' · 우리 예식 날짜로 골라 주세요', go: '날짜 고르기' });
     else out.push({ id: 'date', ok: 1, t: '예식 날짜', s: dtDateText(wi.date) + (wi.time ? ' ' + wi.time : '') });
+    if (!(wi.undecided || state.dateTbd) && wi.date) out.push(!wi.time ? { id: 'time', t: '예식 시간이 비어 있어요', s: '청첩장 날짜 옆에 시간이 들어가요', go: '시간 고르기' }
+        : !timeTyped(wi) ? { id: 'time', t: '예식 시간이 아직 디자인 예시 시간이에요', s: wi.time + ' · 우리 예식 시간으로 골라 주세요', go: '시간 고르기' } : { id: 'time', ok: 1, t: '예식 시간', s: wi.time });
     if (on('location')) {
         const f = F('location'), vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {};
         if (vd.v || vd.a) out.push({ id: 'venue', t: '예식장이 디자인 예시 그대로예요', s: (f.venue || f.address || '') + ' · 우리 예식장으로 바꿔 주세요', go: '예식장 찾기' });
@@ -13872,11 +13892,18 @@ function pubChecks() {
     return out;
 }
 const PUB_GO = { // 줄을 누르면 열 곳: [간편 만들기 질문 id, 간편 목록 칸, 전문가 섹션]
-    names: ['names:name', 'names', '#info'], date: ['names:date', 'names', '#info'], venue: ['venue', 'venue', 'location'], hero: ['hero:media', 'hero', null],
+    names: ['names:name', 'names', '#info'], date: ['names:date', 'names', '#info'], time: ['names:date', 'names', '#info'], venue: ['venue', 'venue', 'location'], hero: ['hero:media', 'hero', null],
     gallery: ['', 'gallery', 'gallery'], greet: ['greet', 'greet', 'greeting'], account: ['account', 'account', 'account'], contact: ['', 'family', 'contact'],
 };
 function pubGo(id) {
     pubClose();
+    if (String(id).startsWith('task:')) { // 할 일 칸 (옵션 하나씩) 바로 열기
+        const tid = id.slice(5), tk = SP_TASKS.find(x => x.id === tid), st = tk && spSteps().find(x => x.k === tk.k);
+        if (document.documentElement.classList.contains('sp-pv')) spClosePreview();
+        state.spView = 'list'; spOpenSet = new Set([tid]); if (st) { spHeroPhase = 'pick'; try { spSelectStep(st); } catch (e) {} } spRender();
+        setTimeout(() => { const el = [...document.querySelectorAll('#simplePane .spb-li[data-li]')].find(x => x.dataset.li === tid); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); if (st) try { spScrollPreview(st.s || []); } catch (e) {} }, 120);
+        return;
+    }
     const g = PUB_GO[id]; if (!g) return;
     if (document.documentElement.classList.contains('simple-mode')) {
         if (document.documentElement.classList.contains('sp-pv')) spClosePreview();
