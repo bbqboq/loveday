@@ -4301,7 +4301,7 @@ function renderGalleryEditor(wrap, block) {
         <div class="mini-label" style="margin-top:16px;">좌우 여백</div>
         <div class="width-row">
             <button type="button" class="width-btn ${!f.edgeToEdge?'active':''}" data-gedge="0">기본</button>
-            <button type="button" class="width-btn ${f.edgeToEdge?'active':''}" data-gedge="1">꽉 채우기(여백 없앰)</button>
+            <button type="button" class="width-btn ${f.edgeToEdge?'active':''}" data-gedge="1">가로 100% 꽉 채우기</button>
         </div>
         <div class="mini-label" style="margin-top:16px;">사진 클릭 시 확대(라이트박스)</div>
         <div class="width-row">
@@ -9975,6 +9975,7 @@ function dtTimePicker(box, cur, onPick) {
 const WZ_STEP_NAMES = ['두 사람', '예식장', '인사말', '마음 전할 곳'];
 // 인사말 예시 문구 - 간편 만들기(인사말 칸)와 전문가 모드(인사말 편집창 [예시 문구])가 같이 씀
 const WZ_TONES = {
+    '기본': ['서로 다른 길을 걸어온 두 사람이\n이제 한 곳을 바라보며 걸어가려 합니다.'],
     '격식 있게': ['서로가 마주보며 다져온 사랑을\n이제 함께 한곳을 바라보며\n걸어가고자 합니다.\n\n저희 두 사람의 첫걸음에\n귀한 걸음으로 함께해 주시면\n더없는 기쁨이겠습니다.',
               '평생을 같이하고 싶은 사람을 만났습니다.\n서로 아껴주고 이해하며\n사랑하며 살겠습니다.\n\n오셔서 축복해 주시면 감사하겠습니다.',
               '저희 두 사람이 사랑의 결실을 맺어\n부부의 연을 맺게 되었습니다.\n\n바쁘시더라도 오셔서\n앞날을 축복해 주시면\n더없는 영광으로 알겠습니다.'],
@@ -10007,7 +10008,7 @@ function appendGreetPresets(wrap, block) {
     host ? host.appendChild(box) : wrap.appendChild(box);
 }
 const WZ_PARENTS = ['groomFather', 'groomMother', 'brideFather', 'brideMother'];
-let wzTone = '격식 있게', wzSkipCheck = false;
+let wzTone = '기본', wzSkipCheck = false;
 const wzEsc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const WZ_CAL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
 const WZ_DOWN_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
@@ -10334,10 +10335,10 @@ function spAskReveal(st) {
     [...(SP_ASK_REVEAL[spAskId(st)] || []), ...starter].forEach(id => {
         if (rev.includes(id)) return;
         const b = spBlock(id); if (!b || !(state.spDesignOn.includes(id) || starter.includes(id))) return;
+        if (id === 'dday' && (weddingInfo().undecided || state.dateTbd)) return; // 일정 미정이면 디데이는 꺼 둠 (날짜를 고르면 그때 켬 - 예전엔 '켰음'으로 남아 영영 꺼져 있었음)
         rev.push(id);
-        if (id === 'dday' && (weddingInfo().undecided || state.dateTbd)) return; // 일정 미정이면 디데이는 꺼 둠
         b.enabled = true; changed = true;
-        if (id === 'greeting' && state.spAsk && !state.spAsk.greet) state.spAsk.greet = 'ex'; // 미리보기에 보이는 예시 문구 = '예시 문구 그대로'
+        if (id === 'greeting' && state.spAsk && !state.spAsk.greet) state.spAsk.greet = 'ex'; // 미리보기에 보이는 예시 문구 = '예시 문구에서 고르기'
     });
     if (changed) { try { renderBlockList(); } catch (e) {} renderPreview(); scheduleSnapshot(); }
     return changed;
@@ -11095,7 +11096,7 @@ const SP_ASK = [
     { k: 'hero', part: 'media', q: '첫 화면에 쓸 사진을 골라 주세요', sub: '청첩장을 열면 휴대폰 화면 가득 가장 먼저 보여요. 유튜브 영상으로 해도 돼요.' },
     { k: 'hero', part: 'look', q: '첫 화면을 꾸며요', sub: '사진 위에 올릴 글자 모양을 골라요. 글자와 나타나는 효과도 바꿀 수 있어요.' },
     { k: 'greet', blk: 'greeting', q: '인사말은 어떻게 할까요?', sub: '청첩장을 열면 처음 읽게 되는 짧은 글이에요.',
-      opts: [['ex', '예시 문구 그대로', '디자인에 들어 있는 문구를 써요'], ['self', '직접 쓰기', '아래에 바로 적어요', 1], ['no', '넣지 않기', '인사말 칸을 빼요']] },
+      opts: [['ex', '예시 문구에서 고르기', '분위기별 예시 중에 마음에 드는 걸 골라요', 1], ['self', '직접 쓰기', '아래 칸에 바로 적어요', 1], ['no', '넣지 않기', '인사말 칸을 빼요']] },
     { k: 'account', blk: 'account', q: '축의금 계좌를 넣을까요?', sub: '하객이 눌러서 계좌번호를 복사할 수 있어요.',
       opts: [['yes', '넣을게요', '아래에 은행과 계좌번호를 적어요', 1], ['no', '넣지 않을게요', '나중에 넣을 수 있어요']] },
     { k: 'rsvp', blk: 'rsvp', q: '참석 여부를 받을까요?', sub: '식사 인원을 미리 알 수 있어요.',
@@ -11133,7 +11134,7 @@ function spResumeStep() {
     return i >= 0 ? i : 0;
 }
 // 간편 만들기 진행 상태 (질문 화면/목록, 지금 질문, 답, 질문이 켠 섹션, 디자인에서 꺼 둔 섹션, 목록 묶음·순서) - 디자인과 같이 저장
-const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spPvSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom', 'spTaskOk', 'timeDemo'];
+const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spPvSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom', 'spTaskOk', 'timeDemo', 'greetDemo', 'spUserOff'];
 function spAddGo(k) {
     if (k === '#stk') { state.spView = 'list'; spOpenSet = new Set(['theme']); spRender(); setTimeout(() => { const el = document.getElementById('spStkSets'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 140); return; }
     const st = spSteps().find(x => x.k === k); if (!st) return;
@@ -11180,7 +11181,7 @@ function spRenderAsk(pane) {
     const spKey = 'ask' + spStep + (scrollPh ? 's' : ''), same = pane._spKey === spKey, keepPane = pane.scrollTop, keepWin = window.scrollY;
     if (same) pane.style.minHeight = pane.offsetHeight + 'px';
     try { same ? stopBgmPreview() : stopAllBgm(); } catch (e) {}
-    if (st && !same) spAskReveal(st);
+    if (st && (!same || spAskId(st) === 'names:date')) spAskReveal(st); // (날짜 질문은 같은 질문 안에서 날짜를 고르면 디데이를 켬)
     const pick = st ? ask[st.k] || '' : '', opt = st && st.opts ? st.opts.find(o => o[0] === pick) : null;
     const backSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>';
     const pct = n => Math.round(n / N * 100) + '%';
@@ -11217,9 +11218,14 @@ function spRenderAsk(pane) {
             const v = b.dataset.ask, o = st.opts.find(x => x[0] === v); ask[st.k] = v;
             const blk = st.blk && spBlock(st.blk);
             if (blk) { blk.enabled = v !== 'no'; try { renderBlockList(); } catch (e) {} }
+            if (st.k === 'greet' && blk) { const gf = blk.fields; // 직접 쓰기 = 예시 문구는 비우고 바로 적게 · 예시 고르기 = 비어 있으면 기본 문구
+                if (v === 'self' && spGreetIsEx(gf.text)) { state.greetKeep = gf.text; gf.text = ''; }
+                else if (v === 'ex' && !String(gf.text || '').trim()) gf.text = state.greetKeep || spGreetTones()['기본'][0];
+                if (v === 'ex') { const tn = spGreetTones(), hit = Object.keys(tn).find(t => tn[t].includes(gf.text)); wzTone = hit || '기본'; } } // (지금 문구가 든 분위기를 펼쳐 둠)
             if (st.k === 'music') { state.bgm = state.bgm || {}; if (v === 'no') state.bgm.enabled = false; else if (state.bgm.url) state.bgm.enabled = true; spBgmPopAt = Date.now(); setTimeout(() => { if (spMvMode()) spMvRefollow(); }, 260); } // (음악 버튼 자리를 보여 줌)
             spChanged(blk ? [blk.id] : null); scheduleSnapshot();
             spRender(); // 고른 표시만 (넘어가기는 [다음]으로) - "직접 쓰기·넣을게요"면 아래에 입력 칸이 나옴
+            if (st.k === 'greet' && v === 'self') { const ta = document.getElementById('spGreet'); if (ta) { ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length); } } // (누르자마자 적을 수 있게 - 손가락으로 누른 그 순간에 해야 휴대폰 키보드가 올라옴)
             if (o && o[3]) setTimeout(() => { const m = document.getElementById('spAskMore'); if (m) m.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60);
         }));
     }
@@ -11243,6 +11249,7 @@ function spRenderAsk(pane) {
 //  칸을 누르면 그 자리에서 펼쳐짐 (한 번에 하나), 접힌 칸은 한 줄 요약 + ✓. 칸 내용은 질문·예전 단계 화면과 같은 것을 씀
 let spOpenSet = new Set();
 const SP_LIST_NOSW = ['names', 'hero', 'theme', 'family', 'music', 'finish'];
+const SP_CORE_KEEP = ['gallery', 'dday']; // 꺼져 있어도 목록 제 묶음에 보이는 칸 (디자인에 들어 있었으면)
 const SP_GROUPS = [['must', '꼭 필요한 것', ''], ['more', '채우면 좋은 것', '안 써도 돼요 · 끄면 안 보여요'], ['deco', '꾸미기', '디자인에 맞춰 골라 두었어요']];
 const SP_GROUP_OF = { names: 'must', hero: 'must', venue: 'must', theme: 'deco', dday: 'deco', video: 'deco', ending: 'deco', music: 'deco', finish: 'deco' };
 function spMustList() { // 꼭 필요한 4가지 (진행 표시)
@@ -11553,6 +11560,8 @@ function spRenderList() {
     const offSet = new Set(Array.isArray(state.spDesignOff) ? state.spDesignOff : []);
     const designOff = st => { if (EASY_SHOWOFF || SP_EXTRA.includes(st.k) || ['names', 'hero', 'theme', 'music', 'finish'].includes(st.k)) return false; /* (관리자가 켠 전문가 모드 섹션은 늘 보임) */ const ids = (st.s || []).filter(id => spHas(id)); return ids.length > 0 && ids.every(id => offSet.has(id) && !spBlock(id).enabled); }; // 디자인에서 꺼 둔 섹션 (관리자: 목록에 안 보이기)
     const isOff = st => { const sw = swOf(st); return !!(sw && !spBlock(sw).enabled); };
+    // 디자인에 들어 있던 갤러리·디데이는 꺼져 있어도 제 묶음에 '켜면 들어가요' 줄로 (채우는 동안 '더 넣을 수 있는 칸'이 접혀 있어 찾을 수 없었음 - 고객이 직접 끈 건 빼고)
+    const coreOff = st => isOff(st) && SP_CORE_KEEP.includes(st.k) && (st.s || []).some(id => (state.spDesignOn || []).includes(id)) && !(st.s || []).some(id => (state.spUserOff || []).includes(id));
     // 채우기를 다 끝내기 전엔 꾸미기 · 더 넣을 수 있는 칸 · 섹션 순서 바꾸기를 접어 둠 (사용자 요청 2026-10-19, 관리자 flow.later) - 고칠 것이 있는 꾸미기 칸만 보임
     const all = checks.filter(c => !c.info).length, nOk = all - bads.length, ready = spOpt('flow', 'summary') && all > 0;
     const later = spListLater(ready, fill), hideD = spHideDone(fill), taskMode = hideD && spOpt('flow', 'oneByOne');
@@ -11567,12 +11576,12 @@ function spRenderList() {
         if (!spGone.has(tk.id) && shownBefore && shownBefore.has(tk.id)) { spLeaveSoon(tk.id, 1100); shownNow.add(tk.id); return true; }
         spGone.add(tk.id); doneNames.push(tk.t()); return false; };
     const deskSh = spOpt('flow', 'deskShadow') ? `<section class="spb-li done" data-li="#shadow"><div class="spb-h"><span class="spb-t spb-t-sw"><span class="spb-st spb-done" aria-hidden="true"></span><span class="spb-tx"><b>PC 그림자</b><small>PC로 볼 때 청첩장 양옆에 은은한 그림자</small></span></span><label class="sp-li-sw" title="PC로 볼 때 청첩장 양옆에 그림자"><input type="checkbox" id="spLiShadow" aria-label="PC 그림자 켜고 끄기" ${state.desktopShadow ? 'checked' : ''}><i></i></label></div></section>` : '';
-    const groups = SP_GROUPS.map(([g, t, sub]) => { const base = spSortByBlocks(steps.filter(st => !designOff(st) && !isOff(st) && spListGroup(st) === g && !(later && g === 'deco' && !warnOf[st.k]))), rows = [];
-        base.forEach(st => { const tks = taskMode && g !== 'deco' ? spTasksOf(st.k) : []; if (tks.length) tks.forEach(tk => { if (taskVis(tk)) rows.push(taskItem(tk, st)); }); else if (liVis(st, g)) rows.push(item(st)); }); // (할 일 칸이 있는 섹션은 옵션 하나씩)
+    const groups = SP_GROUPS.map(([g, t, sub]) => { const base = spSortByBlocks(steps.filter(st => !designOff(st) && (!isOff(st) || coreOff(st)) && spListGroup(st) === g && !(later && g === 'deco' && !warnOf[st.k] && !coreOff(st)))), rows = [];
+        base.forEach(st => { if (coreOff(st)) { rows.push(item(st, true)); return; } const tks = taskMode && g !== 'deco' ? spTasksOf(st.k) : []; if (tks.length) tks.forEach(tk => { if (taskVis(tk)) rows.push(taskItem(tk, st)); }); else if (liVis(st, g)) rows.push(item(st)); }); // (할 일 칸이 있는 섹션은 옵션 하나씩)
         const tail = g === 'deco' && !later ? deskSh : ''; return rows.length || tail ? `<div class="spb-grp spb-${g}${g === 'deco' && spLaterNew ? ' spb-new' : ''}" data-g="${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${rows.join('')}${tail}</div></div>` : ''; }).join('')
         + spDoneRowHtml(doneNames, fill) + (later ? `<div class="spb-later" id="spLater"><i aria-hidden="true">✦</i><span><b>꾸미기 · 칸 더 넣기</b><small>섹션 순서 바꾸기도 · 위 칸을 다 채우면 나와요</small></span><button type="button" id="spLaterOpen">먼저 보기</button></div>` : '');
     // 더 넣을 수 있는 칸 (꺼진 칸 + 디자인에서 꺼 둔 칸 · 스위치를 켜면 제 묶음으로 가서 펼쳐짐) - 예전 정리 화면 '기능 더 넣기'
-    const adds = steps.filter(isOff), stkAdd = spOpt('flow', 'stkset') && !stkSetCur() && steps.some(x => x.k === 'theme') && stkSetList().length > 0;
+    const adds = steps.filter(st => isOff(st) && !coreOff(st)), stkAdd = spOpt('flow', 'stkset') && !stkSetCur() && steps.some(x => x.k === 'theme') && stkSetList().length > 0;
     const addN = 5, addAll = spAddMore || adds.length <= addN + 1;
     const addHtml = later && !spDoneShow ? '' : adds.length || stkAdd ? `<div class="spb-grp spb-add" data-g="add"><div class="spb-gh"><b>더 넣을 수 있는 칸</b><small>켜면 청첩장에 들어가요</small></div><div class="spb-card">${(addAll ? adds : adds.slice(0, addN)).map(st => item(st, true)).join('')}${stkAdd ? `<section class="spb-li off" data-li="#stk"><div class="spb-h"><button type="button" class="spb-t" data-sp-add="#stk"><span class="spb-st spb-plus" aria-hidden="true"></span><span class="spb-tx"><b>스티커 꾸미기</b><small>하트·꽃·별 스티커를 세트 하나로 한 번에</small></span><span class="spb-chev" aria-hidden="true"></span></button></div></section>` : ''}${addAll ? '' : `<button type="button" class="spb-addmore" id="spAddMore">${adds.length - addN}개 더 보기</button>`}</div></div>` : '';
     // 맨 위 '발행 준비' 카드 (관리자 손쉬운 제작 → 간편 만들기 전체 'summary'를 끄면 예전 '꼭 필요한 것' 칸)
@@ -11613,6 +11622,7 @@ function spRenderList() {
         const blk = spBlock(c.dataset.liSw); if (!blk) return;
         blk.enabled = c.checked; try { renderBlockList(); } catch (e) {}
         if (Array.isArray(state.spDesignOff)) state.spDesignOff = state.spDesignOff.filter(id => id !== blk.id); // 직접 끈 칸은 목록에 남김
+        state.spUserOff = (state.spUserOff || []).filter(id => id !== blk.id); if (!c.checked) state.spUserOff.push(blk.id); // (직접 끈 갤러리·디데이는 '더 넣을 수 있는 칸'으로)
         const k = c.closest('[data-li]').dataset.li; spOpenSet = c.checked ? new Set([k]) : (spOpenSet.has(k) ? new Set() : spOpenSet);
         spChanged([blk.id]); scheduleSnapshot(); spRender();
         if (c.checked) { const st = steps.find(x => x.k === k); setTimeout(() => { const el = pane.querySelector(`[data-li="${k}"]`); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); if (st) { spHeroPhase = 'pick'; spSelectStep(st); spScrollPreview(st.s || []); } }, 60); } // '더 넣을 수 있는 칸'에서 켜면 제 묶음으로 옮겨 가니 그 자리로
@@ -12634,8 +12644,10 @@ function spGallery(box) {
         <button type="button" class="sp-g add" data-sp-up="gallery"><span>＋</span>사진 추가</button></div>
         ${spOpt('gallery', 'clearEx') && imgs.some(im => !spIsReal(im)) ? '<button type="button" class="sp-link" id="spClearEx">예시 사진 모두 빼기</button>' : ''}</div>` +
         (spOpt('gallery', 'type') ? spChoiceRow('갤러리 모양', 'layoutType', InviteBlocks.GALLERY_TYPES || [], gal.fields.layoutType || 'grid') : '') +
+        (spOpt('gallery', 'full') ? `<div class="wz-field">${spSw('edgeToEdge', '가로 꽉 채우기', '좌우 여백 없이 화면 폭 가득 사진을 보여 줘요', !!gal.fields.edgeToEdge)}</div>` : '') +
         (spOpt('gallery', 'reveal') ? spChoiceRow('사진 나타나는 방식 <small>하객이 갤러리까지 내려오면</small>', 'reveal', InviteBlocks.GALLERY_REVEALS || [], gal.fields.reveal || '') : '');
     spBindChoice(box, gal.fields, 'gallery', k => { if (k === 'reveal') galleryRevealDemo(); });
+    spBindSw(box, gal.fields, 'gallery');
     box.querySelector('[data-sp-up="gallery"]').addEventListener('click', () => {
         const input = makeFileInput(); input.multiple = true;
         input.addEventListener('change', async () => {
@@ -12832,15 +12844,27 @@ function spVenue(box) {
     });
 }
 // 4. 인사말
+// 인사말 예시 묶음: '기본'엔 디자인에 들어 있던 문구(state.greetDemo)도 같이 (WZ_TONES에 없을 때)
+function spGreetTones() {
+    const t = Object.assign({}, WZ_TONES), d = String(state.greetDemo || '').trim();
+    if (d && !Object.values(WZ_TONES).some(a => a.includes(d))) t['기본'] = [d, ...WZ_TONES['기본']];
+    return t;
+}
+const spGreetIsEx = v => { v = String(v || '').trim(); return !!v && Object.values(spGreetTones()).some(a => a.includes(v)); };
 function spGreet(box) {
     const gb = spBlock('greeting'), f = gb.fields;
     if (!gb.enabled) { box.innerHTML = spH('하객분들께 전할 인사말', '예시를 고르고 조금만 고쳐도 충분해요.') + spInclHtml('greeting') + spOffNote(); return; }
-    box.innerHTML = spH('하객분들께 전할 인사말', spOpt('greet', 'tones') ? '예시를 고르고 조금만 고쳐도 충분해요.' : '하객분들께 전할 말을 적어주세요.') + `
-        ${spOpt('greet', 'tones') ? `<div class="wz-tones">${Object.keys(WZ_TONES).map(t => `<button type="button" class="wz-tone${t === wzTone ? ' on' : ''}" data-tone="${t}">${t}</button>`).join('')}</div>
-        <div class="wz-samples">${WZ_TONES[wzTone].map((t, i) => `<button type="button" class="wz-sample${f.text === t ? ' on' : ''}" data-i="${i}">${wzEsc(t)}</button>`).join('')}</div>` : ''}
-        <textarea class="wz-inp" id="spGreet" maxlength="400">${wzEsc(f.text)}</textarea>`;
+    // 처음 만들 때 질문: [예시 문구에서 고르기] = 분위기 + 예시 목록 · [직접 쓰기] = 적는 칸만 (예시 문구는 비우고 안내 글로)
+    const am = state.spView === 'quick' && box.id === 'spAskMore' ? ((state.spAsk || {}).greet || '') : '';
+    const tones = spGreetTones(); if (!tones[wzTone]) wzTone = '기본';
+    const showList = spOpt('greet', 'tones') && am !== 'self';
+    box.innerHTML = (am ? '' : spH('하객분들께 전할 인사말', spOpt('greet', 'tones') ? '예시를 고르고 조금만 고쳐도 충분해요.' : '하객분들께 전할 말을 적어주세요.')) + `
+        ${showList ? `<div class="wz-tones">${Object.keys(tones).map(t => `<button type="button" class="wz-tone${t === wzTone ? ' on' : ''}" data-tone="${t}">${t}</button>`).join('')}</div>
+        <div class="wz-samples">${tones[wzTone].map((t, i) => `<button type="button" class="wz-sample${f.text === t ? ' on' : ''}" data-i="${i}">${wzEsc(t)}</button>`).join('')}</div>` : ''}
+        ${am === 'ex' ? '<div class="wz-lab sp-greet-lab">고른 문구 <small>조금 고쳐도 돼요</small></div>' : ''}
+        <textarea class="wz-inp" id="spGreet" maxlength="400"${am === 'self' ? ` placeholder="${wzEsc(state.greetKeep || tones['기본'][0])}" rows="5"` : ''}>${wzEsc(f.text)}</textarea>`;
     box.querySelectorAll('[data-tone]').forEach(b => b.addEventListener('click', () => { wzTone = b.dataset.tone; spRender(); }));
-    box.querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => { f.text = WZ_TONES[wzTone][+b.dataset.i]; spChanged(['greeting']); spRender(); }));
+    box.querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => { f.text = tones[wzTone][+b.dataset.i]; spChanged(['greeting']); scheduleSnapshot(); spRender(); }));
     const ta = box.querySelector('#spGreet'); ta.addEventListener('input', () => { f.text = ta.value; spChanged(['greeting']); });
 }
 // 5. 혼주·연락처
@@ -13763,7 +13787,7 @@ document.addEventListener('input', e => {
     if (k && String(t.value != null ? t.value : t.textContent || '').trim()) NAME_SET.add(k);
     if (t.matches('[data-wi="date"], [data-wfield="weddingDate"]') && String(t.value || '').trim()) DATE_SET = true;
 }, true);
-function nameDemoMark() { const wi = weddingInfo() || {}; ['groom', 'bride'].forEach(k => { if (!NAME_SET.has(k)) NAME_DEMO[k] = String(wi[k] || '').trim(); }); if (!DATE_SET) DATE_DEMO = String(wi.date || ''); if (!TIME_SET) { if (wi.time) state.timeDemo = String(wi.time); else delete state.timeDemo; } }
+function nameDemoMark() { const wi = weddingInfo() || {}; { const g = state.blocks && state.blocks.find(b => b.id === 'greeting'); state.greetDemo = g && g.fields && g.fields.text ? String(g.fields.text) : undefined; } /* (디자인에 들어 있던 인사말 = 예시 목록 '기본'에) */ ['groom', 'bride'].forEach(k => { if (!NAME_SET.has(k)) NAME_DEMO[k] = String(wi[k] || '').trim(); }); if (!DATE_SET) DATE_DEMO = String(wi.date || ''); if (!TIME_SET) { if (wi.time) state.timeDemo = String(wi.time); else delete state.timeDemo; } }
 // 예식 시간을 정했는지: 시간을 골랐거나 · 디자인 예시 시간(state.timeDemo, SP_KEEP로 저장 - 새로고침해도 기억)과 다름
 function timeTyped(wi) { wi = wi || weddingInfo() || {}; return !!wi.time && (TIME_SET || !state.timeDemo || String(wi.time) !== state.timeDemo); }
 // 예식 날짜를 정했는지: 달력에서 골랐거나 · 디자인 예시 날짜와 다르거나 · '아직 일정을 잡지 않았어요'를 골랐음
@@ -13872,7 +13896,7 @@ function pubChecks() {
     if (hk === 'video') { const f = F('heroVideo'); out.push(spRealYt(f.youtubeId) ? { id: 'hero', ok: 1, t: '첫 화면 영상', s: '유튜브 영상' } : f.youtubeId ? { id: 'hero', t: '첫 화면 영상이 아직 예시 영상이에요', s: '두 분 영상 주소로 바꾸거나 사진으로 바꿔 주세요', go: '영상 넣기' } : { id: 'hero', t: '첫 화면 영상 주소가 없어요', s: '유튜브 주소를 넣거나 사진으로 바꿔 주세요', go: '영상 넣기' }); }
     else if (on('hero')) { const f = F('hero'); out.push(spIsReal(f.heroImage) ? { id: 'hero', ok: 1, t: '첫 화면 사진', s: '두 분 사진' } : { id: 'hero', t: f.heroImage ? '첫 화면 사진이 아직 예시 사진이에요' : '첫 화면 사진이 없어요', s: '두 분 사진으로 바꾸면 훨씬 좋아요', go: '사진 넣기' }); }
     if (on('gallery')) { const im = F('gallery').images || [], n = im.filter(x => spIsReal(x)).length; out.push(n ? { id: 'gallery', ok: 1, t: '갤러리', s: `사진 ${n}장` } : { id: 'gallery', t: im.length ? '갤러리가 예시 사진 그대로예요' : '갤러리에 사진이 없어요', s: '사진을 넣거나 갤러리를 빼 주세요', go: '사진 넣기' }); }
-    if (on('greeting')) { const t = String(F('greeting').text || '').replace(/<[^>]+>/g, '').trim(); if (!t) out.push({ id: 'greet', t: '인사말이 비어 있어요', s: '예시 문구에서 골라도 돼요', go: '인사말 쓰기' }); else if (state.spAsk && state.spAsk.greet === 'ex') out.push({ id: 'greet', info: 1, t: '인사말은 디자인 예시 문구예요', s: '그대로 써도 괜찮아요 · 바꾸려면 눌러요', go: '보기' }); }
+    if (on('greeting')) { const t = String(F('greeting').text || '').replace(/<[^>]+>/g, '').trim(); if (!t) out.push({ id: 'greet', t: '인사말이 비어 있어요', s: '예시 문구에서 골라도 돼요', go: '인사말 쓰기' }); else if (state.spAsk && state.spAsk.greet === 'ex') out.push({ id: 'greet', info: 1, t: '인사말은 예시 문구예요', s: '그대로 써도 괜찮아요 · 바꾸려면 눌러요', go: '보기' }); }
     if (on('account')) {
         const f = F('account'), probs = [];
         let n = 0;
