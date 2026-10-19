@@ -108,6 +108,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // PC 디자인 고르기 화면 (한눈에 격자 / 필름 띠 / 넘겨 보기) - 누르면 바로 저장
         $v = (string) ($_POST['view'] ?? '');
         $ok = in_array($v, SECTION_EASY_PCPICKS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['pcPick' => $v]);
+    } elseif ($act === 'easy_nb') {
+        // 간편 만들기 ↓ 스크롤 버튼 칸 모양 (1 이름표 줄 / 2 버튼 그림 / 3 미리보기 중심 / 예전) - 누르면 바로 저장
+        $v = (string) ($_POST['view'] ?? '');
+        $ok = in_array($v, SECTION_EASY_NBS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['nbPanel' => $v]);
     } elseif ($act === 'easy_ready') {
         // 목록 화면 발행 준비 카드 모양 (C안 큰 버튼 하나 / 예전 막대) - 누르면 바로 저장
         $v = (string) ($_POST['view'] ?? '');
@@ -153,7 +157,7 @@ $easyNow = section_defaults_easy();
 $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
-$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyVideo = section_defaults_easy_video();
+$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyNb = section_defaults_easy_nb(); $easyVideo = section_defaults_easy_video();
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
 $easyInfo = [
@@ -190,7 +194,7 @@ $prefRows = [
     'videoPicker' => ['영상 위치', [['old', '예전 (크게)'], ['A', 'A 썸네일 한 줄'], ['B', 'B 작은 자르기 창'], ['C', 'C 3칸 버튼'], ['D', 'D 타일 + 자르기 창 ★'], ['E', 'E 미리보기에서 끌기']], '메인 영상에서 화면에 보일 부분. D는 C 타일형에서만 (아니면 B)'],
     'photoField'  => ['섹션 사진 칸', [['old', '예전 (크게)'], ['P1', 'P1 썸네일 칩 ★'], ['P2', 'P2 가로 카드'], ['P3', 'P3 끌어 놓기 칸'], ['P4', 'P4 타일']], '디데이·타임라인·인터뷰·프로필·손편지·안내문·엔딩 등의 사진 칸. P4는 C 타일형에서만 (아니면 P1)'],
     'overToggle'  => ['글자 사진·영상 위로 스위치', [['old', '예전 (긴 문장)'], ['T1', 'T1 타일로 합치기 ★'], ['T2', 'T2 두 칸 고르기'], ['T3', 'T3 설명 스위치 카드'], ['T4', 'T4 그림 카드 두 개'], ['T7', 'T7 움직이는 그림'], ['T8', 'T8 대표 사진 칸 안']], '메인 사진 "글자를 사진 위로" · 메인 영상 "글자를 영상 위로". T1은 C 타일형에서만 (아니면 T3), T8은 사진 칸이 예전 모양이면 T3'],
-    'nextPicker'  => ['"스크롤 ↓" 버튼', [['old', '예전 (긴 문장)'], ['N5', 'N5 모양 칩 한 줄 ★'], ['N6', 'N6 타일']], '전체화면 + 글자를 사진/영상 위로 켰을 때만 넣을 수 있어요. N5는 없음·유리·어둡게·밝게·포인트·선·직접 중 하나를 누르면 바로 켜짐. N6은 C 타일형에서만 (아니면 N5)'],
+    'nextPicker'  => ['"스크롤 ↓" 버튼', [['old', '예전 (긴 문장)'], ['N5', 'N5 모양 칩 한 줄'], ['N6', 'N6 타일'], ['R1', '1 이름표 줄 ★'], ['R2', '2 버튼 그림 고르기'], ['R3', '3 미리보기 중심']], '전체화면 + 글자를 사진/영상 위로 켰을 때만 넣을 수 있어요. 1·2·3은 간편 만들기와 같은 새 칸 (1 줄마다 하나씩 · 2 버튼 그림 8칸 + 한 줄 · 3 ‹ ›로 모양 넘기고 작은 버튼으로 하나씩 열기). N5는 모양 칩 한 줄, N6은 C 타일형에서만 (아니면 N5)'],
     'jumpFix'     => ['옵션 바뀔 때 화면', [['S1', 'S1 누른 자리 고정 ★'], ['S2', 'S2 회색 비활성'], ['S3', 'S3 바뀌는 칸은 아래로'], ['S4', 'S4 아래 시트로 열기'], ['S6', 'S6 S1+S2 같이'], ['old', '예전 (칸이 튐)']], '옵션을 눌러 위쪽 칸이 생기거나 사라질 때 화면이 위아래로 튀지 않게. S2는 사라질 칸(글자를 사진 위로 등)을 회색으로 잠가 남겨 둬요. S4는 휴대폰에서 옵션 창이 아래에서 올라와요'],
     'toggleChip'  => ['켜고 끄는 버튼', [['old', '예전 (어두운 스위치 알약)'], ['K1', 'K1 타일로 합치기'], ['K2', 'K2 설명 스위치 줄'], ['K3', 'K3 체크 알약'], ['K4', 'K4 끔|켬 두 칸'], ['K5', 'K5 아이콘 칩 ★']], '"카카오맵 표시"·"지도 가로 100%"처럼 누르면 켜지고 꺼지는 버튼. K1은 C 타일형에서만 (아니면 K3)'],
     'feAnim'      => ['칸 나타남·사라짐 효과', [['F1', 'F1 담백 페이드 ★'], ['F2', 'F2 노란 하이라이트'], ['F3', 'F3 테두리 퍼짐'], ['F4', 'F4 살짝 내려오기'], ['F5', 'F5 위에서 펼치기'], ['F6', 'F6 빛 지나가기'], ['F7', 'F7 NEW 배지'], ['F8', 'F8 깜빡 두 번'], ['none', '효과 없음'], ['old', '예전 (출렁임)']], '옵션을 켜고 끌 때 새로 생기는 칸·사라지는 칸에 주는 효과. 미리보기에서 칸이 생겼다 사라졌다 반복돼요'],
@@ -732,6 +736,11 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .ez-mview-ph.ez-rd { width: 52px; height: 52px; border-width: 2px; border-radius: 6px; }
 .ez-rd i { position: absolute; left: 6px; right: 6px; border-radius: 2px; }
 .ez-rd-next .a { top: 7px; height: 4px; background: linear-gradient(90deg, #2B2320 40%, #E5DED3 40%); } .ez-rd-next .b { top: 16px; height: 16px; border-radius: 4px; background: #2B2320; } .ez-rd-next .c { top: 37px; height: 3px; left: 14px; right: 14px; background: #CFC6BA; }
+.ez-nb i { left: 6px; right: 6px; }
+.ez-nb-rows .a { top: 7px; height: 9px; background: linear-gradient(90deg, #CFC6BA 30%, transparent 30% 38%, #2B2320 38%); } .ez-nb-rows .b { top: 21px; height: 9px; background: linear-gradient(90deg, #CFC6BA 30%, transparent 30% 38%, #E5DED3 38%); } .ez-nb-rows .c { top: 35px; height: 9px; background: linear-gradient(90deg, #CFC6BA 30%, transparent 30% 38%, #E5DED3 38%); }
+.ez-nb-tiles .a { top: 6px; height: 12px; background: repeating-linear-gradient(90deg, #3B3F4F 0 8px, transparent 8px 10px); } .ez-nb-tiles .b { top: 20px; height: 12px; background: repeating-linear-gradient(90deg, #3B3F4F 0 8px, transparent 8px 10px); } .ez-nb-tiles .c { top: 37px; height: 7px; background: #E5DED3; }
+.ez-nb-focus .a { top: 6px; height: 22px; background: radial-gradient(circle at 50% 75%, #fff 3px, transparent 4px), #3B3F4F; } .ez-nb-focus .b { top: 32px; height: 5px; left: 14px; right: 14px; background: #2B2320; } .ez-nb-focus .c { top: 40px; height: 6px; background: repeating-linear-gradient(90deg, #E5DED3 0 8px, transparent 8px 10px); }
+.ez-nb-old .a { top: 6px; height: 6px; background: #3B3F4F; } .ez-nb-old .b { top: 16px; height: 14px; background: repeating-linear-gradient(180deg, #E5DED3 0 3px, transparent 3px 5px); } .ez-nb-old .c { top: 34px; height: 10px; background: repeating-linear-gradient(180deg, #E5DED3 0 3px, transparent 3px 5px); }
 .ez-rd-bar .a { top: 8px; height: 4px; background: linear-gradient(90deg, #6F9068 60%, #E5DED3 60%); } .ez-rd-bar .b { top: 17px; height: 7px; right: 18px; border-radius: 4px; background: repeating-linear-gradient(90deg, #F1D9C7 0 10px, transparent 10px 13px); } .ez-rd-bar .c { top: 31px; height: 9px; border-radius: 3px; background: linear-gradient(90deg, #2B2320 55%, transparent 55% 60%, #E5DED3 60%); }
 .ez-pc-film .a { left: 34px; top: 4px; width: 16px; height: 30px; border-radius: 3px; background: linear-gradient(170deg, #C9BFB2, #8F8476); } .ez-pc-film .b { left: 4px; right: 4px; bottom: 4px; height: 9px; background: repeating-linear-gradient(90deg, #CFC6BA 0 6px, transparent 6px 8px); } .ez-pc-film .c { right: 5px; top: 8px; width: 14px; height: 18px; border-radius: 2px; background: #E5DED3; }
 .ez-pc-car .a { left: 30px; top: 4px; width: 18px; height: 36px; border-radius: 3px; background: linear-gradient(170deg, #C9BFB2, #8F8476); } .ez-pc-car .b { left: 13px; top: 9px; width: 12px; height: 26px; border-radius: 2px; background: #CFC6BA; box-shadow: 41px 0 0 #CFC6BA; opacity: .7; } .ez-pc-car .c { left: 20px; bottom: 4px; width: 38px; height: 4px; border-radius: 2px; background: repeating-linear-gradient(90deg, #8F8476 0 4px, transparent 4px 6px); }
@@ -833,6 +842,17 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
                     <?php foreach ([['next', 'C 큰 버튼 하나', '① 채우기 → ② 확인하기 → ③ 발행하기 3단계 막대 + 지금 할 일 하나만 큰 버튼으로 (이름 적기 → 사진 넣기 → … → 완성본 보기 → 발행하기 → 주소 복사). 왕초보도 버튼 하나만 따라가면 돼요.', '추천'], ['bar', '막대 + 고칠 것 칩 (예전)', 'n / 전체 막대 아래 고칠 것을 한꺼번에 칩으로 보여 주고 [완성본 보기]·[카톡 미리보기] 버튼.', '']] as [$mk, $mt, $md, $mb]): ?>
                     <button type="button" class="ez-mview-c<?= $easyReady === $mk ? ' on' : '' ?>" data-ready="<?= $mk ?>" role="radio" aria-checked="<?= $easyReady === $mk ? 'true' : 'false' ?>">
                         <span class="ez-mview-ph ez-rd ez-rd-<?= $mk ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
+                        <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
+                    </button>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="ez-mview" id="ezNb">
+                <div class="ez-mview-h"><b>↓ 스크롤 버튼 칸</b><small>첫 화면 꾸미기 질문에서 [다음]을 누르면 나오는 '스크롤 버튼(↓)' 칸 모양이에요. 셋 다 기능은 같아요 (켜고 끄기 · 모양 7가지 · 직접 꾸미기 · 크기 · 진하기 · 움직임 · 등장 효과). 누르면 바로 저장돼요. 전문가 모드는 <a href="#panel" onclick="setTimeout(() => location.reload(), 0)">편집창 · 메뉴 모양 → '스크롤 ↓' 버튼</a>에서 따로 골라요.</small></div>
+                <div class="ez-mview-g" role="radiogroup" aria-label="스크롤 버튼 칸">
+                    <?php foreach ([['rows', '1 이름표 줄', '왼쪽 이름, 오른쪽 고르기. 모양 · 크기 · 진하기 · 움직임 · 등장이 한 줄에 하나씩. 맨 위 스위치를 끄면 한 줄만 남아요.', '추천'], ['tiles', '2 버튼 그림 고르기', '버튼 그림 8칸(없음 + 7가지)이 크게. 크기 · 움직임 · 진하기는 아래 한 줄, 등장 효과는 눌러야 펼쳐져요.', ''], ['focus', '3 미리보기 중심', '큰 그림 속 버튼을 보면서 ‹ ›로 모양을 넘겨요. 나머지는 아래 작은 버튼을 누르면 그것 하나만 열려요. 칸이 가장 낮아요.', ''], ['old', '예전 긴 칸', '모양 · 크기 · 진하기 · 움직임 · 등장 효과가 모두 펼쳐진 예전 칸.', '']] as [$mk, $mt, $md, $mb]): ?>
+                    <button type="button" class="ez-mview-c<?= $easyNb === $mk ? ' on' : '' ?>" data-nbp="<?= $mk ?>" role="radio" aria-checked="<?= $easyNb === $mk ? 'true' : 'false' ?>">
+                        <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
                         <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
                     </button>
                     <?php endforeach; ?>
@@ -1725,6 +1745,16 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             const pick = el => box.querySelectorAll('[data-pcpick]').forEach(x => { x.classList.toggle('on', x === el); x.setAttribute('aria-checked', String(x === el)); });
             pick(b);
             post({ act: 'easy_pcpick', view: b.dataset.pcpick }).then(() => toast('PC 디자인 고르기 화면을 저장했어요')).catch(err => { say(err.message); pick(prev); });
+        }));
+    })();
+    (function ezNbBox() { // 스크롤 버튼 칸 모양
+        const box = document.getElementById('ezNb'); if (!box) return;
+        box.querySelectorAll('[data-nbp]').forEach(b => b.addEventListener('click', () => {
+            if (readonly) return;
+            const prev = box.querySelector('.ez-mview-c.on');
+            const pick = el => box.querySelectorAll('[data-nbp]').forEach(x => { x.classList.toggle('on', x === el); x.setAttribute('aria-checked', String(x === el)); });
+            pick(b);
+            post({ act: 'easy_nb', view: b.dataset.nbp }).then(() => toast('스크롤 버튼 칸 모양을 저장했어요')).catch(err => { say(err.message); pick(prev); });
         }));
     })();
     (function ezRdBox() { // 발행 준비 카드 모양

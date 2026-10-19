@@ -18,13 +18,14 @@
  *                ask    : 처음 만들 때 질문 [{"id":"names:name","on":true}, ...] (순서 = 묻는 순서)
  *                off    : 끈 세부 옵션 {step: [key]} · showOff: 디자인에서 꺼 둔 섹션도 목록에 보이기
  *                heroSample : 메인 사진 예시 '/invite/uploads/site/….webp' (고객이 사진을 고르기 전까지 간편 만들기 첫 화면에 보임)
+ *                nbPanel : 첫 화면 ↓ 스크롤 버튼 칸 'rows'(1 이름표 줄, 기본) | 'tiles'(2 버튼 그림 고르기) | 'focus'(3 미리보기 중심) | 'old'(예전 긴 칸)
  *                readyStyle : 목록 화면 맨 위 발행 준비 카드 'next'(C안 큰 버튼 하나 = 다음 할 일, 기본) | 'bar'(예전 막대 + 고칠 것 칩)
  *                pcPick : PC 디자인 고르기 화면 'grid'(한눈에 격자 + 오른쪽 휴대폰, 기본) | 'film'(큰 휴대폰 + 아래 표지 띠) | 'car'(넘겨 보기 - 예전)
  *                mobileView : 휴대폰 간편 만들기 보기 방식 'split'(① 반반 화면, 기본) | 'lens'(② 떠 있는 돋보기 창) | 'lens2'(③ 비켜서고 접히는 창 + 바꾸면 잠깐 보여 주기) | 'peek'(④ 바꾸면 잠깐 보여 주기) | 'off'(질문만)
  *                heroPos    : 그 예시 사진에서 보일 부분·확대 {focus:'x% y%', zoom:1~4} (관리자가 끌어서 정함, 고객 화면 state.imgFocus/imgZoom으로 들어감)
  *                videoSample: 메인 영상 예시 유튜브 영상 ID 11자 (고객이 영상 주소를 넣기 전까지 영상으로 시작하는 첫 화면에 보임, 없으면 에디터 기본 예시)
  *                단계 순서와 켜기/끄기. names(두 사람)는 늘 켜짐, finish(마무리)는 늘 맨 끝. 정한 적 없으면 기본 순서·모두 켜짐
- *   prefs      : 세부 모양 {heroPicker: old|A~E, videoPicker: old|A~E, photoField: old|P1~P4, guideStyle: old|G1~G8, overToggle: old|T1|T2|T3|T4|T7|T8, nextPicker: old|N5|N6, toggleChip: old|K1~K5, feAnim: old|none|F1~F8, jumpFix: old|S1|S2|S3|S4|S6, menuStyle: old|M1~M6, menuStylePc: old|M1~M6, sheetStyle: old|S1~S10, setStyle: old|D1~D8|A3|A7|A8, setInner: old|B4|B5, s10Add: old|C4|C5|C6}
+ *   prefs      : 세부 모양 {heroPicker: old|A~E, videoPicker: old|A~E, photoField: old|P1~P4, guideStyle: old|G1~G8, overToggle: old|T1|T2|T3|T4|T7|T8, nextPicker: old|N5|N6|R1|R2|R3, toggleChip: old|K1~K5, feAnim: old|none|F1~F8, jumpFix: old|S1|S2|S3|S4|S6, menuStyle: old|M1~M6, menuStylePc: old|M1~M6, sheetStyle: old|S1~S10, setStyle: old|D1~D8|A3|A7|A8, setInner: old|B4|B5, s10Add: old|C4|C5|C6}
  *
  *  저장 위치: invite/uploads/site/section_defaults.json
  *   (app_settings 칸은 255자라 섹션이 늘어나면 모자라서 파일로 저장)
@@ -54,7 +55,7 @@ const SECTION_PREF_OPTS = [
     'photoField'  => ['old', 'P1', 'P2', 'P3', 'P4'],
     'guideStyle'  => ['old', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8'],
     'overToggle'  => ['old', 'T1', 'T2', 'T3', 'T4', 'T7', 'T8'],
-    'nextPicker'  => ['old', 'N5', 'N6'],
+    'nextPicker'  => ['old', 'N5', 'N6', 'R1', 'R2', 'R3'],
     'toggleChip'  => ['old', 'K1', 'K2', 'K3', 'K4', 'K5'],
     'feAnim'      => ['old', 'none', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'],
     'jumpFix'     => ['old', 'S1', 'S2', 'S3', 'S4', 'S6'],
@@ -65,7 +66,7 @@ const SECTION_PREF_OPTS = [
     'setInner'    => ['old', 'B4', 'B5'],
     's10Add'      => ['old', 'C4', 'C5', 'C6'],
 ];
-const SECTION_PREF_DEFAULTS = ['heroPicker' => 'E', 'videoPicker' => 'D', 'photoField' => 'P1', 'guideStyle' => 'G2', 'overToggle' => 'T1', 'nextPicker' => 'N5', 'toggleChip' => 'K5', 'feAnim' => 'F1', 'jumpFix' => 'S1', 'menuStyle' => 'old', 'menuStylePc' => 'old', 'sheetStyle' => 'old', 'setStyle' => 'old', 'setInner' => 'old', 's10Add' => 'old'];
+const SECTION_PREF_DEFAULTS = ['heroPicker' => 'E', 'videoPicker' => 'D', 'photoField' => 'P1', 'guideStyle' => 'G2', 'overToggle' => 'T1', 'nextPicker' => 'R1', 'toggleChip' => 'K5', 'feAnim' => 'F1', 'jumpFix' => 'S1', 'menuStyle' => 'old', 'menuStylePc' => 'old', 'sheetStyle' => 'old', 'setStyle' => 'old', 'setInner' => 'old', 's10Add' => 'old'];
 function section_defaults_prefs(?array $in = null): array
 {
     if ($in === null) {
@@ -417,6 +418,17 @@ function section_defaults_easy_mview(): string
     return in_array($v, SECTION_EASY_MVIEWS, true) ? $v : 'split';
 }
 
+const SECTION_EASY_NBS = ['rows', 'tiles', 'focus', 'old'];
+/** 간편 만들기 ↓ 스크롤 버튼 칸 모양 (기본 'rows' = 1 이름표 줄) */
+function section_defaults_easy_nb(): string
+{
+    $f = section_defaults_file();
+    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 'rows';
+    $j = json_decode((string) file_get_contents($f), true);
+    $v = is_array($j) ? (string) ($j['easy']['nbPanel'] ?? '') : '';
+    return in_array($v, SECTION_EASY_NBS, true) ? $v : 'rows';
+}
+
 const SECTION_EASY_READYS = ['next', 'bar'];
 /** 목록 화면 발행 준비 카드 모양 (기본 'next' = C안 큰 버튼 하나) */
 function section_defaults_easy_ready(): string
@@ -483,6 +495,9 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     $easyRd = ($easyMore !== null && array_key_exists('readyStyle', $easyMore)) ? (string) $easyMore['readyStyle'] : section_defaults_easy_ready(); // 발행 준비 카드 모양
     if (!in_array($easyRd, SECTION_EASY_READYS, true)) $easyRd = 'next';
     $easyRdSet = $easyRd !== 'next';
+    $easyNb = ($easyMore !== null && array_key_exists('nbPanel', $easyMore)) ? (string) $easyMore['nbPanel'] : section_defaults_easy_nb(); // 스크롤 버튼 칸 모양
+    if (!in_array($easyNb, SECTION_EASY_NBS, true)) $easyNb = 'rows';
+    $easyNbSet = $easyNb !== 'rows';
     $easyVideo = ($easyMore !== null && array_key_exists('videoSample', $easyMore)) ? (string) $easyMore['videoSample'] : section_defaults_easy_video(); // 메인 영상 예시
     if (!preg_match(SECTION_YT_ID_RE, $easyVideo)) $easyVideo = '';
     // $easyOff: null = 저장된 값 그대로, [] = 모두 켬, {step:[key]} = 새로 저장
@@ -506,7 +521,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     $hid = [];
     foreach ($hidden as $id) if (is_string($id) && preg_match(SECTION_ID_RE, $id) && !in_array($id, $hid, true)) $hid[] = $id;
     $f = section_defaults_file();
-    if (!$clean && !$hid && !$groups && !$labels && !$start && !$easy && !$easyOff && !$easyAsk && !$easyShowOff && $easyHero === '' && $easyVideo === '' && !$easyMviewSet && !$easyPcSet && !$easyRdSet && $panel === SECTION_PANEL_DEFAULT && $prefs === SECTION_PREF_DEFAULTS) return !is_file($f) || @unlink($f);
+    if (!$clean && !$hid && !$groups && !$labels && !$start && !$easy && !$easyOff && !$easyAsk && !$easyShowOff && $easyHero === '' && $easyVideo === '' && !$easyMviewSet && !$easyPcSet && !$easyRdSet && !$easyNbSet && $panel === SECTION_PANEL_DEFAULT && $prefs === SECTION_PREF_DEFAULTS) return !is_file($f) || @unlink($f);
     $dir = dirname($f);
     if (!is_dir($dir) && !@mkdir($dir, 0755, true)) return false;
     $tmp = $f . '.' . bin2hex(random_bytes(4)) . '.tmp';
@@ -514,7 +529,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if ($groups) { $data['groups'] = $groups['groups']; $data['groupEtc'] = $groups['etc']; }
     if ($labels) $data['labels'] = $labels;
     if ($start) $data['start'] = $start;
-    if ($easy || $easyOff || $easyAsk || $easyShowOff || $easyHero !== '' || $easyVideo !== '' || $easyMviewSet || $easyPcSet || $easyRdSet) $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []) + ($easyHero !== '' ? ['heroSample' => $easyHero] : []) + ($easyHeroPos ? ['heroPos' => $easyHeroPos] : []) + ($easyMviewSet ? ['mobileView' => $easyMview] : []) + ($easyPcSet ? ['pcPick' => $easyPc] : []) + ($easyRdSet ? ['readyStyle' => $easyRd] : []) + ($easyVideo !== '' ? ['videoSample' => $easyVideo] : []);
+    if ($easy || $easyOff || $easyAsk || $easyShowOff || $easyHero !== '' || $easyVideo !== '' || $easyMviewSet || $easyPcSet || $easyRdSet || $easyNbSet) $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []) + ($easyHero !== '' ? ['heroSample' => $easyHero] : []) + ($easyHeroPos ? ['heroPos' => $easyHeroPos] : []) + ($easyMviewSet ? ['mobileView' => $easyMview] : []) + ($easyPcSet ? ['pcPick' => $easyPc] : []) + ($easyRdSet ? ['readyStyle' => $easyRd] : []) + ($easyNbSet ? ['nbPanel' => $easyNb] : []) + ($easyVideo !== '' ? ['videoSample' => $easyVideo] : []);
     $data['updated_at'] = date('c');
     $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     if (@file_put_contents($tmp, $json, LOCK_EX) === false) return false;
@@ -527,5 +542,5 @@ if (realpath((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
     header('Cache-Control: no-store');
     header('X-Content-Type-Options: nosniff');
     $grp = section_defaults_groups();
-    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'scope' => device_scope_get() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos(), 'mobileView' => section_defaults_easy_mview(), 'pcPick' => section_defaults_easy_pcpick(), 'readyStyle' => section_defaults_easy_ready(), 'videoSample' => section_defaults_easy_video()]], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'scope' => device_scope_get() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos(), 'mobileView' => section_defaults_easy_mview(), 'pcPick' => section_defaults_easy_pcpick(), 'readyStyle' => section_defaults_easy_ready(), 'nbPanel' => section_defaults_easy_nb(), 'videoSample' => section_defaults_easy_video()]], JSON_UNESCAPED_UNICODE);
 }
