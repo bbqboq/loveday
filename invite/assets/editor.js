@@ -10392,7 +10392,7 @@ function spAskReveal(st) {
         if (id === 'dday' && (weddingInfo().undecided || state.dateTbd)) return; // 일정 미정이면 디데이는 꺼 둠 (날짜를 고르면 그때 켬 - 예전엔 '켰음'으로 남아 영영 꺼져 있었음)
         rev.push(id);
         b.enabled = true; changed = true;
-        if (id === 'greeting' && state.spAsk && !state.spAsk.greet) state.spAsk.greet = 'ex'; // 미리보기에 보이는 예시 문구 = '예시 문구에서 고르기'
+        if (id === 'greeting' && state.spAsk && !state.spAsk.greet && !spAskMust()) state.spAsk.greet = 'ex'; // 미리보기에 보이는 예시 문구 = '예시 문구에서 고르기'
     });
     if (changed) { try { renderBlockList(); } catch (e) {} renderPreview(); scheduleSnapshot(); }
     return changed;
@@ -11158,7 +11158,25 @@ const SP_ASK = [
     { k: 'music', q: '배경음악을 넣을까요?', sub: '청첩장을 열면 잔잔하게 흘러요.',
       opts: [['yes', '넣을게요', '아래에서 골라요', 1], ['no', '넣지 않을게요', '나중에 넣을 수 있어요']] }
 ];
-const spAskId = a => a.k + (a.part ? ':' + a.part : ''); // 관리자 "처음 만들 때 질문" id (section_defaults.php SECTION_EASY_ASK)
+const spAskId = a => a.k + (a.part ? ':' + a.part : '');
+// 관리자 '답 안 해도 [다음]으로 넘어가기'(flow.free)를 끄면: 질문마다 고르거나 적어야 [다음]이 눌림 → 안 한 것 = 알림 글 (했으면 '')
+const spAskMust = () => !spOpt('flow', 'free');
+function spAskNeedSync(pane) { const b = pane && pane.querySelector('#spNext'); if (!b || state.spView !== 'quick') return; const need = pane._askNeed ? pane._askNeed() : ''; b.classList.toggle('sp-wait', !!need); b.setAttribute('aria-disabled', need ? 'true' : 'false'); if (!need) pane.querySelector('.sp-need')?.remove(); }
+function spAskNag(pane, msg) { // [다음]을 눌렀는데 아직 안 했으면: [다음] 위에 알림 + 버튼 흔들기
+    let n = pane.querySelector('.sp-need'); if (!n) { n = document.createElement('div'); n.className = 'sp-need'; n.setAttribute('role', 'alert'); const nav = pane.querySelector('.sp-ask-nav'); if (nav) nav.prepend(n); else pane.appendChild(n); } // ([다음] 줄에 붙여 늘 보이게 - 줄이 화면 아래에 붙어 있음)
+    n.textContent = msg; n.classList.remove('sp-need-in'); void n.offsetWidth; n.classList.add('sp-need-in');
+    const b = pane.querySelector('#spNext'); if (b) { b.classList.remove('sp-shake'); void b.offsetWidth; b.classList.add('sp-shake'); }
+}
+function spAskNeed(st) {
+    if (!st || !spAskMust() || st.starter) return '';
+    const id = spAskId(st), wi = weddingInfo() || {};
+    if (st.opts) return (state.spAsk || {})[st.k] ? '' : '위에서 하나를 골라 주세요';
+    if (id === 'names:name') return nameTyped('groom', wi) && nameTyped('bride', wi) ? '' : '신랑·신부 이름을 적어 주세요';
+    if (id === 'names:date') { if (wi.undecided) return ''; if (!dateTyped(wi)) return '예식 날짜를 눌러 골라 주세요'; return spOpt('names', 'time') && !timeTyped(wi) ? '예식 시간을 골라 주세요' : ''; }
+    if (st.k === 'venue') { const lb = spBlock('location'); if (!lb || !lb.enabled) return ''; const f = lb.fields, vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; return f.venue && !vd.v ? '' : '예식장 이름을 적어 주세요'; }
+    if (st.k === 'hero' && st.part === 'media') { const { b, kind } = spHeroCur(), f = (b || {}).fields || {}; return (kind === 'video' ? spRealYt(f.youtubeId) : spIsReal(f.heroImage)) ? '' : (kind === 'video' ? '유튜브 영상 주소를 넣어 주세요' : '첫 화면 사진을 올려 주세요'); }
+    return '';
+} // 관리자 "처음 만들 때 질문" id (section_defaults.php SECTION_EASY_ASK)
 function spAskSteps() { // 관리자 "손쉬운 제작 → 처음 만들 때 질문"의 순서·켜기대로. 디자인에 없는 섹션은 묻지 않음
     let list = SP_ASK;
     if (Array.isArray(EASY_ASK) && EASY_ASK.length) {
@@ -11245,14 +11263,16 @@ function spRenderAsk(pane) {
         body = spH(esc(st.q), esc(st.sub)) + `<div class="sp-ask-opts">${st.opts.map(([v, t, d]) => `<button type="button" class="sp-ask-o${pick === v ? ' on' : ''}" data-ask="${v}" aria-pressed="${pick === v}"><span><b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ''}</span><i></i></button>`).join('')}</div>${opt && opt[3] ? '<div class="sp-ask-more" id="spAskMore"></div>' : ''}`;
     }
     pane.innerHTML = `<div class="sp-head sp-ask-head"><button type="button" class="sp-ask-back" id="spBack" aria-label="이전"${spStep === 0 && !scrollPh ? ' disabled' : ''}>${backSvg}</button><b>질문 ${spStep + 1} / ${N}</b>${spUdHtml(true)}</div>
-        <div class="sp-ask-top"><div class="sp-ask-bar" aria-hidden="true"><i style="width:${pct(same || spAskLast < 0 ? spStep : spAskLast)}"></i></div>${!spOpt('flow', 'skip') ? '' : `<button type="button" class="sp-ask-skip" id="spSkip">나중에 할게요</button>`}</div>
+        <div class="sp-ask-top"><div class="sp-ask-bar" aria-hidden="true"><i style="width:${pct(same || spAskLast < 0 ? spStep : spAskLast)}"></i></div>${!spOpt('flow', 'skip') || spAskMust() ? '' : `<button type="button" class="sp-ask-skip" id="spSkip">나중에 할게요</button>`}</div>
         ${spOpt('flow', 'now') ? `<div class="sp-now-wrap">${spNowCardHtml()}</div>` : ''}
         <div class="sp-body sp-ask" id="spBody">${body}</div>
         <div class="sp-nav sp-ask-nav${(same || spAskLast < 0 ? navFirst : spAskLast === 0) ? ' first' : ''}"><button type="button" class="wz-back" id="spPrev" tabindex="${navFirst ? -1 : 0}">이전</button><button type="button" class="wz-next" id="spNext">${spStep === N - 1 ? '다 했어요' : '다음'}</button></div>`;
     spBindHeadTools(pane);
     const go = n => { if (n >= N) return spAskToList(); spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n)); spRender(); spAskAutoSave(); }; // 정리 화면을 끄면 바로 완성본
     const lookToScroll = () => st && st.k === 'hero' && st.part === 'look' && !scrollPh && spHeroScrollOk();
-    const next = () => lookToScroll() ? spHeroToScroll(pane.querySelector('#spBody')) : go(spStep + 1);
+    const next = () => { const need = scrollPh ? '' : spAskNeed(st); if (need) return spAskNag(pane, need); return lookToScroll() ? spHeroToScroll(pane.querySelector('#spBody')) : go(spStep + 1); };
+    pane._askNeed = () => scrollPh ? '' : spAskNeed(st); spAskNeedSync(pane);
+    if (!pane._askNeedOn) { pane._askNeedOn = true; const sync = () => setTimeout(() => spAskNeedSync(pane), 60); pane.addEventListener('input', sync); pane.addEventListener('click', sync, true); pane.addEventListener('change', sync); }
     const prev = () => scrollPh ? (spHeroPhase = 'pick', spRender()) : go(spStep - 1);
     pane.querySelector('#spBack').addEventListener('click', prev);
     pane.querySelector('#spNow')?.addEventListener('click', () => spOpenPreview(false));
@@ -11770,10 +11790,12 @@ function spNames(box) {
         const on = !weddingInfo().undecided; spSetDateTbd(on); spChanged(['hero', 'heroVideo']); scheduleSnapshot(); spRender(); // 넘어가기는 [다음]으로
     });
     box.querySelectorAll('[data-wi]').forEach(inp => inp.addEventListener('input', () => set(inp.dataset.wi, inp.value)));
-    const dTxt = () => { const d = weddingInfo().date; box.querySelector('#spDateTxt').innerHTML = d ? wzEsc(dtDateText(d)) : '<span class="ph">날짜를 골라주세요</span>'; };
+    // 디자인 예시 날짜·시간은 고른 것으로 보이지 않게 - 고객이 직접 눌러 고름 (dateTyped/timeTyped, 미리보기에는 예시 그대로)
+    const shownDate = () => dateTyped() ? weddingInfo().date : '';
+    const dTxt = () => { const d = shownDate(); box.querySelector('#spDateTxt').innerHTML = d ? wzEsc(dtDateText(d)) : '<span class="ph">날짜를 골라주세요</span>'; };
     const cal = box.querySelector('#spCal'), btn = box.querySelector('#spDateBtn');
-    btn.addEventListener('click', () => { const on = !cal.classList.contains('on'); cal.classList.toggle('on', on); btn.classList.toggle('open', on); if (on) dtCalendar(cal, weddingInfo().date, v => { set('date', v); dTxt(); setTimeout(() => { cal.classList.remove('on'); btn.classList.remove('open'); }, 160); }); });
-    if (box.querySelector('#spTime')) dtTimePicker(box.querySelector('#spTime'), weddingInfo().time, v => set('time', v));
+    btn.addEventListener('click', () => { const on = !cal.classList.contains('on'); cal.classList.toggle('on', on); btn.classList.toggle('open', on); if (on) dtCalendar(cal, shownDate(), v => { set('date', v); dTxt(); setTimeout(() => { cal.classList.remove('on'); btn.classList.remove('open'); }, 160); }); });
+    if (box.querySelector('#spTime')) dtTimePicker(box.querySelector('#spTime'), timeTyped() ? weddingInfo().time : '', v => set('time', v));
     dTxt();
 }
 // 예식 일정 미정: 날짜·시간을 비우고 첫 화면 날짜 자리에 안내 문구, 디데이·달력은 잠시 끔 (날짜를 고르면 되돌림)

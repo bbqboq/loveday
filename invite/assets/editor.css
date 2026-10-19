@@ -4910,3 +4910,13 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 .shz-split { position: absolute; top: 0; bottom: 0; left: var(--shz-x, 50%); width: 2px; margin-left: -1px; background: #fff; z-index: 4; pointer-events: none; box-shadow: 0 0 0 1px rgba(0,0,0,.15); }
 .shz-split::after { content: '‹›'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #1F1B18; font-size: 10px; font-weight: 700; border-radius: 99px; padding: 1px 4px; box-shadow: 0 1px 5px rgba(0,0,0,.25); }
 .shz-cmp input[type=range] { position: absolute; inset: 0; z-index: 5; width: 100% !important; height: 100% !important; margin: 0 !important; opacity: 0; cursor: ew-resize; }
+
+/* 답해야 [다음] (관리자 flow.free 끔) */
+#simplePane .wz-next.sp-wait { opacity: .42; }
+#simplePane .sp-ask-nav .sp-need { position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); z-index: 3; box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+#simplePane .sp-need { margin: 0 0 8px; padding: 9px 12px; border-radius: 10px; background: #FBEDEA; color: #9A4A3E; font-size: 13px; font-weight: 700; text-align: center; }
+#simplePane .sp-need.sp-need-in { animation: spNeedIn .28s ease; }
+@keyframes spNeedIn { from { opacity: 0; transform: translateY(6px); } }
+#simplePane .wz-next.sp-shake { animation: spShake .38s ease; }
+@keyframes spShake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+@media (prefers-reduced-motion: reduce) { #simplePane .sp-need.sp-need-in, #simplePane .wz-next.sp-shake { animation: none; } }
