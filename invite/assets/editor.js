@@ -11486,7 +11486,7 @@ const SP_ASK = [
     { k: 'names', part: 'date', q: '예식은 언제인가요?', sub: '디데이와 달력이 저절로 만들어져요.' },
     { k: 'venue', q: '어디에서 하나요?', sub: '예식장을 찾아 고르면 지도와 길찾기 버튼이 들어가요.' },
     { k: 'hero', part: 'media', q: '첫 화면에 쓸 사진을 골라 주세요', sub: '청첩장을 열면 휴대폰 화면 가득 가장 먼저 보여요. 유튜브 영상으로 해도 돼요.' },
-    { k: 'hero', part: 'look', q: '첫 화면을 꾸며요', sub: '사진 위에 올릴 글자 모양을 골라요. 글자와 나타나는 효과도 바꿀 수 있어요.' },
+    { k: 'hero', part: 'look', q: '첫 화면을 꾸며요', sub: '사진 위 글자와 나타나는 효과, 사진에서 보일 부분을 정해요.' },
     { k: 'greet', blk: 'greeting', q: '인사말은 어떻게 할까요?', sub: '청첩장을 열면 처음 읽게 되는 짧은 글이에요.',
       opts: [['ex', '예시 문구에서 고르기', '분위기별 예시 중에 마음에 드는 걸 골라요', 1], ['self', '직접 쓰기', '아래 칸에 바로 적어요', 1], ['no', '넣지 않기', '인사말 칸을 빼요']] },
     { k: 'account', blk: 'account', q: '축의금 계좌를 넣을까요?', sub: '하객이 눌러서 계좌번호를 복사할 수 있어요.',
@@ -12513,7 +12513,7 @@ function spHero(box) {
     if (hb) spBindHeroLayout(box, hb);
     if (part) { // 질문 하나에 필요한 칸만 남김
         const fieldOf = sel => [...box.querySelectorAll(sel)].map(x => x.closest('.wz-field') || x);
-        const drop = part === 'media' ? ['.hl-row', '.hl-lines', '#spCropBox', '#spVfpBox', '.sp-shade', '#spToScroll', ':scope > .wz-hint'] : ['[data-sp-kind]', '.sp-hero', '.sp-bigup', '#spYt', '.sp-shade']; // ('글자 잘 보이게'는 [다음] 뒤 스크롤 버튼 화면에 있어서 첫 화면 꾸미기에선 뺌)
+        const drop = part === 'media' ? ['.hl-row', '.hl-lines', '#spCropBox', '#spVfpBox', '.sp-shade', '#spToScroll', ':scope > .wz-hint'] : ['[data-sp-kind]', '.sp-hero', '.sp-bigup', '#spYt', '.sp-shade'].concat(spOpt('hero', 'askNoLayout') ? ['.hl-row'] : []); // (레이아웃은 디자인 그대로 - 질문 화면에선 안 고름, 목록 화면 메인 화면 칸에서 바꿈 · 관리자 hero.askNoLayout을 끄면 질문에도 나옴) // ('글자 잘 보이게'는 [다음] 뒤 스크롤 버튼 화면에 있어서 첫 화면 꾸미기에선 뺌)
         drop.forEach(sel => fieldOf(sel).forEach(x => x.remove()));
         box.querySelectorAll('.sp-n').forEach(x => x.remove());
     }
