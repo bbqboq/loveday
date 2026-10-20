@@ -566,7 +566,7 @@ function playIntroAnimation(design, onReveal) {
     overlay.style.setProperty('--intro-duration', duration + 's');
     const bgType = intro.bgType || 'color';
     if (bgType === 'image' && intro.bgImage) {
-        overlay.style.background = intro.bg || s.bg; // 이미지가 덮지 못하는 빈 곳에 보이는 색
+        overlay.style.background = intro.bg || design.customBg || s.bg; // 이미지가 덮지 못하는 빈 곳에 보이는 색
         const bgImg = document.createElement('img');
         bgImg.alt = '';
         bgImg.src = intro.bgImage;
@@ -582,8 +582,9 @@ function playIntroAnimation(design, onReveal) {
     } else if (bgType === 'clear') { // 메인 화면 위 (투명): 청첩장 메인 사진·영상이 비치고 글자만 움직임
         overlay.classList.add('intro-clear');
         overlay.style.setProperty('--intro-dim', Math.max(0, Math.min(80, intro.clearDim ?? 30)) / 100);
-    } else {
-        overlay.style.background = intro.bg || s.bg;
+    } else { // 색상 (기본 = 청첩장 바탕색, 투명도를 낮추면 뒤의 첫 화면이 비침)
+        const col = intro.bg || design.customBg || s.bg, op = intro.bgOpacity != null && isFinite(+intro.bgOpacity) ? Math.max(0, Math.min(100, +intro.bgOpacity)) / 100 : 1;
+        overlay.style.background = op < 1 && window.InviteBlocks && InviteBlocks.introBgRgba ? InviteBlocks.introBgRgba(col, op) : col;
     }
     const fontOpt = fontOptions.find(f => f.id === intro.font);
     // innerHTML 문자열 조립 대신 DOM으로 직접 만든다 - 폰트명에 큰따옴표가 들어있으면(예: "Song Myung")

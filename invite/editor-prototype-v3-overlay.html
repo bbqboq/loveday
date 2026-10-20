@@ -7,17 +7,17 @@
 <title>청첩장 에디터 프로토타입 v3 - 오버레이 드래그 &amp; 라이트박스</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-<link rel="stylesheet" href="assets/editor.min.css?v=860bec7167"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
+<link rel="stylesheet" href="assets/editor.min.css?v=cf8b4614b9"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z18b">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018z18b">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z18c">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018z18c">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018z18b"></script>
-<script src="assets/tip-demos.js?v=1018z18b"></script>
-<script src="assets/ld-dialog.js?v=1018z18b"></script>
+<script src="assets/invite-blocks.js?v=1018z18c"></script>
+<script src="assets/tip-demos.js?v=1018z18c"></script>
+<script src="assets/ld-dialog.js?v=1018z18c"></script>
 </head>
 <body>
 
@@ -475,6 +475,11 @@
                     <input type="color" id="is2Bg">
                     <button type="button" class="pill" id="is2BgReset">기본값</button>
                 </div>
+                <div class="field" id="is2BgOpField">
+                    <label>배경 투명도 <span class="val" id="is2BgOpVal"></span></label>
+                    <input type="range" id="is2BgOp" min="0" max="100" step="5">
+                    <p class="field-hint">낮출수록 배경색이 옅어져 뒤의 청첩장 첫 화면이 비쳐 보여요. 0%면 배경 없이 글자만 보여요.</p>
+                </div>
                 <div class="field" id="is2BgImageField" style="display:none;">
                     <label>배경 사진</label>
                     <div id="is2BgImagePreviewWrap"></div>
@@ -568,7 +573,7 @@
     </div>
 </div><!-- /screenIntroSettings -->
 
-<script src="assets/editor.min.js?v=d1879cdc4a" onerror="document.documentElement.classList.remove('ld-boot')"></script><!-- 에디터 기능 (원본 assets/editor.js → node tools/build-editor.js) -->
+<script src="assets/editor.min.js?v=d3d5dab208" onerror="document.documentElement.classList.remove('ld-boot')"></script><!-- 에디터 기능 (원본 assets/editor.js → node tools/build-editor.js) -->
 </body>
 </html>
 <!-- 아래 줄은 지우지 말 것: 서버에 올릴 때 예전(더 큰) 파일 뒷부분이 남아도 화면에 글자로 나오거나 실행되지 않게 숨김 (2026-10-20 실서버에서 CSS가 글자로 보였음) -->

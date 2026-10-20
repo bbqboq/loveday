@@ -362,6 +362,16 @@ function bindCpk(scope) {
         input.addEventListener('input', () => mark(input.value));
     });
 }
+function introBgOp(i) { const v = Number(i && i.bgOpacity); return i && i.bgOpacity != null && isFinite(v) ? Math.max(0, Math.min(100, v)) / 100 : 1; }
+// 인트로 배경색 칸: 지금 디자인 색(바탕·포인트·글자·선)을 맨 앞에 + 기본 밝은 색들
+function introBgSwatches() {
+    const row = document.getElementById('is2Bg')?.nextElementSibling; if (!row || !row.classList.contains('color-preset-row')) return;
+    const p = curPalOf(), cur = String(state.intro.bg || p.bg).toUpperCase(), seen = new Set();
+    const list = [[p.bg, '디자인 바탕색'], [p.accent, '디자인 포인트 색'], [p.ink, '디자인 글자색'], [p.line, '디자인 선 색']].concat(COLOR_PRESETS.map(c => [c, c]))
+        .filter(([c]) => c && /^#[0-9a-f]{6}$/i.test(c) && !seen.has(c.toUpperCase()) && seen.add(c.toUpperCase()));
+    row.innerHTML = list.map(([c, t], i) => `<button type="button" class="color-preset-swatch${i < 4 && t !== c ? ' dsg' : ''}${c.toUpperCase() === cur ? ' on' : ''}" data-color="${c}" style="background:${c};" title="${t}"></button>`).join('');
+    row.querySelectorAll('[data-color]').forEach(btn => btn.addEventListener('click', () => { const inp = document.getElementById('is2Bg'); inp.value = btn.dataset.color; inp.dispatchEvent(new Event('input', { bubbles: true })); introBgSwatches(); }));
+}
 function attachColorPresets(inputId) {
     const input = document.getElementById(inputId);
     if (!input || input.dataset.presetsAttached) return;
@@ -1816,17 +1826,39 @@ function pinShareLast() {
     const [b] = state.blocks.splice(i, 1); delete b.grp; state.blocks.push(b);
     return true;
 }
+// 전문가 모드도 메인 사진·메인 영상을 '메인 화면' 한 줄로 (간편 만들기처럼) - 편집창 맨 위 [사진 | 유튜브 영상]으로 바꿈.
+// 블록은 그대로 둘(hero·heroVideo)이고 안 쓰는 쪽 줄만 숨김. 둘 다 켜져 있으면(예전 저장분) 예전처럼 두 줄.
+function heroPair() {
+    const hp = state.blocks.find(b => b.id === 'hero'), hv = state.blocks.find(b => b.id === 'heroVideo');
+    if (!hp || !hv || [hp, hv].some(b => SECTION_HIDDEN.has(b.id) || devSecOff(b.id))) return null;
+    if (hp.enabled && hv.enabled) return null;
+    const cur = hp.enabled ? hp : hv.enabled ? hv : (state.blocks.indexOf(hv) < state.blocks.indexOf(hp) ? hv : hp);
+    return { cur, other: cur === hp ? hv : hp };
+}
+function heroMergedOff(id) { const pr = heroPair(); return !!(pr && pr.other.id === id); }
+function heroSwitchKind(id) { // 전문가 모드 [사진 | 유튜브 영상]
+    const on = state.blocks.find(b => b.id === id), off = state.blocks.find(b => b.id === (id === 'hero' ? 'heroVideo' : 'hero'));
+    if (!on || !off || on.enabled) return;
+    ['groomName', 'brideName', 'datetime'].forEach(k => { if (off.fields[k] !== undefined && on.fields[k] === undefined) on.fields[k] = off.fields[k]; });
+    const a = state.blocks.indexOf(on), b = state.blocks.indexOf(off);
+    if (b >= 0 && a > b) { state.blocks.splice(a, 1); state.blocks.splice(b, 0, on); } // 고른 쪽을 그 자리로
+    if (off.grp !== undefined) on.grp = off.grp; else delete on.grp;
+    on.enabled = true; off.enabled = false;
+    selectedId = on.id;
+    renderBlockList(); renderFieldEditor(); renderPreview(); scheduleSnapshot();
+}
 function renderBlockList() {
     if (pinShareLast()) { try { renderPreview(); } catch (e) {} }
     const ul = document.getElementById('blockList');
     refreshWeddingInfoCard();
+    if (heroMergedOff(selectedId)) selectedId = heroPair().cur.id; // 숨긴 쪽(메인 사진/영상)을 고르고 있었으면 보이는 쪽으로
     parkFieldDrawer(); // 목록을 다시 그리기 전에 옵션 창을 원래 자리로 빼둔다 (안 그러면 목록과 함께 지워짐)
     ul.innerHTML = state.blocks.map(b => `
-        <li class="block-row ${b.id===selectedId?'selected':''} ${!b.enabled?'disabled':''}" data-id="${b.id}"${SECTION_HIDDEN.has(b.id) || devSecOff(b.id) ? ' hidden' : ''}>
+        <li class="block-row ${b.id===selectedId?'selected':''} ${!b.enabled?'disabled':''}" data-id="${b.id}"${SECTION_HIDDEN.has(b.id) || devSecOff(b.id) || heroMergedOff(b.id) ? ' hidden' : ''}>
             <div class="row-top">
                 <span class="handle">⠿</span>
                 <span class="block-color-dot" style="background:${blockColors[b.id] || '#999'}"></span>
-                <span class="label">${blockLabels[b.id]}</span>
+                <span class="label">${heroPair() && heroPair().cur === b ? `메인 화면 <small class="hero-kind-tag">${b.id === 'heroVideo' ? '영상' : '사진'}</small>` : blockLabels[b.id]}</span>
                 <button type="button" class="row-expand-btn" data-expand-for="${b.id}" title="크게 띄워서 편집" aria-label="크게 띄워서 편집"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/></svg></button>
                 <label class="switch"><input type="checkbox" ${b.enabled?'checked':''} data-toggle="${b.id}"><span class="track"></span></label>
             </div>
@@ -1991,7 +2023,7 @@ function hvOptsSync() {
     // 도움말 상자·칸 정리(pz)가 조금 늦게 붙기도 해서 한 번 더 맞춘다
     const pos = () => {
         if (!o.isConnected || !h.isConnected || !o.classList.contains('hv-in')) return;
-        const HINT = '.sgd-guide, .wi-hint, .field-hint';
+        const HINT = '.sgd-guide, .wi-hint, .field-hint, .hero-kind'; // (메인 화면 [사진 | 유튜브 영상]도 위에)
         let ref = h;
         while (ref.nextElementSibling && ref.nextElementSibling !== o && ref.nextElementSibling.matches(HINT)) ref = ref.nextElementSibling;
         // 칸 정리(pz)를 쓰면 큰 도움말 상자가 '내용' 칸 맨 앞에 들어가 있음 → 그 도움말들 다음에
@@ -3021,6 +3053,12 @@ function renderFieldEditorRaw() {
         const hlBox = document.createElement('div'); hlBox.className = 'field hl-ex';
         hlBox.innerHTML = spHeroLayoutHtml(block, block.id === 'heroVideo' ? 'video' : 'photo');
         if (hlBox.innerHTML) { const first = wrap.querySelector(':scope > h3, :scope > .field-editor-title-row'); first ? first.after(hlBox) : wrap.prepend(hlBox); spBindHeroLayout(hlBox, block, () => renderFieldEditor()); }
+    }
+    if ((block.id === 'hero' || block.id === 'heroVideo') && heroPair() && heroPair().cur === block) { // 메인 화면: 사진 ↔ 유튜브 영상 (간편 만들기와 같이)
+        const kb = document.createElement('div'); kb.className = 'field hero-kind'; kb.dataset.pz = 'head';
+        kb.innerHTML = `<label>무엇을 보여줄까요?</label><div class="hero-kind-seg">${[['hero', '사진', '대표 사진 한 장'], ['heroVideo', '유튜브 영상', '영상 주소를 붙여 넣어요']].map(([id, t, d]) => `<button type="button" class="${block.id === id ? 'on' : ''}" data-hero-kind="${id}"><b>${t}</b><small>${d}</small></button>`).join('')}</div>`;
+        const first = wrap.querySelector(':scope > h3, :scope > .field-editor-title-row'); first ? first.after(kb) : wrap.prepend(kb);
+        kb.querySelectorAll('[data-hero-kind]').forEach(bt => bt.addEventListener('click', () => heroSwitchKind(bt.dataset.heroKind)));
     }
     if ((block.id === 'hero' || block.id === 'heroVideo') && HL_ADMIN) appendHeroLayoutAdmin(wrap, block);
     if (block.id === 'greeting') appendGreetPresets(wrap, block);
@@ -5785,7 +5823,7 @@ function applyIntroPreviewStyle() {
     const bgType = state.intro.bgType || 'color';
     if (bgType !== 'image' || !state.intro.bgImage) canvas.querySelector('.intro-bg-img')?.remove();
     if (bgType === 'image' && state.intro.bgImage) {
-        canvas.style.background = state.intro.bg || skins[state.skin].bg; // 이미지가 덮지 못하는 빈 곳에 보이는 색
+        canvas.style.background = state.intro.bg || curPalOf().bg; // 이미지가 덮지 못하는 빈 곳에 보이는 색
         let bgImg = canvas.querySelector('.intro-bg-img');
         if (!bgImg) {
             bgImg = document.createElement('img');
@@ -5811,12 +5849,18 @@ function applyIntroPreviewStyle() {
         canvas.style.background = `linear-gradient(rgba(0,0,0,${dim}), rgba(0,0,0,${dim}))${pic ? `, center / cover no-repeat url("${InviteBlocks.imgUrl(pic).replace(/"/g, '%22')}")` : ''}, ${skins[state.skin].bg}`;
         videoWrap.innerHTML = '';
         videoWrap.dataset.ytId = '';
-    } else {
-        canvas.style.background = state.intro.bg || skins[state.skin].bg;
+    } else { // 색상 (기본 = 지금 청첩장 바탕색, 투명도를 낮추면 뒤의 첫 화면이 비침)
+        const col = state.intro.bg || curPalOf().bg, op = introBgOp(state.intro);
+        if (op < 1) {
+            const hv = state.blocks.find(b => (b.id === 'hero' || b.id === 'heroVideo') && b.enabled);
+            const pic = hv ? (hv.id === 'heroVideo' ? (hv.fields.youtubeId ? `https://i.ytimg.com/vi/${extractYoutubeId(hv.fields.youtubeId)}/hqdefault.jpg` : '') : (hv.fields.heroImage || '')) : '';
+            const c = InviteBlocks.introBgRgba(col, op);
+            canvas.style.background = `linear-gradient(${c}, ${c})${pic ? `, center / cover no-repeat url("${InviteBlocks.imgUrl(pic).replace(/"/g, '%22')}")` : ''}, ${curPalOf().bg}`;
+        } else canvas.style.background = col;
         videoWrap.innerHTML = '';
         videoWrap.dataset.ytId = '';
     }
-    textEl.style.color = state.intro.color || (bgType === 'clear' ? '#fff' : skins[state.skin].ink);
+    textEl.style.color = state.intro.color || (bgType === 'clear' ? '#fff' : curPalOf().ink);
     textEl.style.textShadow = textEdge(state.intro);
     // "기본값"(폰트 미지정) 상태면 CSS inherit 대신 청첩장이 실제로 쓰는 폰트를 명시적으로 넣는다.
     // 인트로 오버레이가 #previewRoot 바깥(document.body)에 붙는 구조라 CSS 상속만으로는
@@ -5911,11 +5955,11 @@ function renderIntroSettingsScreen() {
     document.getElementById('is2Duration').value = state.intro.duration;
     document.getElementById('is2DurationVal').textContent = state.intro.duration + '초';
     renderIntroAnims();
-    document.getElementById('is2Color').value = state.intro.color || skins[state.skin].ink;
-    document.getElementById('is2Bg').value = state.intro.bg || skins[state.skin].bg;
+    document.getElementById('is2Color').value = state.intro.color || curPalOf().ink;
+    document.getElementById('is2Bg').value = state.intro.bg || curPalOf().bg;
     document.getElementById('is2BgYoutube').value = state.intro.bgYoutubeId || '';
     attachColorPresets('is2Color');
-    attachColorPresets('is2Bg');
+    attachColorPresets('is2Bg'); introBgSwatches();
     renderIntroBgTypeUI();
     applyIntroPreviewStyle();
     loopIntroPreview();
@@ -5930,6 +5974,8 @@ function renderIntroBgTypeUI() {
     document.getElementById('is2BgImageField').style.display = bgType === 'image' ? '' : 'none';
     document.getElementById('is2BgVideoField').style.display = bgType === 'video' ? '' : 'none';
     document.getElementById('is2ClearField').style.display = bgType === 'clear' ? '' : 'none';
+    document.getElementById('is2BgOpField').style.display = bgType === 'color' ? '' : 'none';
+    { const v = Math.round(introBgOp(state.intro) * 100); document.getElementById('is2BgOp').value = v; document.getElementById('is2BgOpVal').textContent = v + '%'; }
     document.getElementById('is2ClearDim').value = state.intro.clearDim ?? 30; document.getElementById('is2ClearDimVal').textContent = (state.intro.clearDim ?? 30) + '%';
     const previewWrap = document.getElementById('is2BgImagePreviewWrap');
     previewWrap.innerHTML = state.intro.bgImage ? `<img src="${esc(state.intro.bgImage)}" style="width:100%;max-height:120px;object-fit:contain;background:#eee;border-radius:8px;margin-bottom:8px;display:block;">` : '';
@@ -6191,6 +6237,10 @@ function renderIntroAnims() {
 }
 document.getElementById('is2ClearDim').addEventListener('input', e => {
     state.intro.clearDim = +e.target.value; document.getElementById('is2ClearDimVal').textContent = e.target.value + '%'; updateIntroBgOnly();
+});
+document.getElementById('is2BgOp').addEventListener('input', e => {
+    const v = +e.target.value; if (v >= 100) delete state.intro.bgOpacity; else state.intro.bgOpacity = v;
+    document.getElementById('is2BgOpVal').textContent = v + '%'; updateIntroBgOnly();
 });
 document.getElementById('is2Duration').addEventListener('input', e => {
     state.intro.duration = parseFloat(e.target.value);

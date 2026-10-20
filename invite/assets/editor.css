@@ -2989,7 +2989,7 @@ body.tippick-on, body.tippick-on * { cursor: crosshair !important; }
 .intro-off-banner b { color: #FFD48A; }
 .intro-off-banner button { height: 26px; padding: 0 12px; border-radius: 999px; border: 0; background: #34A060; color: #fff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
 .intro-layout.intro-is-off .intro-off-banner { display: inline-flex; }
-.intro-layout.intro-is-off .intro-preview-canvas { filter: saturate(.55); opacity: .72; }
+/* (꺼져 있어도 색은 그대로 - 예전엔 흐리게 해서 고른 배경색이 회색으로 보였음, 위 띠로만 알려 줌) */
 @media (max-width: 860px) { .intro-onoff { margin-left: 6px; height: 32px; padding-right: 10px; font-size: 12px; } .intro-onoff em { width: 34px; height: 22px; } .intro-onoff em::after { width: 16px; height: 16px; } .intro-onoff.on em::after { transform: translateX(12px); } }
 /* 상단바(67) + body 하단 패딩(68, 액션바 자리)을 뺀 나머지를 꽉 채워서 body 자체 스크롤이 안 생기게 한다 */
 .intro-layout { display: flex; height: calc(100vh - 67px - 68px); }
@@ -5008,3 +5008,16 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 
 /* 샘플 둘러보기 (?look=1, 홈페이지 [샘플 청첩장 직접 보기]) - 만드는 단계 표시는 안 보임 */
 html.look-mode .onb-steps { display: none !important; }
+
+/* 전문가 모드 메인 화면 = 사진 | 유튜브 영상 한 줄 */
+.block-row .label .hero-kind-tag { margin-left: 4px; padding: 1px 6px; border-radius: 9px; background: var(--ui-tint, #F3EFE8); color: #8A7F72; font-size: 10.5px; font-weight: 600; vertical-align: 1px; }
+.hero-kind > label { display: block; font-weight: 700; margin-bottom: 6px; }
+.hero-kind-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.hero-kind-seg button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 11px; border: 1px solid var(--ui-line, #E1D6C6); border-radius: 9px; background: #fff; color: #3A332D; font: inherit; text-align: left; cursor: pointer; }
+.hero-kind-seg button b { font-size: 13.5px; } .hero-kind-seg button small { font-size: 11px; color: #8A7F72; }
+.hero-kind-seg button.on { border-color: #3D4F66; background: #3D4F66; color: #fff; } .hero-kind-seg button.on small { color: #DCE3EC; }
+
+/* 인트로 배경색: 디자인 색 동그라미 + 고른 색 */
+#is2BgColorField .color-preset-row { flex-wrap: wrap; }
+#is2BgColorField .color-preset-swatch.dsg { box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ui-line, #D9CFC2); }
+#is2BgColorField .color-preset-swatch.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #3D4F66; }
