@@ -210,7 +210,7 @@ const SECTION_EASY_STEPS = [
     'music' => '배경음악', 'finish' => '인트로',
 ];
 /** 스타터(처음 만들 때부터 켜 두기)를 고를 수 없는 단계 - 섹션이 없거나 늘 켜져 있음 */
-const SECTION_EASY_NOSTART = ['names', 'hero', 'theme', 'music', 'finish'];
+const SECTION_EASY_NOSTART = ['names', 'hero', 'theme', 'music']; // (인트로 finish는 스타터 됨 - 켜면 질문 끝에 인트로 한 장 + 인트로를 켜 둠)
 const SECTION_EASY_EXTRA = ['timeline', 'interview', 'profile', 'letter', 'together', 'ending', 'guestsnap', 'trip', 'lottery', 'dayinfo', 'thanks'];
 /** 목록 화면(다 만든 뒤 고치는 화면)의 묶음: must 꼭 필요한 것 · more 채우면 좋은 것 · deco 꾸미기 */
 const SECTION_EASY_GROUPS = ['must' => '꼭 필요한 것', 'more' => '채우면 좋은 것', 'deco' => '꾸미기'];
@@ -219,9 +219,10 @@ function section_easy_group_default(string $id): string { return SECTION_EASY_GR
 /** 단계(= 목록 화면 메뉴) 정리: 아는 id만, 중복 없이, 빠진 단계는 뒤에(켜짐), names 늘 켜짐, finish 늘 맨 끝(꾸미기). g = 묶음 */
 function section_easy_clean($in): array
 {
-    $out = []; $seen = [];
+    $out = []; $seen = []; $finStart = false;
     foreach ((is_array($in) ? $in : []) as $st) {
         $id = is_array($st) ? (string) ($st['id'] ?? '') : '';
+        if ($id === 'finish' && !empty($st['start'])) $finStart = true; // (인트로는 자리는 늘 맨 끝 - 스타터만 기억)
         if (!isset(SECTION_EASY_STEPS[$id]) || isset($seen[$id]) || $id === 'finish') continue;
         $seen[$id] = 1;
         $g = (string) ($st['g'] ?? '');
@@ -238,7 +239,7 @@ function section_easy_clean($in): array
         array_splice($out, $at + 1, 0, [['id' => $id, 'on' => !in_array($id, SECTION_EASY_EXTRA, true), 'g' => section_easy_group_default($id)]]); // (전문가 모드 섹션은 꺼진 채로)
         $seen[$id] = 1;
     }
-    $out[] = ['id' => 'finish', 'on' => true, 'g' => 'deco'];
+    $out[] = ['id' => 'finish', 'on' => true, 'g' => 'deco'] + ($finStart ? ['start' => true] : []);
     return $out;
 }
 /** 처음 만들 때 질문 (에디터 SP_ASK와 같은 id: 단계 또는 단계:부분) - [질문, 단계, 디자인에 있어야 하는 섹션, 설명, 고르는 답] */

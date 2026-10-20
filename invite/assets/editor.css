@@ -5032,3 +5032,6 @@ html.look-mode .onb-steps { display: none !important; }
 .sp-iop-lv button i { width: 34px; height: 34px; border-radius: 8px; margin-bottom: 3px; border: 1px solid rgba(0,0,0,.08); }
 .sp-iop-lv button b { font-size: 13px; } .sp-iop-lv button small { font-size: 10.5px; color: #6F6A63; }
 .sp-iop-lv button.on { background: #3D4F66; border-color: #3D4F66; color: #fff; } .sp-iop-lv button.on small { color: #DCE3EC; }
+/* 목록 '다른 테마가 더 있어요' 묶음 (할 일이 아님 - 채우기에 안 셈) */
+.spb-themes .spb-plus { background: var(--ui-soft, #F3EFE8); border: 0; }
+.spb-themes .spb-plus::before { content: '✦'; position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; color: #B08A63; }

@@ -10730,6 +10730,9 @@ function spAskReveal(st) {
         b.enabled = true; changed = true;
         if (id === 'greeting' && state.spAsk && !state.spAsk.greet && !spAskMust()) state.spAsk.greet = 'ex'; // 미리보기에 보이는 예시 문구 = '예시 문구에서 고르기'
     });
+    if (st.k === 'finish' && spIsStarter('finish') && !rev.includes('#intro')) { // 인트로 스타터: 그 칸에 닿으면 인트로를 켬 (한 번만 - 고객이 끄면 그대로)
+        rev.push('#intro'); if (state.intro && !state.intro.enabled) { state.intro.enabled = true; changed = true; try { syncIntroOnOff(); } catch (e) {} }
+    }
     if (changed) { try { renderBlockList(); } catch (e) {} renderPreview(); scheduleSnapshot(); }
     return changed;
 }
@@ -11534,7 +11537,7 @@ function spAskSteps() { // 관리자 "손쉬운 제작 → 처음 만들 때 질
     spEasyList().forEach(x => {
         const d = x && x.on && x.start && SP_STEP_DEFS[x.id];
         if (!d || asked.has(x.id) || (d.show && !d.show()) || devSecOff(x.id)) return;
-        out.push(Object.assign({ k: x.id, starter: true }, d, { q: d.t, t: d.t, sub: '처음부터 넣어 둔 칸이에요. 내용을 고치거나, 필요 없으면 아래 스위치로 빼요.' }));
+        out.push(Object.assign({ k: x.id, starter: true }, d, x.id === 'finish' ? { q: '인트로', t: '인트로', sub: '청첩장을 열 때 처음 나오는 짧은 화면이에요. 필요 없으면 아래 스위치로 꺼요.' } : { q: d.t, t: d.t, sub: '처음부터 넣어 둔 칸이에요. 내용을 고치거나, 필요 없으면 아래 스위치로 빼요.' }));
     });
     return out;
 }
@@ -11881,8 +11884,9 @@ const SP_TASKS = [
       cut: b => b.querySelectorAll(':scope > .wz-h, :scope > .wz-lead').forEach(x => x.remove()) },
     { id: 'hero:edit', k: 'hero', ask: 'hero:media', t: () => '사진 보일 부분 · 확대', show: () => spHeroKind() !== 'video' && !spChecksBad('hero'), todo: () => !spTaskOk('hero:edit'), hint: '사진을 끌어서 얼굴이 잘 보이게 맞춰요 · 그대로 둬도 돼요', sum: () => '맞췄어요',
       cut: b => spKeepOnly(b, c => c.matches('.wz-field') && /보일 부분/.test((c.querySelector('.wz-lab') || {}).textContent || '')), after: b => spTaskOkBtn(b, 'hero:edit', '이대로 좋아요') },
-    { id: 'hero:layout', k: 'hero', ask: 'hero:look', t: () => '첫 화면 글자 모양', show: () => !spChecksBad('hero'), todo: () => !spTaskOk('hero:layout'), hint: '사진 위에 올릴 글자 모양을 골라요 · 그대로 둬도 돼요', sum: () => '골랐어요',
-      cut: b => spKeepOnly(b, c => c.matches('.wz-field') && /레이아웃/.test((c.querySelector('.wz-lab') || {}).textContent || '')), after: b => spTaskOkBtn(b, 'hero:layout', '이대로 좋아요') },
+    // (extra = 할 일이 아님 - 채우기에 안 셈, 목록 아래 '다른 테마가 더 있어요' 묶음에 늘 보임)
+    { id: 'hero:layout', k: 'hero', ask: 'hero:look', extra: true, t: () => '첫 화면 테마', show: () => !spChecksBad('hero'), sum: () => '사진 위 글자 모양을 바꿀 수 있어요',
+      cut: b => spKeepOnly(b, c => c.matches('.wz-field') && /레이아웃/.test((c.querySelector('.wz-lab') || {}).textContent || '')) },
     { id: 'hero:shade', k: 'hero', ask: 'hero:look', t: () => spHeroKind() === 'video' ? '영상 위 글자 잘 보이게' : '사진 위 글자 잘 보이게', show: () => !spChecksBad('hero'), todo: () => !spTaskOk('hero:shade'), hint: '사진이 밝으면 글자 뒤를 살짝 어둡게 해요 · 그대로 둬도 돼요', sum: () => '골랐어요',
       cut: b => spKeepOnly(b, c => c.matches('.sp-shade')), after: b => spTaskOkBtn(b, 'hero:shade', '이대로 좋아요') },
     { id: 'gallery:photos', k: 'gallery', t: () => '갤러리 사진', chk: 'gallery', sum: () => (spSum(spSteps().find(x => x.k === 'gallery') || {})[0] || ''),
@@ -11961,6 +11965,7 @@ function spListLive() {
     if ([...spGone].some(k => warnOf[k]) && !typing()) { [...spGone].forEach(k => { if (warnOf[k]) spGone.delete(k); }); spRender(); return; } // 접어 둔 칸이 다시 덜 채워짐 → 다시 보이게
     pane.querySelectorAll('.spb-grp:not(.spb-add) .spb-li[data-li]').forEach(li => {
         const tk = li.dataset.task ? SP_TASKS.find(x => x.id === li.dataset.li) : null, st = tk ? null : steps.find(x => x.k === li.dataset.li); if (!tk && !st) return;
+        if (tk && tk.extra) return; // (다른 테마 줄은 할 일이 아님)
         const sw = li.querySelector('[data-li-sw]'), r = tk ? spTaskState(tk) : spLiState(st, sw ? sw.dataset.liSw : null, warnOf);
         if (tk) { const b = li.querySelector('.spb-tx b'), t = tk.t(); if (b && b.textContent !== t) b.textContent = t; }
         if (!r.on) return; // (꺼진 칸은 다시 그릴 때 '더 넣을 수 있는 칸'으로)
@@ -11986,7 +11991,7 @@ function spRenderList() {
     spLastChecks = checks;
     const fill = spFillLeft(bads);
     const taskItem = (tk, st) => { const sw = swOf(st), open = spOpenSet.has(tk.id), r = spTaskState(tk);
-        return `<section class="spb-li spb-task ${r.stt}${open ? ' open' : ''}" data-li="${tk.id}" data-task="1" data-k="${st.k}"><div class="spb-h"><button type="button" class="spb-t" data-li-tog="${tk.id}" aria-expanded="${open}"><span class="spb-st spb-${r.stt}" aria-hidden="true"></span><span class="spb-tx"><b>${esc(tk.t())}</b><small>${esc(r.sum)}</small></span><span class="spb-chev" aria-hidden="true"></span></button>${sw ? `<label class="sp-li-sw" title="끄면 청첩장에서 빠져요"><input type="checkbox" data-li-sw="${sw}" aria-label="${esc(st.t)} 끄기" checked><i></i></label>` : ''}</div>${open ? `<div class="sp-li-b" data-li-body="${tk.id}"></div>` : ''}</section>`; };
+        return `<section class="spb-li spb-task ${tk.extra ? 'spb-extra' : r.stt}${open ? ' open' : ''}" data-li="${tk.id}" data-task="1" data-k="${st.k}"><div class="spb-h"><button type="button" class="spb-t" data-li-tog="${tk.id}" aria-expanded="${open}"><span class="spb-st spb-${tk.extra ? 'plus' : r.stt}" aria-hidden="true"></span><span class="spb-tx"><b>${esc(tk.t())}</b><small>${esc(r.sum)}</small></span><span class="spb-chev" aria-hidden="true"></span></button>${sw ? `<label class="sp-li-sw" title="끄면 청첩장에서 빠져요"><input type="checkbox" data-li-sw="${sw}" aria-label="${esc(st.t)} 끄기" checked><i></i></label>` : ''}</div>${open ? `<div class="sp-li-b" data-li-body="${tk.id}"></div>` : ''}</section>`; };
     const item = (st, add) => { const sw = swOf(st), on = sw ? spBlock(sw).enabled : true, open = on && spOpenSet.has(st.k);
         const { sum, stt } = spLiState(st, sw, warnOf);
         const mov = !add && !hideD && spListDragOk() && spMovIds(st).length;
@@ -12012,8 +12017,11 @@ function spRenderList() {
         spGone.add(tk.id); doneNames.push(tk.t()); return false; };
     const deskSh = spOpt('flow', 'deskShadow') ? `<section class="spb-li done" data-li="#shadow"><div class="spb-h"><span class="spb-t spb-t-sw"><span class="spb-st spb-done" aria-hidden="true"></span><span class="spb-tx"><b>PC 그림자</b><small>PC로 볼 때 청첩장 양옆에 은은한 그림자</small></span></span><label class="sp-li-sw" title="PC로 볼 때 청첩장 양옆에 그림자"><input type="checkbox" id="spLiShadow" aria-label="PC 그림자 켜고 끄기" ${state.desktopShadow ? 'checked' : ''}><i></i></label></div></section>` : '';
     const groups = SP_GROUPS.map(([g, t, sub]) => { const base = spSortByBlocks(steps.filter(st => !designOff(st) && (!isOff(st) || coreOff(st)) && spListGroup(st) === g && !(later && g === 'deco' && !warnOf[st.k] && !coreOff(st)))), rows = [];
-        base.forEach(st => { if (coreOff(st)) { rows.push(item(st, true)); return; } const tks = taskMode && g !== 'deco' ? spTasksOf(st.k) : []; if (tks.length) tks.forEach(tk => { if (taskVis(tk)) rows.push(taskItem(tk, st)); }); else if (liVis(st, g)) rows.push(item(st)); }); // (할 일 칸이 있는 섹션은 옵션 하나씩)
+        base.forEach(st => { if (coreOff(st)) { rows.push(item(st, true)); return; } const tks = taskMode && g !== 'deco' ? spTasksOf(st.k).filter(tk => !tk.extra) : []; if (tks.length) tks.forEach(tk => { if (taskVis(tk)) rows.push(taskItem(tk, st)); }); else if (liVis(st, g)) rows.push(item(st)); }); // (할 일 칸이 있는 섹션은 옵션 하나씩)
         const tail = g === 'deco' && !later ? deskSh : ''; return rows.length || tail ? `<div class="spb-grp spb-${g}${g === 'deco' && spLaterNew ? ' spb-new' : ''}" data-g="${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${rows.join('')}${tail}</div></div>` : ''; }).join('')
+        + (() => { if (!taskMode) return ''; // 다른 테마 (첫 화면 글자 모양 등) - 꼭 필요한 것·채우면 좋은 것과 따로
+            const ex = SP_TASKS.filter(tk => tk.extra && (!tk.show || tk.show())).map(tk => [tk, steps.find(x => x.k === tk.k)]).filter(([, st]) => st && !designOff(st) && !isOff(st));
+            return ex.length ? `<div class="spb-grp spb-themes" data-g="themes"><div class="spb-gh"><b>다른 테마가 더 있어요</b><small>마음에 들면 바꿔요 · 안 바꿔도 돼요</small></div><div class="spb-card">${ex.map(([tk, st]) => taskItem(tk, st)).join('')}</div></div>` : ''; })()
         + spDoneRowHtml(doneNames, fill) + (later ? `<div class="spb-later" id="spLater"><i aria-hidden="true">✦</i><span><b>꾸미기 · 칸 더 넣기</b><small>섹션 순서 바꾸기도 · 위 칸을 다 채우면 나와요</small></span><button type="button" id="spLaterOpen">더 보기</button></div>` : '');
     // 더 넣을 수 있는 칸 (꺼진 칸 + 디자인에서 꺼 둔 칸 · 스위치를 켜면 제 묶음으로 가서 펼쳐짐) - 예전 정리 화면 '기능 더 넣기'
     const adds = steps.filter(st => isOff(st) && !coreOff(st)), stkAdd = spOpt('flow', 'stkset') && !stkSetCur() && steps.some(x => x.k === 'theme') && stkSetList().length > 0;
