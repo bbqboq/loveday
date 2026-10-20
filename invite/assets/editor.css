@@ -5021,3 +5021,14 @@ html.look-mode .onb-steps { display: none !important; }
 #is2BgColorField .color-preset-row { flex-wrap: wrap; }
 #is2BgColorField .color-preset-swatch.dsg { box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ui-line, #D9CFC2); }
 #is2BgColorField .color-preset-swatch.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #3D4F66; }
+
+/* 간편 인트로 배경 B안: 디자인 색 + 진하게·반투명·투명 */
+.sp-iop { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+.sp-iop-sw { display: flex; gap: 9px; flex-wrap: wrap; }
+.sp-iop-sw button { width: 32px; height: 32px; border-radius: 50%; padding: 0; cursor: pointer; background: var(--c); border: 1px solid var(--ui-line, #D9CFC2); }
+.sp-iop-sw button.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #3D4F66; }
+.sp-iop-lv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.sp-iop-lv button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px 9px; border: 1px solid var(--ui-line, #E1D6C6); border-radius: 12px; background: #fff; color: #2B2320; font: inherit; cursor: pointer; }
+.sp-iop-lv button i { width: 34px; height: 34px; border-radius: 8px; margin-bottom: 3px; border: 1px solid rgba(0,0,0,.08); }
+.sp-iop-lv button b { font-size: 13px; } .sp-iop-lv button small { font-size: 10.5px; color: #6F6A63; }
+.sp-iop-lv button.on { background: #3D4F66; border-color: #3D4F66; color: #fff; } .sp-iop-lv button.on small { color: #DCE3EC; }
