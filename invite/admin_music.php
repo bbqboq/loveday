@@ -186,7 +186,7 @@ $mb = fn($b) => $b ? number_format($b / 1048576, 1) . 'MB' : '-';
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>배경음악 관리 - 관리자</title>
+<title><?= ($tab ?? '') === 'library' ? '기본 배경음악' : '고객이 올린 음악' ?> - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>

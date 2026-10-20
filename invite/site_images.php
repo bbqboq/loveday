@@ -6,7 +6,9 @@
  *  사진이 없는 칸은 원래 색 그라데이션이 그대로 나온다.
  *
  *  샘플 디자인 썸네일도 같은 방식: 칸 이름 'preset_{프리셋 id}' (홈페이지 "N가지 디자인에서 시작하세요" 카드)
- *   우선순위: 여기서 올린 사진 → invite/presets/{폴더}/thumb.jpg|png|webp → 디자인 색으로 그린 카드
+ *   우선순위: (스위치 '디자인 썸네일 그림 쓰기' home_dpk_thumbs 켬이면 디자인 썸네일 uploads/site/dpk 첫 화면 그림) → 여기서 올린 사진
+ *             → invite/presets/{폴더}/thumb.jpg|png|webp → 디자인 색으로 그린 카드
+ *   카드 이름은 관리자 → 디자인 [이름 바꾸기]로 바꾼 이름 (featured_presets.php preset_names_get)
  *  저장: 파일은 invite/uploads/site/ (공개 폴더, webp로 다시 만들어 저장)
  *        설정은 app_settings 'site_img_{칸}' = "파일이름|초점"  (예: "3fa9….webp|50% 30%")
  *  snap_functions.php(app_setting)가 먼저 불려 있어야 한다.
@@ -52,7 +54,28 @@ function site_image_css(string $slot, string $overlay = ''): string
 /** 샘플 디자인(프리셋)에 올린 썸네일 ['file', 'url', 'pos'] 또는 null */
 function preset_thumb_image(string $presetId): ?array
 {
+    if (function_exists('app_setting') && app_setting('home_dpk_thumbs') === '1') {
+        $t = site_dpk_thumb($presetId);
+        if ($t) return ['file' => basename($t), 'url' => $t, 'pos' => '50% 0%', 'dpk' => true];
+    }
     return site_image('preset_' . $presetId);
+}
+
+/** 디자인 썸네일(관리자 → 디자인 → 썸네일 만들기)의 첫 화면 그림 주소 또는 '' - dpk_thumbs.php와 같은 파일을 읽음 */
+function site_dpk_thumb(string $presetId): string
+{
+    static $items = null;
+    if ($items === null) {
+        $items = [];
+        $f = UPLOAD_DIR . 'site/dpk/thumbs.json';
+        $j = is_file($f) && filesize($f) <= 262144 ? json_decode((string) file_get_contents($f), true) : null;
+        foreach ((is_array($j) && is_array($j['items'] ?? null) ? $j['items'] : []) as $id => $t) {
+            $c = is_array($t) ? (string) ($t['c'] ?? '') : '';
+            if (is_string($id) && preg_match('#^/invite/uploads/site/dpk/' . preg_quote($id, '#') . '-c-[a-f0-9]{8}\.(webp|jpg)$#', $c)
+                && is_file(UPLOAD_DIR . 'site/dpk/' . basename($c))) $items[$id] = $c;
+        }
+    }
+    return $items[$presetId] ?? '';
 }
 
 /**
@@ -80,5 +103,10 @@ function site_presets(): array
         ];
     }
     uasort($out, fn($a, $b) => [$a['no'], $a['id']] <=> [$b['no'], $b['id']]);
+    // 관리자가 바꾼 디자인 이름 (관리자 → 디자인 [이름 바꾸기])
+    if (!function_exists('preset_names_get') && is_file(__DIR__ . '/featured_presets.php')) require_once __DIR__ . '/featured_presets.php';
+    if (function_exists('preset_names_get')) {
+        foreach (preset_names_get() as $id => $nm) if (isset($out[$id]) && isset($nm['label'])) $out[$id]['label'] = mb_substr($nm['label'], 0, 20);
+    }
     return $out;
 }

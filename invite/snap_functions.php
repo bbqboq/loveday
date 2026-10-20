@@ -39,6 +39,7 @@ const APP_SETTING_DEFAULTS = [
     'biz_address'          => '',     // 사업장 주소 (선택)
     'biz_contact'          => '',     // 고객 문의 안내 (예: 스토어 톡톡 / 전화 / 이메일)
     'terms_url'            => '',     // 이용약관 주소 (선택)
+    'home_dpk_thumbs'      => '0',    // 홈페이지 샘플 카드에 디자인 썸네일 그림 쓰기 (관리자 → 홈 이미지 스위치, '1' = 켬)
     'home_sample_ids'      => '',     // 홈페이지 샘플 카드에 보일 프리셋 id (쉼표, 최대 6개). 비우면 앞에서부터 6개
     'home_sample_url'      => '/testbed', // "샘플 청첩장 직접 보기" 버튼 주소
     'privacy_officer'      => '',     // 개인정보 보호책임자 (비우면 대표자)

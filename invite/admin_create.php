@@ -72,7 +72,7 @@ $tabCount = array_map(fn($g) => array_sum(array_map('count', $g)), $tabs);
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>청첩장 관리 - 관리자</title>
+<title>청첩장 목록 - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>
@@ -166,7 +166,7 @@ $tabCount = array_map(fn($g) => array_sum(array_map('count', $g)), $tabs);
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('list', '청첩장 관리'); ?>
+    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('list', '청첩장 목록'); ?>
 
     <div class="wrap">
         <form class="ls-search" method="get" role="search">
@@ -206,7 +206,7 @@ $tabCount = array_map(fn($g) => array_sum(array_map('count', $g)), $tabs);
 
         <?php if ($error): ?><p class="notice error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p><?php endif; ?>
 
-        <h2 class="page-title">최근 생성 목록</h2>
+        <h2 class="page-title">청첩장 목록</h2>
         <p style="font-size:12.5px;color:var(--muted);margin:-14px 0 20px;">
             같은 고객이 만든 건 하나로 묶여 표시됩니다. 묶음 줄을 누르면 펼쳐지고, 다시 누르면 접힙니다.
         </p>

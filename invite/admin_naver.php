@@ -123,7 +123,7 @@ $dispatch = app_setting('naver_auto_dispatch');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>스마트스토어 연동 - 관리자</title>
+<title><?= $part === 'setup' ? '스토어 연결' : '스토어 주문' ?> - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>
@@ -156,11 +156,11 @@ $dispatch = app_setting('naver_auto_dispatch');
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar($part === 'setup' ? 'naver_setup' : 'naver', $part === 'setup' ? '스토어 연결 설정' : '스마트스토어 주문'); ?>
+    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar($part === 'setup' ? 'naver_setup' : 'naver', $part === 'setup' ? '스토어 연결' : '스토어 주문'); ?>
     <div class="wrap">
-        <h2 class="page-title"><?= $part === 'setup' ? '스토어 연결 설정' : '스마트스토어 주문' ?></h2>
+        <h2 class="page-title"><?= $part === 'setup' ? '스토어 연결' : '스토어 주문' ?></h2>
         <p style="font-size:13px;color:#888;margin:-14px 0 18px;">스마트스토어에서 결제가 끝나면, 구매자가 적은 청첩장 코드를 찾아 자동으로 보관 기간을 바꾸고 워터마크를 지워요.
-            <?= $part === 'setup' ? '주문 확인·처리는 <a href="admin_naver.php">청첩장 → 스마트스토어</a>에서 해요.' : '애플리케이션 ID·시크릿·자동 확인은 <a href="admin_naver.php?part=setup">사이트 → 스토어 연결</a>에 있어요.' ?></p>
+            <?= $part === 'setup' ? '주문 확인·처리는 <a href="admin_naver.php">청첩장 → 스토어 주문</a>에서 해요.' : '애플리케이션 ID·시크릿·자동 확인은 <a href="admin_naver.php?part=setup">사이트 → 스토어 연결</a>에 있어요.' ?></p>
         <?php if ($notice): ?><div class="notice success"><?= $h($notice) ?></div><?php endif; ?>
         <?php if ($error): ?><div class="notice error"><?= $h($error) ?></div><?php endif; ?>
         <?php if (!$tableOk): ?><div class="notice error">주문 기록 표가 아직 없어요. 서버에서 <b>stage4_setup.sql</b>을 한 번 더 실행해주세요.</div><?php endif; ?>

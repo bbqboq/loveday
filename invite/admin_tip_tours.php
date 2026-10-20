@@ -32,7 +32,7 @@ $readonly = function_exists('admin_page_readonly') && admin_page_readonly();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>커스텀 편집팁 - 관리자</title>
+<title>편집팁 만들기 - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>
@@ -95,9 +95,9 @@ $readonly = function_exists('admin_page_readonly') && admin_page_readonly();
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-<?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('tiptours', '커스텀 편집팁'); ?>
+<?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('tiptours', '편집팁 만들기'); ?>
 <div class="wrap">
-    <h2 class="page-title">커스텀 편집팁</h2>
+    <h2 class="page-title">편집팁 만들기</h2>
     <p class="tt-intro">고객 에디터에서 <b>화면이 어두워지고 눌러야 할 곳만 밝게</b> 보이면서 손가락 아이콘과 "여기를 눌러주세요", 설명 창이 뜨는 안내를 만들어요. [다음]을 누르면 다음 자리로 넘어가요.<br>
     가리킬 곳은 오른쪽 에디터 화면에서 <b>🎯 고르기</b>를 누른 뒤 직접 눌러서 정해요. PC·모바일은 화면 모양이 달라서 <b>단계마다 기기를 정하고, 그 기기 화면에서 골라</b> 주세요.</p>
 

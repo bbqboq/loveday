@@ -93,7 +93,7 @@ $csrf = csrf_token();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>부가기능 설정 - 관리자</title>
+<title><?= htmlspecialchars(['guest' => '방명록·참석', 'keep' => '체험·보관 시간', 'music' => '고객이 올린 음악'][$part ?? ''] ?? '부가기능', ENT_QUOTES, 'UTF-8') ?> - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>
@@ -107,10 +107,10 @@ $csrf = csrf_token();
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php $ttl = ['guest' => '방명록·참석', 'keep' => '체험·보관 시간', 'music' => '배경음악 최대 용량'][$part] ?? '부가기능';
+    <?php $ttl = ['guest' => '방명록·참석', 'keep' => '체험·보관 시간', 'music' => '고객이 올린 음악'][$part] ?? '부가기능';
     require_once __DIR__ . '/admin_nav.php'; admin_topbar($part === 'keep' ? 'keep' : ($part === 'music' ? 'music_cust' : 'extra'), $ttl); ?>
     <div class="wrap">
-        <h2 class="page-title"><?= snap_h($part === '' ? '부가기능 설정' : $ttl) ?></h2>
+        <h2 class="page-title"><?= snap_h($ttl) ?></h2>
         <p style="font-size:13px;color:#888;margin:-14px 0 18px;"><?php if ($part === 'guest'): ?>하객이 쓰는 방명록 금지어와 참석 회신 명단 보관 기간이에요. 체험·휴지통 보관 시간은 <a href="admin_extra_settings.php?part=keep">사이트 → 체험·보관 시간</a>에 있어요.<?php elseif ($part === 'keep'): ?>체험 청첩장·무료체험·휴지통을 얼마나 두었다가 지우는지 정해요. 방명록 금지어는 <a href="admin_extra_settings.php?part=guest">하객 화면 → 방명록·참석</a>에 있어요.<?php else: ?>방명록 금지어, 참석 회신, 체험하기, 배경음악, 편집 화면 카운트다운 설정이에요. 하객 사진 설정은 <a href="admin_snap_settings.php">게스트스냅</a>에 있어요.<?php endif; ?> 시각이 9시간씩 어긋나 보이면 <a href="admin_timezone.php">서버 시간 점검</a>.</p>
         <?php if ($notice): ?><div class="notice success"><?= snap_h($notice) ?></div><?php endif; ?>
         <?php if ($error): ?><div class="notice error"><?= snap_h($error) ?></div><?php endif; ?>

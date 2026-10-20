@@ -78,7 +78,7 @@ $h = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>추천 디자인 - 관리자</title>
+<title>디자인 - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>
@@ -187,9 +187,9 @@ body { background: var(--ui-page, #F6F4F1); }
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('designs', '추천 디자인'); ?>
+    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('designs', '디자인'); ?>
     <div class="wrap">
-        <h2 class="page-title">디자인 샘플 · 추천 디자인</h2>
+        <h2 class="page-title">디자인</h2>
         <p class="fd-intro">
             <b>에디터로 꾸미기</b>를 누르면 실제 에디터가 열려요. 사진·글·스티커·글자 위치까지 꾸며서 <b>샘플 저장</b>하면, 고객이 그 디자인을 고를 때 꾸민 모습 그대로 시작해요.<br>
             카드 윗부분을 누르면 <b>추천 디자인</b>에 넣고 빼요. 카드 아래 <b>모던 | 예전</b>은 고객이 그 디자인을 고를 때 처음 꾸밈 모습이에요(예전 = 리뉴얼 전 장식 · 고객이 바꿀 수 있어요). <b>고객에게 보이기</b> 스위치를 끄면 고객의 디자인 고르기 화면에서 그 디자인이 빠져요 (바로 저장 · 이미 그 디자인으로 만든 청첩장은 그대로). 추천은 새 청첩장 화면에 크게 보이고, 나머지는 “다른 디자인 더 보기”에 들어가요 (3~4개 추천, 최대 <?= FEATURED_MAX ?>개).

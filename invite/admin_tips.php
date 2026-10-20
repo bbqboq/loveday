@@ -60,7 +60,7 @@ $csrf = csrf_token();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>에디터 도움말 - 관리자</title>
+<title>예전 ⓘ 도움말 - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <link rel="stylesheet" href="assets/tip-demos.css">
@@ -481,10 +481,10 @@ body.tour-off.guide-off .tp-feat-empty { display: block; }
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('tips', '에디터 도움말'); ?>
+    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('tips', '예전 ⓘ 도움말'); ?>
 
     <div class="wrap">
-        <h2 class="page-title">에디터 도움말</h2>
+        <h2 class="page-title">예전 ⓘ 도움말</h2>
         <p class="tp-intro">
             고객 에디터의 섹션 편집창에 나오는 회색 안내 상자(도움말)와 첫 방문 둘러보기를 정해요.
             도움말 목록은 에디터에서 <b>자동으로 모아 와서</b> 앞으로 섹션·도움말이 늘어나면 <span class="tp-tag new">새 팁</span>으로 나타나요.

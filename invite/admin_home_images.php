@@ -7,6 +7,8 @@
  *  - "기본으로"를 누르면 원래 색 그라데이션으로
  *  - 사진은 브라우저에서 먼저 줄여서(최대 1600px) 올리고, 서버에서 webp로 다시 만들어 저장 (site_images.php)
  *  - 샘플 디자인 썸네일: 홈페이지 "N가지 디자인에서 시작하세요" 카드 사진 + 홈에 보일 디자인 고르기(최대 6개, home_sample_ids)
+ *  - '디자인 썸네일 그림 쓰기' 스위치 (바로 저장, app_settings home_dpk_thumbs): 켜면 카드 사진 = 관리자 → 디자인 → 썸네일 만들기로 찍은 첫 화면 그림
+ *    (그 디자인에 썸네일이 없으면 위 사진 → 기본 썸네일 → 색 카드, site_images.php preset_thumb_image)
  *  부관리자: "사업자·사이트 정보 수정" 권한(site_settings)이 있어야 저장할 수 있다 (없으면 보기 전용)
  */
 declare(strict_types=1);
@@ -22,6 +24,11 @@ $slotKeys = array_merge(array_keys(SITE_IMAGE_SLOTS), array_map(fn($id) => 'pres
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify($_POST['csrf_token'] ?? null);
     header('Content-Type: application/json; charset=utf-8');
+    if (($_POST['act'] ?? '') === 'dpk') { // 디자인 썸네일 그림 쓰기 켜고 끄기 (바로 저장)
+        try { save_app_setting($pdo, 'home_dpk_thumbs', !empty($_POST['on']) ? '1' : '0'); echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE); }
+        catch (Throwable $e) { http_response_code(400); echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); }
+        exit;
+    }
     $changed = 0;
     try {
         $dir = site_image_dir();
@@ -84,6 +91,8 @@ foreach ($presets as $id => $p) {
         'def' => $p['folderThumb'] ? "url('" . $p['folderThumb'] . "') center/cover no-repeat" : $p['bg'], 'ov' => '', 'ratio' => 0.57,
         'defLabel' => $p['folderThumb'] ? '기본 썸네일' : '디자인 색 카드', 'mk' => !$p['folderThumb']];
 }
+$dpkOn = app_setting('home_dpk_thumbs') === '1';
+$dpkTh = []; foreach ($presets as $id => $p) { $t = site_dpk_thumb($id); if ($t) $dpkTh[$id] = $t; }
 $homeIds = array_values(array_filter(array_map('trim', explode(',', app_setting('home_sample_ids'))), fn($id) => isset($presets[$id])));
 /** 디자인 색으로 그린 카드 (사진이 없을 때) */
 $mk = function (array $p) {
@@ -196,6 +205,10 @@ $bg = function (string $slot) use ($state): string {
 .homesw { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin: 0 0 8px; font-size: 12px; color: #6F6A63; white-space: nowrap; cursor: pointer; }
 .homesw b { font-size: 10.5px; font-weight: 700; color: #fff; background: #2B2B2B; border-radius: 999px; padding: 1px 7px; }
 .homesw b:empty { display: none; }
+.hi-dpk { display: flex; align-items: flex-start; gap: 12px; margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--ui-line, #ECE8E2); border-radius: 12px; background: var(--ui-tint, #FAF8F5); cursor: pointer; }
+.hi-dpk .sw { margin-top: 1px; }
+.hi-dpk b { display: block; font-size: 13.5px; color: #2B2320; }
+.hi-dpk small { display: block; margin-top: 2px; font-size: 12px; line-height: 1.55; color: #8A847B; }
 .sw { position: relative; flex: none; display: inline-block; width: 40px; height: 24px; cursor: pointer; }
 .sw input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
 .sw i { position: absolute; inset: 0; border-radius: 999px; background: var(--ui-line, #E3E0DB); transition: background .2s; }
@@ -292,6 +305,8 @@ body { padding-bottom: 90px; }
                 <div class="pv-samples" id="pvSamples"></div>
                 <div class="pv-note" id="pvNote"></div>
             </div>
+            <label class="hi-dpk"><span class="sw"><input type="checkbox" id="dpkOn"<?= $dpkOn ? ' checked' : '' ?>><i></i></span><span><b>디자인 썸네일 그림 쓰기</b>
+                <small>켜면 카드 사진이 <a href="admin_designs.php#thumbs">디자인 → 디자인 썸네일</a>로 찍은 첫 화면 그림이 돼요 (디자인을 고쳐 다시 찍으면 홈도 같이 바뀜). 썸네일이 없는 디자인은 아래 사진·기본 카드 그대로예요. 누르면 바로 저장돼요. (썸네일 있는 디자인 <?= count($dpkTh) ?> / <?= count($presets) ?>개)</small></span></label>
             <div class="slots">
                 <?php foreach ($presets as $id => $p): $slot = 'preset_' . $id; $s = $state[$slot]; ?>
                 <div class="slot" data-slot="<?= $h($slot) ?>" data-preset="<?= $h($id) ?>">
@@ -326,6 +341,8 @@ body { padding-bottom: 90px; }
     const S = <?= json_encode($state, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
     const P = <?= json_encode(array_map(fn($p) => ['label' => $p['label'], 'tag' => $p['tag'], 'mk' => $mk($p)], $presets), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
     const HOME0 = <?= json_encode($homeIds) ?>;
+    const DPK_TH = <?= json_encode($dpkTh ?: new stdClass(), JSON_UNESCAPED_SLASHES) ?>; let dpkOn = <?= $dpkOn ? 'true' : 'false' ?>; // 디자인 썸네일 그림 쓰기
+    const dpkOf = k => dpkOn && k.startsWith('preset_') ? DPK_TH[k.slice(7)] || '' : '';
     let homeIds = HOME0.slice();
     const readonly = !!document.getElementById('admRo');
     const cur = {}; // 칸마다 {url, pos, blob, remove}
@@ -333,14 +350,15 @@ body { padding-bottom: 90px; }
     const toast = m => window.LD ? LD.toast(m) : null;
 
     const css = (k, withOv) => {
-        const c = cur[k];
+        const c = cur[k], d = dpkOf(k);
+        if (d) return `url("${d}") 50% 0%/cover no-repeat`;
         if (!c.url) return S[k].def;
         return (withOv && S[k].ov ? S[k].ov + ',' : '') + `url("${c.url}") ${c.pos}/cover no-repeat`;
     };
     const isDirty = k => cur[k].blob || cur[k].remove || (cur[k].url && cur[k].pos !== S[k].pos);
     const homeDirty = () => homeIds.join(',') !== HOME0.join(',');
     function paintPv(k) {
-        const show = !cur[k].url && S[k].mk;
+        const show = !cur[k].url && S[k].mk && !dpkOf(k);
         document.querySelectorAll(`[data-pv="${k}"]`).forEach(el => { el.style.background = css(k, true); const m = el.querySelector('.mk'); if (m) m.style.display = show ? '' : 'none'; });
     }
     function updateBar() {
@@ -351,12 +369,12 @@ body { padding-bottom: 90px; }
     function render(k) {
         const c = cur[k], slot = document.querySelector(`.slot[data-slot="${k}"]`), th = slot.querySelector('.thumb');
         th.style.background = css(k, false); th.classList.toggle('def', !c.url);
-        const m = th.querySelector('.mk'); if (m) m.style.display = (!c.url && S[k].mk) ? '' : 'none';
+        const m = th.querySelector('.mk'); if (m) m.style.display = (!c.url && S[k].mk && !dpkOf(k)) ? '' : 'none';
         const [x, y] = c.pos.split(' '); const dot = th.querySelector('.dot'); dot.style.left = x; dot.style.top = y;
         paintPv(k);
         const tag = slot.querySelector('[data-tag]');
-        tag.textContent = c.blob ? '새 사진 (저장 전)' : c.remove ? '기본으로 (저장 전)' : c.url ? '사진' : S[k].defLabel;
-        tag.className = 'tag' + (c.blob || c.remove ? ' new' : c.url ? ' photo' : '');
+        tag.textContent = dpkOf(k) ? '디자인 썸네일' : c.blob ? '새 사진 (저장 전)' : c.remove ? '기본으로 (저장 전)' : c.url ? '사진' : S[k].defLabel;
+        tag.className = 'tag' + (dpkOf(k) ? ' photo' : c.blob || c.remove ? ' new' : c.url ? ' photo' : '');
         slot.querySelector('[data-def]').disabled = readonly || !c.url;
         slot.classList.toggle('dirty', !!isDirty(k));
         updateBar();
@@ -391,6 +409,17 @@ body { padding-bottom: 90px; }
     });
     renderSamples();
     Object.keys(cur).forEach(render);
+    // 디자인 썸네일 그림 쓰기: 바로 저장 → 카드·미리보기 다시 그림
+    const dpkIn = document.getElementById('dpkOn');
+    if (dpkIn) { if (readonly) dpkIn.disabled = true; dpkIn.onchange = () => {
+        const fd = new FormData(); fd.append('csrf_token', CSRF); fd.append('act', 'dpk'); if (dpkIn.checked) fd.append('on', '1');
+        dpkIn.disabled = true;
+        fetch('admin_home_images.php', { method: 'POST', body: fd }).then(r => r.json()).then(d => {
+            if (!d.ok) throw new Error(d.error || '저장하지 못했어요');
+            dpkOn = dpkIn.checked; Object.keys(cur).forEach(render); renderSamples();
+            if (window.LD) LD.toast(dpkOn ? '홈 카드에 디자인 썸네일을 써요' : '홈 카드를 원래 사진으로 돌렸어요');
+        }).catch(e => { dpkIn.checked = !dpkIn.checked; if (window.LD) LD.toast(e.message); else alert(e.message); }).finally(() => { dpkIn.disabled = false; });
+    }; }
 
     // 브라우저에서 먼저 줄이기 (긴 쪽 1600px, jpg) - 휴대폰 사진도 빠르게 올라가게
     async function shrink(file) {

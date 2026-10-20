@@ -37,7 +37,7 @@ $csrf = csrf_token();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>워터마크 설정 - 관리자</title>
+<title>워터마크 - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>
@@ -58,10 +58,10 @@ $csrf = csrf_token();
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('watermark', '워터마크 설정'); ?>
+    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('watermark', '워터마크'); ?>
 
     <div class="wrap">
-        <h2 class="page-title">워터마크 설정</h2>
+        <h2 class="page-title">워터마크</h2>
         <p style="font-size:13px;color:var(--muted);margin:-14px 0 20px;">
             값을 바꾸면 미리보기 그림이 바로 바뀝니다 (실제 업로드 때 쓰는 것과 똑같은 방식으로 그려서 보여줍니다).
             마음에 들면 아래 저장 버튼을 눌러야 실제로 반영됩니다.

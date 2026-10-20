@@ -88,7 +88,7 @@ $csrf = csrf_token();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>게스트스냅 설정 - 관리자</title>
+<title>게스트스냅 - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>
@@ -114,9 +114,9 @@ $csrf = csrf_token();
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('snap', '게스트스냅 설정'); ?>
+    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('snap', '게스트스냅'); ?>
     <div class="wrap">
-        <h2 class="page-title">게스트스냅 설정</h2>
+        <h2 class="page-title">게스트스냅</h2>
         <p style="font-size:13px;color:#888;margin:-14px 0 18px;">하객이 로그인 없이 올리는 사진의 한도·기간·자동 삭제를 정해요. 방명록 금지어 등은 <a href="admin_extra_settings.php">부가기능</a>에 있어요.</p>
         <?php if (!$tableReady): ?><div class="notice error">DB 테이블이 아직 없습니다. 서버에서 <b>snap_setup.sql</b>을 먼저 실행해주세요.</div><?php endif; ?>
         <?php if ($notice): ?><div class="notice success"><?= snap_h($notice) ?></div><?php endif; ?>

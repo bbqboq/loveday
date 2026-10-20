@@ -217,7 +217,7 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>섹션 설정 - 관리자</title>
+<title>전문가 모드 - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>
@@ -321,6 +321,7 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 /* 탭 */
 .so-tabs { display: flex; gap: 4px; background: var(--ui-line, #EFEAE2); border-radius: 13px; padding: 4px; margin: -6px 0 20px; max-width: 520px; }
 .so-tabs a { flex: 1; text-align: center; height: 36px; line-height: 36px; border-radius: 10px; font-size: 13.5px; font-weight: 700; color: #8A8278; text-decoration: none; }
+.so-tabs[hidden], .so-tabs a[hidden] { display: none; }
 .so-tabs a.on { background: #fff; color: #2B2B2B; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
 body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 .so-tab[hidden] { display: none; }
@@ -772,20 +773,20 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('sections', '섹션 설정'); ?>
+    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('sections', '전문가 모드'); ?>
 
     <div class="wrap so-page">
-        <h2 class="page-title">에디터 섹션 설정</h2>
+        <h2 class="page-title" id="soTitle">전문가 모드</h2>
         <nav class="so-tabs" role="tablist">
-            <a href="#order" data-so-tab="order" class="on" role="tab">섹션 순서</a>
-            <a href="#panel" data-so-tab="panel" role="tab">편집창·메뉴 모양</a>
-            <a href="#groups" data-so-tab="groups" role="tab">섹션 묶음</a>
-            <a href="#easy" data-so-tab="easy" role="tab">손쉬운 제작</a>
-            <a href="#device" data-so-tab="device" role="tab">기기별 설정</a>
+            <a href="#order" data-so-tab="order" data-so-grp="sections" class="on" role="tab">섹션 순서</a>
+            <a href="#panel" data-so-tab="panel" data-so-grp="sections" role="tab">편집창·메뉴 모양</a>
+            <a href="#groups" data-so-tab="groups" data-so-grp="sections" role="tab">섹션 묶음</a>
+            <a href="#easy" data-so-tab="easy" data-so-grp="easy" role="tab">간편 만들기</a>
+            <a href="#device" data-so-tab="device" data-so-grp="device" role="tab">기기별 설정</a>
         </nav>
 
         <div class="so-tab" data-so-pane="device" hidden>
-            <p class="gp-intro"><b>간편 만들기 · 전문가 모드</b>를 <b>휴대폰</b>과 <b>PC</b>에서 따로 정해요. 여기서 끈 칸·옵션은 <b>그 화면에서만</b> 안 보여요. 손쉬운 제작 탭이나 섹션 순서 탭(비노출)에서 끈 것은 모든 화면에서 안 보이니, 여기서 켜도 다시 나오지 않아요. 고객이 이미 넣은 섹션은 청첩장에 그대로 나오고, 그 화면에서 고치는 칸만 숨어요. 휴대폰 = 화면 폭 860px 이하이거나 손가락으로 쓰는 기기(태블릿 포함)예요.</p>
+            <p class="gp-intro"><b>간편 만들기 · 전문가 모드</b>를 <b>휴대폰</b>과 <b>PC</b>에서 따로 정해요. 여기서 끈 칸·옵션은 <b>그 화면에서만</b> 안 보여요. 간편 만들기 화면이나 전문가 모드 섹션 순서 탭(비노출)에서 끈 것은 모든 화면에서 안 보이니, 여기서 켜도 다시 나오지 않아요. 고객이 이미 넣은 섹션은 청첩장에 그대로 나오고, 그 화면에서 고치는 칸만 숨어요. 휴대폰 = 화면 폭 860px 이하이거나 손가락으로 쓰는 기기(태블릿 포함)예요.</p>
             <div class="dv-ctx" id="dvCtx" role="tablist"></div>
             <div class="dv-tools"><span id="dvNote"></span><button type="button" id="dvCopy"></button><button type="button" id="dvAllOn">이 화면 모두 켜기</button></div>
             <ul class="dv-list" id="dvList"><li class="so-load">불러오는 중…</li></ul>
@@ -1017,6 +1018,14 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
         document.querySelectorAll('[data-so-tab]').forEach(a => a.classList.toggle('on', a.dataset.soTab === t));
         document.querySelectorAll('[data-so-pane]').forEach(p => { p.hidden = p.dataset.soPane !== t; });
         document.body.dataset.soTab = t; // 섹션 순서 저장 막대는 섹션 순서 탭에서만
+        // 왼쪽 메뉴 하나 = 이 화면의 탭 묶음 하나 (간편 만들기 · 전문가 모드 · 기기별 설정) - 제목·위 머리줄·탭 이름을 메뉴 이름과 같게, 다른 메뉴의 탭은 숨김
+        const cur = document.querySelector(`.so-tabs a[data-so-tab="${t}"]`), grp = cur ? cur.dataset.soGrp : 'sections';
+        const name = { easy: '간편 만들기', sections: '전문가 모드', device: '기기별 설정' }[grp] || '전문가 모드';
+        let n = 0; document.querySelectorAll('.so-tabs a[data-so-tab]').forEach(a => { const on = a.dataset.soGrp === grp; a.hidden = !on; if (on) n++; });
+        const nav = document.querySelector('.so-tabs'); if (nav) nav.hidden = n < 2;
+        const h = document.getElementById('soTitle'); if (h) h.textContent = name;
+        const pg = document.querySelector('.adm-page'); if (pg) pg.textContent = name;
+        document.title = name + ' - 관리자';
         if (window.admNavSync) admNavSync(); // 왼쪽 메뉴판 표시 (간편 만들기 · 전문가 모드 · 기기별 설정)
     }
     document.querySelectorAll('[data-so-tab]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); history.replaceState(null, '', '#' + a.dataset.soTab); showTab(a.dataset.soTab); }));
@@ -1861,7 +1870,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             const out = [{ id: 'flow', name: '간편 만들기 전체 기능', sub: '질문 · 도움말 · 발행 전 점검 같은 화면 전체 기능', opts: EOPTS.flow, fixed: true }];
             const seen = new Set();
             STEP_ORDER.concat(Object.keys(STEPS).map(id => [id, true])).forEach(([id, on]) => { if (seen.has(id) || !STEPS[id]) return; seen.add(id);
-                out.push({ id, name: STEPS[id], sub: on ? '' : '손쉬운 제작 탭에서 꺼져 있어요 (모든 화면에서 안 보임)', opts: EOPTS[id] || null, gone: !on, fixed: id === 'names' }); });
+                out.push({ id, name: STEPS[id], sub: on ? '' : '간편 만들기 화면에서 꺼져 있어요 (모든 화면에서 안 보임)', opts: EOPTS[id] || null, gone: !on, fixed: id === 'names' }); });
             return out;
         }
         const fl = {}; EXP_FLOW.forEach(k => { if (EOPTS.flow[k]) fl[k] = EOPTS.flow[k]; });

@@ -77,7 +77,7 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VIP 코드 생성 - 관리자</title>
+<title>VIP 만들기 - 관리자</title>
 <meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="assets/admin.css">
 <style>
@@ -108,10 +108,10 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('vip', 'VIP 코드 생성'); ?>
+    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('vip', 'VIP 만들기'); ?>
 
     <div class="wrap">
-        <h2 class="page-title">VIP 전용 코드 생성</h2>
+        <h2 class="page-title">VIP 만들기</h2>
         <p style="font-size:13px;color:var(--muted);margin:-14px 0 20px;line-height:1.7;">
             일반 고객은 랜딩페이지에서 네이버 로그인으로 직접 만듭니다. 이 화면은 특별히
             <b>지정된(원하는) 코드</b>로 VIP 청첩장을 만들어드릴 때만 사용하세요.
