@@ -10074,6 +10074,13 @@ function showDesignScreenWithGuide() {
         const g = document.getElementById('dpkGo'); if (g) { g.textContent = '이 디자인으로 만들어 보기'; g.title = '가입 없이 이 디자인으로 청첩장을 만들어 봐요'; }
         document.documentElement.classList.add('mob-easy-only', 'look-mode');
         renderDesignScreen(); showStartChoice(false); showScreen('design');
+        // ?look=1&d=<디자인 id> (홈페이지 디자인 카드) = 그 디자인 샘플(관리자가 [에디터로 꾸미기]로 꾸민 모습)을 바로 크게 보기 - ‹ ›로 다른 디자인, 닫으면 둘러보기 화면
+        const d = new URLSearchParams(location.search).get('d') || '';
+        if (/^[a-z0-9-]{2,40}$/.test(d)) (async () => {
+            const t0 = Date.now(); while ((!PRESETS_OK || !SAMPLE_LIST_OK) && Date.now() - t0 < 5000) await new Promise(r => setTimeout(r, 80));
+            if (!allDesigns().some(p => p.id === d)) return;
+            renderDesignScreen(); dpkMark(d); dpkGo(d, true); dpkOvOpen();
+        })();
         return;
     }
     // 휴대폰에서 새로 만들 땐 [간편 만들기 | 직접 만들기]를 묻지 않고 바로 간편 만들기 (관리자 손쉬운 제작 → 간편 만들기 전체 'mobileEasy')
