@@ -5042,3 +5042,56 @@ html.look-mode .onb-steps { display: none !important; }
 .spb-next .nx-live.ok { color: #3F7A55; font-weight: 600; }
 .spb-next .nx-live.err { color: #A8463F; font-weight: 600; }
 @keyframes nxSpin { to { transform: rotate(360deg); } }
+/* ===== 간편 인트로 칸 B·E·F안 (spIntroPanel) - 칸 안에서 진짜 인트로가 되풀이 재생 ===== */
+.spi { display: flex; flex-direction: column; gap: 12px; }
+.spi .spi-sec { margin: 0; }
+.spi-ph { position: relative; width: 100%; aspect-ratio: 9 / 19.5; container-type: inline-size; overflow: hidden; background: #3A342F; }
+.spi-ph .spi-under, .spi-ph .spi-under .hl-m { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; }
+.spi-ov { position: absolute; inset: 0; overflow: hidden; transition: opacity .55s ease; }
+.spi-ov.spi-out { opacity: 0; }
+.spi-tx { position: absolute; line-height: 1.45; white-space: pre-wrap; word-break: keep-all; max-width: 92%; }
+.spi-stk, .spi-ct { position: absolute; pointer-events: none; }
+.spi-stk svg { width: 100%; height: 100%; }
+/* E·F: 위 진한 판 + 가운데 띠만 보이는 미리보기 + 재생 막대 */
+.spi-box { background: #1E1C1A; border-radius: 18px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+.spi-box .spi-win { height: 300px; border-radius: 12px; overflow: hidden; display: flex; align-items: center; }
+.spi-ctl { display: flex; align-items: center; gap: 10px; color: #fff; }
+.spi-pp, .spi-re2 { width: 36px; height: 36px; flex: none; border-radius: 50%; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.spi-pp { border: 0; background: #fff; color: #1E1C1A; }
+.spi-re2 { border: 1px solid rgba(255,255,255,.35); background: none; color: #fff; font-size: 15px; }
+.spi-tl { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.spi-track { position: relative; height: 6px; border-radius: 3px; background: rgba(255,255,255,.2); overflow: hidden; }
+.spi-track i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 3px; background: #E8B4B8; }
+.spi-track u { position: absolute; top: 0; bottom: 0; width: 2px; background: #1E1C1A; }
+.spi-tl-l { display: flex; justify-content: space-between; font-size: 10.5px; color: rgba(255,255,255,.75); }
+@keyframes spiBar { from { width: 0; } to { width: 100%; } }
+.spi-paused .spi-ph *, .spi-paused .spi-track i, .spi-paused .spi-fxt * { animation-play-state: paused !important; }
+/* B: 하객 화면 그대로 크게 + 아래 탭 */
+.spi-win.big { position: relative; height: min(58vh, 540px); border-radius: 18px; background: #1E1C1A; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.spi-win.big .spi-ph { width: auto; height: 100%; }
+.spi-re { position: absolute; right: 10px; top: 10px; height: 32px; padding: 0 12px; border: 0; border-radius: 16px; background: rgba(0,0,0,.45); color: #fff; font: inherit; font-size: 12px; cursor: pointer; }
+.spi-cap { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font-size: 12px; color: rgba(255,255,255,.85); text-shadow: 0 1px 3px rgba(0,0,0,.5); pointer-events: none; }
+.spi-tabs { display: flex; gap: 3px; padding: 3px; border-radius: 12px; background: var(--ui-soft, #F3EEE8); overflow-x: auto; }
+.spi-tabs button { flex: 1 0 auto; height: 36px; padding: 0 10px; border: 0; border-radius: 10px; background: none; font: inherit; font-size: 13px; font-weight: 700; color: var(--wz-sub); cursor: pointer; }
+.spi-tabs button.on { background: #fff; color: var(--wz-ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.spi-tabb { min-height: 120px; }
+.spi-on { margin: 0; }
+/* F: 움직이는 효과 카드 */
+.spi-fxg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.spi-fxc { display: flex; flex-direction: column; gap: 6px; padding: 6px 6px 8px; border-radius: 14px; border: 2px solid var(--wz-line); background: #fff; font: inherit; color: var(--wz-ink); cursor: pointer; text-align: center; }
+.spi-fxc.on { border-color: var(--wz-ink); }
+.spi-fxc b { font-size: 12.5px; }
+.spi-fxs { height: 62px; border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.spi-fxt { font-size: 17px; font-weight: 600; white-space: nowrap; }
+/* 글꼴 줄 · 작은 스티커 줄 */
+.spi-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.spi-font { flex: none; height: 38px; padding: 0 13px; border-radius: 19px; border: 1px solid var(--wz-line); background: #fff; font-size: 15px; color: var(--wz-ink); cursor: pointer; white-space: nowrap; }
+.spi-font.on { background: var(--wz-ink); border-color: var(--wz-ink); color: #fff; }
+.spi-stks { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.spi-stkb { width: 40px; height: 40px; padding: 5px; border-radius: 10px; border: 1px solid var(--wz-line); background: #fff; cursor: pointer; }
+.spi-stkb img { width: 100%; height: 100%; display: block; }
+.spi-stkb.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink); background: var(--ui-soft, #F3EEE8); }
+.spi-stkx { height: 32px; padding: 0 10px; border: 0; background: none; font: inherit; font-size: 12px; color: var(--wz-sub); text-decoration: underline; cursor: pointer; }
+.spi-cap { left: 50%; right: auto; transform: translateX(-50%); width: max-content; max-width: 90%; padding: 5px 10px; border-radius: 12px; background: rgba(0,0,0,.45); text-shadow: none; }
+.spi-tabb .spi-sec > .wz-lab > span:only-child, .spi-tabb .spi-sec > .wz-lab:not(:has(small)) { display: none; }
+.spi-stks { gap: 5px; } .spi-stkb { width: 34px; height: 34px; padding: 4px; border-radius: 9px; }

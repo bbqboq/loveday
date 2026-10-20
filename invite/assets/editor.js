@@ -191,6 +191,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy) { EASY_VIDEO_SAMPLE = /^[\w-]{11}$/.test(j.easy.videoSample || '') ? j.easy.videoSample : ''; try { if (spApplyVideoSample()) renderPreview(); } catch (e) {} } // 메인 영상 예시 (관리자 손쉬운 제작)
     if (j && j.easy) { EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; EASY_HERO_POS = j.easy.heroPos && typeof j.easy.heroPos === 'object' ? j.easy.heroPos : {}; } // 메인 사진 예시 + 보일 부분·확대 (관리자 손쉬운 제작)
     if (j && j.easy && ['rows', 'tiles', 'focus', 'old'].includes(j.easy.nbPanel) && j.easy.nbPanel !== EASY_NB) { EASY_NB = j.easy.nbPanel; try { if (spHeroPhase === 'scroll' && document.getElementById('simplePane')) spRender(); } catch (e) {} } // 스크롤 버튼 칸 모양 (관리자 손쉬운 제작)
+    if (j && j.easy && ['f', 'e', 'b', 'old'].includes(j.easy.introPanel || 'f') && (j.easy.introPanel || 'f') !== EASY_INTRO) { EASY_INTRO = j.easy.introPanel || 'f'; try { if (document.querySelector('#simplePane .spi, #simplePane #spIntroPv')) spRender(); } catch (e) {} } // 인트로 칸 모양 (관리자 손쉬운 제작)
     if (j && j.easy && ['next', 'bar'].includes(j.easy.readyStyle) && j.easy.readyStyle !== EASY_READY) { EASY_READY = j.easy.readyStyle; try { if (document.getElementById('spReady')) spRender(); } catch (e) {} } // 발행 준비 카드 모양 (관리자 손쉬운 제작)
     if (j && j.easy && ['grid', 'film', 'car'].includes(j.easy.pcPick)) EASY_PC_PICK = j.easy.pcPick; // PC 디자인 고르기 화면 (관리자 손쉬운 제작)
     DPK_SECDEF = true;
@@ -13379,7 +13380,7 @@ function spAccount(box) {
 // 간편 인트로 배경 고르기 (전문가 모드 인트로 설정과 같은 값: bgType color·image·video·clear)
 function spIntroBgList() {
     const media = spOpt('finish', 'introMedia');
-    return [['color', '디자인 색'], ...(media ? [['image', '사진'], ['video', '유튜브 영상']] : []), ['clear', '메인 화면 위 (투명)']];
+    return [['color', '디자인 색'], ...(media ? [['image', '사진'], ['video', '유튜브 영상']] : [])]; // ('메인 화면 위 (투명)'은 뺌 2026-10-20 - 색 투명도 '투명'으로 같은 모습, 예전 저장분 clear는 그대로 그림)
 }
 // 간편 인트로 배경색 B안 (시안 Sda6mD8nuRxqWmguZ1JuQy): 디자인 색 동그라미 + [진하게 · 반투명 · 투명] 세 칸 + '투명도 직접 맞추기' 막대 = intro.bg · intro.bgOpacity
 const SP_IOP = [[100, '진하게', '색만 보여요'], [55, '반투명', '첫 화면이 살짝'], [0, '투명', '첫 화면 위 글자만']];
@@ -13444,20 +13445,144 @@ function spFinishMoreBind(box) {
     box.querySelectorAll('[data-sp-font2]').forEach(b => b.addEventListener('click', () => { state.customFont = b.dataset.spFont2 || null; if (state.customFont) loadFontCss(state.customFont); done(true); }));
     if (box.querySelector('[data-sp-font2]')) try { loadAllFontCss(); } catch (e) {}
 }
-function spFinish(box) {
-    ensureExtraState();
-    const ibg = spIntroBgList().some(x => x[0] === state.intro.bgType) ? state.intro.bgType : 'color';
-    box.innerHTML = spH('거의 다 됐어요', '인트로까지 정했으면 [다음]을 누르세요. 저장하고 완성본을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.') + `
-        ${spOpt('finish', 'intro') ? `<label class="sp-sw"><span><b>인트로</b><small>청첩장을 열 때 "${wzEsc(state.intro.text || '우리 결혼합니다')}" 짧은 애니메이션</small></span><input type="checkbox" id="spIntro" ${state.intro.enabled ? 'checked' : ''}><i></i></label>` : ''}
-        ${state.intro.enabled && spOpt('finish', 'introFx') && window.InviteBlocks ? `<div class="wz-field"><div class="wz-lab">인트로 배경</div><div class="sp-chips">${spIntroBgList().map(([v, l]) => `<button type="button" class="${ibg === v ? 'on' : ''}" data-sp-ibg="${v}">${l}</button>`).join('')}</div>
-            ${ibg === 'image' ? `<div class="sp-hero sp-ibg-ph">${state.intro.bgImage ? `<img src="${esc(InviteBlocks.imgUrl(state.intro.bgImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" id="spIbgUp">${state.intro.bgImage ? '사진 바꾸기' : '사진 올리기'}</button></div>` : ''}
-            ${ibg === 'video' ? `<input class="wz-inp" id="spIbgYt" value="${wzEsc(state.intro.bgYoutubeId || '')}" placeholder="유튜브 주소를 붙여 넣어요 (https://youtu.be/...)" inputmode="url"><p class="wz-hint">영상은 소리 없이 인트로 뒤에서 흘러가요.</p>` : ''}
-            ${ibg === 'color' ? spIntroOpHtml() : ''}
-            ${ibg === 'clear' ? `<div class="sp-range"><span>뒤 화면 어둡게</span><input type="range" id="spIbgDim" min="0" max="70" step="5" value="${state.intro.clearDim ?? 30}"><span>${state.intro.clearDim ?? 30}%</span></div>` : ''}</div>
-            <div class="wz-field"><div class="wz-lab">글자 효과</div><div class="sp-chips">${InviteBlocks.RichText.ANIMS.map(([v, l]) => `<button type="button" class="${(state.intro.anim || 'type') === v ? 'on' : ''}" data-sp-ianim="${v}">${esc(l)}</button>`).join('')}</div>
-            <button type="button" class="sp-link" id="spIntroPv">▶ 인트로 보기</button></div>` : ''}
-        <p class="wz-hint">글자 위치·스티커·섹션 순서까지 바꾸고 싶으면 위의 <b>전문가 모드</b>를 누르세요. 언제든 간편 만들기로 돌아올 수 있어요.</p>`;
-    box.querySelector('#spIntro')?.addEventListener('change', e => { state.intro.enabled = e.target.checked; spChanged(); scheduleSnapshot(); spRender(); });
+// ===== 간편 인트로 칸 B·E·F안 (시안 claude.ai 아티팩트 Nr9CN4HQYkLAqMcbMXQXdr, 사용자 2026-10-20: E·B 마음에 듦 + E에 C안 효과 카드 = F) =====
+//  관리자 손쉬운 제작 → '인트로 칸'(easy.introPanel): 'f' E + 움직이는 효과 카드(기본) · 'e' 재생 막대 · 'b' 인트로 화면 그대로 + 아래 탭 · 'old' 예전 칸
+//  셋 다 칸 안에서 진짜 인트로가 되풀이 재생 (배경·글자 효과·글꼴·스티커를 바꾸면 처음부터) → [인트로 보기] 버튼 없음
+var EASY_INTRO = 'f';
+const SPI = { tab: 'bg', play: true };
+const SPI_FX_SEC = 1.6; // 효과 카드 한 번 길이
+// 아주 작은 기본 스티커 (누르면 넣고 다시 누르면 뺌) - 그림은 assets/stickers/<테마>/<이름>.svg
+const SPI_STK = [['romantic', 'heart-bow'], ['romantic', 'rings'], ['romantic', 'rose'], ['classic', 'dove'], ['garden', 'sprig'], ['cosmos', 'sparkles'], ['romantic', 'beat-heart'], ['party', 'popper']];
+const SPI_STK_AT = [[24, 32], [76, 30], [22, 68], [78, 70], [50, 22], [50, 80], [30, 50], [70, 50]];
+const spiStkSrc = ([t, k]) => `/invite/assets/stickers/${t}/${k}.svg`;
+function spiDur() { return Math.max(1.5, Math.min(4, +state.intro.duration || 2.5)); }
+// 칸 안 인트로 화면: 아래 = 지금 첫 화면(작은 레이아웃 그림), 위 = 인트로 (하객 화면 playIntroAnimation과 같은 값으로)
+function spiPhoneHtml() {
+    let under = '';
+    try { const { b, kind } = spHeroCur(); if (b) { const lay = spHeroLayouts().find(l => l.id === b.fields.heroLayout) || { parts: {} }; under = spHeroLayoutMini(lay, b, kind === 'video' ? 'video' : 'photo'); } } catch (e) {}
+    return `<div class="spi-ph"><div class="spi-under">${under}</div><div class="spi-ov" aria-hidden="true"></div></div>`;
+}
+function spiHeroPic() {
+    const hv = state.blocks.find(b => (b.id === 'hero' || b.id === 'heroVideo') && b.enabled);
+    return hv ? (hv.id === 'heroVideo' ? (hv.fields.youtubeId ? `https://i.ytimg.com/vi/${extractYoutubeId(hv.fields.youtubeId)}/hqdefault.jpg` : '') : (hv.fields.heroImage || '')) : '';
+}
+// 인트로 위층 배경 (색은 투명도만큼 아래 첫 화면이 비침)
+function spiOvBg(i) {
+    const t = i.bgType || 'color';
+    if (t === 'image' && i.bgImage) return { bg: i.bg || curPalOf().bg, img: i.bgImage };
+    if (t === 'video' && i.bgYoutubeId) return { bg: '#000', img: `https://i.ytimg.com/vi/${extractYoutubeId(i.bgYoutubeId)}/hqdefault.jpg`, cover: true };
+    if (t === 'clear') { const d = Math.max(0, Math.min(80, i.clearDim ?? 30)) / 100; return { bg: `rgba(0,0,0,${d})` }; }
+    const col = i.bg || curPalOf().bg, op = introBgOp(i);
+    return { bg: op < 1 ? InviteBlocks.introBgRgba(col, op) : col };
+}
+function spiTextColor(i) { return i.color || ((i.bgType || 'color') === 'clear' ? '#fff' : curPalOf().ink); }
+function spiFontFamily(id) { const o = fontOptions.find(f => f.id === id); if (o && o.family) return o.family; return (state.customFont && fontOptions.find(f => f.id === state.customFont)?.family) || (skins[state.skin] || skins.classic).headFont; }
+function spiFill(ov) {
+    const i = state.intro, b = spiOvBg(i);
+    ov.className = 'spi-ov'; ov.innerHTML = ''; ov.style.background = b.bg;
+    if (b.img) { const im = document.createElement('img'); im.alt = ''; im.src = InviteBlocks.imgUrl(b.img); im.style.cssText = b.cover ? 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;' : introBgImgCss(i); ov.appendChild(im); }
+    if (i.font) loadFontCss(i.font);
+    const tx = document.createElement('div'); tx.className = 'spi-tx';
+    tx.style.cssText = `font-family:${spiFontFamily(i.font)};font-size:${fontToCqw(i.fontSize || 26)};color:${spiTextColor(i)};left:${i.x ?? 50}%;top:${i.y ?? 50}%;transform:${introTextTransform(i)};text-align:${i.align || 'center'};${i.ls ? `letter-spacing:${lsEm(i.ls)};` : ''}${i.textWidthPct ? `width:${i.textWidthPct}%;` : ''}`;
+    if (textEdge(i)) tx.style.textShadow = textEdge(i);
+    const typed = document.createElement('span'); typed.className = 'intro-typed'; tx.appendChild(typed); ov.appendChild(tx);
+    (i.stickers || []).forEach(st => {
+        const el = document.createElement(st.image ? 'img' : 'span'); el.className = 'spi-stk';
+        el.style.cssText = `left:${st.x}%;top:${st.y}%;transform:translate(-50%,-50%) rotate(${st.rotation || 0}deg)${stickerFlipCss(st)};z-index:${st.zIndex ?? 10};`;
+        const sz = fontToCqw(st.size || 36);
+        if (st.image) { el.src = st.image; el.alt = ''; el.style.width = el.style.height = sz; }
+        else if (st.icon) { el.innerHTML = STICKER_ICONS[st.icon] || ''; el.style.width = el.style.height = sz; }
+        else { el.textContent = st.emoji || ''; el.style.fontSize = sz; }
+        ov.appendChild(el);
+    });
+    (i.customTexts || []).forEach(ct => { const el = document.createElement('span'); el.className = 'spi-ct'; const ax = { left: '0%', center: '-50%', right: '-100%' }[ct.align || 'center'];
+        el.style.cssText = `left:${ct.x}%;top:${ct.y}%;transform:translate(${ax},-50%) scaleX(${(ct.scaleX ?? 100) / 100}) rotate(${ct.rotation || 0}deg);font-size:${fontToCqw(ct.fontSize)};color:${ct.color || 'inherit'};`; el.textContent = ct.text || ''; ov.appendChild(el); });
+    return typed;
+}
+function spiAnimate(el, html, anim, dur) {
+    const RT = InviteBlocks.RichText;
+    if (anim !== 'type' && RT.animate) RT.animate(el, html, anim, dur);
+    else { RT.resetCursor && RT.resetCursor(el); RT.type(el, html, dur); }
+}
+// 되풀이 재생: 글자 효과(재생 길이) → 잠깐 → 걷히며 첫 화면 → 처음부터
+function spiRun(box) {
+    const st = box.querySelector('.spi-ph'); if (!st) return;
+    clearTimeout(st._t1); clearTimeout(st._t2);
+    const ov = st.querySelector('.spi-ov'), bar = box.querySelector('[data-spi-bar]'), dur = spiDur(), T = dur + 1.6;
+    const go = () => {
+        if (!st.isConnected) return;
+        if (!state.intro.enabled) { ov.className = 'spi-ov spi-out'; ov.innerHTML = ''; if (bar) bar.style.animation = 'none'; return; }
+        const typed = spiFill(ov); ov.classList.remove('spi-out');
+        try { spiAnimate(typed, state.intro.html || esc(state.intro.text || '우리 결혼합니다'), state.intro.anim || 'type', dur); } catch (e) {}
+        if (bar) { bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = `spiBar ${T}s linear forwards`; }
+        if (!SPI.play) return spiPause(box, true);
+        st._t1 = setTimeout(() => { if (st.isConnected && SPI.play) ov.classList.add('spi-out'); }, (dur + 0.5) * 1000);
+        st._t2 = setTimeout(() => { if (st.isConnected && SPI.play) go(); }, T * 1000);
+    };
+    go();
+}
+function spiPause(box, on) { const st = box.querySelector('.spi-ph'); box.classList.toggle('spi-paused', !!on); if (on && st) { clearTimeout(st._t1); clearTimeout(st._t2); } }
+// 효과 카드 (F안): 카드마다 지금 배경 위에서 그 효과로 '결혼합니다'가 되풀이
+function spiFxCardsHtml() {
+    const cur = state.intro.anim || 'type';
+    return `<div class="spi-fxg">${InviteBlocks.RichText.ANIMS.map(([v, l]) => `<button type="button" class="spi-fxc${cur === v ? ' on' : ''}" data-sp-ianim="${v}" aria-pressed="${cur === v}"><span class="spi-fxs"><span class="spi-fxt" data-fx="${v}"></span></span><b>${esc(l)}</b></button>`).join('')}</div>`;
+}
+function spiFxRun(box) {
+    const cards = [...box.querySelectorAll('.spi-fxt')]; if (!cards.length) return;
+    const i = state.intro, b = spiOvBg(i), pic = spiHeroPic(), fam = spiFontFamily(i.font), col = spiTextColor(i);
+    const under = pic ? `, center / cover no-repeat url("${InviteBlocks.imgUrl(pic).replace(/"/g, '%22')}")` : ', linear-gradient(160deg, #C9B8A6, #4E4038)';
+    cards.forEach(el => { const s = el.parentElement; s.style.background = b.img ? `center / cover no-repeat url("${InviteBlocks.imgUrl(b.img).replace(/"/g, '%22')}")` : `linear-gradient(${b.bg}, ${b.bg})${under}`; el.style.fontFamily = fam; el.style.color = col; });
+    clearInterval(box._fxT);
+    const play = () => { if (!box.isConnected) return clearInterval(box._fxT); if (!SPI.play) return; cards.forEach(el => { try { spiAnimate(el, '결혼합니다', el.dataset.fx, SPI_FX_SEC); } catch (e) {} }); };
+    play(); box._fxT = setInterval(play, (SPI_FX_SEC + 1.1) * 1000);
+}
+// 글꼴 줄 (모든 인트로 칸) - 칩 글자는 그 글꼴로
+function spiFontHtml() {
+    const cur = state.intro.font || '', list = fontOptions.filter(f => f.id === '' || f.cssUrl || f.family);
+    list.forEach(f => f.id && loadFontCss(f.id));
+    return `<div class="wz-field spi-sec"><div class="wz-lab">글꼴</div><div class="spi-row">${list.map(f => `<button type="button" class="spi-font${cur === f.id ? ' on' : ''}" data-spi-font="${esc(f.id)}"${f.family ? ` style="font-family:${esc(f.family.replace(/"/g, "'"))}"` : ''}>${esc(f.id ? f.label.replace(/\s*\(.*\)\s*$/, '') : '청첩장 글꼴')}</button>`).join('')}</div></div>`;
+}
+// 아주 작은 기본 스티커 줄
+function spiStkHtml() {
+    const has = new Set((state.intro.stickers || []).map(s => s.image));
+    const list = SPI_STK.filter(x => { try { return typeof stkShown !== 'function' || stkShown('a:' + x[0] + '/' + x[1]); } catch (e) { return true; } });
+    const n = (state.intro.stickers || []).length;
+    return `<div class="wz-field spi-sec"><div class="wz-lab"><span>스티커</span><small>누르면 넣고, 다시 누르면 빼요</small></div><div class="spi-stks">${list.map(x => `<button type="button" class="spi-stkb${has.has(spiStkSrc(x)) ? ' on' : ''}" data-spi-stk="${x[0]}/${x[1]}" title="${esc((STK_ART_IX[x[0] + '/' + x[1]] || {}).l || '')}"><img src="${spiStkSrc(x)}" alt=""></button>`).join('')}${n ? '<button type="button" class="spi-stkx" id="spiStkX">모두 빼기</button>' : ''}</div></div>`;
+}
+function spiBgHtml(ibg) {
+    return `<div class="sp-chips">${spIntroBgList().map(([v, l]) => `<button type="button" class="${ibg === v ? 'on' : ''}" data-sp-ibg="${v}">${l}</button>`).join('')}</div>
+        ${ibg === 'image' ? `<div class="sp-hero sp-ibg-ph">${state.intro.bgImage ? `<img src="${esc(InviteBlocks.imgUrl(state.intro.bgImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" id="spIbgUp">${state.intro.bgImage ? '사진 바꾸기' : '사진 올리기'}</button></div>` : ''}
+        ${ibg === 'video' ? `<input class="wz-inp" id="spIbgYt" value="${wzEsc(state.intro.bgYoutubeId || '')}" placeholder="유튜브 주소를 붙여 넣어요 (https://youtu.be/...)" inputmode="url"><p class="wz-hint">영상은 소리 없이 인트로 뒤에서 흘러가요.</p>` : ''}`;
+}
+function spiFxChipsHtml() { const cur = state.intro.anim || 'type'; return `<div class="sp-chips">${InviteBlocks.RichText.ANIMS.map(([v, l]) => `<button type="button" class="${cur === v ? 'on' : ''}" data-sp-ianim="${v}">${esc(l)}</button>`).join('')}</div>`; }
+function spIntroPanel(box, kind) {
+    const i = state.intro, fx = spOpt('finish', 'introFx'), on = !!i.enabled;
+    const ibg = spIntroBgList().some(x => x[0] === i.bgType) ? i.bgType : 'color';
+    const sw = spOpt('finish', 'intro') ? `<label class="sp-sw spi-on"><span><b>인트로 넣기</b><small>${on ? '청첩장을 열면 이 화면이 먼저 나와요' : '끄면 바로 첫 화면이 나와요'}</small></span><input type="checkbox" id="spIntro" ${on ? 'checked' : ''}><i></i></label>` : '';
+    const sections = {
+        bg: fx ? `<div class="wz-field spi-sec"><div class="wz-lab">배경</div>${spiBgHtml(ibg)}</div>` : '',
+        col: fx && ibg === 'color' ? `<div class="wz-field spi-sec"><div class="wz-lab">색 · 투명도</div>${spIntroOpHtml()}</div>` : '',
+        fx: fx ? `<div class="wz-field spi-sec"><div class="wz-lab"><span>글자 효과</span>${kind === 'f' ? '<small>카드마다 실제로 움직여요</small>' : ''}</div>${kind === 'f' ? spiFxCardsHtml() : spiFxChipsHtml()}</div>` : '',
+        font: spiFontHtml(), stk: spiStkHtml()
+    };
+    const stage = kind === 'b' ? `<div class="spi-win big">${spiPhoneHtml()}<button type="button" class="spi-re" id="spiRe">↻ 처음부터</button><span class="spi-cap">하객이 청첩장을 열면 이렇게 나와요</span></div>`
+        : `<div class="spi-box"><div class="spi-win">${spiPhoneHtml()}</div><div class="spi-ctl"><button type="button" class="spi-pp" id="spiPP" aria-label="${SPI.play ? '멈추기' : '재생'}">${SPI.play ? 'Ⅱ' : '▶'}</button><div class="spi-tl"><div class="spi-track"><i data-spi-bar></i><u style="left:${Math.round((spiDur() + 0.5) / (spiDur() + 1.6) * 100)}%"></u></div><div class="spi-tl-l"><span>글자가 나타나요</span><span>첫 화면으로 넘어가요 ›</span></div></div><button type="button" class="spi-re2" id="spiRe" aria-label="처음부터">↻</button></div></div>`;
+    let body;
+    if (kind === 'b') {
+        const tabs = [['bg', '배경'], ['col', '색'], ['fx', '글자 효과'], ['font', '글꼴'], ['stk', '스티커']].filter(([k]) => sections[k]);
+        if (!tabs.some(t => t[0] === SPI.tab)) SPI.tab = tabs[0] ? tabs[0][0] : 'font';
+        body = `${on && tabs.length ? `<div class="spi-tabs" role="tablist">${tabs.map(([k, t]) => `<button type="button" role="tab" class="${SPI.tab === k ? 'on' : ''}" data-spi-tab="${k}" aria-selected="${SPI.tab === k}">${t}</button>`).join('')}</div><div class="spi-tabb">${sections[SPI.tab]}</div>` : ''}`;
+    } else body = on ? sections.bg + sections.col + sections.fx + sections.font + sections.stk : '';
+    box.innerHTML = spH('인트로', '청첩장을 열 때 처음 나오는 짧은 화면이에요. 바꾸면 바로 다시 재생돼요.') + `<div class="spi spi-k-${kind}${SPI.play ? '' : ' spi-paused'}">${stage}${sw}${body}</div>`;
+    const root = box.querySelector('.spi');
+    spiBindCommon(box);
+    box.querySelector('#spiPP')?.addEventListener('click', () => { SPI.play = !SPI.play; spRender(); });
+    box.querySelector('#spiRe')?.addEventListener('click', () => { SPI.play = true; root.classList.remove('spi-paused'); const pp = box.querySelector('#spiPP'); if (pp) { pp.textContent = 'Ⅱ'; pp.setAttribute('aria-label', '멈추기'); } spiRun(root); spiFxRun(root); });
+    box.querySelectorAll('[data-spi-tab]').forEach(b => b.addEventListener('click', () => { SPI.tab = b.dataset.spiTab; spRender(); }));
+    spiRun(root); spiFxRun(root);
+}
+// 배경·색·효과·글꼴·스티커 (예전 칸도 같이 씀)
+function spiBindCommon(box) {
     const ibgUp = () => { const input = makeFileInput(); input.addEventListener('change', async () => {
             const file = input.files && input.files[0]; if (!file) return;
             const btn = box.querySelector('#spIbgUp'); if (btn) { btn.disabled = true; btn.textContent = '올리는 중…'; }
@@ -13465,13 +13590,37 @@ function spFinish(box) {
             if (url) { const i = state.intro; i.bgImage = url; i.bgType = 'image'; ['bgW', 'bgH', 'bgRatio', 'bgAspect'].forEach(k => delete i[k]); }
             scheduleSnapshot(); spRender();
         }); input.click(); };
-    box.querySelectorAll('[data-sp-ibg]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.spIbg; state.intro.bgType = v; if (v === 'clear' && state.intro.clearDim == null) state.intro.clearDim = 30;
+    box.querySelector('#spIntro')?.addEventListener('change', e => { state.intro.enabled = e.target.checked; spChanged(); scheduleSnapshot(); spRender(); });
+    box.querySelectorAll('[data-sp-ibg]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.spIbg; state.intro.bgType = v;
         scheduleSnapshot(); spRender(); if (v === 'image' && !state.intro.bgImage) ibgUp(); else if (v === 'video' && !state.intro.bgYoutubeId) document.getElementById('spIbgYt')?.focus(); }));
     box.querySelector('#spIbgUp')?.addEventListener('click', ibgUp);
-    box.querySelector('#spIbgYt')?.addEventListener('change', e => { state.intro.bgYoutubeId = e.target.value.trim(); scheduleSnapshot(); });
-    box.querySelector('#spIbgDim')?.addEventListener('input', e => { state.intro.clearDim = +e.target.value; e.target.nextElementSibling.textContent = e.target.value + '%'; scheduleSnapshot(); });
+    box.querySelector('#spIbgYt')?.addEventListener('change', e => { state.intro.bgYoutubeId = e.target.value.trim(); scheduleSnapshot(); spRender(); });
     spIntroOpBind(box);
     box.querySelectorAll('[data-sp-ianim]').forEach(b => b.addEventListener('click', () => { state.intro.anim = b.dataset.spIanim; scheduleSnapshot(); spRender(); }));
+    box.querySelectorAll('[data-spi-font]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.spiFont; if (v) { state.intro.font = v; loadFontCss(v); } else delete state.intro.font; try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); spRender(); }));
+    box.querySelectorAll('[data-spi-stk]').forEach(b => b.addEventListener('click', () => {
+        const [t, k] = b.dataset.spiStk.split('/'), src = spiStkSrc([t, k]), i = state.intro; if (!Array.isArray(i.stickers)) i.stickers = [];
+        const at = i.stickers.findIndex(s => s.image === src);
+        if (at >= 0) i.stickers.splice(at, 1);
+        else { const used = i.stickers.map(s => s.x + ',' + s.y), p = SPI_STK_AT.find(q => !used.includes(q[0] + ',' + q[1])) || [50, 50];
+            i.stickers.push({ id: 'sk' + Date.now() + Math.random().toString(36).slice(2, 6), image: src, x: p[0], y: p[1], size: 44, rotation: [-8, 6, -4, 8][i.stickers.length % 4] }); }
+        try { renderIntroStickers(); } catch (e) {} scheduleSnapshot(); spRender();
+    }));
+    box.querySelector('#spiStkX')?.addEventListener('click', () => { state.intro.stickers = []; try { renderIntroStickers(); } catch (e) {} scheduleSnapshot(); spRender(); });
+}
+function spFinish(box) {
+    ensureExtraState();
+    if (EASY_INTRO !== 'old' && window.InviteBlocks && InviteBlocks.RichText) return spIntroPanel(box, ['b', 'e', 'f'].includes(EASY_INTRO) ? EASY_INTRO : 'f'); // 인트로 칸 B·E·F안 (관리자 easy.introPanel)
+    const ibg = spIntroBgList().some(x => x[0] === state.intro.bgType) ? state.intro.bgType : 'color';
+    box.innerHTML = spH('거의 다 됐어요', '인트로까지 정했으면 [다음]을 누르세요. 저장하고 완성본을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.') + `
+        ${spOpt('finish', 'intro') ? `<label class="sp-sw"><span><b>인트로</b><small>청첩장을 열 때 "${wzEsc(state.intro.text || '우리 결혼합니다')}" 짧은 애니메이션</small></span><input type="checkbox" id="spIntro" ${state.intro.enabled ? 'checked' : ''}><i></i></label>` : ''}
+        ${state.intro.enabled && spOpt('finish', 'introFx') && window.InviteBlocks ? `<div class="wz-field"><div class="wz-lab">인트로 배경</div>${spiBgHtml(ibg)}
+            ${ibg === 'color' ? spIntroOpHtml() : ''}</div>
+            <div class="wz-field"><div class="wz-lab">글자 효과</div>${spiFxChipsHtml()}
+            <button type="button" class="sp-link" id="spIntroPv">▶ 인트로 보기</button></div>` : ''}
+        ${state.intro.enabled ? spiFontHtml() + spiStkHtml() : ''}
+        <p class="wz-hint">글자 위치·스티커·섹션 순서까지 바꾸고 싶으면 위의 <b>전문가 모드</b>를 누르세요. 언제든 간편 만들기로 돌아올 수 있어요.</p>`;
+    spiBindCommon(box);
     box.querySelector('#spIntroPv')?.addEventListener('click', () => spOpenPreview(false)); // 하객이 보는 실제 화면으로 (인트로부터)
 }
 

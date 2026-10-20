@@ -112,6 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 간편 만들기 ↓ 스크롤 버튼 칸 모양 (1 이름표 줄 / 2 버튼 그림 / 3 미리보기 중심 / 예전) - 누르면 바로 저장
         $v = (string) ($_POST['view'] ?? '');
         $ok = defined('SECTION_EASY_NBS') && in_array($v, SECTION_EASY_NBS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['nbPanel' => $v]);
+    } elseif ($act === 'easy_intro') {
+        // 간편 만들기 인트로 칸 모양 (재생 막대 + 효과 카드 / 재생 막대 / 인트로 화면 그대로 / 예전) - 누르면 바로 저장
+        $v = (string) ($_POST['view'] ?? '');
+        $ok = defined('SECTION_EASY_INTROS') && in_array($v, SECTION_EASY_INTROS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['introPanel' => $v]);
     } elseif ($act === 'easy_ready') {
         // 목록 화면 발행 준비 카드 모양 (C안 큰 버튼 하나 / 예전 막대) - 누르면 바로 저장
         $v = (string) ($_POST['view'] ?? '');
@@ -157,7 +161,7 @@ $easyNow = section_defaults_easy();
 $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
-$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyNb = function_exists('section_defaults_easy_nb') ? section_defaults_easy_nb() : 'rows'; // (section_defaults.php를 같이 안 올렸어도 페이지가 열리게) $easyVideo = section_defaults_easy_video();
+$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyNb = function_exists('section_defaults_easy_nb') ? section_defaults_easy_nb() : 'rows'; $easyIntro = function_exists('section_defaults_easy_intro') ? section_defaults_easy_intro() : 'f'; // (section_defaults.php를 같이 안 올렸어도 페이지가 열리게) $easyVideo = section_defaults_easy_video();
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
 $easyInfo = [
@@ -854,6 +858,17 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
                     <?php foreach ([['rows', '줄마다 하나씩', '왼쪽 이름, 오른쪽 고르기. 모양 · 크기 · 진하기 · 움직임 · 등장이 한 줄에 하나씩. 맨 위 스위치를 끄면 한 줄만 남아요.', '추천'], ['tiles', '버튼 그림 고르기', '버튼 그림 8칸(없음 + 7가지)이 크게. 크기 · 움직임 · 진하기는 아래 한 줄, 등장 효과는 눌러야 펼쳐져요.', ''], ['focus', '미리보기 보며 넘기기', '큰 그림 속 버튼을 보면서 ‹ ›로 모양을 넘겨요. 나머지는 아래 작은 버튼을 누르면 그것 하나만 열려요. 칸이 가장 낮아요.', ''], ['old', '예전 긴 칸', '모양 · 크기 · 진하기 · 움직임 · 등장 효과가 모두 펼쳐진 예전 칸.', '']] as [$mk, $mt, $md, $mb]): ?>
                     <button type="button" class="ez-mview-c<?= $easyNb === $mk ? ' on' : '' ?>" data-nbp="<?= $mk ?>" role="radio" aria-checked="<?= $easyNb === $mk ? 'true' : 'false' ?>">
                         <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
+                        <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
+                    </button>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="ez-mview" id="ezIp">
+                <div class="ez-mview-h"><b>인트로 칸</b><small>간편 만들기 '인트로' 칸 모양이에요. 넷 다 배경 · 색 투명도 · 글자 효과 · 글꼴 · 작은 스티커를 고를 수 있고, 위 셋은 칸 안에서 진짜 인트로가 되풀이 재생돼요 (바꾸면 바로 처음부터). 누르면 바로 저장돼요.</small></div>
+                <div class="ez-mview-g" role="radiogroup" aria-label="인트로 칸">
+                    <?php foreach ([['f', '재생 막대 + 움직이는 효과 카드', '위 인트로 화면 + ▶/Ⅱ · 진행 막대 · ↻, 글자 효과는 카드마다 실제로 움직여서 보고 골라요.', '추천'], ['e', '재생 막대', '위 인트로 화면 + ▶/Ⅱ · 진행 막대(글자가 나타나요 → 첫 화면으로 넘어가요) · ↻, 고르는 칸은 글자 버튼.', ''], ['b', '인트로 화면 그대로 + 아래 탭', '하객이 보는 휴대폰 화면 그대로 크게 + 아래 [배경 · 색 · 글자 효과 · 글꼴 · 스티커] 탭.', ''], ['old', '예전 칸', '고르는 칸만 있고 [▶ 인트로 보기]를 눌러 완성본으로 봐요.', '']] as [$mk, $mt, $md, $mb]): ?>
+                    <button type="button" class="ez-mview-c<?= $easyIntro === $mk ? ' on' : '' ?>" data-ipp="<?= $mk ?>" role="radio" aria-checked="<?= $easyIntro === $mk ? 'true' : 'false' ?>">
+                        <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk === 'b' ? 'focus' : ($mk === 'old' ? 'old' : 'tiles') ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
                         <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
                     </button>
                     <?php endforeach; ?>
@@ -1766,6 +1781,16 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             const pick = el => box.querySelectorAll('[data-nbp]').forEach(x => { x.classList.toggle('on', x === el); x.setAttribute('aria-checked', String(x === el)); });
             pick(b);
             post({ act: 'easy_nb', view: b.dataset.nbp }).then(() => toast('스크롤 버튼 칸 모양을 저장했어요')).catch(err => { say(err.message); pick(prev); });
+        }));
+    })();
+    (function ezIpBox() { // 인트로 칸 모양
+        const box = document.getElementById('ezIp'); if (!box) return;
+        box.querySelectorAll('[data-ipp]').forEach(b => b.addEventListener('click', () => {
+            if (readonly) return;
+            const prev = box.querySelector('.ez-mview-c.on');
+            const pick = el => box.querySelectorAll('[data-ipp]').forEach(x => { x.classList.toggle('on', x === el); x.setAttribute('aria-checked', String(x === el)); });
+            pick(b);
+            post({ act: 'easy_intro', view: b.dataset.ipp }).then(() => toast('인트로 칸 모양을 저장했어요')).catch(err => { say(err.message); pick(prev); });
         }));
     })();
     (function ezRdBox() { // 발행 준비 카드 모양
