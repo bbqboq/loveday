@@ -1032,9 +1032,9 @@ html.mob-easy-only #scBack { display: none; }
     .sp-lens-tab.fold { top: auto; bottom: 86px; right: 12px; width: 60px; height: 60px; border-radius: 50%; writing-mode: horizontal-tb; letter-spacing: 0; font-size: 11.5px; box-shadow: 0 6px 18px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.18); }
     .sp-lens-x { display: none; position: absolute; right: 44px; top: 2px; width: 26px; height: 20px; border: 0; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; font-size: 12px; cursor: pointer; place-items: center; }
     html:is(.sp-lens-pinned, .sp-lens-peeking) .sp-lens-x { display: grid; } .sp-lens-z[hidden] + .sp-lens-x { right: 4px; }
-    .sp-lens-cd { display: none; position: absolute; left: 24%; right: 24%; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.35); overflow: hidden; }
+    .sp-lens-cd { display: none; position: absolute; left: 22%; right: 22%; bottom: 6px; height: 5px; border-radius: 3px; background: rgba(30,24,20,.28); box-shadow: 0 0 0 1.5px rgba(255,255,255,.85), 0 1px 4px rgba(0,0,0,.25); overflow: hidden; z-index: 3; } /* 흰 청첩장 위에서도 보이게 (예전 흰 막대는 밝은 바탕에서 안 보였음) */
     html.sp-lens-peeking .sp-lens-cd { display: block; }
-    .sp-lens-cd.run::after { content: ''; position: absolute; inset: 0; background: #fff; transform-origin: 0 50%; animation: spLensCd var(--cd, 2s) linear forwards; }
+    .sp-lens-cd.run::after { content: ''; position: absolute; inset: 0; background: var(--ui-point, #B08A5A); transform-origin: 0 50%; animation: spLensCd var(--cd, 2s) linear forwards; }
     @keyframes spLensCd { to { transform: scaleX(0); } }
 }
 @media (max-width: 860px) and (prefers-reduced-motion: reduce) { html.sp-mv-split #screenEditor .preview-pane, html.sp-mv-lens #screenEditor .preview-pane, html.sp-mv-lens #screenEditor .preview-pane > .phone-frame, .sp-lens-ui { transition: none !important; } }
@@ -4892,11 +4892,14 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 .shz-seg button { border: 0; border-left: 1px solid #EEE6DE; background: none; padding: 0; margin: 0; min-height: 0; height: 100%; cursor: pointer; display: grid; place-items: center; border-radius: 0; }
 .shz-seg button:first-child { border-left: 0; }
 .shz-seg button.on { background: #1F1B18; }
-.shz.is-auto .shz-seg button.on { background: var(--ui-tint, #F3E4E7); }
+.shz.is-auto .shz-seg { overflow: visible; }
+.shz.is-auto .shz-seg button.on { background: #fff; position: relative; z-index: 1; border-radius: 7px; box-shadow: 0 0 0 2px var(--ui-point, #B57C86), 0 0 10px 2px color-mix(in srgb, var(--ui-point, #B57C86) 55%, transparent); animation: shzGlow 1.8s ease-in-out infinite; } /* 알아서 고른 칸 = 테두리에 불 (직접 고르면 검은 칸) */
+@keyframes shzGlow { 50% { box-shadow: 0 0 0 2px var(--ui-point, #B57C86), 0 0 4px 0 color-mix(in srgb, var(--ui-point, #B57C86) 30%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .shz.is-auto .shz-seg button.on { animation: none; } }
 .shz-ic { width: 12px; height: 19px; border-radius: 2.5px; border: 1.2px solid #9C9189; background: #EFE8E1; position: relative; overflow: hidden; display: block; }
 .shz-ic i { position: absolute; left: 0; right: 0; }
 .shz-seg button.on .shz-ic { border-color: #fff; }
-.shz.is-auto .shz-seg button.on .shz-ic { border-color: var(--ui-point, #B57C86); }
+.shz.is-auto .shz-seg button.on .shz-ic { border-color: #5A4F48; }
 .shz-ic.x::after { content: ''; position: absolute; left: -2px; right: -2px; top: 50%; height: 1.2px; background: #9C9189; transform: rotate(-58deg); }
 .shz-rng { display: flex; align-items: center; gap: 8px; height: 26px; font-size: 11px; color: #8B8178; }
 .shz-rng input { flex: 1; min-width: 0; height: 18px !important; padding: 0 !important; margin: 0 !important; border: 0 !important; background: none !important; accent-color: #1F1B18; }
@@ -4990,3 +4993,9 @@ body.ldp-paper .field-drawer .field-editor { background-image: radial-gradient(r
 .nbp-live .nbx-hd > b { display: none; }
 .nbp-live .nbx-hd { justify-content: flex-end; }
 .nbp-live .nbx-tiles .nbx-hd, .nbp-live .nbx-focus .nbx-hd { display: none; }
+
+/* 내가 올린 스티커: 오른쪽 위 ✕ 지우기 (deletePersonalSticker) */
+.palette-personal-grid .pst-it { position: relative; display: block; min-width: 0; }
+.palette-personal-grid .pst-it > button[data-personal-sticker] { width: 100%; }
+.palette-personal-grid .pst-del { position: absolute; top: -5px; right: -5px; width: 22px; height: 22px; padding: 0 !important; border: 0; border-radius: 50% !important; background: #2B2320 !important; color: #fff; font-size: 11px; line-height: 22px; text-align: center; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25); aspect-ratio: auto !important; }
+.palette-personal-grid .pst-del:hover { background: #7A3B41 !important; }

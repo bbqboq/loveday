@@ -542,7 +542,7 @@ function initLocationGapDragging(root) {
             handle.classList.add('dragging');
             handle.setPointerCapture(e.pointerId);
             startY = e.clientY;
-            startVal = block.fields.mapHeight ?? 200;
+            startVal = block.fields.mapHeight ?? 190;
             e.stopPropagation();
         });
         handle.addEventListener('pointermove', e => {
@@ -565,7 +565,7 @@ function initLocationGapDragging(root) {
             e.stopPropagation(); // 손잡이 끌기·미리보기 고르기로 번지지 않게
             const b = e.target.closest('button[data-d]'); if (!b) return;
             e.preventDefault();
-            const step = () => locSet(key, (key === 'mapHeight' ? (block.fields.mapHeight ?? 200) : (block.fields.gapCallMap ?? 14)) + (+b.dataset.d) * LOC_LIM[key][2]);
+            const step = () => locSet(key, (key === 'mapHeight' ? (block.fields.mapHeight ?? 190) : (block.fields.gapCallMap ?? 14)) + (+b.dataset.d) * LOC_LIM[key][2]);
             step(); t = setTimeout(() => { iv = setInterval(step, 90); }, 380);
         });
         ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => st.addEventListener(ev, stop));
@@ -604,7 +604,7 @@ let state = {
             } } },
         { id:'greeting', enabled:true, width:100, scrollEffect:'bounce', fields:{ text:'서로 다른 길을 걸어온 두 사람이\n이제 한 곳을 바라보며 걸어가려 합니다.',
             layout: { text: { x:50, y:50, fontSize:15, scaleX:100, widthAuto:true, width:78 } } } },
-        { id:'location', enabled:true, width:100, scrollEffect:'bounce', fields:{ venue:'라움아트센터', address:'서울 강남구 테헤란로 000', addressBase:'서울 강남구 테헤란로 000', addressDetail:'', phone:'', showMap:false, mapFullWidth:false, mapHeight:200, gapCallMap:14, gapMapLinks:14,
+        { id:'location', enabled:true, width:100, scrollEffect:'bounce', fields:{ venue:'라움아트센터', address:'서울 강남구 테헤란로 000', addressBase:'서울 강남구 테헤란로 000', addressDetail:'', phone:'', showMap:true, mapFullWidth:false, mapHeight:190, gapCallMap:14, gapMapLinks:14,
             layout: {
                 title:   { x:50, y:14, fontSize:12, scaleX:100, widthAuto:true, width:80 },
                 venue:   { x:50, y:46, fontSize:16, scaleX:100, widthAuto:true, width:80 },
@@ -1291,7 +1291,7 @@ const templates = {
         // 예전에 저장된 디자인엔 이 필드들이 없을 수 있어서 기본값(14px/200px)으로 대체한다.
         const gapCallMap = f.gapCallMap ?? 14;
         const gapMapLinks = f.gapMapLinks ?? 14;
-        const mapHeight = f.mapHeight ?? 200;
+        const mapHeight = f.mapHeight ?? 190;
         // 안내전화 버튼 밑/지도 밑에 실제 여백 역할도 겸하는 손잡이(gap handle)를 끼워 넣는다 -
         // 섹션 위/아래 여백 눈금자와 같은 방식으로, 미리보기에서 직접 잡고 끌면 그만큼 간격이 늘고 준다.
         // (기본 CSS 여백은 0으로 덮어쓰고, 간격은 전부 이 손잡이의 높이로만 표현한다)
@@ -2881,7 +2881,7 @@ function renderFieldEditorRaw() {
         </div>
         <div class="field">
             <label>지도 높이</label>
-            <div class="sf-range"><input type="range" min="100" max="500" step="10" id="locMapHeight" value="${block.fields.mapHeight ?? 200}"><span class="sf-range-val" id="locMapHeightVal">${block.fields.mapHeight ?? 200}px</span></div>
+            <div class="sf-range"><input type="range" min="100" max="500" step="10" id="locMapHeight" value="${block.fields.mapHeight ?? 190}"><span class="sf-range-val" id="locMapHeightVal">${block.fields.mapHeight ?? 190}px</span></div>
         </div>
         <div class="field">
             <label>버튼 간격</label>
@@ -3374,9 +3374,9 @@ function shadeFieldHtml(f, kind, block) {
     const pzv = (auto ? '알아서 · ' : '') + ({ none: '없음', bottom: '아래', top: '위', both: '위·아래', full: '전체', light: '아래 밝게' }[k] || '') + (k === 'none' ? '' : ' ' + p + '%'); // (전문가 모드 타일에 보이는 요약)
     return `<div class="field shade-field shz${auto ? ' is-auto' : ''}" data-pz-value="${esc(pzv)}"><label>글자 잘 보이게 <small style="font-weight:400;opacity:.7">(사진·영상 뒤를 살짝 어둡게)</small></label>
         ${easy ? `<div class="shz-top">${shadeMiniHtml(block, kind, k, p, shadeSplit)}${side}</div>` : side}
-        <div class="shz-l">어디를 <small>${SHADE_LONG[k]}</small></div>
-        <div class="shz-seg" role="group" aria-label="어디를 어둡게">${InviteBlocks.HERO_SHADES.map(([v, l]) => `<button type="button" class="${k === v ? 'on' : ''}" data-shade="${v}" title="${SHADE_LONG[v] || l}" aria-label="${SHADE_LONG[v] || l}" aria-pressed="${k === v}"><span class="shz-ic${v === 'none' ? ' x' : ''}">${SHADE_IC[v] || ''}</span></button>`).join('')}</div>
-        ${k !== 'none' ? `<div class="shz-l">얼마나 <small data-shade-pv>${p}%</small></div><div class="shz-rng"><span>연하게</span><input type="range" min="10" max="100" step="5" value="${p}" data-shade-pct aria-label="얼마나 어둡게"><span>진하게</span></div>` : ''}</div>`;
+        <div class="shz-l">명암 설정 <small>${SHADE_LONG[k]}</small></div>
+        <div class="shz-seg" role="group" aria-label="명암 설정">${InviteBlocks.HERO_SHADES.map(([v, l]) => `<button type="button" class="${k === v ? 'on' : ''}" data-shade="${v}" title="${SHADE_LONG[v] || l}" aria-label="${SHADE_LONG[v] || l}" aria-pressed="${k === v}"><span class="shz-ic${v === 'none' ? ' x' : ''}">${SHADE_IC[v] || ''}</span></button>`).join('')}</div>
+        ${k !== 'none' ? `<div class="shz-l">투명도 조절 <small data-shade-pv>${p}%</small></div><div class="shz-rng"><span>연하게</span><input type="range" min="10" max="100" step="5" value="${p}" data-shade-pct aria-label="투명도 조절"><span>진하게</span></div>` : ''}</div>`;
 }
 function bindShadeField(scope, block) {
     const f = block.fields, kind = block.id === 'heroVideo' ? 'video' : 'hero', redraw = () => { renderFieldEditor(); renderPreview(); scheduleSnapshot(); if (document.documentElement.classList.contains('simple-mode')) setTimeout(() => spRender(), 0); };
@@ -4597,7 +4597,8 @@ function renderPersonalStickerSections() {
             grid.innerHTML = '<p class="empty-hint">아직 업로드한 스티커가 없어요. PNG 파일(투명배경 추천)을 올려보세요.</p>';
             return;
         }
-        grid.innerHTML = personalStickers.map(s => `<button type="button" data-personal-sticker="${s.url}"><img src="${s.url}" alt=""></button>`).join('');
+        grid.innerHTML = personalStickers.map(s => `<span class="pst-it"><button type="button" data-personal-sticker="${s.url}"><img src="${s.url}" alt=""></button>${s.id && EDIT_TOKEN && !SAMPLE_ID ? `<button type="button" class="pst-del" data-pst-del="${s.id}" title="이 스티커 지우기" aria-label="이 스티커 지우기">✕</button>` : ''}</span>`).join('');
+        grid.querySelectorAll('[data-pst-del]').forEach(btn => btn.addEventListener('click', ev => { ev.stopPropagation(); deletePersonalSticker(+btn.dataset.pstDel); }));
         grid.querySelectorAll('[data-personal-sticker]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const url = btn.dataset.personalSticker;
@@ -4606,6 +4607,31 @@ function renderPersonalStickerSections() {
             });
         });
     });
+}
+// 내가 올린 스티커 지우기 (sticker_delete.php) - 이 청첩장에 붙여 둔 같은 그림도 같이 뗌
+//  (다른 청첩장에 붙어 있으면 서버가 파일은 남겨 둠 → 그 청첩장은 그대로 보임)
+async function deletePersonalSticker(id) {
+    const s = personalStickers.find(x => x.id === id); if (!s) return;
+    const same = it => it && it.image && String(it.image).replace(/^\//, '').split('?')[0].endsWith(String(s.url).replace(/^\//, ''));
+    const used = (state.stickers || []).filter(same).length + ((state.intro && state.intro.stickers) || []).filter(same).length;
+    const ok = await LD.confirm('이 스티커를 지울까요?', { message: used ? `이 청첩장에 붙여 둔 ${used}개도 같이 떼어져요.\n지운 스티커는 되살릴 수 없어요.` : '내가 올린 스티커 목록에서 지워요.\n지운 스티커는 되살릴 수 없어요.', ok: '지우기', cancel: '그대로 두기' });
+    if (!ok) return;
+    const fd = new FormData();
+    fd.append('id', String(id)); fd.append('edit_token', EDIT_TOKEN); fd.append('csrf_token', serverCsrfToken || '');
+    try {
+        const res = await fetch('sticker_delete.php', { method: 'POST', body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) { showServerNotice('스티커를 지우지 못했어요' + (data.error ? ': ' + data.error : '')); return; }
+    } catch (e) { showServerNotice('스티커를 지우지 못했어요. 인터넷 연결을 확인해 주세요.'); return; }
+    personalStickers = personalStickers.filter(x => x.id !== id);
+    if (used) {
+        state.stickers = (state.stickers || []).filter(it => !same(it));
+        if (state.intro && state.intro.stickers) state.intro.stickers = state.intro.stickers.filter(it => !same(it));
+        renderPreview(); try { renderIntroStickers(); } catch (e) {}
+        scheduleSnapshot();
+    }
+    renderPersonalStickerSections();
+    try { InviteBlocks.toast('스티커를 지웠어요'); } catch (e) {}
 }
 // 스티커를 올리기 전에 브라우저에서 한 번 손질한다.
 //  1) 투명 배경이 없고 네 귀퉁이가 흰색이면 "흰 배경을 지울까요?" 팝업 → 지우기를 고르면 가장자리에서 이어진 흰색만 투명하게
@@ -11279,6 +11305,12 @@ function spAskNag(pane, msg) { // [다음]을 눌렀는데 아직 안 했으면:
     const b = pane.querySelector('#spNext'); if (b) { b.classList.remove('sp-shake'); void b.offsetWidth; b.classList.add('sp-shake'); }
 }
 function spAskNeed(st) {
+    if (st && !st.starter && st.k === 'venue') { // 예식장 질문: 주소는 늘 넣어야 넘어감 (관리자 '답 안 해도 넘어가기'와 상관없이 - 지도·길찾기가 주소로 떠서)
+        const lb = spBlock('location'); if (!lb || !lb.enabled) return '';
+        const f = lb.fields, vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {};
+        if (spAskMust() && !(f.venue && !vd.v)) return '예식장 이름을 적어 주세요';
+        return String(f.addressBase || f.address || '').trim() && !vd.a ? '' : '[주소 찾기]를 눌러 주소를 넣어 주세요';
+    }
     if (!st || !spAskMust() || st.starter) return '';
     const id = spAskId(st), wi = weddingInfo() || {};
     if (st.opts) return (state.spAsk || {})[st.k] ? '' : '위에서 하나를 골라 주세요';
@@ -13005,8 +13037,8 @@ function spVenue(box) {
         ${spOpt('venue', 'map') ? `<div class="wz-field"><div class="wz-lab">지도</div>
             <label class="sp-sw"><span><b>지도 보여주기</b><small>주소로 카카오맵이 자동으로 떠요</small></span><input type="checkbox" data-sp-map="showMap"${f.showMap ? ' checked' : ''}><i></i></label>
             ${f.showMap ? `${spOpt('venue', 'mapWide') ? `<label class="sp-sw"><span><b>지도 가로 꽉 채우기</b><small>끄면 좌우 여백 있는 카드 모양</small></span><input type="checkbox" data-sp-map="mapFullWidth"${f.mapFullWidth ? ' checked' : ''}><i></i></label>` : ''}
-            ${spOpt('venue', 'mapHeight') ? `<div class="sp-range"><span>지도 높이</span><input type="range" id="spMapH" min="100" max="500" step="10" value="${f.mapHeight ?? 200}"><span id="spMapHV">${f.mapHeight ?? 200}px</span></div>` : ''}
-            ${spOpt('venue', 'mapDemo') ? '' : '<!--'}<div class="sp-mapdemo${f.mapFullWidth ? ' full' : ''}" id="spMapDemo" style="height:${Math.round((f.mapHeight ?? 200) * .8)}px" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b class="pin"></b><span>지도 예시 · 청첩장엔 예식장 지도가 이렇게 들어가요</span></div>${spOpt('venue', 'mapDemo') ? '' : '-->'}` : ''}</div>` : ''}`;
+            ${spOpt('venue', 'mapHeight') ? `<div class="sp-range"><span>지도 높이</span><input type="range" id="spMapH" min="100" max="500" step="10" value="${f.mapHeight ?? 190}"><span id="spMapHV">${f.mapHeight ?? 190}px</span></div>` : ''}
+            ${spOpt('venue', 'mapDemo') ? '' : '<!--'}<div class="sp-mapdemo${f.mapFullWidth ? ' full' : ''}" id="spMapDemo" style="height:${Math.round((f.mapHeight ?? 190) * .8)}px" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b class="pin"></b><span>지도 예시 · 청첩장엔 예식장 지도가 이렇게 들어가요</span></div>${spOpt('venue', 'mapDemo') ? '' : '-->'}` : ''}</div>` : ''}`;
     // 지도 예시: 가로 꽉 채우기·높이를 바꾸면 그 자리에서 바로 (다시 그리지 않고 움직이며)
     const demo = box.querySelector('#spMapDemo');
     box.querySelectorAll('[data-sp-map]').forEach(c => c.addEventListener('change', () => {
