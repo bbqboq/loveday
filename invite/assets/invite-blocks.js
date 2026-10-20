@@ -2276,7 +2276,7 @@
         render(f) {
             const o = Object.assign({}, BLOCKS.guestbook.defaults, f);
             const cfg = { style: o.style, allowWrite: o.allowWrite !== false, richText: o.richText !== false };
-            const list = isEditor() ? gbEntriesHtml(GB_SAMPLE.slice(0, Number(o.pageSize) || 5), o.style) : '<p class="ib-gb-empty">불러오는 중…</p>';
+            const list = (isEditor() || global.INVITE_SAMPLE) ? gbEntriesHtml(GB_SAMPLE.slice(0, Number(o.pageSize) || 5), o.style) : '<p class="ib-gb-empty">불러오는 중…</p>';
             return `<div class="ib-block ib-gb ib-gb-${o.style === 'line' ? 'line' : o.style === 'theme' ? 'card ib-gb-theme' : tpOf(o.style) ? 'card ib-gb-theme' + tpCls(o.style) : 'card'}">${sectionTitle(o.title, o)}${o.desc ? `<p class="ib-gb-desc">${nl2br(o.desc)}</p>` : ''}
                 <div class="ib-gb-list" data-ib-gb="${dataAttr(cfg)}">${list}</div>
                 <button type="button" class="ib-gb-more" hidden>더 보기</button>
@@ -3317,6 +3317,10 @@
             // 내려받은 보관용 파일(invite_export.php)은 서버가 없어서 참석 회신·방명록 쓰기가 안 된다
             if (global.INVITE_OFFLINE && t.closest('[data-ib-rsvp],[data-ib-gb-write],[data-ib-gb-del],.ib-gb-more')) {
                 e.preventDefault(); e.stopPropagation(); toast('보관용 파일에서는 쓸 수 없는 기능이에요'); return;
+            }
+            // 디자인 샘플 보기(invite_view.php?sample=)도 보내지 않는다
+            if (global.INVITE_SAMPLE && t.closest('[data-ib-rsvp],[data-ib-gb-write],[data-ib-gb-del],.ib-gb-more')) {
+                e.preventDefault(); e.stopPropagation(); toast('샘플 청첩장이라 보내지 않아요. 내 청첩장을 만들면 쓸 수 있어요'); return;
             }
             const r = t.closest('[data-ib-rsvp]');
             if (r) { let cfg = {}; try { cfg = JSON.parse(r.dataset.ibRsvp); } catch (err) {} e.stopPropagation(); openRsvpForm(cfg, r); return; }

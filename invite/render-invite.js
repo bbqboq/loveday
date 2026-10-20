@@ -148,11 +148,25 @@ function initLocationMaps(root) {
         io.observe(mapEl);
     });
 }
+// 디자인 샘플 보기(invite_view.php?sample=)는 예시 주소라 지도를 못 찾는다 - 그림 지도로 대신 보여준다
+function sampleMapHtml() {
+    return `<svg viewBox="0 0 390 220" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%;" aria-label="예시 지도">
+<rect width="390" height="220" fill="#EEECE6"/>
+<path d="M-10 168 C 60 150, 110 196, 190 178 S 330 150, 400 170 L 400 230 L -10 230 Z" fill="#CFDCE3"/>
+<rect x="22" y="22" width="86" height="58" rx="6" fill="#D9E4D0"/><rect x="290" y="34" width="70" height="44" rx="6" fill="#D9E4D0"/>
+<g fill="#E2DED5"><rect x="130" y="18" width="52" height="40" rx="3"/><rect x="214" y="18" width="48" height="40" rx="3"/><rect x="130" y="92" width="52" height="42" rx="3"/><rect x="290" y="96" width="70" height="38" rx="3"/><rect x="22" y="104" width="86" height="34" rx="3"/></g>
+<g stroke="#FFFFFF" stroke-linecap="round" fill="none"><path d="M-10 80 H 400" stroke-width="12"/><path d="M196 -10 V 160" stroke-width="12"/><path d="M118 -10 V 150" stroke-width="7"/><path d="M276 -10 V 150" stroke-width="7"/><path d="M-10 146 Q 200 130 400 148" stroke-width="7"/></g>
+<path d="M-10 80 H 400" stroke="#F3D9A4" stroke-width="3" fill="none"/>
+<g transform="translate(196 80)"><ellipse cx="0" cy="2" rx="9" ry="3.5" fill="rgba(0,0,0,.18)"/><path d="M0 0 C -4 -10 -13 -15 -13 -25 A 13 13 0 1 1 13 -25 C 13 -15 4 -10 0 0 Z" fill="#C0574F"/><circle cx="0" cy="-25" r="5" fill="#FFFFFF"/></g>
+<text x="380" y="212" text-anchor="end" font-size="10" fill="#9A958B" font-family="sans-serif">예시 지도</text>
+</svg>`;
+}
 function initOneLocationMap(mapEl) {
     {
         const address = mapEl.dataset.address;
         if (!address || mapEl.dataset.mapInited) return;
         mapEl.dataset.mapInited = '1';
+        if (window.INVITE_SAMPLE) { mapEl.innerHTML = sampleMapHtml(); return; }
         loadKakaoMapSdk().then(() => {
             const geocoder = new kakao.maps.services.Geocoder();
             geocoder.addressSearch(address, (result, status) => {

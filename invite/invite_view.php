@@ -229,6 +229,9 @@ if ($lbZoom > 100): ?>
     window.INVITE_CSRF = <?= json_encode($csrfForGuests) ?>; // 참석여부·방명록 전송 시 확인용
     window.INVITE_WEDDING_DATE = <?= json_encode($weddingYmd) ?>; // D-DAY 하객 안내 - 이 날짜(한국 시간)에만 보임
     window.INVITE_SHARE_THUMB = <?= json_encode($ogImage !== '' ? 'https://loveday.kr/invite/share_thumb.php?s=' . rawurlencode($slug) . '&k=kakao&v=' . substr(md5(json_encode([$share['kakaoThumb'] ?? '', $share['kakaoRatio'] ?? '', $share['kakaoFocusX'] ?? 50, $share['kakaoFocusY'] ?? 50, $share['kakaoZoom'] ?? 100])), 0, 8) : '') ?>; // 카카오톡 공유 썸네일(jpg)
+<?php if ($sampleId !== ''): ?>
+    window.INVITE_SAMPLE = true; // 디자인 샘플 보기 - 예시 지도 그림 · 예시 방명록, 참석·방명록은 안 보냄
+<?php endif; ?>
     const design = <?= json_encode($design, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
     const root = document.getElementById('inviteRoot');
     renderInviteReadOnly(root, design, true);
@@ -244,6 +247,7 @@ if ($lbZoom > 100): ?>
   display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 16px; border-radius: 16px; background: rgba(27,26,24,.92); color: #fff; box-shadow: 0 14px 34px rgba(0,0,0,.25);
   font: 500 13px/1.3 "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .ld-sbar span { flex: 1; min-width: 0; } .ld-sbar span small, .ld-sbar span b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ib-gb-del { display: none !important; } /* 샘플 방명록은 지우기 없음 */
 .ld-sbar span small { font-size: 11px; color: #BDB6AD; } .ld-sbar span b { color: #fff; font-size: 13.5px; }
 .ld-sbar a { flex: none; text-decoration: none; border-radius: 11px; padding: 10px 12px; font-weight: 700; font-size: 13px; }
 .ld-sbar a.o { color: #fff; border: 1px solid rgba(255,255,255,.25); } .ld-sbar a.g { background: #fff; color: #1B1A18; }
