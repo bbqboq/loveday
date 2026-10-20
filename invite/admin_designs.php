@@ -103,9 +103,15 @@ body { background: var(--ui-page, #F6F4F1); }
 .fd-p { position: relative; border: 1.5px solid var(--ui-line, #ECE8E2); border-radius: 14px; background: #fff; overflow: hidden; cursor: pointer; text-align: left; padding: 0; font: inherit; color: inherit; transition: border-color .15s, box-shadow .15s; }
 .fd-p:hover { border-color: var(--ui-line, #C9C1B6); }
 .fd-p.on { border-color: #2B2320; box-shadow: 0 0 0 1px #2B2320; }
-.fd-p .pv { height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; }
+.fd-p .pv { height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; }
 .fd-p .pv i { width: 64%; height: 48px; border-radius: 8px; }
 .fd-p .pv span { font-size: 14px; }
+/* 디자인 썸네일이 있으면 첫 화면 그림을 가로로 잘라 보여 줌 - 마우스를 올리면 천천히 아래까지 */
+.fd-p .pv.th { height: 150px; display: block; overflow: hidden; }
+.fd-p .pv.th img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; transition: object-position 4s ease-in-out; }
+.fd-p .top:hover .pv.th img, .fd-p .top:focus-visible .pv.th img { object-position: 50% 100%; }
+.fd-chip .sw.th img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; }
+@media (prefers-reduced-motion: reduce) { .fd-p .pv.th img { transition: none; } }
 .fd-p .pv .hrt { font-size: .7em; margin: 0 .35em; }
 .fd-p .tx { display: block; padding: 10px 12px 12px; border-top: 1px solid var(--ui-soft, #F1EEE9); }
 .fd-p .tx b { display: block; font-size: 13.5px; margin-bottom: 2px; }
@@ -279,7 +285,7 @@ function drawTrash() {
 }
 const byId = id => designs().find(p => p.id === id);
 const canFeature = p => !p.__custom || (samples[p.id] && samples[p.id].saved);
-function sw(p) { const pl = p.palette || {}; return `<span class="sw" style="background:${esc(pl.bg)}"><i style="background:linear-gradient(150deg, ${esc(pl.line)}, ${esc(pl.accent)})"></i><u style="color:${esc(pl.accent)}">♥</u></span>`; }
+function sw(p) { const pl = p.palette || {}; if (thOf(p.id)) return `<span class="sw th" style="background:${esc(pl.bg)}"><img src="${esc(thOf(p.id).c)}" alt="" loading="lazy"></span>`; return `<span class="sw" style="background:${esc(pl.bg)}"><i style="background:linear-gradient(150deg, ${esc(pl.line)}, ${esc(pl.accent)})"></i><u style="color:${esc(pl.accent)}">♥</u></span>`; }
 function post(a, data) {
     const fd = new FormData(); fd.append('csrf_token', CSRF); Object.entries(data || {}).forEach(([k, v]) => fd.append(k, v));
     return fetch('sample_api.php?a=' + a, { method: 'POST', body: fd, headers: { Accept: 'application/json' } }).then(r => r.json()).then(d => { if (!d.ok) throw new Error(d.error || '실패했어요'); return d; });
@@ -298,7 +304,7 @@ function draw() {
     $('fdGrid').innerHTML = designs().map(p => { const i = sel.indexOf(p.id), pl = p.palette || {}, sm = samples[p.id], off = OFF.includes(p.id);
         const tag = off ? `<span class="tag off">고객에게 안 보임</span>` : p.__custom ? (sm && sm.saved ? `<span class="tag">새 디자인</span>` : `<span class="tag draft">아직 저장 전</span>`) : (sm && sm.saved ? `<span class="tag">꾸민 샘플 · ${esc(sm.updated)}</span>` : '');
         return `<div class="fd-p ${i >= 0 ? 'on' : ''}${off ? ' off' : ''}" data-id="${esc(p.id)}">
-            <button type="button" class="top" data-fav="${esc(p.id)}" title="추천에 넣기/빼기"><span class="pv" style="background:${esc(pl.bg)};color:${esc(pl.ink)};font-family:${esc(pl.headFont || 'serif')}"><i style="background:linear-gradient(150deg, ${esc(pl.line)}, ${esc(pl.accent)})"></i><span>민준<span class="hrt" style="color:${esc(pl.accent)}">♥</span>서연</span></span>
+            <button type="button" class="top" data-fav="${esc(p.id)}" title="추천에 넣기/빼기">${thOf(p.id) ? `<span class="pv th" style="background:${esc(pl.bg)}"><img src="${esc(thOf(p.id).c)}" alt="" loading="lazy" draggable="false"></span>` : `<span class="pv" style="background:${esc(pl.bg)};color:${esc(pl.ink)};font-family:${esc(pl.headFont || 'serif')}"><i style="background:linear-gradient(150deg, ${esc(pl.line)}, ${esc(pl.accent)})"></i><span>민준<span class="hrt" style="color:${esc(pl.accent)}">♥</span>서연</span></span>`}
             ${tag}<span class="ck">${i >= 0 ? i + 1 : '★'}</span>
             ${RENAME === p.id ? '' : `<span class="tx"><b>${p.no ? String(p.no).padStart(2, '0') + ' ' : ''}${esc(p.label)}</b><small>${esc(p.desc || '')}${p.__custom ? ` · 바탕: ${esc((presets.find(x => x.id === p.__base) || {}).label || p.__base)}` : ''}</small>${p.orig ? `<em class="orig">원래 이름: ${esc(p.orig.label)}</em>` : ''}</span>`}</button>
             ${RENAME === p.id ? `<form class="fd-rn" data-rn-form="${esc(p.id)}"><label>이름<input name="label" maxlength="30" value="${esc(p.label)}" placeholder="${esc((p.orig || p).label)}" required></label><label>한 줄 설명<input name="desc" maxlength="120" value="${esc(p.desc || '')}" placeholder="${esc((p.orig || {}).desc || '고객 디자인 고르기 화면에 보이는 설명')}"></label>
@@ -397,7 +403,8 @@ $('fdSave').onclick = () => {
 };
 // ---- 디자인 썸네일 (dpk_thumbs.php) ----
 let THUMBS = null;
-function loadThumbs() { return fetch('dpk_thumbs.php', { cache: 'no-store' }).then(r => r.json()).then(d => { THUMBS = d.items || {}; drawThumbs(); }).catch(() => { $('thN').textContent = '썸네일 목록을 불러오지 못했어요'; }); }
+const thOf = id => THUMBS && THUMBS[id]; // 카드·추천 칩에 보일 디자인 썸네일 (첫 화면 그림)
+function loadThumbs() { return fetch('dpk_thumbs.php', { cache: 'no-store' }).then(r => r.json()).then(d => { THUMBS = d.items || {}; drawThumbs(); if (presets.length) draw(); }).catch(() => { $('thN').textContent = '썸네일 목록을 불러오지 못했어요'; }); }
 function drawThumbs() {
     if (!THUMBS) return;
     const ids = (presets.length ? presets.map(p => p.id).concat(Object.keys(samples).filter(id => !presets.some(p => p.id === id))) : Object.keys(THUMBS)).filter(id => !TRASH[id]);
