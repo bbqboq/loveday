@@ -10935,6 +10935,8 @@ function spLensBox() {
         return { W, w, h, top, bottom, z, sc, secTop, FW, sec: next || prev, ghostY: gy };
     }
     if (fr && sec) { const fr0 = fr.getBoundingClientRect(), k = fr0.width / FW || 1, r = sec.getBoundingClientRect(); let t = r.top, bt = r.bottom;
+        // 전체화면 첫 화면: 섹션 칸이 사진·영상보다 조금 길어서(아래 여백) 창 아래가 하얗게 남았음 → 사진·영상 칸 끝에 딱 맞춤
+        const media = sec.querySelector('.hero-photo.hero-full, .video-cover-wrap'); if (media && media.offsetHeight) { const m = media.getBoundingClientRect(); if (m.height > r.height * 0.6) { t = Math.max(r.top, m.top); bt = Math.min(r.bottom, m.bottom); } }
         // 자유 배치 글자 칸은 섹션 밖으로 넘칠 수 있음 (글이 길어지면 위아래로 늘어남) → 넘친 글자까지 들어가게
         sec.querySelectorAll('.drag-part, .ib-title-layer, [data-part]').forEach(n => { if (!n.offsetWidth) return; const q = n.getBoundingClientRect(); if (q.top < t) t = q.top; if (q.bottom > bt) bt = q.bottom; });
         secTop = (t - fr0.top) / k; secH = Math.max(60, (bt - t) / k); sc = Math.min(wMax / FW, hMax / secH);
