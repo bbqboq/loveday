@@ -1017,9 +1017,11 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
         document.querySelectorAll('[data-so-tab]').forEach(a => a.classList.toggle('on', a.dataset.soTab === t));
         document.querySelectorAll('[data-so-pane]').forEach(p => { p.hidden = p.dataset.soPane !== t; });
         document.body.dataset.soTab = t; // 섹션 순서 저장 막대는 섹션 순서 탭에서만
+        if (window.admNavSync) admNavSync(); // 왼쪽 메뉴판 표시 (간편 만들기 · 전문가 모드 · 기기별 설정)
     }
     document.querySelectorAll('[data-so-tab]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); history.replaceState(null, '', '#' + a.dataset.soTab); showTab(a.dataset.soTab); }));
     showTab(['#panel', '#groups', '#easy', '#device'].includes(location.hash) ? location.hash.slice(1) : 'order');
+    window.addEventListener('hashchange', () => showTab(['#panel', '#groups', '#easy', '#device', '#order'].includes(location.hash) ? location.hash.slice(1) : 'order')); // 왼쪽 메뉴판에서 같은 화면 다른 탭을 누름
     // 편집창 모양: 고르면 바로 저장
     const pzCards = document.getElementById('pzCards');
     let pzNow = (pzCards.querySelector('input:checked') || {}).value || 'C';

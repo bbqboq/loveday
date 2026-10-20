@@ -1,42 +1,62 @@
 <?php
 /**
- * admin_nav.php - 관리자 화면 공통 상단바
+ * admin_nav.php - 관리자 화면 공통 상단바 + 왼쪽 메뉴판 + 전체 메뉴(사이트맵)
  *
  * 쓰는 법 (각 관리자 페이지의 <body> 바로 아래):
  *   <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('snap', '게스트스냅 설정'); ?>
  *
- *  - 왼쪽 LOVE DAY는 고정, 메뉴들만 가로로 밀어서(슬라이드) 넘긴다
- *  - 지금 보고 있는 메뉴는 까맣게 표시되고, 처음 열 때 화면 안으로 자동으로 스크롤된다
- *  - 휴대폰(760px 이하)에서는 "게스트스냅 설정" 같은 페이지 이름은 숨긴다 (메뉴에 이미 표시되므로)
- *  - 스마트스토어 연동 옆에는 확인이 필요한 주문 수가 숫자로 붙는다
+ *  - 메뉴는 하는 일끼리 묶음 5개 (ADMIN_MENU_GROUPS): 청첩장 · 디자인 · 에디터 · 하객 화면 · 사이트 (2026-10-20 정리, A안)
+ *  - PC(1100px 넘게) = 왼쪽에 메뉴판이 늘 보임 (본문은 그만큼 오른쪽으로) / 좁은 화면 = 왼쪽 위 ☰ 를 누르면 서랍처럼 나옴
+ *  - 위 [전체 메뉴] = 사이트맵 (C안): 오늘 할 일 + 묶음별 카드(메뉴마다 한 줄 설명). 키보드 / 를 눌러도 열림
+ *  - 메뉴 찾기 칸: 메뉴 이름 · 설명 · 찾기 말(kw)로 찾음 (예: 금지어 → 부가기능, 썸네일 → 디자인)
+ *  - 한 화면 안 탭으로 나뉜 메뉴(섹션 설정의 간편 만들기·기기별 설정)는 주소 #탭 으로 열고, 그 화면이 admNavSync()로 표시를 맞춤
+ *  - 스마트스토어 옆에는 확인이 필요한 주문 수가 숫자로 붙는다
  *  - 부관리자: 권한이 없어 열 수 없는 메뉴는 숨기고, 보기만 되는 화면은 위에 "보기 전용" 띠 + 저장 버튼 잠금
  *  - 오른쪽 끝 동그라미 = 지금 로그인한 사람 (누르면 이름·로그아웃)
  * 스타일은 이 파일 안에 있다 (assets/admin.css를 고치지 않아도 됨).
+ * 새 관리자 화면을 만들면 ADMIN_MENU_GROUPS 알맞은 묶음에 한 줄 (키, 주소, 이름, 한 줄 설명, 찾기 말).
  */
 declare(strict_types=1);
 
-const ADMIN_MENU = [
-    'list'      => ['admin_create.php', '청첩장 목록'],
-    'vip'       => ['admin_vip.php', 'VIP 코드 생성'],
-    'watermark' => ['admin_watermark.php', '워터마크'],
-    'snap'      => ['admin_snap_settings.php', '게스트스냅'],
-    'extra'     => ['admin_extra_settings.php', '부가기능'],
-    'music'     => ['admin_music.php', '배경음악'],
-    'naver'     => ['admin_naver.php', '스마트스토어 연동'],
-    'site'      => ['admin_site_settings.php', '사이트 정보'],
-    'homeimg'   => ['admin_home_images.php', '홈 이미지'],
-    'designs'   => ['admin_designs.php', '추천 디자인'], // 새 청첩장 디자인 고르기 화면에 크게 보일 간편 템플릿
-    'sections'  => ['admin_sections.php', '섹션 설정'], // 섹션 순서 · 편집창 모양 · 휴대폰 에디터 메뉴
-    'stickers'  => ['admin_stickers.php', '스티커'],   // 에디터 스티커 창: 테마 순서·켜기, 그림 숨기기, 디자인별 추천
-    'tips'      => ['admin_tips.php', '에디터 도움말'],
-    'tiptours'  => ['admin_tip_tours.php', '커스텀 편집팁'],
-    'trash'     => ['admin_trash.php', '휴지통'],
-    'subadmin'  => ['admin_subadmins.php', '부관리자'],   // 대표 관리자에게만 보임 (admin_auth.php ADMIN_PAGE_RULES)
+// [키 => [주소, 이름, 한 줄 설명(사이트맵), 찾기 말]]
+const ADMIN_MENU_GROUPS = [
+    ['청첩장', '매일 보는 것', [
+        'list'      => ['admin_create.php', '청첩장 목록', '고객·VIP·테스트 청첩장 찾기, 결제·보관 기간 처리', '검색 코드 이름 전화번호 고객코드 결제 보관 수정'],
+        'vip'       => ['admin_vip.php', 'VIP 만들기', '원하는 코드로 VIP 청첩장 만들어 주기', 'VIP 코드 생성 지정 코드'],
+        'naver'     => ['admin_naver.php', '스마트스토어', '코드 틀린 주문 처리 · 취소·반품 기록 · 연결 설정', '주문 네이버 커머스 API 키 연동 교환 취소 반품'],
+        'trash'     => ['admin_trash.php', '휴지통', '지운 청첩장 되살리기 · 완전 삭제', '삭제 복원 되살리기 영구'],
+    ]],
+    ['디자인', '고객이 고르는 재료', [
+        'designs'   => ['admin_designs.php', '디자인', '추천 순서 · 보이기·숨기기 · 모던/예전 · 썸네일 · 종이 질감', '추천 디자인 샘플 꾸미기 썸네일 종이 질감 모던 예전 숨기기'],
+        'stickers'  => ['admin_stickers.php', '스티커', '스티커 테마 순서 · 그림 숨기기 · 디자인별 추천', '스티커 이모티콘 테마'],
+        'music'     => ['admin_music.php', '배경음악', '기본 곡 올리기 · 고객이 올린 음악 삭제(저작권)', '음악 노래 곡 mp3 저작권 신고'],
+    ]],
+    ['에디터', '고객이 만드는 화면', [
+        'easy'      => ['admin_sections.php#easy', '간편 만들기', '질문 순서 · 목록 화면 · 휴대폰 보기 방식 · 예시 사진·영상', '손쉬운 제작 이지모드 질문 목록 스타터 휴대폰 보기 반반 작은 창 PC 디자인 고르기 발행 준비 스크롤 버튼 메인 사진 예시 영상 예시'],
+        'sections'  => ['admin_sections.php#order', '전문가 모드', '섹션 순서 · 섹션 묶음 · 편집창·메뉴 모양', '섹션 순서 묶음 편집창 메뉴 모양 이름'],
+        'device'    => ['admin_sections.php#device', '기기별 설정', '간편·전문가 × 휴대폰·PC마다 칸·옵션 숨기기', '휴대폰 PC 기기 숨기기 옵션'],
+        'tiptours'  => ['admin_tip_tours.php', '편집팁 만들기', '손가락으로 콕콕 짚어 주는 안내 만들기', '커스텀 편집팁 코치 투어 안내 손가락'],
+        'tips'      => ['admin_tips.php', '예전 ⓘ 도움말', '편집창 회색 안내 · 첫 방문 둘러보기 (예전 방식)', '에디터 도움말 팁 둘러보기 첫 방문 안내 팝업'],
+    ]],
+    ['하객 화면', '하객이 쓰는 기능', [
+        'snap'      => ['admin_snap_settings.php', '게스트스냅', '하객 사진 용량·기간 · 구글 드라이브 · 사용 현황', '하객 사진 게스트스냅 구글 드라이브 용량'],
+        'extra'     => ['admin_extra_settings.php', '부가기능', '방명록 금지어 · 참석 회신 보관 · 체험 시간 · 음악 용량', '방명록 금지어 욕설 참석 회신 RSVP 체험 보관 시간 카운트다운 음악 용량'],
+        'watermark' => ['admin_watermark.php', '워터마크', '무료체험 청첩장에 들어가는 글자', '워터마크 무료체험'],
+    ]],
+    ['사이트', '가끔 바꾸는 것', [
+        'site'      => ['admin_site_settings.php', '사이트 정보', '가격표 · 구매 주소 · 사업자 정보 · 사이트 색상', '가격 사업자 구매 버튼 색상 샘플 카드 홈페이지'],
+        'homeimg'   => ['admin_home_images.php', '홈 이미지', '홈 첫 화면 사진 · 로그인 화면 사진', '홈 이미지 사진 로그인'],
+        'subadmin'  => ['admin_subadmins.php', '부관리자', '부관리자 계정 · 권한 켜고 끄기', '부관리자 권한 계정 비밀번호'],
+        'timezone'  => ['admin_timezone.php', '서버 시간 점검', '한 번만 쓰는 점검 도구', '서버 시간 시각 점검 UTC'],
+    ]],
 ];
+// 예전 키 → 새 키 (예전 화면이 부르는 이름)
+const ADMIN_MENU_ALIAS = [];
 
 function admin_topbar(string $active, string $pageTitle = ''): void
 {
     $h = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
+    $active = ADMIN_MENU_ALIAS[$active] ?? $active;
     $badge = 0; // 스마트스토어: 확인 필요 + 교환 확인 중
     if (function_exists('admin_can') && admin_can('naver_orders')) {
         try { $badge = (int) get_pdo()->query("SELECT COUNT(*) FROM naver_orders WHERE result IN ('review','canceled','exchange_hold')")->fetchColumn(); } catch (Throwable $e) {}
@@ -46,33 +66,117 @@ function admin_topbar(string $active, string $pageTitle = ''): void
     $meInitial = $isOwner ? '대표' : mb_substr((string) ((admin_sub()['display_name'] ?? '') ?: (admin_sub()['username'] ?? '부')), 0, 1);
     $readonly = function_exists('admin_page_readonly') && admin_page_readonly();
     $sessLeft = function_exists('admin_session_deadline') ? max(0, admin_session_deadline() - time()) : 1800; // 자동 로그아웃까지 남은 초
+    // 이 사람이 열 수 있는 메뉴만
+    $groups = [];
+    foreach (ADMIN_MENU_GROUPS as [$gName, $gDesc, $items]) {
+        $vis = [];
+        foreach ($items as $key => $it) {
+            if (function_exists('admin_page_open') && !admin_page_open(explode('#', $it[0])[0])) continue;
+            $vis[$key] = $it;
+        }
+        if ($vis) $groups[] = [$gName, $gDesc, $vis];
+    }
+    $link = function (string $key, array $it, string $cls) use ($h, $active, $badge): string {
+        $on = $key === $active || ($active === 'sections' && in_array($key, ['sections', 'easy', 'device'], true) && $key === 'sections');
+        return '<a href="' . $h($it[0]) . '" class="' . $cls . ($on ? ' on' : '') . '" data-nav="' . $h($key) . '"' . ($on ? ' aria-current="page"' : '') . '>'
+            . '<span>' . $h($it[1]) . '</span>' . ($key === 'naver' && $badge ? '<em class="adm-badge">' . $badge . '</em>' : '') . '</a>';
+    };
     ?>
 <style>
-.adm-top { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 20px; background: #fff; border-bottom: 1px solid #E8E4DC;
+.adm-top { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 20px; background: #fff; border-bottom: 1px solid #E8E4DC;
     font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; box-sizing: border-box; }
-.adm-top * { box-sizing: border-box; }
+.adm-top *, .adm-side *, .adm-map * { box-sizing: border-box; }
 .adm-brand { flex: none; font-weight: 800; font-size: 14px; letter-spacing: .14em; color: #2B2320; text-decoration: none; white-space: nowrap; }
-.adm-page { flex: none; font-size: 13.5px; color: #8A847B; white-space: nowrap; }
+.adm-page { flex: 0 1 auto; min-width: 0; font-size: 13.5px; color: #8A847B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .adm-page::before { content: '·'; margin-right: 10px; color: #C9C3BA; }
-.adm-nav { flex: 1; min-width: 0; display: flex; gap: 4px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding: 4px 0; }
-.adm-nav::-webkit-scrollbar { display: none; }
-.adm-nav > a:first-child { margin-left: auto; } /* 넓은 화면에서는 오른쪽 정렬, 좁으면 왼쪽부터 밀어서 봄 */
-.adm-nav a { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 999px; font-size: 13px; color: #555; text-decoration: none; white-space: nowrap; transition: background .15s, color .15s; }
-.adm-nav a:hover { background: var(--ui-tint, #F4F1EC); color: #2B2320; }
-.adm-nav a.on { background: #2B2320; color: #fff; }
-.adm-nav .adm-badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #C7823A; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
-/* PC: 메뉴 아래 회색 반투명 가로 스크롤바 (메뉴가 넘칠 때만, 끌거나 눌러서 이동) */
-.adm-sbar { position: absolute; bottom: 4px; height: 5px; border-radius: 3px; background: rgba(60, 50, 40, .06); display: none; transition: height .15s, bottom .15s; }
-.adm-sbar i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 3px; background: rgba(60, 50, 40, .26); cursor: grab; transition: background .15s; }
-.adm-sbar:hover, .adm-sbar.drag { height: 7px; bottom: 3px; }
-.adm-sbar:hover i, .adm-sbar.drag i { background: rgba(60, 50, 40, .45); }
-.adm-sbar.drag i { cursor: grabbing; }
-@media (hover: hover) and (pointer: fine) { .adm-sbar.on { display: block; } }
-/* 양쪽 끝이 잘려 있으면 흐리게 - 더 밀 수 있다는 표시 */
-.adm-nav.fade-l { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px); mask-image: linear-gradient(to right, transparent 0, #000 22px); }
-.adm-nav.fade-r { -webkit-mask-image: linear-gradient(to left, transparent 0, #000 22px); mask-image: linear-gradient(to left, transparent 0, #000 22px); }
-.adm-nav.fade-l.fade-r { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent); }
-/* 로그인한 사람 */
+.adm-burger { display: none; flex: none; width: 36px; height: 36px; margin-left: -6px; border: 0; border-radius: 10px; background: none; cursor: pointer; padding: 0; color: #2B2320; }
+.adm-burger:hover { background: var(--ui-tint, #F4F1EC); }
+.adm-burger i, .adm-burger i::before, .adm-burger i::after { display: block; width: 18px; height: 2px; margin: 0 auto; border-radius: 2px; background: currentColor; position: relative; content: ''; }
+.adm-burger i::before { position: absolute; top: -6px; left: 0; } .adm-burger i::after { position: absolute; top: 6px; left: 0; }
+/* 메뉴 찾기 (위 가운데) */
+.adm-find { position: relative; flex: 1 1 280px; max-width: 340px; min-width: 0; margin-left: auto; }
+.adm-find input { width: 100%; height: 36px; border: 1px solid #E3DED6; border-radius: 999px; background: #FAF8F5; padding: 0 14px 0 34px; font: inherit; font-size: 13px; color: #2B2320; outline: none; }
+.adm-find input:focus { border-color: #B8AE9F; background: #fff; }
+.adm-find::before { content: ''; position: absolute; left: 13px; top: 11px; width: 10px; height: 10px; border: 1.7px solid #9A938A; border-radius: 50%; pointer-events: none; }
+.adm-find::after { content: ''; position: absolute; left: 23px; top: 22px; width: 5px; height: 1.7px; background: #9A938A; transform: rotate(45deg); pointer-events: none; }
+.adm-hits { position: absolute; left: 0; right: 0; top: 42px; z-index: 75; background: #fff; border: 1px solid #ECE8E2; border-radius: 12px; box-shadow: 0 14px 34px rgba(30, 20, 10, .14); padding: 6px; display: none; max-height: 60vh; overflow: auto; }
+.adm-hits.on { display: block; }
+.adm-hits a, .adm-hits p { display: block; padding: 8px 10px; border-radius: 8px; color: #2B2320; text-decoration: none; font-size: 13px; margin: 0; }
+.adm-hits a small { display: block; font-size: 11.5px; color: #8A847B; margin-top: 1px; }
+.adm-hits a b { font-weight: 700; } .adm-hits a i { font-style: normal; color: #A39B90; font-size: 11.5px; margin-left: 6px; }
+.adm-hits a:hover, .adm-hits a.cur { background: var(--ui-tint, #F4F1EC); }
+.adm-hits p { color: #8A847B; }
+.adm-mapbtn { flex: none; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 13px; border: 1px solid #E3DED6; border-radius: 999px; background: #fff; color: #2B2320; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.adm-mapbtn:hover { background: var(--ui-tint, #F4F1EC); }
+.adm-mapbtn svg { width: 14px; height: 14px; }
+.adm-mapbtn .adm-badge { margin-left: -2px; }
+.adm-badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #C7823A; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; font-style: normal; }
+/* 왼쪽 메뉴판 */
+.adm-side { box-sizing: border-box; position: fixed; z-index: 58; left: 0; top: 56px; bottom: 0; width: 220px; overflow-y: auto; padding: 12px 10px 28px; background: #FAF8F5; border-right: 1px solid #ECE8E2; scrollbar-width: thin;
+    font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+.adm-side-hd { display: none; }
+.adm-side h4 { margin: 16px 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; color: #9A938A; }
+.adm-side h4:first-of-type { margin-top: 4px; }
+.adm-side a { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 7px 10px; border-radius: 9px; color: #3F3833; text-decoration: none; font-size: 13.5px; line-height: 1.35; }
+.adm-side a:hover { background: var(--ui-tint, #F1EDE6); color: #2B2320; }
+.adm-side a.on { background: #2B2320; color: #fff; font-weight: 700; }
+.adm-side a:focus-visible, .adm-map a:focus-visible, .adm-mapbtn:focus-visible { outline: 2px solid #B08D57; outline-offset: 2px; }
+.adm-side .adm-side-map { width: 100%; margin: 18px 0 0; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px; border: 1px dashed #D9D2C7; border-radius: 10px; background: none; color: #6F6A63; font: inherit; font-size: 12.5px; cursor: pointer; }
+.adm-side .adm-side-map:hover { background: #fff; color: #2B2320; }
+.adm-scrim { position: fixed; inset: 0; z-index: 88; background: rgba(25, 20, 15, .36); opacity: 0; pointer-events: none; transition: opacity .2s; }
+@media (min-width: 1100px) {
+    body { padding-left: 220px !important; }
+    .adm-top { margin-left: -220px; padding-left: 20px; }
+}
+@media (max-width: 1099.98px) {
+    .adm-burger { display: block; }
+    .adm-side { top: 0; z-index: 90; width: min(280px, 86vw); transform: translateX(-102%); transition: transform .25s cubic-bezier(.2, .8, .3, 1); box-shadow: 8px 0 30px rgba(0, 0, 0, .14); padding-top: 0; }
+    html.adm-drawer .adm-side { transform: none; }
+    html.adm-drawer .adm-scrim { opacity: 1; pointer-events: auto; }
+    .adm-side-hd { display: flex; position: sticky; top: 0; z-index: 2; align-items: center; justify-content: space-between; height: 56px; margin: 0 -10px 4px; padding: 0 12px 0 20px; background: #FAF8F5; border-bottom: 1px solid #ECE8E2; }
+    .adm-side-hd b { font-size: 13px; letter-spacing: .14em; font-weight: 800; color: #2B2320; }
+    .adm-side-hd button { width: 34px; height: 34px; border: 0; border-radius: 9px; background: none; font-size: 18px; color: #6F6A63; cursor: pointer; }
+    .adm-side .adm-find { display: block; max-width: none; margin: 10px 0 14px; }
+}
+/* 전체 메뉴 (사이트맵) */
+.adm-map { position: fixed; inset: 0; z-index: 95; display: grid; place-items: start center; padding: 56px 20px 30px; overflow-y: auto; background: rgba(25, 20, 15, .4); opacity: 0; transition: opacity .18s;
+    font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+.adm-map[hidden] { display: none; }
+.adm-map.show { opacity: 1; }
+.adm-map-box { width: min(1080px, 100%); background: #fff; border-radius: 18px; box-shadow: 0 24px 60px rgba(0, 0, 0, .22); padding: 22px 24px 26px; transform: translateY(8px); transition: transform .22s cubic-bezier(.2, .8, .3, 1); }
+.adm-map.show .adm-map-box { transform: none; }
+.adm-map-hd { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; flex-wrap: wrap; }
+.adm-map-hd h2 { margin: 0; font-size: 18px; color: #2B2320; }
+.adm-map-hd small { color: #8A847B; font-size: 12.5px; }
+.adm-map-hd .adm-find { margin-left: auto; flex: 1 1 240px; max-width: 320px; }
+.adm-map-x { width: 36px; height: 36px; border: 0; border-radius: 10px; background: var(--ui-tint, #F4F1EC); color: #4A433D; font-size: 17px; cursor: pointer; flex: none; }
+.adm-todo { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.adm-todo a, .adm-todo span { display: inline-flex; align-items: center; gap: 8px; padding: 9px 13px; border-radius: 11px; font-size: 13px; text-decoration: none; }
+.adm-todo a { background: #FBEFE4; color: #6B3F14; }
+.adm-todo a:hover { background: #F6E3D1; }
+.adm-todo span { background: #F4F1EC; color: #7A746C; }
+.adm-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.adm-card { border: 1px solid #ECE8E2; border-radius: 14px; padding: 14px 14px 10px; min-width: 0; }
+.adm-card h3 { margin: 0; font-size: 14.5px; color: #2B2320; }
+.adm-card > small { display: block; margin: 1px 0 8px; font-size: 12px; color: #9A938A; }
+.adm-card a { display: block; padding: 8px 10px; margin: 0 -4px; border-radius: 9px; color: #2B2320; text-decoration: none; }
+.adm-card a:hover { background: var(--ui-tint, #F4F1EC); }
+.adm-card a.on { background: #F1EDE6; }
+.adm-card a b { display: flex; align-items: center; gap: 6px; font-size: 13.5px; }
+.adm-card a span { display: block; margin-top: 1px; font-size: 12px; line-height: 1.45; color: #8A847B; }
+@media (max-width: 760px) {
+    .adm-top { gap: 8px; padding: 0 12px 0 16px; height: 52px; }
+    .adm-top > .adm-find, .adm-page { display: none; }
+    .adm-mapbtn { margin-left: auto; padding: 0 11px; }
+    .adm-mapbtn .lb { display: none; }
+    .adm-side { padding-bottom: 40px; }
+    .adm-map { padding: 0; place-items: stretch; }
+    .adm-map-box { border-radius: 0; min-height: 100%; padding: 14px 16px 30px; }
+    .adm-map-hd .adm-find { order: 3; max-width: none; flex-basis: 100%; }
+    .adm-map-x { margin-left: auto; }
+    .adm-cards { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .adm-side, .adm-map, .adm-map-box, .adm-scrim { transition: none; } }
 .adm-me { position: relative; flex: none; }
 .adm-me > button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #E3DED6; background: var(--ui-tint, #F4F1EC); color: #2B2320; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; padding: 0; }
 .adm-me > button.sub { background: #EEF2F7; color: #4A5A73; border-color: #D8E0EA; font-size: 13px; }
@@ -107,25 +211,14 @@ function admin_topbar(string $active, string $pageTitle = ''): void
 .adm-ro { display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: #FFF6E5; color: #8A5A00; font-size: 13px; border-bottom: 1px solid #F1E2C4;
     font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif; }
 .adm-locked { opacity: .45 !important; cursor: not-allowed !important; }
-@media (max-width: 760px) {
-    .adm-top { gap: 10px; padding: 0 0 0 16px; height: 52px; }
-    .adm-me { margin-right: 12px; }
-    .adm-ro { padding: 9px 16px; font-size: 12.5px; }
-    .adm-page { display: none; }
-    .adm-nav { padding-right: 12px; }
-    .adm-nav a { padding: 7px 11px; font-size: 13px; }
-}
+@media (max-width: 760px) { .adm-ro { padding: 9px 16px; font-size: 12.5px; } }
 </style>
 <header class="adm-top">
+    <button type="button" class="adm-burger" id="admBurger" aria-label="메뉴 열기" aria-controls="admSide" aria-expanded="false"><i></i></button>
     <a class="adm-brand" href="admin_create.php">LOVE DAY</a>
     <?php if ($pageTitle !== ''): ?><span class="adm-page"><?= $h($pageTitle) ?></span><?php endif; ?>
-    <nav class="adm-nav" id="admNav" aria-label="관리자 메뉴">
-        <?php foreach (ADMIN_MENU as $key => [$url, $label]):
-            if (function_exists('admin_page_open') && !admin_page_open($url)) continue; // 부관리자가 열 수 없는 메뉴는 숨김 ?>
-            <a href="<?= $h($url) ?>" class="<?= $key === $active ? 'on' : '' ?>"<?= $key === $active ? ' aria-current="page"' : '' ?>><?= $h($label) ?><?php if ($key === 'naver' && $badge): ?><span class="adm-badge"><?= $badge ?></span><?php endif; ?></a>
-        <?php endforeach; ?>
-    </nav>
-    <div class="adm-sbar" id="admSbar" aria-hidden="true"><i></i></div>
+    <div class="adm-find"><input type="search" data-adm-find placeholder="메뉴 찾기 (예: 금지어, 썸네일)" aria-label="메뉴 찾기" autocomplete="off"><div class="adm-hits" role="listbox"></div></div>
+    <button type="button" class="adm-mapbtn" id="admMapBtn" aria-haspopup="dialog" title="모든 메뉴를 한눈에 보기 (키보드 /)"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="0" y="0" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1.5" fill="currentColor"/></svg><span class="lb">전체 메뉴</span><?php if ($badge): ?><em class="adm-badge"><?= $badge ?></em><?php endif; ?></button>
     <div class="adm-me" id="admMe">
         <button type="button" class="<?= $isOwner ? '' : 'sub' ?>" aria-label="내 계정" title="<?= $h($meName) ?>"><?= $h($meInitial) ?></button>
         <div class="adm-me-pop">
@@ -138,6 +231,38 @@ function admin_topbar(string $active, string $pageTitle = ''): void
         </div>
     </div>
 </header>
+<nav class="adm-side" id="admSide" aria-label="관리자 메뉴">
+    <div class="adm-side-hd"><b>LOVE DAY</b><button type="button" id="admSideX" aria-label="메뉴 닫기">✕</button></div>
+    <div class="adm-find" hidden data-side-find><input type="search" data-adm-find placeholder="메뉴 찾기" aria-label="메뉴 찾기" autocomplete="off"><div class="adm-hits" role="listbox"></div></div>
+    <?php foreach ($groups as [$gName, $gDesc, $items]): ?>
+    <h4><?= $h($gName) ?></h4>
+    <?php foreach ($items as $key => $it) echo $link($key, $it, ''); ?>
+    <?php endforeach; ?>
+    <button type="button" class="adm-side-map" data-open-map>전체 메뉴 한눈에 보기</button>
+</nav>
+<div class="adm-scrim" id="admScrim"></div>
+<div class="adm-map" id="admMap" hidden role="dialog" aria-modal="true" aria-labelledby="admMapTitle">
+    <div class="adm-map-box">
+        <div class="adm-map-hd">
+            <h2 id="admMapTitle">전체 메뉴</h2><small>하는 일끼리 묶었어요</small>
+            <div class="adm-find"><input type="search" data-adm-find placeholder="메뉴 찾기 (예: 금지어, VIP)" aria-label="메뉴 찾기" autocomplete="off"><div class="adm-hits" role="listbox"></div></div>
+            <button type="button" class="adm-map-x" id="admMapX" aria-label="닫기">✕</button>
+        </div>
+        <div class="adm-todo">
+            <?php if ($badge): ?><a href="admin_naver.php"><em class="adm-badge"><?= $badge ?></em>확인할 스마트스토어 주문이 있어요</a>
+            <?php else: ?><span>지금 확인할 일이 없어요</span><?php endif; ?>
+        </div>
+        <div class="adm-cards">
+            <?php foreach ($groups as [$gName, $gDesc, $items]): ?>
+            <section class="adm-card"><h3><?= $h($gName) ?></h3><small><?= $h($gDesc) ?></small>
+                <?php foreach ($items as $key => $it): ?>
+                <a href="<?= $h($it[0]) ?>" data-nav="<?= $h($key) ?>"><b><?= $h($it[1]) ?><?php if ($key === 'naver' && $badge): ?><em class="adm-badge"><?= $badge ?></em><?php endif; ?></b><span><?= $h($it[2]) ?></span></a>
+                <?php endforeach; ?>
+            </section>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
 <div class="adm-sess-pop" id="admSessPop" hidden role="alertdialog" aria-modal="true" aria-labelledby="admSessTitle">
     <div class="box">
         <div class="ic">⏳</div>
@@ -152,25 +277,88 @@ function admin_topbar(string $active, string $pageTitle = ''): void
 <?php endif; ?>
 <script>
 (function () {
-    var nav = document.getElementById('admNav'); if (!nav) return;
-    // 메뉴가 넘치면 왼쪽 "· 화면 이름"은 숨김 (같은 이름이 메뉴에 진하게 표시돼 있음) → 메뉴를 더 많이 보여줌
-    var pg = document.querySelector('.adm-page');
-    if (pg && nav.scrollWidth > nav.clientWidth) pg.style.display = 'none';
-    var on = nav.querySelector('a.on');
-    // 지금 메뉴가 화면 밖에 있으면 가운데쯤으로 (처음 한 번은 애니메이션 없이)
-    if (on && nav.scrollWidth > nav.clientWidth) {
-        var nr = nav.getBoundingClientRect(), or = on.getBoundingClientRect();
-        if (or.left < nr.left + 24 || or.right > nr.right - 24) { // 가려져 있거나 흐린 끝에 걸쳐 있으면
-            nav.style.scrollBehavior = 'auto';
-            nav.scrollLeft += (or.left - nr.left) - (nav.clientWidth - or.width) / 2;
-            nav.style.scrollBehavior = '';
+    var ACTIVE = <?= json_encode($active) ?>;
+    var MENU = <?= json_encode(array_merge(...array_map(fn($g) => array_map(fn($k, $it) => ['k' => $k, 'u' => $it[0], 'n' => $it[1], 'd' => $it[2], 'w' => $it[3], 'g' => $g[0]], array_keys($g[2]), $g[2]), $groups ?: [['', '', []]])), JSON_UNESCAPED_UNICODE) ?>;
+    var root = document.documentElement, side = document.getElementById('admSide');
+    // ---- 지금 메뉴 표시 (섹션 설정은 주소 #탭 따라 간편 만들기 · 전문가 모드 · 기기별 설정) ----
+    function curKey() {
+        if (ACTIVE !== 'sections') return ACTIVE;
+        var hs = location.hash;
+        return hs === '#easy' ? 'easy' : hs === '#device' ? 'device' : 'sections';
+    }
+    window.admNavSync = function () {
+        var k = curKey();
+        document.querySelectorAll('[data-nav]').forEach(function (a) {
+            var on = a.dataset.nav === k; a.classList.toggle('on', on);
+            if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+        });
+    };
+    admNavSync();
+    window.addEventListener('hashchange', admNavSync);
+    var onLink = side && side.querySelector('a.on');
+    if (onLink && onLink.offsetTop > side.clientHeight - 60) side.scrollTop = onLink.offsetTop - side.clientHeight / 2;
+    // ---- 좁은 화면: ☰ 서랍 ----
+    var burger = document.getElementById('admBurger');
+    function drawer(open) {
+        root.classList.toggle('adm-drawer', open);
+        if (burger) burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        var sf = side.querySelector('[data-side-find]'); if (sf) sf.hidden = !open;
+    }
+    if (burger) burger.addEventListener('click', function () { drawer(!root.classList.contains('adm-drawer')); });
+    document.getElementById('admScrim').addEventListener('click', function () { drawer(false); });
+    document.getElementById('admSideX').addEventListener('click', function () { drawer(false); });
+    side.addEventListener('click', function (e) { if (e.target.closest('a')) drawer(false); });
+    // ---- 전체 메뉴 (사이트맵) ----
+    var map = document.getElementById('admMap'), mapBtn = document.getElementById('admMapBtn');
+    function openMap(on) {
+        if (on === !map.hidden) return;
+        if (on) {
+            drawer(false); map.hidden = false; requestAnimationFrame(function () { map.classList.add('show'); });
+            var k = curKey(); map.querySelectorAll('[data-nav]').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === k); });
+            var inp = map.querySelector('[data-adm-find]'); if (inp && matchMedia('(hover: hover)').matches) inp.focus();
+        } else { map.classList.remove('show'); setTimeout(function () { if (!map.classList.contains('show')) map.hidden = true; }, 180); if (mapBtn) mapBtn.focus(); }
+    }
+    if (mapBtn) mapBtn.addEventListener('click', function () { openMap(true); });
+    document.querySelectorAll('[data-open-map]').forEach(function (b) { b.addEventListener('click', function () { openMap(true); }); });
+    document.getElementById('admMapX').addEventListener('click', function () { openMap(false); });
+    map.addEventListener('click', function (e) { if (e.target === map) openMap(false); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { if (!map.hidden) openMap(false); else if (root.classList.contains('adm-drawer')) drawer(false); return; }
+        var t = e.target, typing = t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+        if (e.key === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); openMap(true); }
+    });
+    // ---- 메뉴 찾기 (위 · 서랍 · 사이트맵 칸 셋 다 같은 방식) ----
+    var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    function find(q) {
+        q = q.trim().toLowerCase().replace(/\s+/g, ' '); if (!q) return [];
+        var words = q.split(' ');
+        return MENU.map(function (m) {
+            var name = m.n.toLowerCase(), all = (m.n + ' ' + m.d + ' ' + m.w + ' ' + m.g).toLowerCase();
+            if (!words.every(function (w) { return all.indexOf(w) >= 0; })) return null;
+            return { m: m, s: name.indexOf(words[0]) === 0 ? 0 : name.indexOf(words[0]) > 0 ? 1 : 2 };
+        }).filter(Boolean).sort(function (a, b) { return a.s - b.s; }).slice(0, 8).map(function (x) { return x.m; });
+    }
+    document.querySelectorAll('[data-adm-find]').forEach(function (inp) {
+        var box = inp.parentNode.querySelector('.adm-hits'), cur = -1;
+        function draw() {
+            var r = find(inp.value); cur = r.length ? 0 : -1;
+            if (!inp.value.trim()) { box.classList.remove('on'); return; }
+            box.innerHTML = r.length ? r.map(function (m, i) { return '<a href="' + esc(m.u) + '" role="option" class="' + (i === 0 ? 'cur' : '') + '"><b>' + esc(m.n) + '</b><i>' + esc(m.g) + '</i><small>' + esc(m.d) + '</small></a>'; }).join('')
+                : '<p>찾는 메뉴가 없어요. 다른 말로 찾아보세요.</p>';
+            box.classList.add('on');
         }
-    }
-    function fade() {
-        var max = nav.scrollWidth - nav.clientWidth;
-        nav.classList.toggle('fade-l', nav.scrollLeft > 2);
-        nav.classList.toggle('fade-r', max - nav.scrollLeft > 2);
-    }
+        inp.addEventListener('input', draw);
+        inp.addEventListener('focus', function () { if (inp.value.trim()) draw(); });
+        inp.addEventListener('keydown', function (e) {
+            var links = box.querySelectorAll('a'); if (!links.length) return;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); cur = (cur + (e.key === 'ArrowDown' ? 1 : -1) + links.length) % links.length; links.forEach(function (a, i) { a.classList.toggle('cur', i === cur); }); }
+            else if (e.key === 'Enter' && cur >= 0) { e.preventDefault(); links[cur].click(); }
+        });
+        box.addEventListener('click', function (e) { var a = e.target.closest('a'); if (!a) return; box.classList.remove('on'); inp.value = ''; openMap(false); drawer(false); });
+        document.addEventListener('click', function (e) { if (!inp.parentNode.contains(e.target)) box.classList.remove('on'); });
+    });
+    // 같은 화면 안 탭 메뉴(섹션 설정 #easy 등)를 눌렀을 때도 서랍·사이트맵을 닫음
+    document.querySelectorAll('.adm-card a, .adm-side a').forEach(function (a) { a.addEventListener('click', function () { openMap(false); }); });
     // 내 계정 동그라미
     var me = document.getElementById('admMe');
     if (me) {
@@ -255,52 +443,6 @@ function admin_topbar(string $active, string $pageTitle = ''): void
         document.addEventListener('visibilitychange', function () { if (!document.hidden) poll(); });
         tick();
     })();
-    // ---- PC 가로 스크롤바 ----
-    var sbar = document.getElementById('admSbar'), thumb = sbar && sbar.querySelector('i'), header = nav.closest('.adm-top');
-    function syncBar() {
-        if (!sbar) return;
-        var sw = nav.scrollWidth, cw = nav.clientWidth;
-        var on = sw > cw + 1;
-        sbar.classList.toggle('on', on);
-        if (!on) return;
-        var hr = header.getBoundingClientRect(), nr = nav.getBoundingClientRect();
-        sbar.style.left = (nr.left - hr.left) + 'px';
-        sbar.style.width = cw + 'px';
-        var tw = Math.max(36, cw * cw / sw);
-        thumb.style.width = tw + 'px';
-        thumb.style.transform = 'translateX(' + (nav.scrollLeft / (sw - cw) * (cw - tw)) + 'px)';
-    }
-    if (sbar) {
-        var dragX = null, dragScroll = 0;
-        thumb.addEventListener('pointerdown', function (e) {
-            e.preventDefault(); e.stopPropagation();
-            dragX = e.clientX; dragScroll = nav.scrollLeft;
-            thumb.setPointerCapture(e.pointerId); sbar.classList.add('drag'); nav.style.scrollBehavior = 'auto';
-        });
-        thumb.addEventListener('pointermove', function (e) {
-            if (dragX === null) return;
-            var sw = nav.scrollWidth, cw = nav.clientWidth, tw = thumb.offsetWidth;
-            nav.scrollLeft = dragScroll + (e.clientX - dragX) * (sw - cw) / Math.max(1, cw - tw);
-        });
-        var endDrag = function () { if (dragX === null) return; dragX = null; sbar.classList.remove('drag'); nav.style.scrollBehavior = ''; };
-        thumb.addEventListener('pointerup', endDrag); thumb.addEventListener('pointercancel', endDrag);
-        // 빈 곳을 누르면 그쪽으로 한 화면만큼
-        sbar.addEventListener('pointerdown', function (e) {
-            if (e.target === thumb) return;
-            var tr = thumb.getBoundingClientRect();
-            nav.scrollLeft += (e.clientX < tr.left ? -1 : 1) * nav.clientWidth * .8;
-        });
-    }
-    nav.addEventListener('scroll', function () { fade(); syncBar(); }, { passive: true });
-    window.addEventListener('resize', function () { fade(); syncBar(); });
-    if (document.readyState !== 'complete') window.addEventListener('load', syncBar);
-    syncBar();
-    // PC: 마우스 휠(세로)로도 가로로 넘기기
-    nav.addEventListener('wheel', function (e) {
-        if (nav.scrollWidth <= nav.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-        nav.scrollLeft += e.deltaY; e.preventDefault();
-    }, { passive: false });
-    fade();
 })();
 </script>
 <?php

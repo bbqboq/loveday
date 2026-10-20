@@ -93,7 +93,7 @@ $csrf = csrf_token();
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-<?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('extra', '서버 시간 점검'); ?>
+<?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('timezone', '서버 시간 점검'); ?>
 <div class="wrap">
     <h2 class="page-title">서버 시간 점검</h2>
     <?php if ($notice): ?><div class="notice success"><?= $h($notice) ?></div><?php endif; ?>

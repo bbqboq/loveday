@@ -1364,6 +1364,10 @@ html.sp-bgm-q .ib-bgm-btn.ed-bgm { display: none !important; }
 .thm-r { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 9px; } .thm-r.now { background: var(--ui-tint, #F6F3EE); }
 .thm-r img, .thm-r i { width: 30px; height: 46px; border-radius: 5px; object-fit: cover; object-position: top; background: #EEE8E0; flex: none; }
 .thm-r b { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.thm-r.pick { box-shadow: inset 0 0 0 2px #C7A46A; }
+.thm-ra { flex: none; display: flex; gap: 4px; }
+.thm-ra button { height: 26px; padding: 0 8px; border: 1px solid #E3DED6; border-radius: 7px; background: #fff; font: inherit; font-size: 11.5px; font-weight: 600; color: #4A433D; cursor: pointer; }
+.thm-ra button:hover:not(:disabled) { background: #F6F3EE; } .thm-ra button.del { color: #B24A4A; } .thm-ra button:disabled { opacity: .4; cursor: default; }
 .thm-r small { flex: none; font-size: 11.5px; color: #8A847B; } .thm-r small.ok { color: #2F7A4E; font-weight: 700; } .thm-r small.old, .thm-r small.no { color: #B0763A; } .thm-r small.bad { color: #B24A4A; }
 .thm-f { padding: 12px 20px 16px; border-top: 1px solid var(--ui-line, #ECE8E2); display: grid; gap: 8px; }
 .thm-f button, .thm-f a { height: 44px; border-radius: 12px; border: 1px solid var(--ui-line, #DED8CF); background: #fff; font: inherit; font-size: 14px; font-weight: 700; color: #2B2320; cursor: pointer; display: grid; place-items: center; text-decoration: none; }

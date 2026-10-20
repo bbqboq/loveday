@@ -137,6 +137,9 @@ body { background: var(--ui-page, #F6F4F1); }
 .fd-th { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; margin-top: 12px; }
 .fd-thc { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: #6F6A63; min-width: 0; }
 .fd-thc img, .fd-thc i { width: 100%; aspect-ratio: 390 / 600; object-fit: cover; object-position: top; border-radius: 9px; background: var(--ui-tint, #F1ECE4); box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); display: block; }
+.fd-tha { display: flex; gap: 4px; }
+.fd-tha a, .fd-tha button { flex: 1; height: 26px; padding: 0 4px; border: 1px solid var(--ui-line, #E5DED3); border-radius: 7px; background: #fff; font: inherit; font-size: 11.5px; font-weight: 600; color: #4A453F; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; white-space: nowrap; }
+.fd-tha button { color: #B24A4A; } .fd-tha a:hover, .fd-tha button:hover { background: #F6F3EE; } .fd-tha button:disabled { opacity: .45; }
 .fd-thc b { font-size: 12px; color: #2B2320; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .fd-thc small.no { color: #B0763A; }
 .fd-th-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .fd-th-acts a, .fd-th-acts button { height: 38px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: #4A453F; text-decoration: none; display: inline-flex; align-items: center; cursor: pointer; }
@@ -320,8 +323,19 @@ function drawThumbs() {
     const day = t => { const d = new Date(t * 1000); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
     $('thN').textContent = have ? `${ids.length}개 중 ${have}개 그림 있음` : '아직 만든 그림이 없어요 (고객 화면은 진짜로 그려서 보여 줘요)';
     $('thClear').hidden = !have;
-    $('thGrid').innerHTML = ids.map(id => { const t = THUMBS[id]; return `<span class="fd-thc">${t ? `<img src="${esc(t.c)}" alt="" loading="lazy">` : '<i></i>'}<b>${esc(name(id))}</b>${t ? `<small>${day(t.at)} 찍음</small>` : '<small class="no">그림 없음</small>'}</span>`; }).join('');
+    $('thGrid').innerHTML = ids.map(id => { const t = THUMBS[id]; return `<span class="fd-thc">${t ? `<img src="${esc(t.c)}" alt="" loading="lazy">` : '<i></i>'}<b>${esc(name(id))}</b>${t ? `<small>${day(t.at)} 찍음</small>` : '<small class="no">그림 없음</small>'}`
+        + `<span class="fd-tha"><a href="editor-prototype-v3-overlay.html?thumbs=make&amp;only=${encodeURIComponent(id)}" target="_blank" rel="noopener" title="새 창에서 이 디자인만 찍기">${t ? '다시 찍기' : '찍기'}</a>${t ? `<button type="button" data-th-del="${esc(id)}" title="이 디자인 그림만 지우기">지우기</button>` : ''}</span></span>`; }).join('');
 }
+// 디자인 하나만 지우기 (다시 찍기는 새 창 에디터 ?thumbs=make&only=디자인 → 그 줄의 [다시 찍기])
+$('thGrid').addEventListener('click', e => {
+    const d = e.target.closest('[data-th-del]'); if (!d) return;
+    const id = d.dataset.thDel;
+    if (!confirm(`'${name0(id)}' 썸네일을 지울까요? 고객 화면은 다시 찍을 때까지 진짜로 그려서 보여 줘요.`)) return;
+    d.disabled = true;
+    const fd = new FormData(); fd.append('csrf_token', CSRF); fd.append('act', 'del'); fd.append('id', id);
+    fetch('dpk_thumbs.php', { method: 'POST', body: fd }).then(r => r.json()).then(j => { if (!j.ok) throw new Error(j.error || '지우지 못했어요'); toast('썸네일을 지웠어요'); return loadThumbs(); }).catch(err => { d.disabled = false; toast(err.message); });
+});
+function name0(id) { const p = presets.find(x => x.id === id), sm = samples[id]; return (sm && sm.label) || (p && p.label) || id; }
 $('thClear').onclick = () => {
     if (!confirm('디자인 썸네일을 모두 지울까요? 고객 화면은 다시 만들 때까지 진짜로 그려서 보여 줘요.')) return;
     const fd = new FormData(); fd.append('csrf_token', CSRF); fd.append('act', 'clear');

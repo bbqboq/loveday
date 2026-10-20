@@ -9745,12 +9745,25 @@ const THM_LBL = { no: '그림 없음', old: '예전 그림', ok: '✓ 최신', r
 function thmDraw(now) {
     const ids = thmIds(), l = thm$('thmL'); if (!l) return;
     l.innerHTML = ids.map(id => { const p = allDesigns().find(x => x.id === id) || {}, t = THM.items[id], st = thmStat(id);
-        return `<div class="thm-r${id === now ? ' now' : ''}">${t ? `<img src="${esc(t.c)}" alt="" loading="lazy">` : '<i></i>'}<b>${esc(p.label || id)}</b><small class="${st === 'done' ? 'ok' : st}">${THM_LBL[st] || ''}</small></div>`; }).join('');
+        return `<div class="thm-r${id === now ? ' now' : ''}${id === THM_ONLY ? ' pick' : ''}" data-thm-id="${esc(id)}">${t ? `<img src="${esc(t.c)}" alt="" loading="lazy">` : '<i></i>'}<b>${esc(p.label || id)}</b><small class="${st === 'done' ? 'ok' : st}">${THM_LBL[st] || ''}</small>`
+            + `<span class="thm-ra"><button type="button" data-thm-shot="${esc(id)}"${THM.run || !THM.csrf ? ' disabled' : ''} title="이 디자인만 다시 찍기">${t ? '다시 찍기' : '찍기'}</button>${t ? `<button type="button" class="del" data-thm-del="${esc(id)}"${THM.run ? ' disabled' : ''} title="이 디자인 그림만 지우기">지우기</button>` : ''}</span></div>`; }).join('');
     const todo = ids.filter(id => ['no', 'old', 'bad'].includes(thmStat(id))).length;
     const a = thm$('thmGoNew'), b = thm$('thmGoAll');
     if (a) { a.textContent = todo ? `바뀐 것만 찍기 (${todo}개)` : '모두 최신이에요'; a.disabled = THM.run || !todo; }
     if (b) { b.textContent = THM.run ? '멈추기' : `모두 다시 찍기 (${ids.length}개)`; b.disabled = false; }
     if (now) { const r = l.querySelector('.thm-r.now'); if (r) r.scrollIntoView({ block: 'nearest' }); }
+    else if (THM_ONLY && !thmDraw.seen) { const r = l.querySelector('.thm-r.pick'); if (r) { thmDraw.seen = true; r.scrollIntoView({ block: 'center' }); } }
+}
+// 디자인 하나만: [다시 찍기] = 그 디자인만 찍기 · [지우기] = 그 디자인 그림만 지움 (고객 화면은 다시 찍을 때까지 진짜로 그려서 보여 줌)
+const THM_ONLY = (new URLSearchParams(location.search).get('only') || '').replace(/[^a-z0-9-]/gi, ''); // 관리자 → 추천 디자인 썸네일 칸 [다시 찍기]로 열면 그 디자인을 짚어 둠
+async function thmDel(id) {
+    if (THM.run || !THM.items[id]) return;
+    const p = allDesigns().find(x => x.id === id) || {};
+    if (!(await LD.confirm(`'${p.label || id}' 썸네일을 지울까요?`, { message: '고객 디자인 고르기 화면은 다시 찍을 때까지 진짜로 그려서 보여 줘요.', ok: '지우기', cancel: '그대로 두기' }))) return;
+    const fd = new FormData(); fd.append('csrf_token', THM.csrf); fd.append('act', 'del'); fd.append('id', id);
+    try { const j = await fetch('dpk_thumbs.php', { method: 'POST', body: fd }).then(x => x.json()); if (!j.ok) throw new Error(j.error || ''); delete THM.items[id]; delete THM.st[id]; thmMsg(`'${p.label || id}' 썸네일을 지웠어요.`); }
+    catch (e) { thmMsg('지우지 못했어요. 새로고침 후 다시 해 주세요.', true); }
+    thmDraw();
 }
 async function thmOpen() {
     document.documentElement.classList.add('thm-on'); DPK.off = true; // (뒤 디자인 고르기 화면은 그리지 않음)
@@ -9761,12 +9774,13 @@ async function thmOpen() {
     document.body.appendChild(el);
     thm$('thmGoNew').addEventListener('click', () => thmRun(thmIds().filter(id => ['no', 'old', 'bad'].includes(thmStat(id)))));
     thm$('thmGoAll').addEventListener('click', () => { if (THM.run) { THM.stop = true; thmMsg('지금 찍는 디자인까지만 하고 멈춰요…'); } else thmRun(thmIds()); });
+    thm$('thmL').addEventListener('click', e => { const a = e.target.closest('[data-thm-shot]'), d = e.target.closest('[data-thm-del]'); if (a && !a.disabled) thmRun([a.dataset.thmShot]); else if (d && !d.disabled) thmDel(d.dataset.thmDel); });
     const t0 = Date.now(); while (!(PRESETS_OK && SAMPLE_LIST_OK && DPK_SECDEF) && Date.now() - t0 < 8000) await new Promise(r => setTimeout(r, 150)); // (디자인·샘플·메인 사진 예시를 다 받은 뒤 - 지문이 고객 화면과 같게)
     try { const j = await fetch('dpk_thumbs.php?csrf=1', { cache: 'no-store' }).then(r => r.json()); if (!j.ok || !j.csrf) throw 0; THM.csrf = j.csrf; }
     catch (e) { thmMsg('관리자로 로그인한 뒤 다시 열어 주세요. (관리자 → 추천 디자인 → [썸네일 만들기])', true); return; }
     try { const j = await fetch('dpk_thumbs.php', { cache: 'no-store' }).then(r => r.json()); THM.items = (j && j.items) || {}; } catch (e) {}
     const okEnv = navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && window.innerWidth >= 820;
-    thmMsg(okEnv ? '' : (window.innerWidth < 820 ? '창을 더 넓게(820px 이상) 해 주세요.' : '이 브라우저는 화면을 찍을 수 없어요. PC 크롬이나 엣지에서 열어 주세요.'), !okEnv);
+    thmMsg(okEnv ? (THM_ONLY && thmIds().includes(THM_ONLY) ? `짚어 둔 디자인 줄의 [${THM.items[THM_ONLY] ? '다시 찍기' : '찍기'}]를 누르면 그 디자인만 찍어요.` : '') : (window.innerWidth < 820 ? '창을 더 넓게(820px 이상) 해 주세요.' : '이 브라우저는 화면을 찍을 수 없어요. PC 크롬이나 엣지에서 열어 주세요.'), !okEnv);
     thmDraw();
 }
 // 화면을 찍을 칸 (왼쪽 위 390px) - 높이는 화면 높이까지
