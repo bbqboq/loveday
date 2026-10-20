@@ -17702,6 +17702,7 @@ function pzTransform(fe) {
     let group = null, tipQ = null;
     // 이름이 짧고 입력칸이 하나면 "왼쪽 작은 이름 + 칸" 한 줄, 아니면 이름을 위에 작게
     const row = n => {
+        if (n.matches('.hl-ex, .hero-kind')) { n.classList.remove('pz-row'); n.classList.add('pz-stack'); return; } // 메인 레이아웃 칸은 늘 위아래로 (글 칸이 하나뿐인 레이아웃이면 '이름 왼쪽 + 칸' 한 줄이 돼 레이아웃 카드가 좁아졌음)
         const f = n.firstElementChild;
         if (!f || !f.matches('label:not(.account-toggle), .mini-label') || !n.matches('.field')) return;
         const ctl = n.querySelectorAll('input:not([type=file]):not([type=hidden]), textarea, select, .width-row').length;
