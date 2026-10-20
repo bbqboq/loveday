@@ -23,13 +23,13 @@ const ADMIN_MENU_GROUPS = [
     ['청첩장', '매일 보는 것', [
         'list'      => ['admin_create.php', '청첩장 목록', '고객·VIP·테스트 청첩장 찾기, 결제·보관 기간 처리', '검색 코드 이름 전화번호 고객코드 결제 보관 수정'],
         'vip'       => ['admin_vip.php', 'VIP 만들기', '원하는 코드로 VIP 청첩장 만들어 주기', 'VIP 코드 생성 지정 코드'],
-        'naver'     => ['admin_naver.php', '스마트스토어', '코드 틀린 주문 처리 · 취소·반품 기록 · 연결 설정', '주문 네이버 커머스 API 키 연동 교환 취소 반품'],
+        'naver'     => ['admin_naver.php', '스토어 주문', '스마트스토어 주문 확인 · 코드 틀린 주문 처리 · 취소·반품 기록', '주문 네이버 스마트스토어 교환 취소 반품 결제'],
         'trash'     => ['admin_trash.php', '휴지통', '지운 청첩장 되살리기 · 완전 삭제', '삭제 복원 되살리기 영구'],
     ]],
     ['디자인', '고객이 고르는 재료', [
         'designs'   => ['admin_designs.php', '디자인', '추천 순서 · 보이기·숨기기 · 모던/예전 · 썸네일 · 종이 질감', '추천 디자인 샘플 꾸미기 썸네일 종이 질감 모던 예전 숨기기'],
         'stickers'  => ['admin_stickers.php', '스티커', '스티커 테마 순서 · 그림 숨기기 · 디자인별 추천', '스티커 이모티콘 테마'],
-        'music'     => ['admin_music.php', '배경음악', '기본 곡 올리기 · 고객이 올린 음악 삭제(저작권)', '음악 노래 곡 mp3 저작권 신고'],
+        'music'     => ['admin_music.php?tab=library', '기본 배경음악', '에디터 음악 목록에 나오는 곡 올리기·이름 바꾸기·빼기', '음악 노래 곡 mp3 배경음악 기본'],
     ]],
     ['에디터', '고객이 만드는 화면', [
         'easy'      => ['admin_sections.php#easy', '간편 만들기', '질문 순서 · 목록 화면 · 휴대폰 보기 방식 · 예시 사진·영상', '손쉬운 제작 이지모드 질문 목록 스타터 휴대폰 보기 반반 작은 창 PC 디자인 고르기 발행 준비 스크롤 버튼 메인 사진 예시 영상 예시'],
@@ -40,12 +40,15 @@ const ADMIN_MENU_GROUPS = [
     ]],
     ['하객 화면', '하객이 쓰는 기능', [
         'snap'      => ['admin_snap_settings.php', '게스트스냅', '하객 사진 용량·기간 · 구글 드라이브 · 사용 현황', '하객 사진 게스트스냅 구글 드라이브 용량'],
-        'extra'     => ['admin_extra_settings.php', '부가기능', '방명록 금지어 · 참석 회신 보관 · 체험 시간 · 음악 용량', '방명록 금지어 욕설 참석 회신 RSVP 체험 보관 시간 카운트다운 음악 용량'],
+        'extra'     => ['admin_extra_settings.php?part=guest', '방명록·참석', '방명록 금지어 (막기·가리기) · 참석 회신 명단 보관 기간', '방명록 금지어 욕설 참석 회신 RSVP 부가기능'],
+        'music_cust'=> ['admin_music.php?tab=active', '고객이 올린 음악', '저작권 신고 → 음악만 삭제 · 삭제 기록 · 최대 용량', '음악 노래 mp3 저작권 신고 삭제 용량 MB'],
         'watermark' => ['admin_watermark.php', '워터마크', '무료체험 청첩장에 들어가는 글자', '워터마크 무료체험'],
     ]],
     ['사이트', '가끔 바꾸는 것', [
         'site'      => ['admin_site_settings.php', '사이트 정보', '가격표 · 구매 주소 · 사업자 정보 · 사이트 색상', '가격 사업자 구매 버튼 색상 샘플 카드 홈페이지'],
         'homeimg'   => ['admin_home_images.php', '홈 이미지', '홈 첫 화면 사진 · 로그인 화면 사진', '홈 이미지 사진 로그인'],
+        'keep'      => ['admin_extra_settings.php?part=keep', '체험·보관 시간', '체험 청첩장·무료체험·휴지통을 얼마나 두었다 지울지 · 삭제 카운트다운', '체험 보관 시간 무료체험 유예 휴지통 기간 카운트다운 자동 삭제 부가기능'],
+        'naver_setup' => ['admin_naver.php?part=setup', '스토어 연결', '스마트스토어 애플리케이션 ID·시크릿 · 자동 확인 · 연결 테스트', '네이버 커머스 API 키 시크릿 연동 cron 발주확인 발송처리'],
         'subadmin'  => ['admin_subadmins.php', '부관리자', '부관리자 계정 · 권한 켜고 끄기', '부관리자 권한 계정 비밀번호'],
         'timezone'  => ['admin_timezone.php', '서버 시간 점검', '한 번만 쓰는 점검 도구', '서버 시간 시각 점검 UTC'],
     ]],
@@ -71,7 +74,7 @@ function admin_topbar(string $active, string $pageTitle = ''): void
     foreach (ADMIN_MENU_GROUPS as [$gName, $gDesc, $items]) {
         $vis = [];
         foreach ($items as $key => $it) {
-            if (function_exists('admin_page_open') && !admin_page_open(explode('#', $it[0])[0])) continue;
+            if (function_exists('admin_page_open') && !admin_page_open(strtok($it[0], '?#'))) continue;
             $vis[$key] = $it;
         }
         if ($vis) $groups[] = [$gName, $gDesc, $vis];
@@ -139,11 +142,11 @@ function admin_topbar(string $active, string $pageTitle = ''): void
     .adm-side .adm-find { display: block; max-width: none; margin: 10px 0 14px; }
 }
 /* 전체 메뉴 (사이트맵) */
-.adm-map { position: fixed; inset: 0; z-index: 95; display: grid; place-items: start center; padding: 56px 20px 30px; overflow-y: auto; background: rgba(25, 20, 15, .4); opacity: 0; transition: opacity .18s;
+.adm-map { position: fixed; inset: 0; z-index: 95; display: block; padding: 56px 20px 30px; overflow-y: auto; background: rgba(25, 20, 15, .4); opacity: 0; transition: opacity .18s;
     font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
 .adm-map[hidden] { display: none; }
 .adm-map.show { opacity: 1; }
-.adm-map-box { width: min(1080px, 100%); background: #fff; border-radius: 18px; box-shadow: 0 24px 60px rgba(0, 0, 0, .22); padding: 22px 24px 26px; transform: translateY(8px); transition: transform .22s cubic-bezier(.2, .8, .3, 1); }
+.adm-map-box { width: min(1080px, 100%); margin: 0 auto; background: #fff; border-radius: 18px; box-shadow: 0 24px 60px rgba(0, 0, 0, .22); padding: 22px 24px 26px; transform: translateY(8px); transition: transform .22s cubic-bezier(.2, .8, .3, 1); }
 .adm-map.show .adm-map-box { transform: none; }
 .adm-map-hd { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; flex-wrap: wrap; }
 .adm-map-hd h2 { margin: 0; font-size: 18px; color: #2B2320; }
@@ -170,8 +173,8 @@ function admin_topbar(string $active, string $pageTitle = ''): void
     .adm-mapbtn { margin-left: auto; padding: 0 11px; }
     .adm-mapbtn .lb { display: none; }
     .adm-side { padding-bottom: 40px; }
-    .adm-map { padding: 0; place-items: stretch; }
-    .adm-map-box { border-radius: 0; min-height: 100%; padding: 14px 16px 30px; }
+    .adm-map { padding: 0; background: #fff; overscroll-behavior: contain; }
+    .adm-map-box { border-radius: 0; min-height: 100%; padding: 14px 16px 30px; box-shadow: none; }
     .adm-map-hd .adm-find { order: 3; max-width: none; flex-basis: 100%; }
     .adm-map-x { margin-left: auto; }
     .adm-cards { grid-template-columns: 1fr; }

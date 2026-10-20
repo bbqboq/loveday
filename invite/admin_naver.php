@@ -35,11 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             save_app_setting($pdo, 'naver_enabled', !empty($_POST['enabled']) ? '1' : '0');
             save_app_setting($pdo, 'naver_auto_confirm', !empty($_POST['auto_confirm']) ? '1' : '0');
             save_app_setting($pdo, 'naver_auto_dispatch', in_array($_POST['auto_dispatch'] ?? '', ['DIRECT_DELIVERY', 'NOTHING'], true) ? $_POST['auto_dispatch'] : '');
-            header('Location: admin_naver.php?msg=saved'); exit;
+            header('Location: admin_naver.php?part=setup&msg=saved'); exit;
         }
         if ($action === 'test') {
             nc_token($pdo, true);
-            header('Location: admin_naver.php?msg=test_ok'); exit;
+            header('Location: admin_naver.php?part=setup&msg=test_ok'); exit;
         }
         if ($action === 'sync') {
             if (!$tableOk) throw new RuntimeException('먼저 서버에서 stage4_setup.sql을 실행해주세요.');
@@ -93,6 +93,7 @@ if (!$error && isset($msgs[$_GET['msg'] ?? ''])) $notice = $msgs[$_GET['msg']];
 
 $tabs = ['review' => '확인 필요', 'exchange_hold' => '교환 확인 중', 'reverted' => '취소로 되돌림', 'applied' => '자동 처리됨', 'all' => '전체'];
 $tab = isset($tabs[$_GET['tab'] ?? '']) ? $_GET['tab'] : 'review';
+$part = ($_GET['part'] ?? '') === 'setup' ? 'setup' : 'orders'; // 관리자 메뉴: 청첩장 → 스마트스토어(주문) / 사이트 → 스토어 연결(연결 설정·키)
 $counts = ['review' => 0, 'exchange_hold' => 0, 'reverted' => 0, 'applied' => 0, 'all' => 0];
 $rows = [];
 if ($tableOk) {
@@ -155,10 +156,11 @@ $dispatch = app_setting('naver_auto_dispatch');
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('naver', '스마트스토어 연동'); ?>
+    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar($part === 'setup' ? 'naver_setup' : 'naver', $part === 'setup' ? '스토어 연결 설정' : '스마트스토어 주문'); ?>
     <div class="wrap">
-        <h2 class="page-title">스마트스토어 연동</h2>
-        <p style="font-size:13px;color:#888;margin:-14px 0 18px;">스마트스토어에서 결제가 끝나면, 구매자가 적은 청첩장 코드를 찾아 자동으로 보관 기간을 바꾸고 워터마크를 지워요.</p>
+        <h2 class="page-title"><?= $part === 'setup' ? '스토어 연결 설정' : '스마트스토어 주문' ?></h2>
+        <p style="font-size:13px;color:#888;margin:-14px 0 18px;">스마트스토어에서 결제가 끝나면, 구매자가 적은 청첩장 코드를 찾아 자동으로 보관 기간을 바꾸고 워터마크를 지워요.
+            <?= $part === 'setup' ? '주문 확인·처리는 <a href="admin_naver.php">청첩장 → 스마트스토어</a>에서 해요.' : '애플리케이션 ID·시크릿·자동 확인은 <a href="admin_naver.php?part=setup">사이트 → 스토어 연결</a>에 있어요.' ?></p>
         <?php if ($notice): ?><div class="notice success"><?= $h($notice) ?></div><?php endif; ?>
         <?php if ($error): ?><div class="notice error"><?= $h($error) ?></div><?php endif; ?>
         <?php if (!$tableOk): ?><div class="notice error">주문 기록 표가 아직 없어요. 서버에서 <b>stage4_setup.sql</b>을 한 번 더 실행해주세요.</div><?php endif; ?>
@@ -171,6 +173,7 @@ $dispatch = app_setting('naver_auto_dispatch');
         </div>
         <?php if ($lastErr !== ''): ?><div class="notice error">최근 오류: <?= $h($lastErr) ?></div><?php endif; ?>
 
+        <?php if ($part === 'setup'): ?>
         <form method="post" class="panel">
             <input type="hidden" name="csrf_token" value="<?= $h($csrf) ?>">
             <input type="hidden" name="action" value="save">
@@ -200,15 +203,17 @@ $dispatch = app_setting('naver_auto_dispatch');
             <p style="margin-top:16px;"><button class="btn" type="submit">저장</button></p>
         </form>
 
+        <?php endif; ?>
         <div class="panel" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <form method="post" style="margin:0"><input type="hidden" name="csrf_token" value="<?= $h($csrf) ?>"><input type="hidden" name="action" value="test">
-                <button class="btn" type="submit" <?= $configured ? '' : 'disabled' ?>>연결 테스트</button></form>
+            <?php if ($part === 'setup'): ?><form method="post" style="margin:0"><input type="hidden" name="csrf_token" value="<?= $h($csrf) ?>"><input type="hidden" name="action" value="test">
+                <button class="btn" type="submit" <?= $configured ? '' : 'disabled' ?>>연결 테스트</button></form><?php endif; ?>
             <form method="post" style="margin:0;display:flex;gap:6px;align-items:center"><input type="hidden" name="csrf_token" value="<?= $h($csrf) ?>"><input type="hidden" name="action" value="sync">
                 <select name="days"><option value="0">지난 확인 이후</option><option value="1">최근 1일 다시</option><option value="3">최근 3일 다시</option><option value="7">최근 7일 다시</option></select>
                 <button class="btn" type="submit" <?= $configured && $tableOk ? '' : 'disabled' ?>>지금 주문 확인</button></form>
             <span class="help" style="margin:0">이미 처리한 주문은 다시 확인해도 두 번 처리되지 않아요.</span>
         </div>
 
+        <?php if ($part === 'setup'): ?>
         <details class="panel guide">
             <summary style="cursor:pointer;font-weight:600">처음 연결하는 방법</summary>
             <ol>
@@ -230,7 +235,8 @@ $dispatch = app_setting('naver_auto_dispatch');
 · 영구 보관의 "파일로 다운로드"는 구매확정 뒤, 예식 전날부터 받을 수 있어요.</textarea>
         </details>
 
-        <?php if ($tableOk): ?>
+        <?php endif; ?>
+        <?php if ($tableOk && $part === 'orders'): ?>
         <div class="tabs">
             <?php foreach ($tabs as $k => $label): ?><a href="?tab=<?= $k ?>" class="<?= $tab === $k ? 'on' : '' ?>"><?= $h($label) ?><i><?= $counts[$k] ?></i></a><?php endforeach; ?>
         </div>

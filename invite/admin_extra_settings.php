@@ -37,6 +37,13 @@ $groups = [
     ],
 ];
 $fields = array_merge(...array_values($groups));
+// 관리자 메뉴에서 나눠 보여 줌: guest = 하객 화면 → 방명록·참석 / keep = 사이트 → 체험·보관 시간 / (없음 = 예전처럼 전부)
+//  배경음악 최대 용량은 배경음악 → 고객이 올린 음악 화면에서 이 화면으로 보냄 (back=music)
+const EXTRA_PARTS = ['guest' => ['참석 여부'], 'keep' => ['회원가입 없이 체험하기', '무료체험 (네이버 회원)', '휴지통', '편집 화면'], 'music' => ['배경음악']];
+$part = isset(EXTRA_PARTS[$_GET['part'] ?? '']) ? (string) $_GET['part'] : '';
+$showGroups = $part === '' ? $groups : array_intersect_key($groups, array_flip(EXTRA_PARTS[$part]));
+$back = ($_POST['back'] ?? '') === 'music' ? 'music' : '';
+$selfUrl = 'admin_extra_settings.php' . ($part !== '' ? '?part=' . $part : '');
 
 $notice = ''; $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -52,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             save_app_setting($pdo, 'gb_banned_words', implode("\n", array_slice(array_keys($words), 0, 1000)));
             save_app_setting($pdo, 'gb_filter_mode', $mode);
-            header('Location: admin_extra_settings.php?saved=gb#gbfilter');
+            header('Location: admin_extra_settings.php?' . ($part !== '' ? 'part=' . $part . '&' : '') . 'saved=gb#gbfilter');
             exit;
         } catch (Throwable $e) {
             $error = '금지어를 저장하지 못했어요. 서버에서 stage4_setup.sql을 한 번 더 실행해주세요 (설정 칸을 긴 글도 들어가게 넓힘).';
@@ -61,13 +68,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // ---- 숫자 설정 ----
         $vals = [];
         foreach ($fields as $key => [$label, $unit, $min, $max]) {
+            if (!isset($_POST[$key])) continue; // 나눠 보여 준 화면 - 이 화면에 없는 칸은 그대로 둠
             $v = filter_var($_POST[$key] ?? '', FILTER_VALIDATE_INT);
             if ($v === false || $v < $min || $v > $max) { $error = "{$label}: {$min}~{$max} 사이 숫자로 입력해주세요."; break; }
             $vals[$key] = $v;
         }
         if (!$error) {
             foreach ($vals as $k => $v) save_app_setting($pdo, $k, (string) $v);
-            header('Location: admin_extra_settings.php?saved=1');
+            header('Location: ' . ($back === 'music' ? 'admin_music.php?tab=active&msg=max_saved' : 'admin_extra_settings.php?' . ($part !== '' ? 'part=' . $part . '&' : '') . 'saved=1'));
             exit;
         }
     }
@@ -99,15 +107,17 @@ $csrf = csrf_token();
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('extra', '부가기능'); ?>
+    <?php $ttl = ['guest' => '방명록·참석', 'keep' => '체험·보관 시간', 'music' => '배경음악 최대 용량'][$part] ?? '부가기능';
+    require_once __DIR__ . '/admin_nav.php'; admin_topbar($part === 'keep' ? 'keep' : ($part === 'music' ? 'music_cust' : 'extra'), $ttl); ?>
     <div class="wrap">
-        <h2 class="page-title">부가기능 설정</h2>
-        <p style="font-size:13px;color:#888;margin:-14px 0 18px;">방명록 금지어, 참석 회신, 체험하기, 배경음악, 편집 화면 카운트다운 설정이에요. 하객 사진 설정은 <a href="admin_snap_settings.php">게스트스냅</a>에 있어요. 시각이 9시간씩 어긋나 보이면 <a href="admin_timezone.php">서버 시간 점검</a>.</p>
+        <h2 class="page-title"><?= snap_h($part === '' ? '부가기능 설정' : $ttl) ?></h2>
+        <p style="font-size:13px;color:#888;margin:-14px 0 18px;"><?php if ($part === 'guest'): ?>하객이 쓰는 방명록 금지어와 참석 회신 명단 보관 기간이에요. 체험·휴지통 보관 시간은 <a href="admin_extra_settings.php?part=keep">사이트 → 체험·보관 시간</a>에 있어요.<?php elseif ($part === 'keep'): ?>체험 청첩장·무료체험·휴지통을 얼마나 두었다가 지우는지 정해요. 방명록 금지어는 <a href="admin_extra_settings.php?part=guest">하객 화면 → 방명록·참석</a>에 있어요.<?php else: ?>방명록 금지어, 참석 회신, 체험하기, 배경음악, 편집 화면 카운트다운 설정이에요. 하객 사진 설정은 <a href="admin_snap_settings.php">게스트스냅</a>에 있어요.<?php endif; ?> 시각이 9시간씩 어긋나 보이면 <a href="admin_timezone.php">서버 시간 점검</a>.</p>
         <?php if ($notice): ?><div class="notice success"><?= snap_h($notice) ?></div><?php endif; ?>
         <?php if ($error): ?><div class="notice error"><?= snap_h($error) ?></div><?php endif; ?>
 
+        <?php if ($part === '' || $part === 'guest'): ?>
         <h2 class="page-title" id="gbfilter">방명록 금지어 · <?= $gbCount ?>개</h2>
-        <form method="post" class="panel">
+        <form method="post" class="panel" action="<?= snap_h($selfUrl) ?>">
             <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
             <input type="hidden" name="form" value="gbfilter">
             <p style="font-size:13px;color:#666;margin:0 0 10px;line-height:1.7;">
@@ -121,11 +131,12 @@ $csrf = csrf_token();
             </div>
             <button class="btn" type="submit">금지어 저장</button>
         </form>
+        <?php endif; ?>
 
-        <h2 class="page-title" style="margin-top:30px;">기타 설정</h2>
-        <form method="post" class="panel">
+        <h2 class="page-title" style="margin-top:30px;"><?= $part === '' ? '기타 설정' : ($part === 'guest' ? '참석 여부' : '보관 시간') ?></h2>
+        <form method="post" class="panel" action="<?= snap_h($selfUrl) ?>">
             <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
-            <?php foreach ($groups as $title => $gf): ?>
+            <?php foreach ($showGroups as $title => $gf): ?>
                 <h3 class="grp"><?= snap_h($title) ?></h3>
                 <?php foreach ($gf as $key => [$label, $unit, $min, $max]): ?>
                 <div class="set-row">

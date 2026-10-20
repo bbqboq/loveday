@@ -146,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['lib'])) {
 if (($_GET['msg'] ?? '') === 'lib_edit') $notice = '곡 이름·태그를 바꿨어요.';
 if (($_GET['msg'] ?? '') === 'lib_del') $notice = '기본 제공 음악에서 뺐어요.';
 if (($_GET['msg'] ?? '') === 'lib_up') $notice = '곡을 올렸어요. 에디터 배경음악 목록에 바로 나와요 (5분 정도 캐시가 남을 수 있어요).';
+if (($_GET['msg'] ?? '') === 'max_saved') $notice = '고객이 올리는 음악 최대 용량을 저장했어요.';
 if (($_GET['msg'] ?? '') === 'removed') $notice = '"' . ($_GET['code'] ?? '') . '" 청첩장의 음악을 삭제했어요. 고객이 에디터를 열면 삭제 사유가 안내돼요.';
 
 $tab = in_array($_GET['tab'] ?? '', ['active', 'removed'], true) ? $_GET['tab'] : 'library'; // 처음 열면 기본 제공 음악(관리자 업로드)부터
@@ -225,23 +226,32 @@ $mb = fn($b) => $b ? number_format($b / 1048576, 1) . 'MB' : '-';
 <?= site_colors_link() ?><!-- 관리자가 정한 사이트 화면 색 -->
 </head>
 <body>
-    <?php require_once __DIR__ . '/admin_nav.php'; admin_topbar('music', '배경음악 관리'); ?>
+    <?php $libView = $tab === 'library'; // 관리자 메뉴: 디자인 → 기본 배경음악 / 하객 화면 → 고객이 올린 음악 (같은 화면을 나눠 보여 줌)
+    require_once __DIR__ . '/admin_nav.php'; admin_topbar($libView ? 'music' : 'music_cust', $libView ? '기본 배경음악' : '고객이 올린 음악'); ?>
     <div class="wrap">
-        <h2 class="page-title">배경음악 관리</h2>
-        <p style="font-size:13px;color:#888;margin:-14px 0 18px;"><b>기본 제공 음악</b>: 에디터 배경음악 목록에 나오는 곡을 올리고 관리해요 (자동 압축). <b>고객이 올린 음악</b>: 저작권 신고가 들어오면 청첩장은 그대로 두고 음악만 삭제할 수 있어요.</p>
+        <h2 class="page-title"><?= $libView ? '기본 배경음악' : '고객이 올린 음악' ?></h2>
+        <p style="font-size:13px;color:#888;margin:-14px 0 18px;"><?php if ($libView): ?>에디터 배경음악 목록에 나오는 곡을 올리고 관리해요 (자동 압축). 고객이 직접 올린 음악은 <a href="admin_music.php?tab=active">하객 화면 → 고객이 올린 음악</a>에 있어요.<?php else: ?>저작권 신고가 들어오면 청첩장은 그대로 두고 음악만 삭제할 수 있어요. 에디터 기본 곡은 <a href="admin_music.php?tab=library">디자인 → 기본 배경음악</a>에 있어요.<?php endif; ?></p>
         <?php if ($notice): ?><div class="notice success"><?= $h($notice) ?></div><?php endif; ?>
         <?php if ($error): ?><div class="notice error"><?= $h($error) ?></div><?php endif; ?>
         <?php if (!$logOk): ?><div class="notice error">업로드 기록 표가 아직 없어요. 서버에서 <b>stage4_setup.sql</b>을 한 번 더 실행해주세요. (목록 보기·삭제는 기록 없이도 돼요)</div><?php endif; ?>
 
         <div class="tabs">
-            <a href="?tab=library" class="<?= $tab === 'library' ? 'on' : '' ?>">기본 제공 음악 (업로드) <?= count($libTracks) ?></a>
+            <?php if ($libView): ?><a href="?tab=library" class="on">기본 제공 음악 <?= count($libTracks) ?></a><?php else: ?>
             <a href="?tab=active" class="<?= $tab === 'active' ? 'on' : '' ?>">고객이 올린 음악<?= $tab === 'active' ? ' ' . count($rows) : '' ?></a>
-            <a href="?tab=removed" class="<?= $tab === 'removed' ? 'on' : '' ?>">삭제 기록 <?= $removedCount ?></a>
+            <a href="?tab=removed" class="<?= $tab === 'removed' ? 'on' : '' ?>">삭제 기록 <?= $removedCount ?></a><?php endif; ?>
             <?php if ($tab === 'active'): ?>
             <form method="get"><input type="hidden" name="tab" value="active"><input name="q" value="<?= $h($q) ?>" placeholder="청첩장 코드·이름·고객코드"><button class="btn" type="submit">찾기</button><?php if ($q !== ''): ?><a href="?tab=active" style="border:0;padding:7px 4px">전체</a><?php endif; ?></form>
             <?php endif; ?>
         </div>
 
+        <?php if (!$libView): // 고객이 올리는 음악 최대 용량 (값은 부가기능 설정 칸 bgm_max_mb - 그 화면 저장 코드로 보냄) ?>
+        <form method="post" action="admin_extra_settings.php?part=music" class="panel" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px;padding:12px 16px">
+            <input type="hidden" name="csrf_token" value="<?= $h(csrf_token()) ?>"><input type="hidden" name="back" value="music">
+            <label for="bgm_max_mb" style="font-size:13.5px;flex:1 1 260px">신랑신부가 직접 올리는 음악 최대 용량 <span style="color:#999;font-size:12px">(자동으로 줄인 뒤 기준)</span></label>
+            <span><input type="number" id="bgm_max_mb" name="bgm_max_mb" min="1" max="30" value="<?= $h(app_setting('bgm_max_mb')) ?>" required style="width:72px;padding:6px 8px"> MB</span>
+            <button class="btn" type="submit">저장</button>
+        </form>
+        <?php endif; ?>
         <?php if ($tab === 'library'): ?>
             <div class="lib-up">
                 <b>새 곡 올리기</b>
