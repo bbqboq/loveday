@@ -121,6 +121,56 @@ function preset_look_save($map): array
     return $map;
 }
 
+// ---- 디자인 이름 바꾸기 (관리자 → 디자인 · 카드마다 [이름 바꾸기]) ----
+//  기본 디자인(presets 폴더)의 이름·한 줄 설명을 관리자가 정함 - preset.json은 그대로 두고 덮어씀 (preset_list.php가 label·desc에 넣고 원래 값은 orig)
+//  저장: invite/uploads/site/preset_names.json {"names": {디자인 id: {"label": "…", "desc": "…"}}} · 비우면 원래 이름
+//  관리자가 새로 만든 디자인(샘플)은 sample_api.php meta로 그 샘플에 바로 저장
+function preset_names_file(): string
+{
+    return (defined('UPLOAD_DIR') ? UPLOAD_DIR : __DIR__ . '/uploads/') . 'site/preset_names.json';
+}
+function preset_names_clean($map): array
+{
+    $out = [];
+    $cut = function ($v, int $n): string {
+        $v = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $v)));
+        return mb_substr($v, 0, $n);
+    };
+    foreach ((array) $map as $id => $v) {
+        if (!is_string($id) || !preg_match('/^[a-z0-9-]{2,40}$/', $id) || !is_array($v)) continue;
+        $row = array_filter(['label' => $cut($v['label'] ?? '', 30), 'desc' => $cut($v['desc'] ?? '', 120)], fn($x) => $x !== '');
+        if ($row) $out[$id] = $row;
+        if (count($out) >= 300) break;
+    }
+    return $out;
+}
+function preset_names_get(): array
+{
+    $f = preset_names_file();
+    if (!is_file($f)) return [];
+    $j = json_decode((string) @file_get_contents($f, false, null, 0, 131072), true);
+    return is_array($j) ? preset_names_clean($j['names'] ?? []) : [];
+}
+function preset_names_save($map): array
+{
+    $map = preset_names_clean($map);
+    $f = preset_names_file();
+    if (!$map) { if (is_file($f)) @unlink($f); return []; }
+    if (!is_dir(dirname($f))) @mkdir(dirname($f), 0750, true);
+    if (@file_put_contents($f, json_encode(['names' => $map, 'saved_at' => date('c')], JSON_UNESCAPED_UNICODE), LOCK_EX) === false) {
+        throw new RuntimeException('저장 파일을 쓸 수 없어요 (uploads/site 폴더 권한 확인).');
+    }
+    return $map;
+}
+/** 디자인 하나의 이름·설명 바꾸기 (빈 값 = 원래대로) */
+function preset_name_set(string $id, string $label, string $desc): array
+{
+    if (!preg_match('/^[a-z0-9-]{2,40}$/', $id)) throw new RuntimeException('디자인을 찾을 수 없어요.');
+    $map = preset_names_get();
+    $map[$id] = ['label' => $label, 'desc' => $desc];
+    return preset_names_save($map);
+}
+
 // ---- 디자인 휴지통 (관리자 → 디자인 · 카드마다 [휴지통으로]) ----
 //  지운 디자인은 바로 없애지 않고 30일 보관 → 그 뒤 자동으로 완전 삭제 (expire_cleanup.php 크론 + 관리자 화면·디자인 목록을 열 때)
 //  보관하는 동안: 고객 디자인 고르기 화면에서 빠짐 (preset_list.php "off"+"trash", 샘플은 sample_api list에서 빠짐)

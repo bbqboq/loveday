@@ -236,6 +236,15 @@ $trash = design_trash_ids(); // 휴지통에 있는 디자인: 이미 만든 청
 $off = array_values(array_unique(array_merge(preset_off_get(), $trash)));
 foreach ($presets as &$pp) { if (in_array($pp['id'], $off, true)) $pp['off'] = true; if (in_array($pp['id'], $trash, true)) $pp['trash'] = true; }
 unset($pp);
+$names = preset_names_get(); // 관리자가 바꾼 디자인 이름·설명 (원래 값은 orig)
+foreach ($presets as &$pp) {
+    $nm = $names[$pp['id']] ?? null;
+    if (!$nm) continue;
+    $pp['orig'] = ['label' => $pp['label'], 'desc' => $pp['desc']];
+    if (isset($nm['label'])) $pp['label'] = $nm['label'];
+    if (isset($nm['desc'])) $pp['desc'] = $nm['desc'];
+}
+unset($pp);
 $lookDef = preset_look_get(); // 관리자가 정한 꾸밈 스타일 기본 (예전)
 foreach ($presets as &$pp) if (($lookDef[$pp['id']] ?? '') === 'old') $pp['lookDefault'] = 'old';
 unset($pp);

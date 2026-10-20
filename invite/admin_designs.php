@@ -15,6 +15,8 @@
  *              고객이 그 디자인을 고를 때 처음 꾸밈 스타일. [에디터로 꾸미기]로 꾸민 샘플은 샘플에서 고른 스타일이 먼저
  *  디자인 썸네일: [썸네일 만들기] → 에디터 ?thumbs=make (새 창, PC 크롬·엣지) 가 디자인마다 첫 화면·긴 화면 그림을 찍어 올림
  *              (dpk_thumbs.php → uploads/site/dpk/) - 고객 디자인 고르기 화면이 청첩장을 진짜로 그리지 않고 그림만 보여 줘서 빠름
+ *  이름 바꾸기: 카드마다 [이름 바꾸기] → 이름·한 줄 설명 (바로 저장) - 기본 디자인은 featured_presets.php preset_names_* → uploads/site/preset_names.json
+ *              (preset_list.php가 label·desc를 바꾸고 원래 값은 orig, [원래 이름으로] = 지움), 새로 만든 디자인은 sample_api.php meta
  *  부관리자: "사업자·사이트 정보 수정" 권한(site_settings)이 있어야 저장할 수 있다 (없으면 보기 전용)
  */
 declare(strict_types=1);
@@ -43,6 +45,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             else { if (!isset(design_trash_get()[$id])) throw new RuntimeException('휴지통에 없는 디자인이에요.'); design_trash_purge($id); if (isset(design_trash_get()[$id])) throw new RuntimeException('디자인 폴더를 지우지 못했어요 (서버 invite/presets 폴더 쓰기 권한을 확인해 주세요). 고객에게는 계속 안 보여요.'); }
         } catch (Throwable $e) { echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit; }
         echo json_encode(['ok' => true, 'trash' => design_trash_get() ?: new stdClass(), 'ids' => featured_presets_get()], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (($_POST['act'] ?? '') === 'name') { // 기본 디자인 이름·설명 바꾸기 (바로 저장, 빈 값 = 원래대로)
+        try { $names = preset_name_set((string) ($_POST['id'] ?? ''), (string) ($_POST['label'] ?? ''), (string) ($_POST['desc'] ?? '')); }
+        catch (Throwable $e) { echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit; }
+        echo json_encode(['ok' => true, 'names' => $names ?: new stdClass()], JSON_UNESCAPED_UNICODE);
         exit;
     }
     if (($_POST['act'] ?? '') === 'off') { // 디자인 켜고 끄기 (바로 저장)
@@ -102,6 +110,14 @@ body { background: var(--ui-page, #F6F4F1); }
 .fd-p .tx { display: block; padding: 10px 12px 12px; border-top: 1px solid var(--ui-soft, #F1EEE9); }
 .fd-p .tx b { display: block; font-size: 13.5px; margin-bottom: 2px; }
 .fd-p .tx small { font-size: 11.5px; color: #8A847B; line-height: 1.5; display: block; }
+.fd-p .tx em.orig { display: block; margin-top: 3px; font-style: normal; font-size: 11px; color: #A39B90; }
+.fd-rn { display: flex; flex-direction: column; gap: 7px; padding: 10px 12px 12px; border-top: 1px solid var(--ui-soft, #F1EEE9); }
+.fd-rn label { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; font-weight: 700; color: #6F6A63; }
+.fd-rn input { height: 34px; border: 1px solid var(--ui-line, #E3DED6); border-radius: 9px; padding: 0 10px; font: inherit; font-size: 13px; font-weight: 500; color: #2B2320; background: #fff; min-width: 0; }
+.fd-rn input:focus { outline: none; border-color: #B8AE9F; }
+.fd-rn .b { display: flex; gap: 6px; flex-wrap: wrap; }
+.fd-rn .b button { height: 30px; padding: 0 11px; border-radius: 9px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: #4A453F; cursor: pointer; }
+.fd-rn .b button.ok { background: #2B2320; border-color: #2B2320; color: #fff; }
 .fd-p .ck { position: absolute; top: 8px; right: 8px; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 99px; background: rgba(255,255,255,.92); border: 1px solid var(--ui-line, #DED8CF); font-size: 11.5px; font-weight: 700; display: grid; place-items: center; color: #A29C94; }
 .fd-p.on .ck { background: #2B2320; border-color: #2B2320; color: #fff; }
 .fd-bar { position: sticky; bottom: 0; display: flex; align-items: center; gap: 12px; justify-content: flex-end; padding: 14px 0; background: linear-gradient(rgba(246,244,241,0), var(--ui-page, #F6F4F1) 40%); }
@@ -235,7 +251,7 @@ let LOOK = <?= json_encode(preset_look_get() ?: new stdClass()) ?>;
 const IB = window.InviteBlocks || {};
 const lookDeco = p => { const L = IB.THEME_LOOKS || {}; return (p.sectionLook || L[p.__base] || L[p.id] || ''); };
 const hasOld = p => (IB.OLD_DECOS || []).includes(lookDeco(p));
-let sel = <?= json_encode($cur) ?>, saved = JSON.stringify(sel), presets = [], samples = {};
+let sel = <?= json_encode($cur) ?>, saved = JSON.stringify(sel), presets = [], samples = {}, RENAME = ''; // RENAME = 이름을 고치는 중인 디자인 id
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const toast = m => { const t = $('fdToast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2200); };
@@ -284,9 +300,11 @@ function draw() {
         return `<div class="fd-p ${i >= 0 ? 'on' : ''}${off ? ' off' : ''}" data-id="${esc(p.id)}">
             <button type="button" class="top" data-fav="${esc(p.id)}" title="추천에 넣기/빼기"><span class="pv" style="background:${esc(pl.bg)};color:${esc(pl.ink)};font-family:${esc(pl.headFont || 'serif')}"><i style="background:linear-gradient(150deg, ${esc(pl.line)}, ${esc(pl.accent)})"></i><span>민준<span class="hrt" style="color:${esc(pl.accent)}">♥</span>서연</span></span>
             ${tag}<span class="ck">${i >= 0 ? i + 1 : '★'}</span>
-            <span class="tx"><b>${p.no ? String(p.no).padStart(2, '0') + ' ' : ''}${esc(p.label)}</b><small>${esc(p.desc || '')}${p.__custom ? ` · 바탕: ${esc((presets.find(x => x.id === p.__base) || {}).label || p.__base)}` : ''}</small></span></button>
+            ${RENAME === p.id ? '' : `<span class="tx"><b>${p.no ? String(p.no).padStart(2, '0') + ' ' : ''}${esc(p.label)}</b><small>${esc(p.desc || '')}${p.__custom ? ` · 바탕: ${esc((presets.find(x => x.id === p.__base) || {}).label || p.__base)}` : ''}</small>${p.orig ? `<em class="orig">원래 이름: ${esc(p.orig.label)}</em>` : ''}</span>`}</button>
+            ${RENAME === p.id ? `<form class="fd-rn" data-rn-form="${esc(p.id)}"><label>이름<input name="label" maxlength="30" value="${esc(p.label)}" placeholder="${esc((p.orig || p).label)}" required></label><label>한 줄 설명<input name="desc" maxlength="120" value="${esc(p.desc || '')}" placeholder="${esc((p.orig || {}).desc || '고객 디자인 고르기 화면에 보이는 설명')}"></label>
+                <span class="b"><button type="submit" class="ok">저장</button><button type="button" data-rn-x>취소</button>${p.orig ? '<button type="button" data-rn-orig>원래 이름으로</button>' : ''}</span></form>` : ''}
             <div class="acts"><a class="main" href="editor-prototype-v3-overlay.html?sample=${encodeURIComponent(p.id)}" target="_blank" rel="noopener">에디터로 꾸미기</a>
-            ${p.__custom ? `<button type="button" data-rename="${esc(p.id)}">이름</button>` : (sm && sm.saved ? `<button type="button" class="del" data-reset="${esc(p.id)}">원래대로</button>` : '')}<button type="button" class="del" data-trash="${esc(p.id)}" title="휴지통에 ${TRASH_DAYS}일 보관한 뒤 저절로 완전 삭제">휴지통으로</button>
+            <button type="button" data-rename="${esc(p.id)}" title="고객 디자인 고르기 화면에 보이는 이름·설명">이름 바꾸기</button>${!p.__custom && sm && sm.saved ? `<button type="button" class="del" data-reset="${esc(p.id)}">원래대로</button>` : ''}<button type="button" class="del" data-trash="${esc(p.id)}" title="휴지통에 ${TRASH_DAYS}일 보관한 뒤 저절로 완전 삭제">휴지통으로</button>
             ${hasOld(p) ? `<span class="lk" role="group" aria-label="꾸밈 스타일 기본" title="고객이 이 디자인을 고를 때 처음 꾸밈 모습 (고객이 바꿀 수 있어요)"><button type="button" data-lk="${esc(p.id)}" data-v="modern" class="${LOOK[p.id] === 'old' ? '' : 'on'}">모던</button><button type="button" data-lk="${esc(p.id)}" data-v="old" class="${LOOK[p.id] === 'old' ? 'on' : ''}">예전</button></span>` : ''}
             <label class="vis" title="끄면 고객의 디자인 고르기 화면에서 빠져요"><input type="checkbox" data-vis="${esc(p.id)}" ${off ? '' : 'checked'}><i></i>고객에게 보이기</label></div></div>`; }).join('');
     $('fdGrid').querySelectorAll('[data-lk]').forEach(b => b.onclick = () => {
@@ -331,10 +349,28 @@ function draw() {
         trashPost('trash', id, p.label || '').then(() => { draw(); toast('휴지통으로 옮겼어요'); }).catch(e => toast(e.message));
     });
     $('fdGrid').querySelectorAll('[data-rename]').forEach(b => b.onclick = () => {
-        const id = b.dataset.rename, cur = samples[id];
-        const label = prompt('디자인 이름', cur.label); if (label === null) return;
-        const desc = prompt('한 줄 설명', cur.desc || ''); if (desc === null) return;
-        post('meta', { id, label, desc }).then(loadSamples).then(() => { draw(); toast('바꿨어요'); }).catch(e => toast(e.message));
+        RENAME = b.dataset.rename; draw();
+        const inp = $('fdGrid').querySelector('[data-rn-form] input'); if (inp) { inp.focus(); inp.select(); }
+    });
+    $('fdGrid').querySelectorAll('[data-rn-form]').forEach(f => {
+        const id = f.dataset.rnForm, p = byId(id) || {};
+        const done = (label, desc) => {
+            f.querySelectorAll('button, input').forEach(x => { x.disabled = true; });
+            const job = p.__custom ? post('meta', { id, label, desc }).then(loadSamples)
+                : (() => { const fd = new FormData(); fd.append('csrf_token', CSRF); fd.append('act', 'name'); fd.append('id', id); fd.append('label', label); fd.append('desc', desc);
+                    return fetch('admin_designs.php', { method: 'POST', body: fd }).then(r => r.json()).then(d => {
+                        if (!d.ok) throw new Error(d.error || '저장하지 못했어요');
+                        const pp = presets.find(x => x.id === id); if (!pp) return;
+                        const orig = pp.orig || { label: pp.label, desc: pp.desc }, nm = (d.names || {})[id];
+                        if (nm) { pp.orig = orig; pp.label = nm.label || orig.label; pp.desc = nm.desc != null ? nm.desc : orig.desc; }
+                        else { pp.label = orig.label; pp.desc = orig.desc; delete pp.orig; }
+                    }); })();
+            job.then(() => { RENAME = ''; draw(); drawThumbs(); toast('이름을 바꿨어요 - 고객 화면엔 1분 안에 보여요'); }).catch(e => { toast(e.message); f.querySelectorAll('button, input').forEach(x => { x.disabled = false; }); });
+        };
+        f.onsubmit = e => { e.preventDefault(); const label = f.label.value.trim(); if (!label) { toast('이름을 적어 주세요'); f.label.focus(); return; } done(label, f.desc.value.trim()); };
+        f.querySelector('[data-rn-x]').onclick = () => { RENAME = ''; draw(); };
+        const o = f.querySelector('[data-rn-orig]'); if (o) o.onclick = () => done('', '');
+        f.onkeydown = e => { if (e.key === 'Escape') { RENAME = ''; draw(); } };
     });
     drawTrash();
     const dirty = JSON.stringify(sel) !== saved;
