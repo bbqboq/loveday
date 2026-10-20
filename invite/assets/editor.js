@@ -11784,11 +11784,12 @@ function spNextHtml(bads, all, nOk, short) {
     else if (step === 3) { cap = '마지막 · 발행하기'; t = '발행하기'; act = 'data-nx="pub"'; after = '누르면 하객에게 보낼 청첩장 주소가 생겨요'; sub = '<button type="button" class="nx-link" data-nx="pv">완성본 한 번 더 보기</button>'; }
     else { cap = '발행했어요 · 이제 보내기만 하면 돼요'; t = '주소 복사하기'; act = 'data-nx="copy"'; after = url || '고친 내용은 저장되면 하객 화면에도 바로 바뀌어요';
         sub = `${navigator.share && url ? '<button type="button" class="nx-link" data-nx="share">휴대폰으로 바로 보내기</button>' : ''}<button type="button" class="nx-link" data-nx="kk">카톡 모양 바꾸기</button><button type="button" class="nx-link" data-nx="pv">완성본 보기</button>`; }
+    const live = step === 4 ? (([k, tx]) => `<p class="nx-live${k ? ' ' + k : ''}" aria-live="polite">${esc(tx)}</p>`)(spPubLiveText()) : '';
     return `<div class="spb-ready spb-next s${step}${spReadyFlash ? ' flash' : ''}" id="spReady">
         <div class="nx-seg" aria-hidden="true">${seg(1)}${seg(2)}${seg(3)}</div>
         <div class="nx-lab">${lab(1, '채우기')}${lab(2, '확인하기')}${lab(3, '발행하기')}</div>
         <button type="button" class="nx-big" ${act}><span><small>${esc(cap)}</small><b>${esc(t)}</b></span><i aria-hidden="true">›</i></button>
-        <p class="nx-after">${esc(after)}</p>${sub ? `<div class="nx-subs">${sub}</div>` : ''}</div>`;
+        <p class="nx-after">${esc(after)}</p>${live}${sub ? `<div class="nx-subs">${sub}</div>` : ''}</div>`;
 }
 function spNextBind(pane) {
     const box = pane.querySelector('#spReady.spb-next'); if (!box) return;
@@ -15373,14 +15374,28 @@ let ldhSaveT = 0;
 // 간편 만들기: 고칠 때마다 저절로 저장 (사용자 요청 2026-10-19 - 예전엔 4초 뒤라 그 사이 새로고침하면 고친 게 사라졌음)
 //  고친 뒤 0.8초 · 저장 중에 또 고치면 끝난 뒤 한 번 더 · 바뀐 게 없으면 안 보냄(saveToServer) · 처음 저장 관문(이름 + 예식 날짜) 전엔 안 보냄
 let spSaveBusy = false, spSaveAgain = false, spSaveDirty = false;
+// 발행한 뒤 고친 내용이 하객 화면에 들어가는지 발행 카드에 바로 보여 줌 (사용자 요청 2026-10-20 '실시간으로 변해야지')
+var spPubLive = { st: '', at: 0 }; // (var - 목록을 먼저 그려도 멈추지 않게)
+function spPubLiveText() { const { st, at } = spPubLive;
+    if (st === 'wait' || st === 'saving') return ['ing', '고친 내용을 하객 화면에 넣는 중…'];
+    if (st === 'err') return ['err', '저장하지 못했어요 · 인터넷을 확인하면 다시 저장해요'];
+    if (st === 'saved') { const m = Math.floor((Date.now() - at) / 60000); return ['ok', `✓ 하객 화면에도 바뀌었어요 · ${m < 1 ? '방금' : m < 60 ? m + '분 전' : Math.floor(m / 60) + '시간 전'}`]; }
+    return ['', '고친 내용은 저장되면 하객 화면에도 바로 바뀌어요']; }
+function spPubLiveSync() { const el = document.querySelector('#spReady .nx-live'); if (!el) return; const [k, t] = spPubLiveText(); el.className = 'nx-live' + (k ? ' ' + k : ''); el.textContent = t; }
+function spPubLiveSet(st) { spPubLive = { st, at: st === 'saved' ? Date.now() : spPubLive.at }; spPubLiveSync(); }
+setInterval(() => { if (spPubLive.st === 'saved') spPubLiveSync(); }, 30000);
 function spAutoSaveSoon(ms) { try { if (!EDIT_TOKEN) return; } catch (e) { return; } if (!document.documentElement.classList.contains('simple-mode')) return; /* (불러오기 전엔 EDIT_TOKEN이 아직 없음) */
+    if (isPublished && spPubLive.st !== 'saving' && spUnsaved()) spPubLiveSet('wait');
     spSaveDirty = true; clearTimeout(ldhSaveT); ldhSaveT = setTimeout(spSaveRun, ms == null ? 800 : ms); }
 async function spSaveRun() {
     if (spSaveBusy) { spSaveAgain = true; return; }
     if (!saveGateOk()) return; // (이름·날짜를 정하기 전 - 정하는 순간 다음 고침에서 저장)
+    const live = isPublished && !!spUnsaved(); // (발행한 뒤 고친 것 - 발행 카드에 '반영하는 중 → 바뀌었어요'를 바로 보여 줌)
+    if (live) spPubLiveSet('saving');
     spSaveBusy = true; spSaveDirty = false;
     let ok = false; try { ok = await saveToServer(false, true); } catch (e) {}
     spSaveBusy = false; if (!ok) spSaveDirty = true;
+    if (live) spPubLiveSet(ok ? 'saved' : 'err');
     if (spSaveAgain) { spSaveAgain = false; spSaveRun(); }
 }
 // 간편 만들기 칸에서 스위치·고르기 버튼·막대·글자를 바꾸면 (되돌리기 기록에 안 남는 고침도) 저장

@@ -5035,3 +5035,10 @@ html.look-mode .onb-steps { display: none !important; }
 /* 목록 '다른 테마가 더 있어요' 묶음 (할 일이 아님 - 채우기에 안 셈) */
 .spb-themes .spb-plus { background: var(--ui-soft, #F3EFE8); border: 0; }
 .spb-themes .spb-plus::before { content: '✦'; position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; color: #B08A63; }
+/* 발행한 뒤 고친 내용 반영 표시 (발행 카드) */
+.spb-next .nx-live { margin: 2px 0 0; text-align: center; font-size: 12px; color: var(--wz-sub); transition: color .2s; }
+.spb-next .nx-live.ing { color: #8A6A3A; }
+.spb-next .nx-live.ing::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; vertical-align: -1px; animation: nxSpin .8s linear infinite; }
+.spb-next .nx-live.ok { color: #3F7A55; font-weight: 600; }
+.spb-next .nx-live.err { color: #A8463F; font-weight: 600; }
+@keyframes nxSpin { to { transform: rotate(360deg); } }
