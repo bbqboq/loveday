@@ -4909,7 +4909,7 @@ function stkMount(pal, onAdd, opts) {
         wrap.querySelectorAll('.stk-q').forEach(c => c.classList.toggle('on', c.dataset.q === S.q));
         const recent = stkRecent();
         if (S.tab === 'set' && !setsOn()) S.tab = 'rec';
-        $('.stk-tabs').innerHTML = [['rec', '추천'], ['theme', '테마'], ...(setsOn() ? [['set', '세트']] : []), ['recent', `최근${recent.length ? `<small>${recent.length}</small>` : ''}`], ['mine', '내 것']].map(([k, l]) => `<button type="button" role="tab" class="stk-tab${S.tab === k ? ' on' : ''}" data-t="${k}" aria-selected="${S.tab === k}">${l}</button>`).join('');
+        $('.stk-tabs').innerHTML = [['rec', '추천'], ['theme', '테마'], ...(setsOn() ? [['set', '세트']] : []), ['recent', `최근${recent.length ? `<small>${recent.length}</small>` : ''}`], ['mine', 'MY']].map(([k, l]) => `<button type="button" role="tab" class="stk-tab${S.tab === k ? ' on' : ''}" data-t="${k}" aria-selected="${S.tab === k}">${l}</button>`).join('');
         const order = rec.map(packOf).concat(stkThemeList().filter(t => !rec.includes(t.id)));
         $('.stk-themes').hidden = !(S.tab === 'theme' && !searching);
         $('.stk-themes').innerHTML = order.map(t => { const a = stkArtKeys(t.id)[0], v = stkVinKeys(t)[0]; return `<button type="button" class="stk-chip${t.id === S.pack ? ' on' : ''}" data-p="${t.id}">${a ? `<img src="${stkUrl(a)}" alt="">` : v ? `<img src="${stkUrl(v)}" alt="">` : ''}${esc(t.name)}${rec[0] === t.id ? ' <span class="stk-rec">추천</span>' : ''}</button>`; }).join('');
