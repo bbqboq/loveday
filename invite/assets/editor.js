@@ -9768,7 +9768,7 @@ async function thmDel(id) {
 async function thmOpen() {
     document.documentElement.classList.add('thm-on'); DPK.off = true; // (뒤 디자인 고르기 화면은 그리지 않음)
     const el = document.createElement('div'); el.className = 'thm'; el.id = 'thm';
-    el.innerHTML = `<div class="thm-h"><b>디자인 썸네일 만들기</b><p>디자인마다 첫 화면·긴 화면 그림을 찍어 두면 고객 디자인 고르기 화면이 빨라져요. [찍기]를 누르면 크롬·엣지가 <b>'이 탭 공유'</b>를 물어요 → <b>[공유]</b>를 눌러 주세요. 다 찍을 때까지 이 창을 그대로 두세요 (다른 탭으로 가면 멈춰요).</p></div>
+    el.innerHTML = `<div class="thm-h"><b>디자인 썸네일 만들기</b><p>${THM_DOM ? '디자인마다 첫 화면·긴 화면 그림을 만들어 두면 고객 디자인 고르기 화면이 빨라져요. 휴대폰에서는 청첩장을 그림으로 바꿔서 찍어요 (디자인 하나에 몇 초). 다 찍을 때까지 화면을 끄거나 다른 앱으로 가지 마세요.' : `디자인마다 첫 화면·긴 화면 그림을 찍어 두면 고객 디자인 고르기 화면이 빨라져요. [찍기]를 누르면 크롬·엣지가 <b>'이 탭 공유'</b>를 물어요 → <b>[공유]</b>를 눌러 주세요. 다 찍을 때까지 이 창을 그대로 두세요 (다른 탭으로 가면 멈춰요).`}</p></div>
         <p class="thm-msg" id="thmMsg">디자인 목록을 불러오는 중…</p><div class="thm-l" id="thmL"></div>
         <div class="thm-f"><button type="button" class="main" id="thmGoNew" disabled>바뀐 것만 찍기</button><button type="button" id="thmGoAll" disabled>모두 다시 찍기</button><a href="admin_designs.php#thumbs">추천 디자인 관리로</a></div>`;
     document.body.appendChild(el);
@@ -9779,7 +9779,7 @@ async function thmOpen() {
     try { const j = await fetch('dpk_thumbs.php?csrf=1', { cache: 'no-store' }).then(r => r.json()); if (!j.ok || !j.csrf) throw 0; THM.csrf = j.csrf; }
     catch (e) { thmMsg('관리자로 로그인한 뒤 다시 열어 주세요. (관리자 → 추천 디자인 → [썸네일 만들기])', true); return; }
     try { const j = await fetch('dpk_thumbs.php', { cache: 'no-store' }).then(r => r.json()); THM.items = (j && j.items) || {}; } catch (e) {}
-    const okEnv = navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && window.innerWidth >= 820;
+    const okEnv = THM_DOM || (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && window.innerWidth >= 820);
     thmMsg(okEnv ? (THM_ONLY && thmIds().includes(THM_ONLY) ? `짚어 둔 디자인 줄의 [${THM.items[THM_ONLY] ? '다시 찍기' : '찍기'}]를 누르면 그 디자인만 찍어요.` : '') : (window.innerWidth < 820 ? '창을 더 넓게(820px 이상) 해 주세요.' : '이 브라우저는 화면을 찍을 수 없어요. PC 크롬이나 엣지에서 열어 주세요.'), !okEnv);
     thmDraw();
 }
@@ -9833,8 +9833,126 @@ async function thmShoot(id, v, cal) {
     cap.innerHTML = ''; delete DPK.shots[id];
     return { c: await thmBlob(cov, .78), l: await thmBlob(full, .7), h: Math.round(H) };
 }
+// 찍은 그림 올리기 (두 방식 같이)
+async function thmPut(id, r) {
+    const fd = new FormData(); fd.append('csrf_token', THM.csrf); fd.append('act', 'put'); fd.append('id', id); fd.append('sig', dpkSig(id)); fd.append('h', String(r.h));
+    const ext = r.c.type === 'image/webp' ? 'webp' : 'jpg'; fd.append('c', r.c, `${id}-c.${ext}`); fd.append('l', r.l, `${id}-l.${ext}`);
+    const j = await fetch('dpk_thumbs.php', { method: 'POST', body: fd }).then(x => x.json());
+    if (!j.ok) throw new Error(j.error || '올리지 못했어요');
+    THM.items[id] = j.item;
+}
+// ---- 휴대폰 방식: 화면 녹화(getDisplayMedia)가 안 되는 기기(휴대폰·태블릿 브라우저)는 청첩장을 그림으로 바꿔서 찍음 ----
+//  assets/modern-screenshot.js (SVG foreignObject - 브라우저가 직접 그려서 마스크·color-mix도 그대로) · 다른 사이트 글꼴은 직접 받아 넣음(thmFontCss)
+//  PC에서도 주소 끝에 &how=dom 이면 이 방식 (확인용)
+const THM_DOM = (() => { try { return urlParams.get('how') === 'dom' || !(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) || matchMedia('(pointer: coarse)').matches; } catch (e) { return true; } })();
+let THM_LIB = null;
+function thmLib() {
+    return THM_LIB || (THM_LIB = new Promise((ok, bad) => {
+        if (window.modernScreenshot) return ok(window.modernScreenshot);
+        const sc = document.createElement('script'); sc.src = 'assets/modern-screenshot.js?v=4.6.8';
+        sc.onload = () => window.modernScreenshot ? ok(window.modernScreenshot) : bad(new Error('그림 도구를 불러오지 못했어요'));
+        sc.onerror = () => { THM_LIB = null; bad(new Error('그림 도구를 불러오지 못했어요')); };
+        document.head.appendChild(sc);
+    }));
+}
+// 다른 사이트(구글 글꼴 등) 글꼴은 그림 도구가 못 읽어서, 이 디자인에 쓰인 글꼴 · 들어 있는 글자 칸(unicode-range)만 받아 data: 로 넣음 (한 번 받은 건 기억)
+const THM_FONT = { css: {}, data: {} };
+function thmB64(buf) { let s = ''; const b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+function thmInRange(range, cps) {
+    if (!range) return true;
+    return range.split(',').some(part => {
+        const m = part.trim().replace(/^U\+/i, ''); let a, b;
+        if (m.includes('?')) { a = parseInt(m.replace(/\?/g, '0'), 16); b = parseInt(m.replace(/\?/g, 'F'), 16); }
+        else { const [x, y] = m.split('-'); a = parseInt(x, 16); b = y ? parseInt(y, 16) : a; }
+        for (const c of cps) if (c >= a && c <= b) return true; return false;
+    });
+}
+async function thmFontCss(el) {
+    const fams = new Set(), cps = new Set();
+    [el, ...el.querySelectorAll('*')].forEach(n => {
+        [getComputedStyle(n), getComputedStyle(n, '::before'), getComputedStyle(n, '::after')].forEach(cs => (cs.fontFamily || '').split(',').forEach(f => { f = f.trim().replace(/^["']|["']$/g, ''); if (f) fams.add(f.toLowerCase()); }));
+    });
+    for (const ch of (el.textContent || '') + '0123456789:.·-&♥ ') cps.add(ch.codePointAt(0));
+    const blocks = [];
+    for (const sh of document.styleSheets) {
+        let rules = null; try { rules = sh.cssRules; } catch (e) {}
+        if (rules) { for (const r of rules) if (r.type === 5) blocks.push([r.cssText, sh.href || location.href]); continue; } // (같은 사이트 글꼴)
+        if (!sh.href) continue;
+        if (!THM_FONT.css[sh.href]) THM_FONT.css[sh.href] = fetch(sh.href).then(x => x.ok ? x.text() : '').catch(() => '');
+        const css = await THM_FONT.css[sh.href];
+        (css.match(/@font-face\s*{[^}]*}/g) || []).forEach(t => blocks.push([t, sh.href]));
+    }
+    const out = [];
+    for (const [txt, base] of blocks) {
+        const fam = ((txt.match(/font-family:\s*([^;]+)/i) || [])[1] || '').trim().replace(/^["']|["']$/g, '').toLowerCase();
+        if (!fams.has(fam) || !thmInRange((txt.match(/unicode-range:\s*([^;}]+)/i) || [])[1], cps)) continue;
+        const um = txt.match(/url\(\s*["']?([^"')]+)["']?\s*\)/); if (!um || /^data:/.test(um[1])) { out.push(txt); continue; }
+        const url = new URL(um[1], base).href;
+        try {
+            if (!THM_FONT.data[url]) THM_FONT.data[url] = fetch(url).then(x => { if (!x.ok) throw 0; return x.arrayBuffer(); }).then(b => `data:font/${/\.woff2(\?|$)/.test(url) ? 'woff2' : /\.woff(\?|$)/.test(url) ? 'woff' : 'ttf'};base64,${thmB64(b)}`);
+            const d = await THM_FONT.data[url];
+            out.push(txt.replace(/src:[^;}]+/, `src: url(${d})`));
+        } catch (e) {}
+    }
+    return out.join('\n');
+}
+// 꾸밈 층(::before/::after)에 깐 그림(금테 액자 장식 등)은 그림 도구가 빠뜨려서, 찍기 전에 data: 그림으로 바꿔 그 칸에만 덧씌움
+const THM_IMG = {};
+async function thmPseudoInline(el) {
+    const rules = []; let n = 0;
+    const toData = url => THM_IMG[url] || (THM_IMG[url] = fetch(url).then(r => { if (!r.ok) throw 0; return r.blob(); }).then(b => new Promise(ok => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = () => ok(url); fr.readAsDataURL(b); })).catch(() => url));
+    for (const node of [el, ...el.querySelectorAll('*')]) for (const ps of ['::before', '::after']) {
+        const cs = getComputedStyle(node, ps); if (!cs || cs.content === 'none' || cs.display === 'none') continue;
+        for (const prop of ['background-image', 'mask-image', '-webkit-mask-image']) {
+            const v = cs.getPropertyValue(prop); if (!v || !/url\(["']?(?!data:)/.test(v)) continue;
+            const urls = [...v.matchAll(/url\(["']?([^"')]+)["']?\)/g)].map(m => m[1]).filter(u => !/^data:/.test(u));
+            let out = v; for (const u of urls) out = out.split(u).join(await toData(u));
+            if (!node.dataset.thmPs) node.dataset.thmPs = String(++n);
+            rules.push(`[data-thm-ps="${node.dataset.thmPs}"]${ps} { ${prop}: ${out} !important; }`);
+        }
+    }
+    if (rules.length) { const st = document.createElement('style'); st.textContent = rules.join('\n'); el.prepend(st); }
+}
+async function thmShootDom(id) {
+    const ms = await thmLib();
+    delete DPK.shots[id];
+    const s = await dpkShot(id, 's'); if (!s) throw new Error('그리지 못했어요');
+    const cap = thmCapEl(); cap.classList.add('dom'); cap.innerHTML = '';
+    const el = dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) }); el.style.animation = 'none'; cap.appendChild(el);
+    el.querySelectorAll('img[loading]').forEach(im => { im.loading = 'eager'; });
+    await thmImgs(el); await thmWait(700);
+    cap.querySelectorAll('*').forEach(n => { n.style.animationPlayState = 'paused'; });
+    await thmPseudoInline(el);
+    const H = Math.min(THM_MAX_H, Math.max(THM_COVER_H, el.offsetHeight));
+    const bg = getComputedStyle(el).backgroundColor;
+    const full = await ms.domToCanvas(el, { width: 390, height: H, scale: THM_OUT, backgroundColor: !bg || /rgba\(0, 0, 0, 0\)|transparent/.test(bg) ? '#fff' : bg, font: { cssText: await thmFontCss(el) }, timeout: 20000 });
+    const OW = full.width, cov = document.createElement('canvas'); cov.width = OW; cov.height = Math.round(THM_COVER_H * THM_OUT);
+    cov.getContext('2d').drawImage(full, 0, 0, OW, cov.height, 0, 0, OW, cov.height);
+    cap.innerHTML = ''; delete DPK.shots[id];
+    return { c: await thmBlob(cov, .78), l: await thmBlob(full, .7), h: Math.round(H) };
+}
+async function thmRunDom(ids) {
+    THM.run = true; THM.stop = false; thmDraw();
+    let done = 0, fail = 0;
+    try {
+        await thmLib();
+        for (const id of ids) {
+            if (THM.stop) break;
+            THM.st[id] = 'run'; thmDraw(id); thmMsg(`찍는 중… ${done + fail + 1} / ${ids.length} (화면을 끄지 말고 그대로 두세요)`);
+            try { const r = await thmShootDom(id); THM.st[id] = 'up'; thmDraw(id); await thmPut(id, r); THM.st[id] = 'done'; done++; }
+            catch (e) { console.warn('[thm]', id, e); THM.st[id] = 'bad'; fail++; }
+            thmDraw(id);
+        }
+    } catch (e) { thmMsg(e.message || '찍지 못했어요', true); }
+    finally {
+        const cap = thm$('thmCap'); if (cap) cap.remove();
+        THM.run = false; thmDraw();
+        if (done || fail) thmMsg(`${done}개 저장했어요${fail ? ` · ${fail}개는 못 찍었어요 (다시 눌러 보세요)` : ''}${THM.stop ? ' · 멈췄어요' : ''}. 고객 디자인 고르기 화면에 바로 반영돼요.`, !!fail);
+    }
+}
 async function thmRun(ids) {
     if (THM.run || !ids.length) return;
+    if (THM_DOM) return thmRunDom(ids);
     let stream = null;
     try { stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser', width: { ideal: 4096 }, height: { ideal: 4096 }, frameRate: 30 }, audio: false, preferCurrentTab: true, selfBrowserSurface: 'include', surfaceSwitching: 'exclude' }); }
     catch (e) { thmMsg('화면 찍기를 허락하지 않았어요. 다시 누르고 \'이 탭 공유\'에서 [공유]를 눌러 주세요.', true); return; }
@@ -9850,11 +9968,7 @@ async function thmRun(ids) {
             try {
                 const r = await thmShoot(id, v, cal);
                 THM.st[id] = 'up'; thmDraw(id);
-                const fd = new FormData(); fd.append('csrf_token', THM.csrf); fd.append('act', 'put'); fd.append('id', id); fd.append('sig', dpkSig(id)); fd.append('h', String(r.h));
-                const ext = r.c.type === 'image/webp' ? 'webp' : 'jpg'; fd.append('c', r.c, `${id}-c.${ext}`); fd.append('l', r.l, `${id}-l.${ext}`);
-                const j = await fetch('dpk_thumbs.php', { method: 'POST', body: fd }).then(x => x.json());
-                if (!j.ok) throw new Error(j.error || '올리지 못했어요');
-                THM.items[id] = j.item; THM.st[id] = 'done'; done++;
+                await thmPut(id, r); THM.st[id] = 'done'; done++;
             } catch (e) { console.warn('[thm]', id, e); THM.st[id] = 'bad'; fail++; }
             thmDraw(id);
         }

@@ -289,7 +289,33 @@ $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
         <?php else: ?>
             <div class="panel" style="text-align:center; color:var(--muted);">휴지통이 비어있습니다.</div>
         <?php endif; ?>
+        <?php // ---- 지운 디자인 (관리자 → 디자인 [휴지통으로]) - 30일 뒤 저절로 완전 삭제, 되살리기·지금 지우기는 admin_designs.php로 보냄
+        require_once __DIR__ . '/featured_presets.php';
+        try { design_trash_purge(); } catch (Throwable $e) {}
+        $dTrash = design_trash_get(); $dCan = !function_exists('admin_can') || admin_can('site_settings'); ?>
+        <h2 class="page-title" id="designs" style="margin-top:34px">지운 디자인 <span class="cnt" style="font-size:13px;color:#8A847B;font-weight:400"><?= count($dTrash) ?>개 · 넣은 날부터 <?= (int) DESIGN_TRASH_DAYS ?>일 뒤 저절로 완전 삭제</span></h2>
+        <?php if (!$dTrash): ?>
+            <div class="panel" style="text-align:center; color:var(--muted);">지운 디자인이 없어요. 디자인은 <a href="admin_designs.php">디자인</a> 화면 카드의 [휴지통으로]로 지워요.</div>
+        <?php else: ?>
+            <div class="panel dtr-l">
+            <?php foreach ($dTrash as $did => $dt): $left = max(0, (int) ceil(((int) ($dt['at'] ?? 0) + DESIGN_TRASH_DAYS * 86400 - time()) / 86400)); ?>
+                <div class="dtr"><b><?= $h($dt['label'] ?? $did) ?></b><small><?= ($dt['kind'] ?? '') === 'preset' ? '기본 디자인' : '새로 만든 디자인' ?> · <?= $h(date('m-d H:i', (int) ($dt['at'] ?? 0))) ?> 지움 · <?= $left ?>일 뒤 완전 삭제<?= !empty($dt['fail']) ? ' · <em>폴더를 못 지웠어요 (서버 invite/presets 폴더 권한)</em>' : '' ?></small>
+                <?php if ($dCan): ?><span><button type="button" class="btn" data-dtr="restore" data-id="<?= $h($did) ?>">되살리기</button><button type="button" class="btn dtr-del" data-dtr="purge" data-id="<?= $h($did) ?>" data-label="<?= $h($dt['label'] ?? $did) ?>">지금 완전히 지우기</button></span><?php endif; ?></div>
+            <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
+<style>.dtr-l { display: grid; gap: 8px; } .dtr { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; } .dtr b { font-size: 14px; } .dtr small { flex: 1 1 220px; font-size: 12.5px; color: #8A847B; } .dtr small em { color: #B24A4A; font-style: normal; } .dtr span { display: flex; gap: 6px; } .dtr .dtr-del { color: #B24A4A; background: #fff; border: 1px solid #EBD3CF; }</style>
+<script>
+document.querySelectorAll('[data-dtr]').forEach(b => b.addEventListener('click', async () => {
+    const act = b.dataset.dtr;
+    if (act === 'purge' && !(window.LD ? await LD.confirm(`'${b.dataset.label}' 디자인을 지금 완전히 지울까요?`, { message: '되살릴 수 없어요. 이미 이 디자인으로 만든 청첩장의 내용은 그대로예요.', ok: '완전히 지우기', cancel: '그대로 두기' }) : confirm('지금 완전히 지울까요?'))) return;
+    const fd = new FormData(); fd.append('csrf_token', <?= json_encode($csrf) ?>); fd.append('act', act); fd.append('id', b.dataset.id);
+    b.disabled = true;
+    try { const d = await fetch('admin_designs.php', { method: 'POST', body: fd }).then(r => r.json()); if (!d.ok) throw new Error(d.error || '실패했어요'); location.hash = 'designs'; location.reload(); }
+    catch (e) { b.disabled = false; window.LD ? LD.alert(e.message) : alert(e.message); }
+}));
+</script>
 
 <script src="assets/ld-dialog.js"></script>
 <?php if ($trash): ?>

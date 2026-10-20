@@ -34,6 +34,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['ok' => true, 'look' => $look ?: new stdClass()], JSON_UNESCAPED_UNICODE);
         exit;
     }
+    $act = (string) ($_POST['act'] ?? '');
+    if (in_array($act, ['trash', 'restore', 'purge'], true)) { // 디자인 휴지통: 보내기 · 되살리기 · 지금 완전 삭제 (featured_presets.php design_trash_*)
+        $id = (string) ($_POST['id'] ?? '');
+        try {
+            if ($act === 'trash') design_trash_put($id, (string) ($_POST['label'] ?? ''));
+            elseif ($act === 'restore') design_trash_restore($id);
+            else { if (!isset(design_trash_get()[$id])) throw new RuntimeException('휴지통에 없는 디자인이에요.'); design_trash_purge($id); if (isset(design_trash_get()[$id])) throw new RuntimeException('디자인 폴더를 지우지 못했어요 (서버 invite/presets 폴더 쓰기 권한을 확인해 주세요). 고객에게는 계속 안 보여요.'); }
+        } catch (Throwable $e) { echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit; }
+        echo json_encode(['ok' => true, 'trash' => design_trash_get() ?: new stdClass(), 'ids' => featured_presets_get()], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     if (($_POST['act'] ?? '') === 'off') { // 디자인 켜고 끄기 (바로 저장)
         $off = json_decode((string) ($_POST['off'] ?? ''), true);
         if (!is_array($off)) { echo json_encode(['ok' => false, 'error' => '저장할 내용이 올바르지 않아요.'], JSON_UNESCAPED_UNICODE); exit; }
@@ -49,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode(['ok' => true, 'ids' => $saved], JSON_UNESCAPED_UNICODE);
     exit;
 }
+try { design_trash_purge(); } catch (Throwable $e) {}
 $csrf = csrf_token();
 $cur = featured_presets_get();
 $h = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
@@ -141,6 +153,10 @@ body { background: var(--ui-page, #F6F4F1); }
 .fd-tha a, .fd-tha button { flex: 1; height: 26px; padding: 0 4px; border: 1px solid var(--ui-line, #E5DED3); border-radius: 7px; background: #fff; font: inherit; font-size: 11.5px; font-weight: 600; color: #4A453F; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; white-space: nowrap; }
 .fd-tha button { color: #B24A4A; } .fd-tha a:hover, .fd-tha button:hover { background: #F6F3EE; } .fd-tha button:disabled { opacity: .45; }
 .fd-thc b { font-size: 12px; color: #2B2320; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .fd-thc small.no { color: #B0763A; }
+.fd-trl { display: grid; gap: 8px; } .fd-trl .empty { font-size: 13px; color: #A29C94; margin: 0; }
+.fd-tr { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--ui-line, #ECE8E2); border-radius: 12px; }
+.fd-tr b { font-size: 13.5px; } .fd-tr small { flex: 1 1 200px; font-size: 12px; color: #8A847B; } .fd-tr small em { color: #B24A4A; font-style: normal; }
+.fd-tr span { display: flex; gap: 6px; } .fd-tr button { height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 12.5px; font-weight: 700; color: #4A453F; cursor: pointer; } .fd-tr button.del { color: #B24A4A; font-weight: 600; }
 .fd-th-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .fd-th-acts a, .fd-th-acts button { height: 38px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--ui-line, #E5DED3); background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: #4A453F; text-decoration: none; display: inline-flex; align-items: center; cursor: pointer; }
 .fd-th-acts a.main { background: #2B2320; border-color: #2B2320; color: #fff; } .fd-th-acts button { color: #B24A4A; font-weight: 600; }
@@ -174,9 +190,14 @@ body { background: var(--ui-page, #F6F4F1); }
         <div class="fd-card" id="thumbs">
             <div class="fd-h"><b>디자인 썸네일 · 디자인 고르기 그림</b><small id="thN">불러오는 중…</small></div>
             <p class="fd-pp-n" style="margin:0 0 12px">고객이 간편 만들기에서 디자인을 고를 때, 디자인마다 청첩장을 진짜로 그리면 PC가 느려져요. 디자인을 다 꾸민 뒤 <b>[썸네일 만들기]</b>를 한 번 누르면 디자인마다 그림 두 장(첫 화면 · 긴 화면)을 찍어 두고, 고객 화면은 그 그림만 보여 줘서 빨라요.
-                새 창이 열리면 <b>[바뀐 것만 찍기]</b>(처음엔 전부) → 크롬·엣지가 묻는 <b>'이 탭 공유'</b>에서 [공유]를 눌러 주세요 (화면을 그대로 찍어요 · PC 크롬·엣지만 돼요). 디자인·샘플·메인 사진 예시를 바꾸면 그 디자인 그림은 '예전 그림'이 되어 고객 화면에선 예전처럼 진짜로 그려요 - 다시 만들어 주세요.</p>
+                새 창이 열리면 <b>[바뀐 것만 찍기]</b>(처음엔 전부)를 눌러 주세요. PC 크롬·엣지는 묻는 <b>'이 탭 공유'</b>에서 [공유]를 누르면 화면을 그대로 찍고, <b>휴대폰</b>에서는 청첩장을 그림으로 바꿔서 찍어요 (디자인 하나에 몇 초 · 다 찍을 때까지 화면을 켜 두세요). 디자인·샘플·메인 사진 예시를 바꾸면 그 디자인 그림은 '예전 그림'이 되어 고객 화면에선 예전처럼 진짜로 그려요 - 다시 만들어 주세요.</p>
             <div class="fd-th-acts"><a class="main" href="editor-prototype-v3-overlay.html?thumbs=make" target="_blank" rel="noopener">썸네일 만들기 (새 창)</a><button type="button" id="thClear" hidden>썸네일 모두 지우기</button></div>
             <div class="fd-th" id="thGrid"></div>
+        </div>
+        <div class="fd-card" id="trash">
+            <div class="fd-h"><b>휴지통 · 지운 디자인</b><small id="fdTrashN"></small></div>
+            <p class="fd-pp-n" style="margin:0 0 12px">디자인 카드의 [휴지통으로]를 누른 디자인이에요. 고객 디자인 고르기 화면엔 안 보이고, <b><?= (int) DESIGN_TRASH_DAYS ?>일 뒤 저절로 완전히 지워져요</b> (관리자가 꾸민 샘플·썸네일 그림도 같이). 이미 그 디자인으로 만든 청첩장의 내용은 그대로예요.</p>
+            <div class="fd-trl" id="fdTrash"></div>
         </div>
         <div class="fd-card">
             <div class="fd-h"><b>종이 질감 그림</b><small>청첩장 바탕 '종이 질감'에 깔리는 무늬 · 올리면 바로 저장돼요</small></div>
@@ -208,6 +229,8 @@ function drawPapers() {
 }
 const DEFAULT = <?= json_encode(FEATURED_DEFAULT) ?>, MAX = <?= (int) FEATURED_MAX ?>;
 let OFF = <?= json_encode(preset_off_get()) ?>;
+let TRASH = <?= json_encode(design_trash_get() ?: new stdClass(), JSON_UNESCAPED_UNICODE) ?>; // 휴지통에 있는 디자인 (목록·추천에서 뺌)
+const TRASH_DAYS = <?= (int) DESIGN_TRASH_DAYS ?>;
 let LOOK = <?= json_encode(preset_look_get() ?: new stdClass()) ?>;
 const IB = window.InviteBlocks || {};
 const lookDeco = p => { const L = IB.THEME_LOOKS || {}; return (p.sectionLook || L[p.__base] || L[p.id] || ''); };
@@ -220,7 +243,23 @@ drawPapers();
 // 전체 디자인 = 폴더 프리셋 + 새로 만든 샘플 (바탕 디자인의 색을 빌려 보여줌)
 function designs() {
     const extra = Object.values(samples).filter(x => x.custom).map(x => { const b = presets.find(p => p.id === x.base) || {}; return Object.assign({}, b, { id: x.id, label: x.label, desc: x.desc, no: '', __custom: true, __base: x.base }); });
-    return presets.concat(extra);
+    return presets.concat(extra).filter(p => !TRASH[p.id]); // 휴지통에 있는 건 아래 '휴지통' 칸에만
+}
+function trashPost(act, id, label) {
+    const fd = new FormData(); fd.append('csrf_token', CSRF); fd.append('act', act); fd.append('id', id); if (label) fd.append('label', label);
+    return fetch('admin_designs.php', { method: 'POST', body: fd }).then(r => r.json()).then(d => { if (!d.ok) throw new Error(d.error || '실패했어요'); TRASH = d.trash || {}; const dirty = JSON.stringify(sel) !== saved; saved = JSON.stringify(d.ids); if (!dirty) sel = d.ids.slice(); else sel = sel.filter(x => !TRASH[x]); return d; });
+}
+function drawTrash() {
+    const box = $('fdTrash'), ids = Object.keys(TRASH); if (!box) return;
+    $('fdTrashN').textContent = ids.length ? `${ids.length}개 · 넣은 날부터 ${TRASH_DAYS}일 뒤 저절로 완전 삭제` : '비어 있어요';
+    const left = t => Math.max(0, Math.ceil(((t.at || 0) + TRASH_DAYS * 86400 - Date.now() / 1000) / 86400));
+    box.innerHTML = ids.length ? ids.map(id => { const t = TRASH[id]; return `<div class="fd-tr"><b>${esc(t.label || id)}</b><small>${t.kind === 'preset' ? '기본 디자인' : '새로 만든 디자인'} · ${left(t)}일 뒤 완전 삭제${t.fail ? ' · <em>폴더를 못 지웠어요 (서버 폴더 권한)</em>' : ''}</small>
+        <span><button type="button" data-tr-back="${esc(id)}">되살리기</button><button type="button" class="del" data-tr-purge="${esc(id)}">지금 완전히 지우기</button></span></div>`; }).join('') : '<p class="empty">휴지통에 넣은 디자인이 없어요.</p>';
+    box.querySelectorAll('[data-tr-back]').forEach(b => b.onclick = () => trashPost('restore', b.dataset.trBack).then(() => Promise.all([loadSamples(), loadThumbs()])).then(() => { draw(); toast('되살렸어요. 고객 화면에 다시 보여요'); }).catch(e => toast(e.message)));
+    box.querySelectorAll('[data-tr-purge]').forEach(b => b.onclick = () => {
+        if (!confirm(`'${(TRASH[b.dataset.trPurge] || {}).label || b.dataset.trPurge}' 디자인을 지금 완전히 지울까요? 되살릴 수 없어요.\n(이미 이 디자인으로 만든 청첩장의 내용은 그대로예요)`)) return;
+        b.disabled = true; trashPost('purge', b.dataset.trPurge).then(() => Promise.all([loadSamples(), loadThumbs()])).then(() => { draw(); toast('완전히 지웠어요'); }).catch(e => { b.disabled = false; toast(e.message); draw(); });
+    });
 }
 const byId = id => designs().find(p => p.id === id);
 const canFeature = p => !p.__custom || (samples[p.id] && samples[p.id].saved);
@@ -247,7 +286,7 @@ function draw() {
             ${tag}<span class="ck">${i >= 0 ? i + 1 : '★'}</span>
             <span class="tx"><b>${p.no ? String(p.no).padStart(2, '0') + ' ' : ''}${esc(p.label)}</b><small>${esc(p.desc || '')}${p.__custom ? ` · 바탕: ${esc((presets.find(x => x.id === p.__base) || {}).label || p.__base)}` : ''}</small></span></button>
             <div class="acts"><a class="main" href="editor-prototype-v3-overlay.html?sample=${encodeURIComponent(p.id)}" target="_blank" rel="noopener">에디터로 꾸미기</a>
-            ${p.__custom ? `<button type="button" data-rename="${esc(p.id)}">이름</button><button type="button" class="del" data-reset="${esc(p.id)}">삭제</button>` : (sm && sm.saved ? `<button type="button" class="del" data-reset="${esc(p.id)}">원래대로</button>` : '')}
+            ${p.__custom ? `<button type="button" data-rename="${esc(p.id)}">이름</button>` : (sm && sm.saved ? `<button type="button" class="del" data-reset="${esc(p.id)}">원래대로</button>` : '')}<button type="button" class="del" data-trash="${esc(p.id)}" title="휴지통에 ${TRASH_DAYS}일 보관한 뒤 저절로 완전 삭제">휴지통으로</button>
             ${hasOld(p) ? `<span class="lk" role="group" aria-label="꾸밈 스타일 기본" title="고객이 이 디자인을 고를 때 처음 꾸밈 모습 (고객이 바꿀 수 있어요)"><button type="button" data-lk="${esc(p.id)}" data-v="modern" class="${LOOK[p.id] === 'old' ? '' : 'on'}">모던</button><button type="button" data-lk="${esc(p.id)}" data-v="old" class="${LOOK[p.id] === 'old' ? 'on' : ''}">예전</button></span>` : ''}
             <label class="vis" title="끄면 고객의 디자인 고르기 화면에서 빠져요"><input type="checkbox" data-vis="${esc(p.id)}" ${off ? '' : 'checked'}><i></i>고객에게 보이기</label></div></div>`; }).join('');
     $('fdGrid').querySelectorAll('[data-lk]').forEach(b => b.onclick = () => {
@@ -285,12 +324,19 @@ function draw() {
         if (!confirm(custom ? '이 새 디자인을 지울까요? (이미 이 디자인으로 만든 청첩장은 그대로예요)' : '꾸민 샘플을 지우고 원래 디자인으로 되돌릴까요?')) return;
         post('reset', { id }).then(() => { if (custom) { sel = sel.filter(x => x !== id); } return loadSamples(); }).then(() => { draw(); toast(custom ? '지웠어요' : '원래대로 되돌렸어요'); }).catch(e => toast(e.message));
     });
+    $('fdGrid').querySelectorAll('[data-trash]').forEach(b => b.onclick = () => {
+        const id = b.dataset.trash, p = byId(id) || {};
+        if (designs().every(x => x.id === id || OFF.includes(x.id))) { toast('고객에게 보이는 디자인이 하나는 있어야 해요'); return; }
+        if (!confirm(`'${p.label || id}' 디자인을 휴지통으로 옮길까요?\n고객 디자인 고르기 화면에서 바로 빠지고, ${TRASH_DAYS}일 뒤 저절로 완전히 지워져요. 그 전엔 아래 '휴지통'에서 되살릴 수 있어요.\n(이미 이 디자인으로 만든 청첩장은 그대로예요)`)) return;
+        trashPost('trash', id, p.label || '').then(() => { draw(); toast('휴지통으로 옮겼어요'); }).catch(e => toast(e.message));
+    });
     $('fdGrid').querySelectorAll('[data-rename]').forEach(b => b.onclick = () => {
         const id = b.dataset.rename, cur = samples[id];
         const label = prompt('디자인 이름', cur.label); if (label === null) return;
         const desc = prompt('한 줄 설명', cur.desc || ''); if (desc === null) return;
         post('meta', { id, label, desc }).then(loadSamples).then(() => { draw(); toast('바꿨어요'); }).catch(e => toast(e.message));
     });
+    drawTrash();
     const dirty = JSON.stringify(sel) !== saved;
     $('fdSave').disabled = !dirty;
     $('fdState').textContent = dirty ? '추천 순서가 바뀌었어요 - 저장을 눌러주세요' : '';
@@ -318,7 +364,7 @@ let THUMBS = null;
 function loadThumbs() { return fetch('dpk_thumbs.php', { cache: 'no-store' }).then(r => r.json()).then(d => { THUMBS = d.items || {}; drawThumbs(); }).catch(() => { $('thN').textContent = '썸네일 목록을 불러오지 못했어요'; }); }
 function drawThumbs() {
     if (!THUMBS) return;
-    const ids = presets.length ? presets.map(p => p.id).concat(Object.keys(samples).filter(id => !presets.some(p => p.id === id))) : Object.keys(THUMBS);
+    const ids = (presets.length ? presets.map(p => p.id).concat(Object.keys(samples).filter(id => !presets.some(p => p.id === id))) : Object.keys(THUMBS)).filter(id => !TRASH[id]);
     const have = ids.filter(id => THUMBS[id]).length, name = id => { const p = presets.find(x => x.id === id), sm = samples[id]; return (sm && sm.label) || (p && p.label) || id; };
     const day = t => { const d = new Date(t * 1000); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
     $('thN').textContent = have ? `${ids.length}개 중 ${have}개 그림 있음` : '아직 만든 그림이 없어요 (고객 화면은 진짜로 그려서 보여 줘요)';

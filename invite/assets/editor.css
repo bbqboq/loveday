@@ -1374,6 +1374,8 @@ html.sp-bgm-q .ib-bgm-btn.ed-bgm { display: none !important; }
 .thm-f button.main { background: #2B2320; border-color: #2B2320; color: #fff; } .thm-f button:disabled { opacity: .45; cursor: default; }
 .thm-cap { position: fixed; left: 0; top: 0; width: 390px; overflow: hidden; z-index: 2147483000; background: #fff; }
 .thm-cap .dpk-iv.invite-preview { position: absolute; left: 0; top: 0; transform: none; }
+.thm-cap.dom { left: -10000px; height: auto !important; overflow: visible; } /* 휴대폰 방식: 화면 밖에서 그림으로 바꿈 (보이지 않아도 됨) */
+@media (max-width: 819px) { .thm { left: 10px; right: 10px; top: 10px; bottom: 10px; width: auto; border-radius: 16px; } .thm-h { padding: 14px 16px 8px; } .thm-r { flex-wrap: wrap; } .thm-r b { min-width: 40%; } }
 html.thm-on body { overflow: hidden; }
 /* PC: 위쪽 글을 줄이고 휴대폰을 크게 (예전엔 화면 높이 - 330px까지라 작게 보였음) */
 @media (min-width: 861px) {

@@ -50,9 +50,11 @@ function sample_clean_text($v, int $max): string { return mb_substr(trim(strip_t
 $a = (string) ($_GET['a'] ?? '');
 
 // ---------------------------------------------------------------- 공개
+require_once __DIR__ . '/featured_presets.php'; // 디자인 휴지통 (design_trash_ids)
 if ($a === 'list') {
-    $out = [];
+    $out = []; $trash = design_trash_ids();
     foreach (sample_index() as $id => $m) {
+        if (in_array($id, $trash, true)) continue; // 휴지통에 있는 디자인은 고객에게 안 보임
         if (!is_file(sample_dir() . $id . '.json')) continue; // 아직 한 번도 저장 안 한 새 샘플은 고객에게 안 보임
         $out[] = ['id' => $id, 'label' => (string) ($m['label'] ?? ''), 'desc' => (string) ($m['desc'] ?? ''), 'base' => (string) ($m['base'] ?? ''), 'custom' => !empty($m['custom']), 'updated' => (string) ($m['updated'] ?? ''), 'cover' => (string) ($m['cover'] ?? '')];
     }

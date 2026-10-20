@@ -10,6 +10,7 @@
  *    (유예 중에 결제하면 기간이 늘어나 옮겨지지 않음)
  *  - 휴지통: 들어간 지 보관 기간(기본 30일)이 지나면 사진·하객 기록까지 완전 삭제
  *    (고객이 직접 지운 것, 기간이 끝나 옮겨진 것 모두)
+ *  - 관리자가 휴지통으로 보낸 디자인(design_trash.json): 30일 지나면 디자인 폴더·샘플·썸네일까지 완전 삭제
  *  - 결제한 청첩장(1년·영구)과 관리자 샘플은 건드리지 않는다
  *  유예 시간·휴지통 보관 기간은 관리자 → 부가기능에서 바꾼다.
  * 기간이 끝났거나 휴지통에 있는 청첩장은 짧은 주소(loveday.kr/코드)로 열리지 않는다 (invite_view.php).
@@ -25,6 +26,8 @@ $pdo = get_pdo();
 $demo   = demo_cleanup($pdo, 1000);
 $member = member_trial_cleanup($pdo, 1000);
 $trash  = trash_cleanup($pdo, 1000);
+require_once __DIR__ . '/featured_presets.php';
+try { $dtrash = design_trash_purge(); if ($dtrash) echo date('Y-m-d H:i:s') . " 디자인 휴지통 완전 삭제 {$dtrash}개 (" . DESIGN_TRASH_DAYS . "일 지난 것)\n"; } catch (Throwable $e) { echo date('Y-m-d H:i:s') . ' 디자인 휴지통 정리 오류: ' . $e->getMessage() . "\n"; }
 if ($demo || $member || $trash) {
     echo date('Y-m-d H:i:s') . " 정리: 둘러보기 완전 삭제 {$demo}건, 회원 무료체험 휴지통 이동 {$member}건 (유예 " . trial_grace_hours() . "시간), "
        . "휴지통 완전 삭제 {$trash}건 (" . trash_keep_days() . "일 지난 것)\n";

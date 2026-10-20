@@ -231,8 +231,10 @@ unset($pp);
 
 // 관리자 → 추천 디자인에서 끈 디자인: 목록엔 그대로 두고 "off": true (이미 그 디자인으로 만든 청첩장이 색·꾸밈을 계속 쓰게) - 고르는 화면에서만 빠짐
 require_once __DIR__ . '/featured_presets.php';
-$off = preset_off_get();
-foreach ($presets as &$pp) if (in_array($pp['id'], $off, true)) $pp['off'] = true;
+try { design_trash_purge(); } catch (Throwable $e) {} // 휴지통에 30일 넘게 있던 디자인은 완전 삭제 (크론이 없어도)
+$trash = design_trash_ids(); // 휴지통에 있는 디자인: 이미 만든 청첩장을 위해 목록엔 두고 고르는 화면에서만 빠짐 (off + trash)
+$off = array_values(array_unique(array_merge(preset_off_get(), $trash)));
+foreach ($presets as &$pp) { if (in_array($pp['id'], $off, true)) $pp['off'] = true; if (in_array($pp['id'], $trash, true)) $pp['trash'] = true; }
 unset($pp);
 $lookDef = preset_look_get(); // 관리자가 정한 꾸밈 스타일 기본 (예전)
 foreach ($presets as &$pp) if (($lookDef[$pp['id']] ?? '') === 'old') $pp['lookDefault'] = 'old';
