@@ -5111,3 +5111,35 @@ html.look-mode .onb-steps { display: none !important; }
 .spi-photo { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .spi-photo .wz-hint { margin: 0; }
 .spi-txt { height: auto; min-height: 0; }
+/* 인트로 글자 고치기 창 (미리보기 글자를 누르면) */
+.spi-ph .spi-stk { pointer-events: auto; cursor: grab; touch-action: none; }
+.spi-txs { position: fixed; inset: 0; z-index: 9600; }
+.spi-txs-bg { position: absolute; inset: 0; background: rgba(20,18,16,.18); }
+.spi-txs-c { position: absolute; left: 0; right: 0; bottom: 0; max-height: 72vh; overflow-y: auto; background: #fff; border-radius: 18px 18px 0 0; padding: 14px 16px calc(16px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; box-shadow: 0 -8px 24px rgba(0,0,0,.14); }
+@media (min-width: 861px) { .spi-txs-c { left: auto; right: 24px; bottom: 24px; width: 380px; border-radius: 18px; } }
+.spi-txs-h { display: flex; align-items: center; justify-content: space-between; }
+.spi-txs-h b { font-size: 16px; }
+.spi-txs-ok { width: auto !important; padding: 0 18px; height: 40px; }
+.spi-txs-l { font-size: 12.5px; font-weight: 700; color: var(--wz-sub); }
+.spi-txs-r { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.spi-txs-r .spi-cols { margin: 0; }
+.spi-al { display: flex; gap: 4px; padding: 3px; border-radius: 10px; background: var(--ui-soft, #F3EEE8); }
+.spi-al button { height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: none; font: inherit; font-size: 12.5px; color: var(--wz-sub); cursor: pointer; }
+.spi-al button.on { background: #fff; color: var(--wz-ink); font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+/* (창이 #simplePane 밖 body에 붙어서 칸 모양을 다시 씀) */
+.spi-txs-c { font-family: inherit; color: #2B2320; }
+.spi-txs .spi-txs-ok { border: 0; border-radius: 12px; background: #1E1C1A; color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.spi-txs textarea { width: 100%; box-sizing: border-box; border: 1px solid #E1D6C6; border-radius: 12px; padding: 10px 12px; font: inherit; font-size: 15px; line-height: 1.5; resize: vertical; background: #fff; color: inherit; }
+.spi-txs textarea:focus { outline: 2px solid #2B2320; outline-offset: -1px; }
+.spi-txs .spi-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.spi-txs .spi-font { flex: none; height: 38px; padding: 0 13px; border-radius: 19px; border: 1px solid #E1D6C6; background: #fff; font-size: 15px; color: #2B2320; cursor: pointer; white-space: nowrap; }
+.spi-txs .spi-font.on { background: #2B2320; border-color: #2B2320; color: #fff; }
+.spi-txs .sp-range { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #5A534B; }
+.spi-txs .sp-range input { flex: 1; accent-color: #2B2320; }
+.spi-txs .spi-cols { display: flex; gap: 8px; }
+.spi-txs .spi-cols button { width: 30px; height: 30px; border-radius: 50%; padding: 0; border: 1px solid #E1D6C6; background: var(--c, #fff); cursor: pointer; }
+.spi-txs .spi-cols button.def { width: auto; padding: 0 10px; border-radius: 15px; font: inherit; font-size: 12px; color: #5A534B; background: #fff; }
+.spi-txs .spi-cols button.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2B2320; }
+.spi-txs .spi-txs-ok { flex: none; width: auto; height: 38px; padding: 0 20px; }
+.spi-txs textarea { height: auto; min-height: 60px; max-height: 120px; }
+.spi-txs-h { gap: 10px; }

@@ -10787,21 +10787,22 @@ function spMvMode() { // 지금 쓰는 휴대폰 보기 ('split' | 'lens' | '')
     const r = document.documentElement;
     if (window.innerWidth > 860 || !r.classList.contains('simple-mode') || r.classList.contains('sp-pv')) return '';
     if (SP_LENS_VIEWS.includes(EASY_MOBILE_VIEW)) return 'lens';
-    return EASY_MOBILE_VIEW === 'split' && !spMv.off ? 'split' : '';
+    return EASY_MOBILE_VIEW === 'split' && !spMv.off && !SP_INTRO_MV ? 'split' : '';
 }
 function spMvApply() {
     const r = document.documentElement, mob = window.innerWidth <= 860 && r.classList.contains('simple-mode');
     const v = mob ? EASY_MOBILE_VIEW : '';
-    r.classList.toggle('sp-mv-split', v === 'split' && !spMv.off);
+    const sOff = spMv.off || SP_INTRO_MV;
+    r.classList.toggle('sp-mv-split', v === 'split' && !sOff);
     const lens = SP_LENS_VIEWS.includes(v);
     r.classList.toggle('sp-mv-lens', lens);
     r.classList.toggle('sp-lens-k-cd', v === 'lens2'); r.classList.toggle('sp-lens-k-peek', v === 'peek');
-    r.classList.toggle('sp-mv-on', (v === 'split' && !spMv.off) || lens);
+    r.classList.toggle('sp-mv-on', (v === 'split' && !sOff) || lens);
     if (!lens) { const pane = document.querySelector('#screenEditor .preview-pane'); if (pane) ['left', 'top', 'width', 'height'].forEach(k => { pane.style[k] = ''; }); r.classList.remove('sp-lens-tucked', 'sp-lens-auto-hide', 'sp-lens-peeking'); }
-    if (!(v === 'split' && !spMv.off)) r.classList.remove('sp-split-big');
+    if (!(v === 'split' && !sOff)) r.classList.remove('sp-split-big');
     spMvUi();
     const tg = document.getElementById('spSplitTg'); if (tg) { const on = lens ? !spMv.lensOff : !spMv.off; tg.hidden = !(v === 'split' || lens); tg.classList.toggle('on', on); tg.setAttribute('aria-pressed', String(on)); } // (작은 창 방식에서도 머리줄 [청첩장 보기] 스위치로 창을 켜고 끔 - 사용자 요청)
-    if (v === 'split' && !spMv.off) spSplitSet(spMv.h, true);
+    if (v === 'split' && !sOff) spSplitSet(spMv.h, true);
     if (lens) requestAnimationFrame(() => spLensPlace());
 }
 // 화면 부품 (한 번만 만듦): 머리줄 스위치 · 가운데 손잡이 · 돋보기 창 겉모습
@@ -11426,10 +11427,12 @@ function spCutPart(body, st) { // 빠른 시작: 두 사람 칸을 이름 / 날�
 }
 function spRender() {
     const pane = document.getElementById('simplePane'); if (!pane) return;
-    if (spViewNow() === 'quick') return spRenderAsk(pane);
-    if (spOrderMode) return spRenderOrder(pane);
-    return spRenderList();
+    const r = spViewNow() === 'quick' ? spRenderAsk(pane) : spOrderMode ? spRenderOrder(pane) : spRenderList();
+    spIntroMvSync(); return r;
 }
+// 인트로 칸(B·E·F안)이 보이는 동안은 휴대폰 미리보기(반반 화면 위 칸 · 작은 창)를 안 띄움 - 칸 안에 인트로 미리보기가 있어서 (사용자 보고: 버튼 누를 때마다 미리보기가 뜸)
+var SP_INTRO_MV = false;
+function spIntroMvSync() { const on = !!(typeof EASY_INTRO !== 'undefined' && EASY_INTRO !== 'old' && document.querySelector('#simplePane .spi')); if (on !== SP_INTRO_MV) { SP_INTRO_MV = on; try { spMvApply(); } catch (e) {} } }
 // ===== 목록 화면 → [섹션 순서 바꾸기]: 끌어서 옮기거나 ↑↓ (첫 화면은 늘 맨 위, 공유하기는 늘 맨 아래) =====
 //  한 번 바꾸면 state.spOrderCustom - 간편 만들기를 다시 열어도 "손쉬운 제작" 단계 순서로 되돌리지 않음
 let spOrderMode = false;
@@ -13489,7 +13492,7 @@ function spiFill(ov) {
     if (textEdge(i)) tx.style.textShadow = textEdge(i);
     const typed = document.createElement('span'); typed.className = 'intro-typed'; tx.appendChild(typed); ov.appendChild(tx);
     (i.stickers || []).forEach(st => {
-        const el = document.createElement(st.image ? 'img' : 'span'); el.className = 'spi-stk';
+        const el = document.createElement(st.image ? 'img' : 'span'); el.className = 'spi-stk'; el.dataset.ix = String((i.stickers || []).indexOf(st)); el.draggable = false;
         el.style.cssText = `left:${st.x}%;top:${st.y}%;transform:translate(-50%,-50%) rotate(${st.rotation || 0}deg)${stickerFlipCss(st)};z-index:${st.zIndex ?? 10};`;
         const sz = fontToCqw(st.size || 36);
         if (st.image) { el.src = st.image; el.alt = ''; el.style.width = el.style.height = sz; }
@@ -13601,11 +13604,53 @@ function spIntroPanel(box, kind) {
     spiDragBind(root);
     spiRun(root); spiFxRun(root);
 }
+// 미리보기 글자를 누르면 뜨는 글자 고치기 창 (사용자 2026-10-20: 전문가 모드처럼 글 적기 · 글꼴 · 크기 · 색 · 정렬) - 바꾸면 미리보기 글자가 바로 바뀜
+function spiTxSheet(root) {
+    document.getElementById('spiTxs')?.remove();
+    const i = state.intro, cols = [['', '기본'], ...INTRO_TEXT_COLORS], fonts = fontOptions.filter(f => f.id === '' || f.cssUrl || f.family);
+    const box = document.createElement('div'); box.id = 'spiTxs'; box.className = 'spi-txs';
+    const fsz = () => Math.round(i.fontSize || 26);
+    box.innerHTML = `<div class="spi-txs-bg" data-x></div><div class="spi-txs-c" role="dialog" aria-label="인트로 글자 고치기">
+        <div class="spi-txs-h"><b>인트로 글자</b><button type="button" class="spi-txs-ok" data-x>완료</button></div>
+        <textarea class="wz-inp" id="spiTxsT" rows="2" placeholder="우리 결혼합니다">${esc(i.text || '')}</textarea>
+        <div class="spi-txs-l">글꼴</div><div class="spi-row">${fonts.map(f => `<button type="button" class="spi-font${(i.font || '') === f.id ? ' on' : ''}" data-f="${esc(f.id)}"${f.family ? ` style="font-family:${esc(f.family.replace(/"/g, "'"))}"` : ''}>${esc(f.id ? f.label.replace(/\s*\(.*\)\s*$/, '') : '청첩장 글꼴')}</button>`).join('')}</div>
+        <div class="sp-range"><span>크기</span><input type="range" id="spiTxsS" min="14" max="56" step="1" value="${fsz()}"><span id="spiTxsSV">${fsz()}</span></div>
+        <div class="spi-txs-r"><div class="spi-cols">${cols.map(([c, t]) => `<button type="button" class="${(i.color || '').toUpperCase() === c.toUpperCase() ? 'on' : ''}${c ? '' : ' def'}" data-c="${c}" title="${t}" aria-label="글자 색 ${t}"${c ? ` style="--c:${c}"` : ''}>${c ? '' : '기본'}</button>`).join('')}</div>
+            <div class="spi-al">${[['left', '왼쪽'], ['center', '가운데'], ['right', '오른쪽']].map(([v, t]) => `<button type="button" class="${(i.align || 'center') === v ? 'on' : ''}" data-a="${v}" aria-label="${t} 정렬">${t}</button>`).join('')}</div></div>
+    </div>`;
+    document.body.appendChild(box);
+    fonts.forEach(f => f.id && loadFontCss(f.id));
+    const st = () => root.isConnected ? root : document.querySelector('#simplePane .spi');
+    const live = () => { const r = st(), tx = r && r.querySelector('.spi-tx'); if (!tx) return;
+        tx.style.fontFamily = spiFontFamily(i.font); tx.style.fontSize = fontToCqw(i.fontSize || 26); tx.style.color = spiTextColor(i); tx.style.textAlign = i.align || 'center';
+        const ty = tx.querySelector('.intro-typed'); if (ty) ty.textContent = i.text || ''; };
+    const rerun = () => { clearTimeout(box._t); box._t = setTimeout(() => { const r = st(); if (r) { spiRun(r); spiFxRun(r); } }, 500); };
+    const mark = (sel, el) => box.querySelectorAll(sel).forEach(x => x.classList.toggle('on', x === el));
+    spiPause(st(), true);
+    const t = box.querySelector('#spiTxsT');
+    t.addEventListener('input', () => { i.text = t.value; delete i.html; delete i.textWidthPct; live(); });
+    box.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.f; if (v) { i.font = v; loadFontCss(v); } else delete i.font; mark('[data-f]', b); live(); }));
+    const sr = box.querySelector('#spiTxsS');
+    sr.addEventListener('input', () => { i.fontSize = +sr.value; delete i.textWidthPct; box.querySelector('#spiTxsSV').textContent = sr.value; live(); });
+    box.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => { const c = b.dataset.c; if (c) i.color = c; else delete i.color; mark('[data-c]', b); live(); }));
+    box.querySelectorAll('[data-a]').forEach(b => b.addEventListener('click', () => { i.align = b.dataset.a; mark('[data-a]', b); live(); }));
+    const close = () => { box.remove(); try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); SPI.play = true; spRender(); };
+    const born = Date.now(); // (톡 누른 손가락의 click이 바로 뒤 바탕에 닿아 창이 곧장 닫히던 것 - 0.4초 안 바탕 누름은 무시)
+    box.querySelectorAll('[data-x]').forEach(b => b.addEventListener('click', () => { if (b.classList.contains('spi-txs-bg') && Date.now() - born < 400) return; close(); }));
+    void rerun;
+}
 // 미리보기 안에서 끌기: 글자 → intro.x/y · 사진(배경이 사진일 때) → bgX/bgY (꽉 채우기·전체 보이기 = 보일 자리, 크기 직접 = 사진 가운데 자리)
 function spiDragBind(root) {
     const ph = root.querySelector('.spi-ph'); if (!ph || !state.intro.enabled) return;
     ph.addEventListener('pointerdown', e => {
         const i = state.intro, tx = e.target.closest('.spi-tx'), img = ph.querySelector('.spi-bgimg');
+        const stkEl = !tx && e.target.closest('.spi-stk'), stk = stkEl && (i.stickers || [])[+stkEl.dataset.ix];
+        if (stk) { // 스티커 끌어서 옮기기
+            e.preventDefault(); const r = ph.getBoundingClientRect(), sx = e.clientX, sy = e.clientY, x0 = stk.x, y0 = stk.y; spiPause(root, true);
+            const mv = ev => { stk.x = Math.max(0, Math.min(100, Math.round((x0 + (ev.clientX - sx) / r.width * 100) * 10) / 10)); stk.y = Math.max(0, Math.min(100, Math.round((y0 + (ev.clientY - sy) / r.height * 100) * 10) / 10)); stkEl.style.left = stk.x + '%'; stkEl.style.top = stk.y + '%'; };
+            const end = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', end); window.removeEventListener('pointercancel', end); try { renderIntroStickers(); } catch (er) {} scheduleSnapshot(); if (SPI.play) { root.classList.remove('spi-paused'); setTimeout(() => spiRun(root), 900); } };
+            window.addEventListener('pointermove', mv); window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end); return;
+        }
         const isImg = !tx && img && (i.bgType || 'color') === 'image' && i.bgImage;
         if (!tx && !isImg) return;
         e.preventDefault(); const r = ph.getBoundingClientRect(), ov = ph.querySelector('.spi-ov');
@@ -13613,10 +13658,12 @@ function spiDragBind(root) {
         spiPause(root, true); ov.classList.remove('spi-out'); ph.classList.add('spi-dragging');
         const typed = tx && tx.querySelector('.intro-typed'); if (typed && !typed.textContent.trim()) typed.textContent = i.text || ''; // (글자가 나타나기 전이면 다 보이게)
         const cl = v => Math.max(0, Math.min(100, Math.round(v * 10) / 10));
-        const move = ev => { const dx = (ev.clientX - sx) / r.width * 100, dy = (ev.clientY - sy) / r.height * 100;
+        let moved = 0;
+        const move = ev => { const dx = (ev.clientX - sx) / r.width * 100, dy = (ev.clientY - sy) / r.height * 100; moved = Math.max(moved, Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy)); if (moved < 6) return;
             if (tx) { i.x = cl(x0 + dx); i.y = cl(y0 + dy); tx.style.left = i.x + '%'; tx.style.top = i.y + '%'; }
             else { const k = fit === 'custom' ? 1 : -1.6; i.bgX = cl(x0 + dx * k); i.bgY = cl(y0 + dy * k); img.style.cssText = introBgImgCss(i); } };
         const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); ph.classList.remove('spi-dragging');
+            if (tx && moved < 6) { tx.style.left = (i.x ?? 50) + '%'; tx.style.top = (i.y ?? 50) + '%'; return spiTxSheet(root); } // (글자를 톡 누름 = 글자 고치기 창)
             try { applyIntroPreviewStyle(); } catch (er) {} scheduleSnapshot(); if (SPI.play) { root.classList.remove('spi-paused'); setTimeout(() => spiRun(root), 900); } };
         window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
     });
