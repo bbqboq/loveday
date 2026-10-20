@@ -14017,7 +14017,7 @@ function dateTyped(wi) { wi = wi || weddingInfo() || {}; if (wi.undecided) retur
 // 그 이름 칸을 고객이 정했는지: 직접 적었거나(어느 칸이든) 디자인 예시 이름과 다름 (예전엔 '직접 적었는지'만 봐서, 지켜보지 않는 칸에 적으면 발행까지 막혔음)
 function nameTyped(k, wi) { if (NAME_SET.has(k)) return true; const v = String((wi || weddingInfo() || {})[k] || '').trim(); return !!v && NAME_DEMO[k] != null && v !== NAME_DEMO[k]; }
 function saveGateOk(loose) { // loose = [발행하기] (발행 전 점검에서 '예시 이름'을 보여 준 뒤 - 그래도 발행하면 이름이 있기만 하면 됨)
-    if (SAVE_OK) return true;
+    if (SAVE_OK || SAMPLE_ID) return true; // 관리자 디자인 샘플 편집은 이름·날짜와 상관없이 늘 저장
     if (onboardingActive) return false; // 아직 디자인을 고르는 중
     if (!state.presetId && startTrack !== 'custom') return false;
     const wi = weddingInfo();
