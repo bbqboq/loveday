@@ -11980,6 +11980,7 @@ function spApplyHeroSample() { const v = spApplyVideoSample(); return spApplyPho
 function spApplyPhotoSample() {
     const hp = spBlock('hero'); if (!EASY_HERO_SAMPLE || !hp || spIsReal(hp.fields.heroImage)) return false;
     if (/\/presets\//.test(hp.fields.heroImage || '')) return false; // 디자인 폴더에 넣어 둔 첫 화면 사진은 그대로
+    if (/uploads\/site\/samples\//.test(hp.fields.heroImage || '')) return false; // 관리자가 디자인 샘플에 넣은 사진도 그대로 (예전엔 메인 사진 예시로 바뀌었음)
     { const p = PRESETS.find(x => x.id === state.presetId); if (p && p.hero === 'text' && !hp.fields.heroImage) return false; } // 글자만 있는 첫 화면 디자인
     let ch = false;
     if (hp.fields.heroImage !== EASY_HERO_SAMPLE) { hp.fields.heroImage = EASY_HERO_SAMPLE; delete hp.fields.heroFocus; ch = true; }
