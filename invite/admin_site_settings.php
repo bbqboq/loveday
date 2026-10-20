@@ -32,7 +32,7 @@ $groups = [
     ],
     '홈페이지 샘플 디자인' => [
         ['home_sample_ids', '샘플 카드에 보일 프리셋', 'text', '프리셋 id를 쉼표로 최대 6개 (예: classic,minimal,scrapbook). 비우면 프리셋 번호 순서대로 앞의 6개'],
-        ['home_sample_url', '"샘플 청첩장 직접 보기" 주소', 'text', '기본: /testbed (공용 테스트 청첩장)'],
+        ['home_sample_url', '"샘플 청첩장 직접 보기" 주소', 'text', '기본: /invite/editor-prototype-v3-overlay.html?look=1 (샘플 둘러보기 - 모든 디자인을 넘겨 보고 [크게 보기]로 청첩장 전체, [이 디자인으로 만들어 보기]로 가입 없이 체험). 비워 두면 기본 주소'],
     ],
 ];
 

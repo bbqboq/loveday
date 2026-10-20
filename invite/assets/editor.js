@@ -9216,9 +9216,9 @@ function renderDesignScreen() {
         const on = dpkOn() && ALL.length > 0, sp = document.getElementById('startPick');
         sp.classList.toggle('dpk-on', on); document.getElementById('dpk').hidden = !on;
         if (on) {
-            document.getElementById('pickTitle').textContent = '마음에 드는 디자인을 골라주세요';
+            document.getElementById('pickTitle').textContent = LOOK_MODE ? '샘플 청첩장 둘러보기' : '마음에 드는 디자인을 골라주세요';
             const pm = dpkMode();
-            document.getElementById('pickSub').textContent = pm === 'grid' ? '그림을 누르면 오른쪽 휴대폰에서 크게 보여요. 고른 뒤에도 다 바꿀 수 있어요' : pm === 'film' ? '아래 그림을 누르거나 ← → 로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요' : '옆으로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요';
+            document.getElementById('pickSub').textContent = LOOK_MODE ? (pm === 'car' ? '옆으로 넘기고, 휴대폰을 누르면 청첩장 전체를 볼 수 있어요' : '그림을 누르고 [크게 보기]로 청첩장 전체를 볼 수 있어요') : pm === 'grid' ? '그림을 누르면 오른쪽 휴대폰에서 크게 보여요. 고른 뒤에도 다 바꿀 수 있어요' : pm === 'film' ? '아래 그림을 누르거나 ← → 로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요' : '옆으로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요';
             const fids = (FEATURED_IDS || []).filter(id => ALL.some(p => p.id === id));
             const ord = fids.map(id => ALL.find(p => p.id === id)).concat(ALL.filter(p => !fids.includes(p.id))), wx = p => p.ambient === 'weather' || p.id === 'p-weather' || p.__base === 'p-weather';
             dpkBuild(ord.filter(p => !wx(p)).concat(ord.filter(wx))); // 추천 디자인 먼저 · 날씨 따라 바뀌는 청첩장은 추천이어도 맨 끝
@@ -9279,6 +9279,9 @@ function dpkMode() { try { return window.matchMedia('(min-width: 861px)').matche
 //  있으면 휴대폰 속 청첩장을 진짜로 그리지 않고 그림만: c = 첫 화면 · l = 긴 화면(위쪽 섹션들, h = 390px 폭일 때 높이)
 //  sig = 찍을 때 디자인 내용 지문 - 지금과 다르면(디자인·샘플·메인 사진 예시를 고침) 그 디자인만 예전처럼 진짜로 그림 · 내 사진으로 보기 중에도 진짜로
 const THUMB_MAKE = new URLSearchParams(location.search).get('thumbs') === 'make';
+// 샘플 둘러보기 (홈페이지 [샘플 청첩장 직접 보기] → ?look=1): 로그인 없이 디자인 고르기 화면만 - 휴대폰을 누르면 청첩장 전체(크게 보기),
+//  [이 디자인으로 만들어 보기] → try_demo.php?preset=<id> (가입 없이 체험 청첩장을 만들어 그 디자인으로 바로 시작)
+const LOOK_MODE = !THUMB_MAKE && new URLSearchParams(location.search).get('look') === '1';
 let DPK_TH = null;
 const DPK_TH_READY = THUMB_MAKE ? Promise.resolve() : fetch('dpk_thumbs.php', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { DPK_TH = (j && j.items && typeof j.items === 'object') ? j.items : {}; }).catch(() => { DPK_TH = {}; });
 function dpkSig(id) {
@@ -9694,6 +9697,7 @@ function dpkOvEl() {
     ov.querySelector('.nv').addEventListener('click', () => dpkOvStep(1));
     ov.querySelector('.cl').addEventListener('click', () => dpkOvClose());
     ov.querySelector('.go').addEventListener('click', () => { const id = DPK.ovId; dpkOvClose(true); if (id) startWithPreset(id); });
+    if (LOOK_MODE) { const g = ov.querySelector('.go'); g.textContent = '이 디자인으로 만들어 보기'; g.title = '가입 없이 이 디자인으로 청첩장을 만들어 봐요'; }
     const vw = ov.querySelector('.dpk-vw'); let ts = null;
     vw.addEventListener('touchstart', e => { const t = e.touches[0]; ts = { x: t.clientX, y: t.clientY }; }, { passive: true });
     vw.addEventListener('touchend', e => { if (!ts) return; const t = e.changedTouches[0], dx = t.clientX - ts.x, dy = t.clientY - ts.y; ts = null; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.6) dpkOvStep(dx < 0 ? 1 : -1); }, { passive: true });
@@ -10013,6 +10017,7 @@ function closeSamplePreview(pick) {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('pv-sample')) closeSamplePreview(false); });
 async function startWithPreset(presetId) {
+    if (LOOK_MODE) { location.href = 'try_demo.php?preset=' + encodeURIComponent(presetId); return; } // 샘플 둘러보기: 체험 청첩장을 만들어 이 디자인으로
     const sm = SAMPLE_LIST[presetId];
     applyPreset(sm && sm.custom ? sm.base : presetId);
     if (sm) { // 관리자가 꾸며 둔 샘플이 있으면 그 모습으로 시작
@@ -10064,6 +10069,13 @@ document.querySelectorAll('[data-sg]').forEach(btn => btn.addEventListener('clic
 // 디자인 화면을 처음 보여줄 때 시작 가이드를 한 번 띄운다
 function showDesignScreenWithGuide() {
     if (THUMB_MAKE) { startTrack = 'simple'; presetFilter = 'all'; fpAllOpen = false; renderDesignScreen(); showStartChoice(false); showScreen('design'); return; } // 디자인 썸네일 만들기 (관리자)
+    if (LOOK_MODE) { // 샘플 둘러보기 (홈페이지)
+        startTrack = 'simple'; presetFilter = 'all'; fpAllOpen = false;
+        const g = document.getElementById('dpkGo'); if (g) { g.textContent = '이 디자인으로 만들어 보기'; g.title = '가입 없이 이 디자인으로 청첩장을 만들어 봐요'; }
+        document.documentElement.classList.add('mob-easy-only', 'look-mode');
+        renderDesignScreen(); showStartChoice(false); showScreen('design');
+        return;
+    }
     // 휴대폰에서 새로 만들 땐 [간편 만들기 | 직접 만들기]를 묻지 않고 바로 간편 만들기 (관리자 손쉬운 제작 → 간편 만들기 전체 'mobileEasy')
     //  다 만든 뒤 목록 화면 '더 꾸미고 싶다면' 카드(spMoreTipHtml)가 전문가 모드를 알려 줌
     if (mobileEasyOnly()) {
@@ -13559,6 +13571,8 @@ const TESTBED_MODE = urlParams.get('testbed') === '1';
 const TESTBED_EDIT_TOKEN = 'b35f36b5390b0084c620db3e82bdeb49e1ad2f82b94f4064a596554dde1a8f07'; // 위 SQL의 edit_token과 반드시 동일해야 함
 // ?sample=디자인아이디 : 관리자가 디자인 샘플을 에디터로 꾸며 저장하는 모드 (sample_api.php, 관리자 로그인 필요)
 const SAMPLE_ID = /^[a-z0-9-]{2,40}$/.test(urlParams.get('sample') || '') ? urlParams.get('sample') : null;
+// 샘플 둘러보기에서 고른 디자인 (try_demo.php?preset= → 에디터 &preset=) - 아직 디자인이 없는 청첩장이면 그 디자인으로 바로 간편 만들기
+const START_PRESET = /^[a-z0-9-]{2,40}$/.test(urlParams.get('preset') || '') ? urlParams.get('preset') : null;
 const EDIT_TOKEN = urlParams.get('t') || (SAMPLE_ID ? 'sample-' + SAMPLE_ID : null) || (TESTBED_MODE ? TESTBED_EDIT_TOKEN : null);
 setTimeout(() => document.documentElement.classList.remove('ld-boot'), 12000); // (불러오기가 아주 늦거나 실패해도 화면이 영영 가려지지 않게)
 // "회원가입 없이 테스트 해보기"(try_demo.php)로 들어온 체험 청첩장이면 아래쪽에 안내 띠를 띄운다 (demo=보관 시간)
@@ -13856,6 +13870,11 @@ async function bootstrapFromServer() {
                     wizardData.weddingDate = d.toISOString().slice(0, 10);
                     wizardData.weddingTime = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
                 }
+            }
+            if (START_PRESET) { // 샘플 둘러보기에서 고른 디자인으로 바로 시작 (디자인 목록·샘플 목록을 받은 뒤, 없는 디자인이면 고르기 화면)
+                const t0 = Date.now(); while ((!PRESETS_OK || !SAMPLE_LIST_OK) && Date.now() - t0 < 5000) await new Promise(r => setTimeout(r, 80));
+                try { const u = new URL(location.href); u.searchParams.delete('preset'); history.replaceState(null, '', u); } catch (e) {}
+                if (allDesigns().some(p => p.id === START_PRESET)) { startTrack = 'simple'; startWithPreset(START_PRESET); return; }
             }
             showDesignScreenWithGuide();
         }

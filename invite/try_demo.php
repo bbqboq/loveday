@@ -8,6 +8,7 @@
  *    (여러 사람이 한 청첩장을 같이 고치는 공용 테스트베드와 달리, 서로의 작업이 섞이지 않는다)
  *  - 같은 브라우저로 다시 누르면 새로 만들지 않고, 만들어 둔 체험 청첩장으로 다시 들어간다.
  *  - 무료체험과 같이 사진에 워터마크가 들어가고, demo_hours(관리자 설정, 기본 24시간) 뒤에 통째로 자동 삭제된다.
+ *  - try_demo.php?preset=<디자인 id> (샘플 둘러보기 화면) → 그 디자인으로 바로 시작
  *  - 남용 방지: IP당 1시간에 5개, 동시에 존재하는 체험 청첩장은 demo_max_active(기본 300)개까지.
  *  - 마음에 들면 에디터 아래 [네이버로 저장하기](claim_demo.php)나 네이버 로그인으로, 만들던 그대로 내 계정에 옮겨진다
  *    (같은 브라우저에서만 - guest_functions.php의 demo_claim_from_session).
@@ -16,7 +17,9 @@ declare(strict_types=1);
 require_once __DIR__ . '/guest_functions.php';
 
 $pdo = get_pdo();
-$editor = fn(string $t) => 'editor-prototype-v3-overlay.html?t=' . $t . '&demo=' . max(1, app_setting_int('demo_hours')); // demo=보관 시간 → 에디터 아래 안내 띠에 표시
+// 샘플 둘러보기(에디터 ?look=1)에서 [이 디자인으로 만들어 보기] → ?preset=<디자인 id> → 에디터가 아직 디자인이 없으면 그 디자인으로 바로 시작
+$preset = preg_match('/^[a-z0-9-]{2,40}$/', (string) ($_GET['preset'] ?? '')) ? (string) $_GET['preset'] : '';
+$editor = fn(string $t) => 'editor-prototype-v3-overlay.html?t=' . $t . '&demo=' . max(1, app_setting_int('demo_hours')) . ($preset !== '' ? '&preset=' . $preset : ''); // demo=보관 시간 → 에디터 아래 안내 띠에 표시
 
 function demo_page(string $title, string $msg, int $code = 200): void
 {

@@ -41,7 +41,7 @@ const APP_SETTING_DEFAULTS = [
     'terms_url'            => '',     // 이용약관 주소 (선택)
     'home_dpk_thumbs'      => '0',    // 홈페이지 샘플 카드에 디자인 썸네일 그림 쓰기 (관리자 → 홈 이미지 스위치, '1' = 켬)
     'home_sample_ids'      => '',     // 홈페이지 샘플 카드에 보일 프리셋 id (쉼표, 최대 6개). 비우면 앞에서부터 6개
-    'home_sample_url'      => '/testbed', // "샘플 청첩장 직접 보기" 버튼 주소
+    'home_sample_url'      => '/invite/editor-prototype-v3-overlay.html?look=1', // "샘플 청첩장 직접 보기" 버튼 주소 = 샘플 둘러보기 (예전 기본 /testbed)
     'privacy_officer'      => '',     // 개인정보 보호책임자 (비우면 대표자)
     'privacy_email'        => '',     // 보호책임자 연락처 (비우면 고객 문의)
     'privacy_effective'    => '',     // 개인정보처리방침 시행일 (YYYY-MM-DD)
@@ -60,6 +60,8 @@ function app_setting(string $key): string
             // 테이블이 아직 없으면(snap_setup.sql 실행 전) 기본값으로 동작
         }
     }
+    // 예전 기본값 /testbed(공용 테스트 청첩장 - 아무나 고친 화면이 보임)이거나 비어 있으면 샘플 둘러보기로 (관리자가 다른 주소를 적었으면 그대로)
+    if ($key === 'home_sample_url' && in_array(rtrim($cache[$key] ?? '', '/'), ['', '/testbed', '/invite/testbed'], true)) return APP_SETTING_DEFAULTS['home_sample_url'];
     return $cache[$key] ?? '';
 }
 function app_setting_int(string $key): int { return (int) app_setting($key); }
