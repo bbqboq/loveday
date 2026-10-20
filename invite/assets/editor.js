@@ -11081,7 +11081,7 @@ function spLensPrompt() {
 }
 function spLensSnap() { const r = document.documentElement; r.classList.add('sp-lens-snap'); clearTimeout(spLensSnap.t); spLensSnap.t = setTimeout(() => r.classList.remove('sp-lens-snap'), 500); }
 // 창이 필요 없는 질문 (예식 일시 - 사용자 요청)
-function spLensOff() { return !!(spMv.lensOff || spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick'); } // (머리줄 [청첩장 보기]를 끄면 창 없음)
+function spLensOff() { return !!(spMv.lensOff || spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick' || spCurSt && spCurSt.k === 'finish' && EASY_INTRO !== 'old' && document.querySelector('#simplePane .spi')); } // (인트로 칸 B·E·F안은 칸 안에 미리보기가 있어서 작은 창 안 띄움) // (머리줄 [청첩장 보기]를 끄면 창 없음)
 const SP_LENS_HOLD = 900; // 섹션 전체를 보여 주는 시간 (그다음 글자로 다가감)
 const spLensTxt = { key: '', at: 0, view: '', sec: '', t: 0, z: 0, seen: new Set() };
 // 옵션(적는 칸) 하나 = 지금 질문 + 그 칸 이름 (같은 칸이면 다가가는 모습은 한 번만)
@@ -13480,7 +13480,9 @@ function spiFontFamily(id) { const o = fontOptions.find(f => f.id === id); if (o
 function spiFill(ov) {
     const i = state.intro, b = spiOvBg(i);
     ov.className = 'spi-ov'; ov.innerHTML = ''; ov.style.background = b.bg;
-    if (b.img) { const im = document.createElement('img'); im.alt = ''; im.src = InviteBlocks.imgUrl(b.img); im.style.cssText = b.cover ? 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;' : introBgImgCss(i); ov.appendChild(im); }
+    if (b.img) { const im = document.createElement('img'); im.alt = ''; im.className = 'spi-bgimg'; im.draggable = false;
+        if (!b.cover) im.onload = () => { if (im.naturalWidth && !i.bgAspect) { i.bgAspect = im.naturalHeight / im.naturalWidth; im.style.cssText = introBgImgCss(i); } };
+        im.src = InviteBlocks.imgUrl(b.img); im.style.cssText = b.cover ? 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;' : introBgImgCss(i); ov.appendChild(im); }
     if (i.font) loadFontCss(i.font);
     const tx = document.createElement('div'); tx.className = 'spi-tx';
     tx.style.cssText = `font-family:${spiFontFamily(i.font)};font-size:${fontToCqw(i.fontSize || 26)};color:${spiTextColor(i)};left:${i.x ?? 50}%;top:${i.y ?? 50}%;transform:${introTextTransform(i)};text-align:${i.align || 'center'};${i.ls ? `letter-spacing:${lsEm(i.ls)};` : ''}${i.textWidthPct ? `width:${i.textWidthPct}%;` : ''}`;
@@ -13542,6 +13544,16 @@ function spiFontHtml() {
     list.forEach(f => f.id && loadFontCss(f.id));
     return `<div class="wz-field spi-sec"><div class="wz-lab">글꼴</div><div class="spi-row">${list.map(f => `<button type="button" class="spi-font${cur === f.id ? ' on' : ''}" data-spi-font="${esc(f.id)}"${f.family ? ` style="font-family:${esc(f.family.replace(/"/g, "'"))}"` : ''}>${esc(f.id ? f.label.replace(/\s*\(.*\)\s*$/, '') : '청첩장 글꼴')}</button>`).join('')}</div></div>`;
 }
+// 글자 칸 (사용자 2026-10-20 '폰트 수정할 수 있게'): 문구 · 크기 · 색 · 글꼴 - 미리보기 글자는 끌어서 옮김
+function spiTextHtml() {
+    const i = state.intro, fs = Math.round(i.fontSize || 26), col = i.color || '';
+    const cols = [['', '기본'], ...INTRO_TEXT_COLORS];
+    return `<div class="wz-field spi-sec"><div class="wz-lab"><span>문구</span><small>미리보기에서 글자를 끌어 자리를 옮겨요</small></div>
+        <textarea class="wz-inp spi-txt" id="spiText" rows="2" placeholder="우리 결혼합니다">${esc(i.text || '')}</textarea></div>
+        <div class="wz-field spi-sec"><div class="sp-range"><span>글자 크기</span><input type="range" id="spiFs" min="14" max="56" step="1" value="${fs}"><span id="spiFsV">${fs}</span></div>
+        <div class="spi-cols">${cols.map(([c, t]) => `<button type="button" class="${col.toUpperCase() === c.toUpperCase() ? 'on' : ''}${c ? '' : ' def'}" data-spi-col="${c}" title="${t}" aria-label="글자 색 ${t}"${c ? ` style="--c:${c}"` : ''}>${c ? '' : '기본'}</button>`).join('')}</div></div>
+        ${spiFontHtml()}`;
+}
 // 아주 작은 기본 스티커 줄
 function spiStkHtml() {
     const has = new Set((state.intro.stickers || []).map(s => s.image));
@@ -13551,8 +13563,15 @@ function spiStkHtml() {
 }
 function spiBgHtml(ibg) {
     return `<div class="sp-chips">${spIntroBgList().map(([v, l]) => `<button type="button" class="${ibg === v ? 'on' : ''}" data-sp-ibg="${v}">${l}</button>`).join('')}</div>
-        ${ibg === 'image' ? `<div class="sp-hero sp-ibg-ph">${state.intro.bgImage ? `<img src="${esc(InviteBlocks.imgUrl(state.intro.bgImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" id="spIbgUp">${state.intro.bgImage ? '사진 바꾸기' : '사진 올리기'}</button></div>` : ''}
+        ${ibg === 'image' ? `<div class="sp-hero sp-ibg-ph">${state.intro.bgImage ? `<img src="${esc(InviteBlocks.imgUrl(state.intro.bgImage))}" alt="">` : '<span>아직 없어요</span>'}<button type="button" class="wz-btn2" id="spIbgUp">${state.intro.bgImage ? '사진 바꾸기' : '사진 올리기'}</button></div>${state.intro.bgImage ? spiPhotoHtml() : ''}` : ''}
         ${ibg === 'video' ? `<input class="wz-inp" id="spIbgYt" value="${wzEsc(state.intro.bgYoutubeId || '')}" placeholder="유튜브 주소를 붙여 넣어요 (https://youtu.be/...)" inputmode="url"><p class="wz-hint">영상은 소리 없이 인트로 뒤에서 흘러가요.</p>` : ''}`;
+}
+// 인트로 배경 사진 모양 · 크기 (위치는 미리보기에서 사진을 끌어서) - introBgImgCss와 같은 값(bgFit cover|contain|custom, bgW, bgX/bgY)
+function spiPhotoHtml() {
+    const i = state.intro, fit = i.bgFit || 'cover', z = Math.round(i.bgW || 100);
+    return `<div class="spi-photo"><div class="sp-chips">${[['cover', '화면 꽉 채우기'], ['contain', '사진 전체 보이기'], ['custom', '크기 직접']].map(([v, t]) => `<button type="button" class="${fit === v ? 'on' : ''}" data-spi-fit="${v}">${t}</button>`).join('')}</div>
+        ${fit === 'custom' ? `<div class="sp-range"><span>사진 크기</span><input type="range" id="spiBgW" min="40" max="300" step="5" value="${z}"><span id="spiBgWV">${z}%</span></div>` : ''}
+        <p class="wz-hint">미리보기에서 사진을 끌어 보일 자리를 옮겨요.${(i.bgX ?? 50) !== 50 || (i.bgY ?? 50) !== 50 ? ' <button type="button" class="sp-link" id="spiBgCenter">가운데로</button>' : ''}</p></div>`;
 }
 function spiFxChipsHtml() { const cur = state.intro.anim || 'type'; return `<div class="sp-chips">${InviteBlocks.RichText.ANIMS.map(([v, l]) => `<button type="button" class="${cur === v ? 'on' : ''}" data-sp-ianim="${v}">${esc(l)}</button>`).join('')}</div>`; }
 function spIntroPanel(box, kind) {
@@ -13563,23 +13582,44 @@ function spIntroPanel(box, kind) {
         bg: fx ? `<div class="wz-field spi-sec"><div class="wz-lab">배경</div>${spiBgHtml(ibg)}</div>` : '',
         col: fx && ibg === 'color' ? `<div class="wz-field spi-sec"><div class="wz-lab">색 · 투명도</div>${spIntroOpHtml()}</div>` : '',
         fx: fx ? `<div class="wz-field spi-sec"><div class="wz-lab"><span>글자 효과</span>${kind === 'f' ? '<small>카드마다 실제로 움직여요</small>' : ''}</div>${kind === 'f' ? spiFxCardsHtml() : spiFxChipsHtml()}</div>` : '',
-        font: spiFontHtml(), stk: spiStkHtml()
+        text: spiTextHtml(), stk: spiStkHtml()
     };
-    const stage = kind === 'b' ? `<div class="spi-win big">${spiPhoneHtml()}<button type="button" class="spi-re" id="spiRe">↻ 처음부터</button><span class="spi-cap">하객이 청첩장을 열면 이렇게 나와요</span></div>`
-        : `<div class="spi-box"><div class="spi-win">${spiPhoneHtml()}</div><div class="spi-ctl"><button type="button" class="spi-pp" id="spiPP" aria-label="${SPI.play ? '멈추기' : '재생'}">${SPI.play ? 'Ⅱ' : '▶'}</button><div class="spi-tl"><div class="spi-track"><i data-spi-bar></i><u style="left:${Math.round((spiDur() + 0.5) / (spiDur() + 1.6) * 100)}%"></u></div><div class="spi-tl-l"><span>글자가 나타나요</span><span>첫 화면으로 넘어가요 ›</span></div></div><button type="button" class="spi-re2" id="spiRe" aria-label="처음부터">↻</button></div></div>`;
+    const stage = kind === 'b' ? `<div class="spi-win big">${spiPhoneHtml()}<button type="button" class="spi-re" id="spiRe">↻ 처음부터</button><span class="spi-cap">글자·사진은 끌어서 옮겨요</span></div>`
+        : `<div class="spi-box"><div class="spi-win">${spiPhoneHtml()}</div><p class="spi-tip">하객이 열면 이렇게 나와요 · 글자·사진은 끌어서 옮겨요</p><div class="spi-ctl"><button type="button" class="spi-pp" id="spiPP" aria-label="${SPI.play ? '멈추기' : '재생'}">${SPI.play ? 'Ⅱ' : '▶'}</button><div class="spi-tl"><div class="spi-track"><i data-spi-bar></i><u style="left:${Math.round((spiDur() + 0.5) / (spiDur() + 1.6) * 100)}%"></u></div><div class="spi-tl-l"><span>글자가 나타나요</span><span>첫 화면으로 넘어가요 ›</span></div></div><button type="button" class="spi-re2" id="spiRe" aria-label="처음부터">↻</button></div></div>`;
     let body;
     if (kind === 'b') {
-        const tabs = [['bg', '배경'], ['col', '색'], ['fx', '글자 효과'], ['font', '글꼴'], ['stk', '스티커']].filter(([k]) => sections[k]);
-        if (!tabs.some(t => t[0] === SPI.tab)) SPI.tab = tabs[0] ? tabs[0][0] : 'font';
+        const tabs = [['text', '글자'], ['bg', '배경'], ['col', '색'], ['fx', '글자 효과'], ['stk', '스티커']].filter(([k]) => sections[k]);
+        if (!tabs.some(t => t[0] === SPI.tab)) SPI.tab = tabs[0] ? tabs[0][0] : 'text';
         body = `${on && tabs.length ? `<div class="spi-tabs" role="tablist">${tabs.map(([k, t]) => `<button type="button" role="tab" class="${SPI.tab === k ? 'on' : ''}" data-spi-tab="${k}" aria-selected="${SPI.tab === k}">${t}</button>`).join('')}</div><div class="spi-tabb">${sections[SPI.tab]}</div>` : ''}`;
-    } else body = on ? sections.bg + sections.col + sections.fx + sections.font + sections.stk : '';
+    } else body = on ? sections.text + sections.bg + sections.col + sections.fx + sections.stk : '';
     box.innerHTML = spH('인트로', '청첩장을 열 때 처음 나오는 짧은 화면이에요. 바꾸면 바로 다시 재생돼요.') + `<div class="spi spi-k-${kind}${SPI.play ? '' : ' spi-paused'}">${stage}${sw}${body}</div>`;
     const root = box.querySelector('.spi');
     spiBindCommon(box);
     box.querySelector('#spiPP')?.addEventListener('click', () => { SPI.play = !SPI.play; spRender(); });
     box.querySelector('#spiRe')?.addEventListener('click', () => { SPI.play = true; root.classList.remove('spi-paused'); const pp = box.querySelector('#spiPP'); if (pp) { pp.textContent = 'Ⅱ'; pp.setAttribute('aria-label', '멈추기'); } spiRun(root); spiFxRun(root); });
     box.querySelectorAll('[data-spi-tab]').forEach(b => b.addEventListener('click', () => { SPI.tab = b.dataset.spiTab; spRender(); }));
+    spiDragBind(root);
     spiRun(root); spiFxRun(root);
+}
+// 미리보기 안에서 끌기: 글자 → intro.x/y · 사진(배경이 사진일 때) → bgX/bgY (꽉 채우기·전체 보이기 = 보일 자리, 크기 직접 = 사진 가운데 자리)
+function spiDragBind(root) {
+    const ph = root.querySelector('.spi-ph'); if (!ph || !state.intro.enabled) return;
+    ph.addEventListener('pointerdown', e => {
+        const i = state.intro, tx = e.target.closest('.spi-tx'), img = ph.querySelector('.spi-bgimg');
+        const isImg = !tx && img && (i.bgType || 'color') === 'image' && i.bgImage;
+        if (!tx && !isImg) return;
+        e.preventDefault(); const r = ph.getBoundingClientRect(), ov = ph.querySelector('.spi-ov');
+        const sx = e.clientX, sy = e.clientY, x0 = tx ? (i.x ?? 50) : (i.bgX ?? 50), y0 = tx ? (i.y ?? 50) : (i.bgY ?? 50), fit = i.bgFit || 'cover';
+        spiPause(root, true); ov.classList.remove('spi-out'); ph.classList.add('spi-dragging');
+        const typed = tx && tx.querySelector('.intro-typed'); if (typed && !typed.textContent.trim()) typed.textContent = i.text || ''; // (글자가 나타나기 전이면 다 보이게)
+        const cl = v => Math.max(0, Math.min(100, Math.round(v * 10) / 10));
+        const move = ev => { const dx = (ev.clientX - sx) / r.width * 100, dy = (ev.clientY - sy) / r.height * 100;
+            if (tx) { i.x = cl(x0 + dx); i.y = cl(y0 + dy); tx.style.left = i.x + '%'; tx.style.top = i.y + '%'; }
+            else { const k = fit === 'custom' ? 1 : -1.6; i.bgX = cl(x0 + dx * k); i.bgY = cl(y0 + dy * k); img.style.cssText = introBgImgCss(i); } };
+        const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); ph.classList.remove('spi-dragging');
+            try { applyIntroPreviewStyle(); } catch (er) {} scheduleSnapshot(); if (SPI.play) { root.classList.remove('spi-paused'); setTimeout(() => spiRun(root), 900); } };
+        window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+    });
 }
 // 배경·색·효과·글꼴·스티커 (예전 칸도 같이 씀)
 function spiBindCommon(box) {
@@ -13606,6 +13646,18 @@ function spiBindCommon(box) {
             i.stickers.push({ id: 'sk' + Date.now() + Math.random().toString(36).slice(2, 6), image: src, x: p[0], y: p[1], size: 44, rotation: [-8, 6, -4, 8][i.stickers.length % 4] }); }
         try { renderIntroStickers(); } catch (e) {} scheduleSnapshot(); spRender();
     }));
+    const rerun = () => { const r = box.querySelector('.spi'); if (r) { spiRun(r); spiFxRun(r); } };
+    const txt = box.querySelector('#spiText');
+    txt?.addEventListener('input', () => { state.intro.text = txt.value; delete state.intro.html; delete state.intro.textWidthPct; clearTimeout(txt._t); txt._t = setTimeout(() => { rerun(); scheduleSnapshot(); }, 450); });
+    const fsr = box.querySelector('#spiFs');
+    fsr?.addEventListener('input', () => { state.intro.fontSize = +fsr.value; delete state.intro.textWidthPct; const v = box.querySelector('#spiFsV'); if (v) v.textContent = fsr.value; const tx = box.querySelector('.spi-tx'); if (tx) tx.style.fontSize = fontToCqw(+fsr.value); });
+    fsr?.addEventListener('change', () => { scheduleSnapshot(); rerun(); });
+    box.querySelectorAll('[data-spi-col]').forEach(b => b.addEventListener('click', () => { const c = b.dataset.spiCol; if (c) state.intro.color = c; else delete state.intro.color; try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); spRender(); }));
+    box.querySelectorAll('[data-spi-fit]').forEach(b => b.addEventListener('click', () => { const i = state.intro, v = b.dataset.spiFit; i.bgFit = v; if (v === 'custom' && !i.bgW) i.bgW = 100; if (v !== 'custom') delete i.bgH; try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); spRender(); }));
+    const bw = box.querySelector('#spiBgW');
+    bw?.addEventListener('input', () => { const i = state.intro; i.bgW = +bw.value; delete i.bgH; const v = box.querySelector('#spiBgWV'); if (v) v.textContent = bw.value + '%'; const im = box.querySelector('.spi-bgimg'); if (im) im.style.cssText = introBgImgCss(i); });
+    bw?.addEventListener('change', () => { try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); });
+    box.querySelector('#spiBgCenter')?.addEventListener('click', () => { state.intro.bgX = 50; state.intro.bgY = 50; try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); spRender(); });
     box.querySelector('#spiStkX')?.addEventListener('click', () => { state.intro.stickers = []; try { renderIntroStickers(); } catch (e) {} scheduleSnapshot(); spRender(); });
 }
 function spFinish(box) {
@@ -13618,7 +13670,7 @@ function spFinish(box) {
             ${ibg === 'color' ? spIntroOpHtml() : ''}</div>
             <div class="wz-field"><div class="wz-lab">글자 효과</div>${spiFxChipsHtml()}
             <button type="button" class="sp-link" id="spIntroPv">▶ 인트로 보기</button></div>` : ''}
-        ${state.intro.enabled ? spiFontHtml() + spiStkHtml() : ''}
+        ${state.intro.enabled ? spiTextHtml() + spiStkHtml() : ''}
         <p class="wz-hint">글자 위치·스티커·섹션 순서까지 바꾸고 싶으면 위의 <b>전문가 모드</b>를 누르세요. 언제든 간편 만들기로 돌아올 수 있어요.</p>`;
     spiBindCommon(box);
     box.querySelector('#spIntroPv')?.addEventListener('click', () => spOpenPreview(false)); // 하객이 보는 실제 화면으로 (인트로부터)

@@ -5095,3 +5095,19 @@ html.look-mode .onb-steps { display: none !important; }
 .spi-cap { left: 50%; right: auto; transform: translateX(-50%); width: max-content; max-width: 90%; padding: 5px 10px; border-radius: 12px; background: rgba(0,0,0,.45); text-shadow: none; }
 .spi-tabb .spi-sec > .wz-lab > span:only-child, .spi-tabb .spi-sec > .wz-lab:not(:has(small)) { display: none; }
 .spi-stks { gap: 5px; } .spi-stkb { width: 34px; height: 34px; padding: 4px; border-radius: 9px; }
+/* 인트로 칸 손봄 (2026-10-20): E·F 미리보기도 휴대폰 화면 통째로(잘리지 않게) · 글자 칸 · 사진 끌기 */
+.spi-box .spi-win { height: min(54vh, 480px); justify-content: center; background: #1E1C1A; }
+.spi-box .spi-win .spi-ph { width: auto; height: 100%; border-radius: 10px; }
+.spi-tip { margin: -2px 0 0; text-align: center; font-size: 11.5px; color: rgba(255,255,255,.7); }
+.spi-ph .spi-tx { cursor: grab; touch-action: none; }
+.spi-ph .spi-bgimg { pointer-events: auto !important; cursor: grab; touch-action: none; }
+.spi-ph.spi-dragging, .spi-ph.spi-dragging * { cursor: grabbing !important; }
+.spi-ph.spi-dragging .spi-tx { outline: 1.5px dashed rgba(255,255,255,.85); outline-offset: 4px; }
+.spi-txt { resize: vertical; min-height: 54px; font-size: 15px; line-height: 1.5; }
+.spi-cols { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.spi-cols button { width: 30px; height: 30px; border-radius: 50%; padding: 0; border: 1px solid var(--wz-line); background: var(--c, #fff); cursor: pointer; }
+.spi-cols button.def { width: auto; padding: 0 10px; border-radius: 15px; font: inherit; font-size: 12px; color: var(--wz-sub); background: #fff; }
+.spi-cols button.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--wz-ink); }
+.spi-photo { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.spi-photo .wz-hint { margin: 0; }
+.spi-txt { height: auto; min-height: 0; }
