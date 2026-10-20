@@ -6,6 +6,11 @@
  *  - 계좌는 저장할 때부터 가려져(•) 있고, 연락처는 여기서 표시(__LD_SECURE__)로 바꿔 내려보낸다
  *  - 하객이 화면을 실제로 만지면(스크롤·터치·클릭) guest_secure.php에서 받아 채운다 (render-invite.js bindGuestSecure)
  *  - 검색엔진에 청첩장이 검색되지 않게 noindex (카카오톡·문자 링크 미리보기는 그대로 됨)
+ *
+ * 디자인 샘플 보기: invite_view.php?sample=<디자인 id> (홈페이지 디자인 카드)
+ *  - 관리자 → 디자인 [에디터로 꾸미기]로 저장한 샘플(uploads/site/samples/<id>.json)을 하객 화면 그대로 보여 줌 (DB 청첩장 없음)
+ *  - 저장한 샘플이 없거나 휴지통·숨긴 디자인이면 에디터 샘플 둘러보기(?look=1&d=)로 보냄
+ *  - 참석·방명록 보내기는 안 되고(청첩장이 아님), 아래 띠 [이 디자인으로 만들어 보기] → try_demo.php?preset=
  */
 declare(strict_types=1);
 require_once __DIR__ . '/guest_functions.php'; // functions.php + 계좌·연락처 보호(guest_*)
@@ -21,7 +26,21 @@ header('X-Robots-Tag: noindex, nofollow, noarchive'); // 청첩장은 검색엔�
 // 소유자 전용 미리보기 통로 - 발행(published) 여부와 무관하게 edit_token만 맞으면 볼 수 있다.
 // edit_token은 64자 랜덤값이라 추측 불가능하므로 이 용도로 안전하게 쓸 수 있다.
 $previewToken = (string) ($_GET['preview_t'] ?? '');
-if ($previewToken !== '') {
+$sampleId = (string) ($_GET['sample'] ?? '');
+if ($sampleId !== '') {
+    if (!preg_match('/^[a-z0-9-]{2,40}$/', $sampleId)) { http_response_code(404); exit('페이지를 찾을 수 없습니다.'); }
+    require_once __DIR__ . '/featured_presets.php';
+    $look = '/invite/editor-prototype-v3-overlay.html?look=1&d=' . rawurlencode($sampleId);
+    $sf = UPLOAD_DIR . 'site/samples/' . $sampleId . '.json';
+    $hidden = in_array($sampleId, array_merge(preset_off_get(), design_trash_ids()), true);
+    $sd = !$hidden && is_file($sf) && filesize($sf) < 2_000_000 ? json_decode((string) file_get_contents($sf), true) : null;
+    if (!is_array($sd)) { header('Location: ' . $look, true, 302); exit; } // 아직 꾸민 샘플이 없으면 디자인 둘러보기로
+    $sIdx = @json_decode((string) @file_get_contents(UPLOAD_DIR . 'site/samples/index.json'), true);
+    $sLabel = (string) (($sIdx['items'][$sampleId]['label'] ?? '') ?: (preset_names_get()[$sampleId]['label'] ?? ''));
+    if ($sLabel === '') { require_once __DIR__ . '/site_images.php'; $sLabel = (string) (site_presets()[$sampleId]['label'] ?? ''); } // 기본 디자인 이름
+    $invite = ['id' => 0, 'view_slug' => '', 'groom_name' => '', 'bride_name' => '', 'wedding_datetime' => null, 'venue_name' => '', 'venue_address' => '',
+               'design_json' => json_encode($sd, JSON_UNESCAPED_UNICODE)];
+} elseif ($previewToken !== '') {
     if (!preg_match('/^[a-f0-9]{64}$/', $previewToken)) {
         http_response_code(404);
         exit('잘못된 접근입니다.');
@@ -70,6 +89,7 @@ $secureOpts = [
 
 $title = htmlspecialchars($invite['groom_name'], ENT_QUOTES, 'UTF-8') . ' ♥ '
        . htmlspecialchars($invite['bride_name'], ENT_QUOTES, 'UTF-8') . ' 결혼합니다';
+if ($sampleId !== '') $title = htmlspecialchars('샘플 청첩장' . ($sLabel !== '' ? ' · ' . $sLabel : '') . ' - LOVE DAY', ENT_QUOTES, 'UTF-8');
 
 // design_json은 에디터(editor-prototype-v3-overlay.html)로 만든 경우에만 존재.
 // 계좌정보는 invite_save.php 단계에서 이미 마스킹(•)되어 저장되어 있으므로
@@ -78,7 +98,7 @@ $design = null;
 if ($invite['design_json']) {
     $decoded = json_decode($invite['design_json'], true);
     if (is_array($decoded)) {
-        $design = guest_secure_strip($decoded); // 연락처 전화번호는 표시로 바꿔서 내려보냄 (실제 번호는 guest_secure.php)
+        $design = $sampleId !== '' ? $decoded : guest_secure_strip($decoded); // 연락처 전화번호는 표시로 바꿔서 내려보냄 (실제 번호는 guest_secure.php) · 샘플은 예시 값 그대로
         // 관리자 → 섹션 순서에서 "비노출"로 끈 섹션은 이미 만든 청첩장에서도 안 보이게
         require_once __DIR__ . '/section_defaults.php';
         $hiddenSecs = section_defaults_hidden();
@@ -93,7 +113,7 @@ if ($design):
 
 // 참석여부·방명록 전송용 CSRF 토큰, D-DAY 하객 안내용 예식일(한국 날짜). 예식일은 주문 정보 → 디데이 섹션 순서로 찾는다.
 $weddingYmd = '';
-try {
+if ($sampleId === '') try {
     require_once __DIR__ . '/snap_functions.php';
     $wd = snap_wedding_date($invite);
     if ($wd) $weddingYmd = $wd->format('Y-m-d');
@@ -212,8 +232,24 @@ if ($lbZoom > 100): ?>
     const design = <?= json_encode($design, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
     const root = document.getElementById('inviteRoot');
     renderInviteReadOnly(root, design, true);
+<?php if ($sampleId === ''): ?>
     bindGuestSecure(root, <?= json_encode($secureOpts, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>); // 계좌·연락처는 하객이 화면을 만진 뒤에 받아옴
+<?php endif; ?>
 </script>
+<?php if ($sampleId !== ''): // 디자인 샘플 보기: 아래 띠 ?>
+<div class="ld-sbar"><span><small>샘플 청첩장</small><b><?= htmlspecialchars($sLabel !== '' ? $sLabel : '디자인 샘플', ENT_QUOTES, 'UTF-8') ?></b></span>
+    <a class="o" href="<?= htmlspecialchars($look, ENT_QUOTES, 'UTF-8') ?>">다른 디자인</a><a class="g" href="/invite/try_demo.php?preset=<?= rawurlencode($sampleId) ?>">이 디자인으로 만들기</a></div>
+<style>
+.ld-sbar { position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 9000; width: min(430px, calc(100% - 24px)); box-sizing: border-box;
+  display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 16px; border-radius: 16px; background: rgba(27,26,24,.92); color: #fff; box-shadow: 0 14px 34px rgba(0,0,0,.25);
+  font: 500 13px/1.3 "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.ld-sbar span { flex: 1; min-width: 0; } .ld-sbar span small, .ld-sbar span b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ld-sbar span small { font-size: 11px; color: #BDB6AD; } .ld-sbar span b { color: #fff; font-size: 13.5px; }
+.ld-sbar a { flex: none; text-decoration: none; border-radius: 11px; padding: 10px 12px; font-weight: 700; font-size: 13px; }
+.ld-sbar a.o { color: #fff; border: 1px solid rgba(255,255,255,.25); } .ld-sbar a.g { background: #fff; color: #1B1A18; }
+@media (max-width: 420px) { .ld-sbar a.o { display: none; } }
+</style>
+<?php endif; ?>
 </body>
 </html>
 <?php

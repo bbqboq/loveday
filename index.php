@@ -5,7 +5,7 @@
  * 서버 맨 위 폴더(www)에 둔다. invite/ 폴더 옆.
  * 가격·구매 버튼·사업자 정보·샘플 카드는 관리자 → 사이트 정보(invite/admin_site_settings.php)에서 바꾼다.
  * 샘플 카드는 invite/presets/ 폴더의 디자인을 그대로 읽는다 (thumb.jpg가 있으면 그 사진, 없으면 디자인 색으로 그림).
- *  - 카드를 누르면 그 디자인 샘플(관리자 → 디자인 [에디터로 꾸미기]로 꾸민 모습)이 바로 크게 열림: 에디터 ?look=1&d=<디자인 id>
+ *  - 카드를 누르면 그 디자인 샘플(관리자 → 디자인 [에디터로 꾸미기]로 꾸민 모습)을 하객 화면 그대로: invite/invite_view.php?sample=<디자인 id> (꾸민 샘플이 없으면 에디터 ?look=1&d= 둘러보기)
  *  - 카드 이름 = 관리자 → 디자인 [이름 바꾸기]로 바꾼 이름 · 고객에게 안 보이게 끈 디자인·휴지통 디자인은 카드에서 빠짐 (featured_presets.php)
  *
  * ※ 예전 index.html이 같은 폴더에 있으면 서버가 그것부터 열 수 있으니 index.html은 지우거나 이름을 바꿔주세요.
@@ -32,7 +32,7 @@ $price = fn(string $k) => ($S[$k] ?? '') !== '' ? number_format((int) $S[$k]) : 
 $storeUrl = preg_match('#^https?://#i', $S['store_url'] ?? '') ? $S['store_url'] : '';
 const LOOK_URL = '/invite/editor-prototype-v3-overlay.html?look=1'; // 샘플 둘러보기 (로그인 없이 모든 디자인 · [크게 보기] · [이 디자인으로 만들어 보기])
 $sampleUrl = preg_match('#^(/|https?://)#', $S['home_sample_url']) && !in_array(rtrim($S['home_sample_url'], '/'), ['/testbed', '/invite/testbed'], true) ? $S['home_sample_url'] : LOOK_URL;
-$cardUrl = fn(string $id) => LOOK_URL . '&d=' . rawurlencode($id); // 카드 = 그 디자인 샘플을 바로 크게
+$cardUrl = fn(string $id) => '/invite/invite_view.php?sample=' . rawurlencode($id); // 카드 = 관리자가 꾸며 둔 그 디자인 샘플을 하객 화면 그대로 (없으면 그 디자인 둘러보기로)
 $demoHours = max(1, (int) $S['demo_hours']);
 // 관리자가 올린 사진이 있으면 그 사진, 없으면 원래 그라데이션 (style 속성에 넣을 값)
 $imgCss = fn(string $slot, string $overlay = '') => function_exists('site_image_css') ? site_image_css($slot, $overlay) : '';
