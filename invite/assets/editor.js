@@ -11612,9 +11612,13 @@ function spRenderAsk(pane) {
         <div class="sp-body sp-ask" id="spBody">${body}</div>
         <div class="sp-nav sp-ask-nav${(same || spAskLast < 0 ? navFirst : spAskLast === 0) ? ' first' : ''}"><button type="button" class="wz-back" id="spPrev" tabindex="${navFirst ? -1 : 0}">이전</button><button type="button" class="wz-next" id="spNext">${spStep === N - 1 ? '다 했어요' : '다음'}</button></div>`;
     spBindHeadTools(pane);
-    const go = n => { if (n >= N) return spAskToList(); spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n)); spRender(); spAskAutoSave(); }; // 정리 화면을 끄면 바로 완성본
+    const lookSeen = () => { if (!(st && st.k === 'hero' && st.part === 'look')) return; // 첫 화면 꾸미기 질문을 [다음]으로 지나감 = 거기 있던 칸은 본 것
+        if (pane.querySelector('#spCropBox, #spVfpBox')) spTaskMark('hero:edit', true);
+        if (scrollPh || !spHeroScrollOk()) spTaskMark('hero:shade', true);
+        if (pane.querySelector('.hl-row')) spTaskMark('hero:layout', true); };
+    const go = n => { if (n > spStep) lookSeen(); if (n >= N) return spAskToList(); spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n)); spRender(); spAskAutoSave(); }; // 정리 화면을 끄면 바로 완성본
     const lookToScroll = () => st && st.k === 'hero' && st.part === 'look' && !scrollPh && spHeroScrollOk();
-    const next = () => { const need = scrollPh ? '' : spAskNeed(st); if (need) return spAskNag(pane, need); return lookToScroll() ? spHeroToScroll(pane.querySelector('#spBody')) : go(spStep + 1); };
+    const next = () => { const need = scrollPh ? '' : spAskNeed(st); if (need) return spAskNag(pane, need); if (lookToScroll()) { lookSeen(); return spHeroToScroll(pane.querySelector('#spBody')); } return go(spStep + 1); };
     pane._askNeed = () => scrollPh ? '' : spAskNeed(st); spAskNeedSync(pane);
     if (!pane._askNeedOn) { pane._askNeedOn = true; const sync = () => setTimeout(() => spAskNeedSync(pane), 60); pane.addEventListener('input', sync); pane.addEventListener('click', sync, true); pane.addEventListener('change', sync); }
     const prev = () => scrollPh ? (spHeroPhase = 'pick', spRender()) : go(spStep - 1);
@@ -11819,7 +11823,7 @@ function spLiState(st, sw, warnOf) {
     const on = sw ? spBlock(sw).enabled : true, [sum0, ok0] = spSum(st), warn = on && warnOf[st.k];
     return { on, sum: warn || sum0, stt: !on ? 'off' : warn ? 'warn' : !warn && ok0 ? 'done' : 'todo' };
 }
-// 채우기(발행 준비 ①)를 끝내기 전엔 꾸미기 · 더 넣을 수 있는 칸 · 섹션 순서 바꾸기를 접어 둠 - [먼저 보기]를 누르면 이번엔 다 보임
+// 채우기(발행 준비 ①)를 끝내기 전엔 꾸미기 · 더 넣을 수 있는 칸 · 섹션 순서 바꾸기를 접어 둠 - [더 보기]를 누르면 이번엔 다 보임
 let spLaterShow = false, spLaterWas = false, spLaterNew = false;
 // 채우는 동안 다 채운 칸은 접히며 사라지고 '다 채운 칸 n개' 줄에 모임 (사용자 요청 2026-10-19, 관리자 flow.hideDone)
 //  적는 칸은 손을 뗀 뒤 0.7초 · 버튼·스위치로 채우면 ✓를 1.1초 보여 준 뒤 · 그 칸이 열려 있었으면 다음 할 일 칸을 엶 · 다시 비우면 다시 나타남
@@ -11905,9 +11909,21 @@ function spTaskState(tk) {
     if (tk.todo && tk.todo()) return { stt: 'todo', sum: tk.hint || '', on: true };
     return { stt: 'done', sum: (tk.sum && tk.sum()) || '다 채웠어요', on: true };
 }
+function spTaskMark(id, quiet) { // 할 일을 '다 했어요'로 (이대로 좋아요 · 질문에서 이미 만짐 · 질문을 지나감)
+    if (!Array.isArray(state.spTaskOk)) state.spTaskOk = [];
+    if (state.spTaskOk.includes(id)) return false;
+    state.spTaskOk.push(id); if (!quiet) { scheduleSnapshot(); spListLiveSoon(0); } return true;
+}
+// 질문·목록 어디서든 그 옵션을 직접 만지면 할 일도 끝 (질문에서 보일 부분·글자 잘 보이게를 맞췄는데 목록에 다시 뜨던 것)
+const SP_TASK_TOUCH = [['#spCropBox, #spVfpBox', 'hero:edit'], ['.sp-shade, .shz', 'hero:shade'], ['.hl-row', 'hero:layout']];
+['pointerdown', 'input', 'change', 'keydown'].forEach(ev => document.addEventListener(ev, e => {
+    const t = e.target; if (!t || !t.closest || !t.closest('#simplePane')) return;
+    if (ev === 'pointerdown' && !t.closest('button, input, .hl-card, [data-hl-id], #spCropBox, #spVfpBox')) return;
+    SP_TASK_TOUCH.forEach(([sel, id]) => { if (t.closest(sel)) spTaskMark(id, true); });
+}, true));
 function spTaskOkBtn(b, id, label) {
     const x = document.createElement('button'); x.type = 'button'; x.className = 'wz-next ghost sp-task-ok'; x.textContent = label;
-    x.addEventListener('click', () => { if (!Array.isArray(state.spTaskOk)) state.spTaskOk = []; if (!state.spTaskOk.includes(id)) state.spTaskOk.push(id); scheduleSnapshot(); spListLiveSoon(0); });
+    x.addEventListener('click', () => spTaskMark(id));
     b.appendChild(x);
 }
 function spDoneRowHtml(names, bads) {
@@ -11998,7 +12014,7 @@ function spRenderList() {
     const groups = SP_GROUPS.map(([g, t, sub]) => { const base = spSortByBlocks(steps.filter(st => !designOff(st) && (!isOff(st) || coreOff(st)) && spListGroup(st) === g && !(later && g === 'deco' && !warnOf[st.k] && !coreOff(st)))), rows = [];
         base.forEach(st => { if (coreOff(st)) { rows.push(item(st, true)); return; } const tks = taskMode && g !== 'deco' ? spTasksOf(st.k) : []; if (tks.length) tks.forEach(tk => { if (taskVis(tk)) rows.push(taskItem(tk, st)); }); else if (liVis(st, g)) rows.push(item(st)); }); // (할 일 칸이 있는 섹션은 옵션 하나씩)
         const tail = g === 'deco' && !later ? deskSh : ''; return rows.length || tail ? `<div class="spb-grp spb-${g}${g === 'deco' && spLaterNew ? ' spb-new' : ''}" data-g="${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${rows.join('')}${tail}</div></div>` : ''; }).join('')
-        + spDoneRowHtml(doneNames, fill) + (later ? `<div class="spb-later" id="spLater"><i aria-hidden="true">✦</i><span><b>꾸미기 · 칸 더 넣기</b><small>섹션 순서 바꾸기도 · 위 칸을 다 채우면 나와요</small></span><button type="button" id="spLaterOpen">먼저 보기</button></div>` : '');
+        + spDoneRowHtml(doneNames, fill) + (later ? `<div class="spb-later" id="spLater"><i aria-hidden="true">✦</i><span><b>꾸미기 · 칸 더 넣기</b><small>섹션 순서 바꾸기도 · 위 칸을 다 채우면 나와요</small></span><button type="button" id="spLaterOpen">더 보기</button></div>` : '');
     // 더 넣을 수 있는 칸 (꺼진 칸 + 디자인에서 꺼 둔 칸 · 스위치를 켜면 제 묶음으로 가서 펼쳐짐) - 예전 정리 화면 '기능 더 넣기'
     const adds = steps.filter(st => isOff(st) && !coreOff(st)), stkAdd = spOpt('flow', 'stkset') && !stkSetCur() && steps.some(x => x.k === 'theme') && stkSetList().length > 0;
     const addN = 5, addAll = spAddMore || adds.length <= addN + 1;
