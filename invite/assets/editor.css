@@ -5143,3 +5143,33 @@ html.look-mode .onb-steps { display: none !important; }
 .spi-txs .spi-txs-ok { flex: none; width: auto; height: 38px; padding: 0 20px; }
 .spi-txs textarea { height: auto; min-height: 60px; max-height: 120px; }
 .spi-txs-h { gap: 10px; }
+/* 간편 인트로 칸 1018z18m: 스티커 조작 틀 · 끌기 표시 · 동작 줄이기 · 꾸민 글 알림 */
+.spi-ph .spi-under, .spi-ph .spi-ov { border-radius: inherit; overflow: hidden; }
+.spi-ph.spi-sel { overflow: visible; }
+.spi-win:has(.spi-sel), .spi-box:has(.spi-sel) .spi-win { overflow: visible; }
+.spi-ph .sticker-gizmo { z-index: 40; }
+.spi-ph .sticker-gizmo .sg-handle { width: 20px; height: 20px; }
+.spi-ph .sticker-gizmo .sg-resize { right: -10px; bottom: -10px; }
+.spi-ph .spi-stk { transition: scale .12s ease, filter .12s ease; }
+.spi-ph .spi-stk.lift { scale: 1.14; filter: drop-shadow(0 8px 10px rgba(0,0,0,.38)) !important; cursor: grabbing; }
+.spi-ph .spi-stk.on:not(.lift) { animation: spiStkOn .5s ease 1; }
+@keyframes spiStkOn { 40% { scale: 1.12; } }
+.spi-gd { position: absolute; z-index: 35; pointer-events: none; opacity: 0; transition: opacity .12s; background: #E0A72E; }
+.spi-gd.v { left: 50%; top: 0; bottom: 0; width: 1px; }
+.spi-gd.h { top: 50%; left: 0; right: 0; height: 1px; }
+.spi-stkdrag .spi-gd.on { opacity: .9; }
+.spi-stkdrag .spi-ov { outline: 1px dashed rgba(255,255,255,.55); outline-offset: -6px; }
+.spi-edcap { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 45; display: flex; align-items: center; gap: 8px; padding: 5px 5px 5px 12px; border-radius: 18px; background: rgba(20,18,16,.78); color: #fff; font-size: 12px; white-space: nowrap; }
+.spi-edcap button { height: 28px; padding: 0 12px; border: 0; border-radius: 14px; background: #fff; color: #1E1C1A; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.spi-box .spi-win { position: relative; }
+.spi-editing .spi-cap, .spi-editing .spi-re { display: none; }
+.spi-off .spi-ph *, .spi-fxoff .spi-fxt *, .spi-hid .spi-ph *, .spi-hid .spi-fxt * { animation-play-state: paused !important; }
+.spi-stkm { height: 34px; padding: 0 11px; border-radius: 9px; border: 1px dashed var(--wz-line); background: #fff; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--wz-ink); cursor: pointer; }
+.spi-stkh { margin: 8px 0 0; }
+.spi-rich { margin: 0 0 6px; padding: 8px 10px; border-radius: 10px; background: #FBF4E4; color: #6B5A35; font-size: 12px; line-height: 1.5; }
+.spi-rich .sp-link { font-size: 12px; font-weight: 700; }
+textarea[readonly].spi-txt, .spi-txs textarea[readonly] { background: #F6F3EE; color: #8A7F72; }
+.spi-pal .stk-tab[data-t="mine"] { display: none; }
+@media (min-width: 861px) { .sticker-palette.stk2.spi-pal { right: 24px; bottom: 24px; left: auto; top: auto; z-index: 9550; } }
+@media (max-width: 860px) { .sticker-palette.stk2.spi-pal { z-index: 9550; } }
+@media (prefers-reduced-motion: reduce) { .spi-ph .spi-stk, .spi-ph .spi-stk.on { transition: none; animation: none; } }
