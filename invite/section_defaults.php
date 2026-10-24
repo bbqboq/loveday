@@ -19,7 +19,7 @@
  *                off    : 끈 세부 옵션 {step: [key]} · showOff: 디자인에서 꺼 둔 섹션도 목록에 보이기
  *                heroSample : 메인 사진 예시 '/invite/uploads/site/….webp' (고객이 사진을 고르기 전까지 간편 만들기 첫 화면에 보임)
  *                introPanel : 인트로 칸 'd'(미리보기 위에서 바로 + 추천 + 분위기 16가지, 기본) | 's'(쉬운 칸) | 'f'(재생 막대 + 움직이는 효과 카드) | 'e'(재생 막대) | 'b'(인트로 화면 그대로 + 아래 탭) | 'old'(예전 칸)
- *                nbPanel : 첫 화면 ↓ 스크롤 버튼 칸 'rows'(1 이름표 줄, 기본) | 'tiles'(2 버튼 그림 고르기) | 'focus'(3 미리보기 중심) | 'old'(예전 긴 칸)
+ *                nbPanel : 첫 화면 ↓ 스크롤 버튼 칸 'swipe'(첫 화면 큰 그림 넘기기, 기본) | 'rows'(1 이름표 줄) | 'tiles'(2 버튼 그림 고르기) | 'focus'(3 미리보기 중심) | 'old'(예전 긴 칸)
  *                readyStyle : 목록 화면 맨 위 발행 준비 카드 'next'(C안 큰 버튼 하나 = 다음 할 일, 기본) | 'bar'(예전 막대 + 고칠 것 칩)
  *                pcPick : PC 디자인 고르기 화면 'grid'(한눈에 격자 + 오른쪽 휴대폰, 기본) | 'film'(큰 휴대폰 + 아래 표지 띠) | 'car'(넘겨 보기 - 예전)
  *                mobileView : 휴대폰 간편 만들기 보기 방식 'split'(① 반반 화면, 기본) | 'lens'(② 떠 있는 돋보기 창) | 'lens2'(③ 비켜서고 접히는 창 + 바꾸면 잠깐 보여 주기) | 'peek'(④ 바꾸면 잠깐 보여 주기) | 'off'(질문만)
@@ -444,15 +444,15 @@ function section_defaults_easy_pick(string $key, array $allowed): string
 }
 function section_defaults_easy_fx(): string { return section_defaults_easy_pick('fxPanel', SECTION_EASY_FXS); }
 function section_defaults_easy_stk(): string { return section_defaults_easy_pick('stkEdit', SECTION_EASY_STKS); }
-const SECTION_EASY_NBS = ['rows', 'tiles', 'focus', 'old'];
-/** 간편 만들기 ↓ 스크롤 버튼 칸 모양 (기본 'rows' = 1 이름표 줄) */
+const SECTION_EASY_NBS = ['swipe', 'rows', 'tiles', 'focus', 'old'];
+/** 간편 만들기 ↓ 스크롤 버튼 칸 모양 (기본 'swipe' = 첫 화면 큰 그림 옆으로 넘기기, 1018z18r) */
 function section_defaults_easy_nb(): string
 {
     $f = section_defaults_file();
-    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 'rows';
+    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 'swipe';
     $j = json_decode((string) file_get_contents($f), true);
     $v = is_array($j) ? (string) ($j['easy']['nbPanel'] ?? '') : '';
-    return in_array($v, SECTION_EASY_NBS, true) ? $v : 'rows';
+    return in_array($v, SECTION_EASY_NBS, true) ? $v : 'swipe';
 }
 
 const SECTION_EASY_READYS = ['next', 'bar'];
@@ -522,8 +522,8 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if (!in_array($easyRd, SECTION_EASY_READYS, true)) $easyRd = 'next';
     $easyRdSet = $easyRd !== 'next';
     $easyNb = ($easyMore !== null && array_key_exists('nbPanel', $easyMore)) ? (string) $easyMore['nbPanel'] : section_defaults_easy_nb(); // 스크롤 버튼 칸 모양
-    if (!in_array($easyNb, SECTION_EASY_NBS, true)) $easyNb = 'rows';
-    $easyNbSet = $easyNb !== 'rows';
+    if (!in_array($easyNb, SECTION_EASY_NBS, true)) $easyNb = 'swipe';
+    $easyNbSet = $easyNb !== 'swipe';
     $easyIp = ($easyMore !== null && array_key_exists('introPanel', $easyMore)) ? (string) $easyMore['introPanel'] : section_defaults_easy_intro(); // 인트로 칸 모양
     if (!in_array($easyIp, SECTION_EASY_INTROS, true)) $easyIp = 'd';
     $easyIpSet = $easyIp !== 'd';

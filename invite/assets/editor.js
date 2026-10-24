@@ -190,7 +190,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy && ['split', 'lens', 'lens2', 'peek', 'off'].includes(j.easy.mobileView)) { EASY_MOBILE_VIEW = j.easy.mobileView; try { spMvApply(); } catch (e) {} } // 휴대폰 보기 방식 (관리자 손쉬운 제작)
     if (j && j.easy) { EASY_VIDEO_SAMPLE = /^[\w-]{11}$/.test(j.easy.videoSample || '') ? j.easy.videoSample : ''; try { if (spApplyVideoSample()) renderPreview(); } catch (e) {} } // 메인 영상 예시 (관리자 손쉬운 제작)
     if (j && j.easy) { EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; EASY_HERO_POS = j.easy.heroPos && typeof j.easy.heroPos === 'object' ? j.easy.heroPos : {}; } // 메인 사진 예시 + 보일 부분·확대 (관리자 손쉬운 제작)
-    if (j && j.easy && ['rows', 'tiles', 'focus', 'old'].includes(j.easy.nbPanel) && j.easy.nbPanel !== EASY_NB) { EASY_NB = j.easy.nbPanel; try { if (spHeroPhase === 'scroll' && document.getElementById('simplePane')) spRender(); } catch (e) {} } // 스크롤 버튼 칸 모양 (관리자 손쉬운 제작)
+    if (j && j.easy && ['swipe', 'rows', 'tiles', 'focus', 'old'].includes(j.easy.nbPanel) && j.easy.nbPanel !== EASY_NB) { EASY_NB = j.easy.nbPanel; try { if (spHeroPhase === 'scroll' && document.getElementById('simplePane')) spRender(); } catch (e) {} } // 스크롤 버튼 칸 모양 (관리자 손쉬운 제작)
     if (j && j.easy && ['list', 'cards'].includes(j.easy.fxPanel || 'list') && (j.easy.fxPanel || 'list') !== EASY_FX) { EASY_FX = j.easy.fxPanel || 'list'; try { if (document.querySelector('#simplePane :is(.hlb, .hlx-all)')) spRender(); } catch (e) {} } // 첫 화면 글자 효과 고르기 (1018z18p)
     if (j && j.easy && ['bubble', 'gizmo'].includes(j.easy.stkEdit || 'bubble')) EASY_STK = j.easy.stkEdit || 'bubble'; // 인트로 스티커 고치기 (1018z18p)
     if (j && j.easy && ['d', 's', 'f', 'e', 'b', 'old'].includes(j.easy.introPanel || 'd') && (j.easy.introPanel || 'd') !== EASY_INTRO) { EASY_INTRO = j.easy.introPanel || 'd'; try { if (document.querySelector('#simplePane .spi, #simplePane #spIntroPv')) spRender(); } catch (e) {} } // 인트로 칸 모양 (관리자 손쉬운 제작)
@@ -3552,6 +3552,14 @@ function nbxHtml(f, v, o) {
     const custBox = cust ? `<div class="nbx-cu"><b>✎ 직접 꾸미기 · 아이콘 · 바탕 · 색</b>${cust}</div>` : '';
     const pv = big => `<button type="button" class="nbx-pv${big ? ' big' : ''}" data-nx-play title="누르면 등장 효과를 다시 보여 줘요"><span class="nbx-pt">첫 화면</span>${on ? nbxLive(f) : '<span class="nbx-off">버튼 없음</span>'}</button>`;
     const row = (l, c) => `<div class="nbx-row"><b>${l}</b>${c}</div>`;
+    if (v === 'swipe' && o.card) { // 1018z18r (사용자: '인트로처럼 미리보기 큰 창에서 옆으로 넘기는 방식'): 첫 화면 큰 그림을 넘기며 모양 고르기 - 가운데 카드 = 고른 모양
+        const L = [['none']].concat(STY), cur = on ? st : 'none';
+        return `<div class="nbx nbx-swipe"><div class="nbx-hd"><b>↓ 스크롤 버튼 <small>옆으로 넘겨 모양을 골라요 · 누르면 다음 섹션으로 넘어가요</small></b></div>`
+            + `<div class="nbs-w"><button type="button" class="spi-sarr l" data-nbs-step="-1" aria-label="앞 모양">‹</button><div class="nbs" role="listbox" aria-label="스크롤 버튼 모양">${L.map(([k]) => `<button type="button" class="nbs-c${k === cur ? ' on' : ''}" data-nbs="${k}" role="option" aria-selected="${k === cur}" aria-label="${name(k)}"><span class="nbs-ph">${o.card(k)}</span></button>`).join('')}</div><button type="button" class="spi-sarr r" data-nbs-step="1" aria-label="다음 모양">›</button></div>`
+            + `<div class="nbs-n" aria-live="polite"><b data-nbs-n>${name(cur)}</b><span data-nbs-c>${L.findIndex(x => x[0] === cur) + 1} / ${L.length}</span></div>`
+            + `<div class="nbx-sws nbs-chips">${L.map(([k]) => `<button type="button" class="nbs-chip${k === cur ? ' on' : ''}" data-nbs-chip="${k}">${name(k)}</button>`).join('')}</div>`
+            + (on ? custBox + (o.size ? row('크기', seg('nextSize', IB.NEXT_SIZES, sz)) : '') + (o.op ? row('진하기', rng) : '') + (o.anim ? row('움직임', seg('nextAnim', IB.NEXT_ANIMS, an)) : '') + (o.fx ? row('등장', chips('nextFx', IB.NEXT_FX, fx)) : '') : '') + '</div>';
+    }
     if (v === 'rows') {
         return `<div class="nbx nbx-rows"><div class="nbx-hd"><b>↓ 스크롤 버튼 <small>누르면 다음 섹션으로 넘어가요</small></b><button type="button" class="nbx-tg${on ? ' on' : ''}" data-nx-tog role="switch" aria-checked="${on}" aria-label="스크롤 버튼 켜기"></button></div>`
             + (on ? pv() + row('모양', `<div class="nbx-sws">${STY.map(([k]) => `<button type="button" class="nbx-sw${st === k ? ' on' : ''}" data-nx-st="${k}" title="${name(k)}" aria-label="${name(k)}">${sw(k)}</button>`).join('')}</div>`) + custBox
@@ -3593,11 +3601,30 @@ function nbxKeep(box) {
 function nbxBind(box, f, after0) {
     const after = ch => { const back = nbxKeep(box); after0(ch); back(); };
     const setSt = v => {
-        if (v === 'none') f.nextBtn = false; else { f.nextBtn = true; f.nextStyle = v; feFx.playNext = true; }
+        if (v === 'none') f.nextBtn = false; else { f.nextBtn = true; f.nextStyle = v; feFx.playNext = true; feFx.nbsPlay = true; }
         if (v === 'custom' && !f.nextShape) { f.nextShape = 'none'; f.nextIcon = f.nextIcon || 'dbl'; }
         after(true);
     };
     box.querySelectorAll('[data-nx-st]').forEach(b => b.addEventListener('click', () => setSt(b.dataset.nxSt)));
+    const car = box.querySelector('.nbs');
+    if (car) { // 큰 그림 넘기기: 넘기는 동안은 이름만, 멈추면 그 모양으로 (다시 그려도 고른 카드가 가운데라 화면이 안 튐)
+        const cards = [...car.querySelectorAll('.nbs-c')], ids = cards.map(c => c.dataset.nbs), cur0 = f.nextBtn ? f.nextStyle : 'none';
+        const nm = k => k === 'none' ? '없음' : (NBP_STY.find(x => x[0] === k) || NBP_STY[0])[1];
+        const fit = () => cards.forEach(c => { const ph = c.querySelector('.nbs-ph'); if (ph && ph.offsetWidth) ph.style.setProperty('--k', (ph.offsetWidth / 390).toFixed(3)); });
+        const go = (k, smooth) => { const c = cards.find(x => x.dataset.nbs === k); if (c) car.scrollTo({ left: c.offsetLeft - (car.clientWidth - c.offsetWidth) / 2, behavior: smooth ? 'smooth' : 'auto' }); };
+        const mid = () => { const m = car.scrollLeft + car.clientWidth / 2; let best = null, bd = 1e9; cards.forEach(c => { const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - m); if (d < bd) { bd = d; best = c; } }); return best ? best.dataset.nbs : cur0; };
+        const mark = k => { cards.forEach(c => { const me = c.dataset.nbs === k; c.classList.toggle('on', me); c.setAttribute('aria-selected', me); });
+            box.querySelectorAll('[data-nbs-chip]').forEach(c => c.classList.toggle('on', c.dataset.nbsChip === k));
+            const n0 = box.querySelector('[data-nbs-n]'), c0 = box.querySelector('[data-nbs-c]'); if (n0) n0.textContent = nm(k); if (c0) c0.textContent = (ids.indexOf(k) + 1) + ' / ' + ids.length; };
+        let t = 0, ready = false;
+        car.addEventListener('scroll', () => { if (!ready) return; const k = mid(); mark(k); clearTimeout(t); t = setTimeout(() => { const k2 = mid(); if (k2 !== (f.nextBtn ? f.nextStyle : 'none')) setSt(k2); }, 220); }, { passive: true });
+        cards.forEach(c => c.addEventListener('click', () => { const k = c.dataset.nbs; if (k === mid()) { const nb = c.querySelector('.ib-next'); if (nb) InviteBlocks.playNextFx(nb, InviteBlocks.nextFxOf(f), 'editor'); } else go(k, true); }));
+        box.querySelectorAll('[data-nbs-chip]').forEach(c => c.addEventListener('click', () => go(c.dataset.nbsChip, true)));
+        box.querySelectorAll('[data-nbs-step]').forEach(b => b.addEventListener('click', () => { const i = ids.indexOf(mid()) + Number(b.dataset.nbsStep); go(ids[(i + ids.length) % ids.length], true); }));
+        requestAnimationFrame(() => { fit(); go(cur0, false); const ch = box.querySelector('.nbs-chip.on'), cr = box.querySelector('.nbs-chips'); if (ch && cr) cr.scrollLeft = ch.offsetLeft - (cr.clientWidth - ch.offsetWidth) / 2;
+            setTimeout(() => { ready = true; }, 80);
+            if (f.nextBtn && feFx.nbsPlay) { feFx.nbsPlay = false; const nb = car.querySelector('.nbs-c.on .ib-next'); if (nb) InviteBlocks.playNextFx(nb, InviteBlocks.nextFxOf(f), 'editor'); } });
+    }
     box.querySelectorAll('[data-nx-tog]').forEach(b => b.addEventListener('click', () => setSt(f.nextBtn ? 'none' : (NBP_STY.some(x => x[0] === f.nextStyle) ? f.nextStyle : 'glass'))));
     box.querySelectorAll('[data-nx-step]').forEach(b => b.addEventListener('click', () => {
         const cu = (b.closest('.nbx') || {}).dataset?.cu === '1';
@@ -3607,7 +3634,7 @@ function nbxBind(box, f, after0) {
     }));
     box.querySelectorAll('[data-nx]').forEach(b => b.addEventListener('click', () => {
         const k = b.dataset.nx; f[k] = b.dataset.v;
-        if (k === 'nextAnim') feFx.playAnim = true; else feFx.playNext = true;
+        if (k === 'nextAnim') feFx.playAnim = true; else { feFx.playNext = true; feFx.nbsPlay = true; }
         after(true);
     }));
     box.querySelectorAll('[data-nx-tab]').forEach(b => b.addEventListener('click', () => { NBX_UI.tab = NBX_UI.tab === b.dataset.nxTab ? '' : b.dataset.nxTab; after(false); }));
@@ -3618,7 +3645,7 @@ function nbxBind(box, f, after0) {
     }));
     const op = box.querySelector('[data-nx-op]');
     if (op) {
-        op.addEventListener('input', () => { f.nextOpacity = +op.value; const em = op.nextElementSibling; if (em) em.textContent = op.value + '%'; box.querySelectorAll('.nbx-pv .ib-next').forEach(n => n.style.setProperty('--next-op', op.value / 100)); renderPreview(); });
+        op.addEventListener('input', () => { f.nextOpacity = +op.value; const em = op.nextElementSibling; if (em) em.textContent = op.value + '%'; box.querySelectorAll('.nbx-pv .ib-next, .nbs .ib-next').forEach(n => n.style.setProperty('--next-op', op.value / 100)); renderPreview(); });
         op.addEventListener('change', () => after(true));
     }
     const cp = box.querySelector('[data-nx-col]');
@@ -9334,7 +9361,7 @@ function bindDesignCards(box) {
 //  관리자 손쉬운 제작 → 간편 만들기 전체 → '디자인 고르기: 큰 휴대폰 넘겨 보기'(flow.pick)를 끄면 예전 카드 화면
 const DPK = { ids: [], cur: '', filt: 'all', shots: {}, samples: {}, q: Promise.resolve(), key: '', touched: false, raf: 0, bound: false, todo: [], ovId: '', mode: 'car', sig: {}, sigKey: '' };
 // PC 화면 모양 (관리자 손쉬운 제작 → PC 디자인 고르기 화면): 'grid' 한눈에 격자 + 오른쪽 휴대폰 · 'film' 큰 휴대폰 + 아래 표지 띠 · 'car' 넘겨 보기(예전, 휴대폰은 늘 이것)
-let EASY_PC_PICK = 'grid', DPK_SECDEF = false, EASY_READY = 'next', EASY_NB = 'rows'; // EASY_NB: 간편 스크롤 버튼 칸 'rows' 1 이름표 줄 | 'tiles' 2 버튼 그림 | 'focus' 3 미리보기 중심 | 'old' 예전 긴 칸
+let EASY_PC_PICK = 'grid', DPK_SECDEF = false, EASY_READY = 'next', EASY_NB = 'swipe'; // EASY_NB: 간편 스크롤 버튼 칸 'swipe' 첫 화면 큰 그림 넘기기(기본, 1018z18r) | 'rows' 1 이름표 줄 | 'tiles' 2 버튼 그림 | 'focus' 3 미리보기 중심 | 'old' 예전 긴 칸
 // EASY_READY: 목록 화면 발행 준비 카드 'next'(C안 큰 버튼 하나) | 'bar'(예전 막대 + 칩)
 function dpkMode() { try { return window.matchMedia('(min-width: 861px)').matches && !window.matchMedia('(pointer: coarse)').matches ? EASY_PC_PICK : 'car'; } catch (e) { return 'car'; } }
 // 관리자가 찍어 둔 디자인 그림 (관리자 → 추천 디자인 → 디자인 썸네일 만들기 = ?thumbs=make, dpk_thumbs.php)
@@ -12269,11 +12296,18 @@ function spHeroToScroll(box) { // 위 목록을 차례로 접고 스크롤 버�
     items.forEach((el, i) => { el.style.transitionDelay = (i * 45) + 'ms'; el.classList.add('sp-out'); el.style.maxHeight = ''; });
     setTimeout(() => { spHeroPhase = 'scroll'; spRender(); }, 260 + items.length * 45);
 }
+// 스크롤 버튼 큰 그림 카드 한 장: 지금 첫 화면(레이아웃 · 사진 · 글자 잘 보이게) + 그 모양 버튼 (지금 크기 · 진하기 · 움직임 · 등장 그대로)
+function nbsCard(b, kind) {
+    const f = b.fields, kk = kind === 'video' ? 'video' : 'hero';
+    let m = ''; try { const lay = spHeroLayouts().find(l => l.id === f.heroLayout) || { parts: {} }; m = spHeroLayoutMini(lay, b, kind === 'video' ? 'video' : 'photo'); } catch (e) {}
+    let sh = ''; try { const k = InviteBlocks.heroShadeOf(f, kk), p = shadePct(f, kk); if (k && k !== 'none') sh = `<i class="ib-shade ib-shade-${k}" style="--sh:${p / 100}"></i>`; } catch (e) {}
+    return st => `${m}${sh}<span class="nbs-nb">${st === 'none' ? '<em class="nbs-off">버튼 없음</em>' : nbxLive(Object.assign({}, f, { nextBtn: true, nextStyle: st }))}</span>`;
+}
 function spHeroScroll(box) {
     const { b, kind } = spHeroCur(), f = b.fields;
     const on = !!f.nextBtn, st = NBP_STY.some(x => x[0] === f.nextStyle) ? f.nextStyle : 'glass';
     const what = kind === 'video' ? '유튜브 영상' : '사진';
-    const IB = InviteBlocks, nbxV = ['rows', 'tiles', 'focus'].includes(EASY_NB) ? EASY_NB : ''; // 관리자 손쉬운 제작 → 스크롤 버튼 칸 (old = 예전 긴 칸)
+    const IB = InviteBlocks, nbxV = ['swipe', 'rows', 'tiles', 'focus'].includes(EASY_NB) ? EASY_NB : ''; // 관리자 손쉬운 제작 → 스크롤 버튼 칸 (old = 예전 긴 칸)
     // 전체화면이면 글자가 늘 사진·영상 위라 "글자 잘 보이게"가 제일 필요함 - 접힌 목록 대신 이 화면에도 둠
     const shadeOn = spOpt('hero', 'shade') && IB.heroTextOn(f, kind === 'video' ? 'video' : 'hero');
     const chip = (k, l) => `<button type="button" class="nbp-c${(k === 'none' ? !on : on && st === k) ? ' on' : ''}" data-sp-nb="${k}">${k === 'none' ? '<span class="nbp-scr off"><i class="nbp-ghost">⊘</i></span>' : `<span class="nbp-scr">${nbpMini(f, k)}${k === 'custom' ? '<i class="nbp-pen">✎</i>' : ''}</span>`}${l}</button>`;
@@ -12290,14 +12324,14 @@ function spHeroScroll(box) {
     box.innerHTML = spH('↓ 스크롤 버튼', '전체화면 아래쪽에 "아래로 내려보세요" 버튼을 띄울지 골라요. 누르면 다음 섹션으로 넘어가요.') +
         `<div class="sp-sum sp-in"><span><b>${what}</b> · 전체화면</span><button type="button" class="sp-link" id="spHeroBack">← 다시 고르기</button></div>
         ${shadeOn ? `<div class="sp-shade sp-in" data-blk="${b.id}">${shadeFieldHtml(f, kind === 'video' ? 'video' : 'hero', b)}</div>` : ''}
-        ${nbxV ? `<div class="sp-in sp-nbx">${nbxHtml(f, nbxV, { custom: spOpt('hero', 'scrollCustom'), size: spOpt('hero', 'scrollSize'), op: spOpt('hero', 'scrollOpacity'), anim: spOpt('hero', 'scrollMotion'), fx: spOpt('hero', 'scrollFx') })}</div>` : `<div class="wz-field sp-in"><div class="wz-lab"><span><span class="sp-n">4</span>버튼 모양</span></div><div class="sp-nbp">${chip('none', '없음')}${NBP_STY.filter(([k]) => k !== 'custom' || spOpt('hero', 'scrollCustom') || st === 'custom').map(([k, l]) => chip(k, l)).join('')}</div></div>
+        ${nbxV ? `<div class="sp-in sp-nbx">${nbxHtml(f, nbxV, { card: nbsCard(b, kind), custom: spOpt('hero', 'scrollCustom'), size: spOpt('hero', 'scrollSize'), op: spOpt('hero', 'scrollOpacity'), anim: spOpt('hero', 'scrollMotion'), fx: spOpt('hero', 'scrollFx') })}</div>` : `<div class="wz-field sp-in"><div class="wz-lab"><span><span class="sp-n">4</span>버튼 모양</span></div><div class="sp-nbp">${chip('none', '없음')}${NBP_STY.filter(([k]) => k !== 'custom' || spOpt('hero', 'scrollCustom') || st === 'custom').map(([k, l]) => chip(k, l)).join('')}</div></div>
         ${on ? (spOpt('hero', 'scrollCustom') ? custom : '') + (spOpt('hero', 'scrollSize') ? pick('nextSize', IB.NEXT_SIZES, sz, '버튼 크기') : '')
             + (spOpt('hero', 'scrollOpacity') ? `<div class="wz-field sp-in"><div class="wz-lab"><span>진하기</span><small id="spNbOpV">${f.nextOpacity || 85}%</small></div><div class="sp-range"><span>흐리게</span><input type="range" id="spNbOp" min="30" max="100" step="5" value="${f.nextOpacity || 85}"><span>진하게</span></div></div>` : '')
             + (spOpt('hero', 'scrollMotion') ? pick('nextAnim', IB.NEXT_ANIMS, an, '움직임') : '') + (spOpt('hero', 'scrollFx') ? pick('nextFx', IB.NEXT_FX, fx, '등장 효과 <small>처음 보일 때 한 번</small>') : '') : ''}`}
         <p class="wz-hint sp-in">누를 때마다 미리보기에서 버튼이 움직여 보여요. 다 골랐으면 <b>다음</b>을 눌러요.</p>`;
     box.querySelectorAll('.sp-in').forEach((el, i) => { el.style.animationDelay = (i * 50) + 'ms'; });
     // 스크롤 버튼을 위 전·후 그림에 바로 (1018z18q, 사용자: '버튼을 고르면 좌측 상단 전·후 그림에 실시간으로') - 버튼 칸 안 따로 미리보기는 뺌 · 관리자 메인 화면 옵션 scrollMini
-    const mini = shadeOn && nbxV && spOpt('hero', 'scrollMini') && box.querySelector('.sp-shade .shz-cmp');
+    const mini = shadeOn && nbxV && nbxV !== 'swipe' && spOpt('hero', 'scrollMini') && box.querySelector('.sp-shade .shz-cmp'); // (큰 그림 넘기기는 그 그림이 미리보기)
     if (mini) {
         box.querySelector('.sp-nbx')?.classList.add('nbx-nopv');
         mini.insertAdjacentHTML('beforeend', `<span class="shz-nb" aria-hidden="true">${on ? nbxLive(f) : ''}</span>`);
