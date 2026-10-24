@@ -603,6 +603,8 @@ function playIntroAnimation(design, onReveal) {
     textEl.style.left = (intro.x ?? 50) + '%';
     textEl.style.top = (intro.y ?? 50) + '%';
     if (intro.textWidthPct) textEl.style.width = intro.textWidthPct + '%'; // 에디터에서 측정해둔 고정폭 그대로 사용 (기기별 재측정으로 인한 줄바꿈 불일치 방지)
+    // 자동으로 잰 폭(직접 정한 폭 아님)은 글자만 잰 값이라 양옆 여백(padding 30px)을 빼고 쓰면 실기에서 두 줄로 바뀌었음 (1018z18z5) - 여백 없이 + 반올림 여유 1%
+    if (intro.textWidthPct && !intro.textWidthManual) { textEl.style.padding = '0'; textEl.style.width = Math.min(100, intro.textWidthPct + 1) + '%'; textEl.style.maxWidth = '100%'; }
     textEl.style.transform = `translate(-50%,-50%) scaleX(${(intro.sx || 100) / 100}) rotate(${intro.rotation || 0}deg)`;
     if (intro.ls) textEl.style.letterSpacing = lsEm(intro.ls);
     textEl.style.textAlign = intro.align || 'center';

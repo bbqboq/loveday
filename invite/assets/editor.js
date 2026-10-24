@@ -14232,7 +14232,7 @@ function spIntroPanel(box, kind) {
         box.querySelectorAll('[data-spi-tq]').forEach(b => b.addEventListener('click', () => { const t = state.intro; t.text = b.dataset.spiTq; delete t.html; if (!t.textWidthManual) delete t.textWidthPct; scheduleSnapshot(); spRender(); }));
         box.querySelectorAll('[data-spi-tool]').forEach(b => b.addEventListener('click', () => {
             const k = b.dataset.spiTool;
-            if (k === 'text') spiTxSheet(root);
+            if (k === 'text') spiTxOpen(root);
             else if (k === 'stk') { const pal = spiStkPal(); pal.classList.add('open'); }
             else if (k === 'help') spiStkTip(root, true);
             else if (k === 'onoff') { state.intro.enabled = !state.intro.enabled; spChanged && spChanged(); scheduleSnapshot(); spRender(); }
@@ -14396,6 +14396,87 @@ function spiStkAdd(p) {
     document.getElementById('spiStkPal')?.classList.remove('open');
     try { renderIntroStickers(); } catch (e) {} scheduleSnapshot(); spRender();
 }
+// 글자를 누르면: 전문가 모드 문구 창(spiTxPop, 1018z18z5 - 관리자 finish.introPop) / 끄면 예전 아래 글자 창
+function spiTxOpen(root) { return spOpt('finish', 'introPop') ? spiTxPop(root) : spiTxSheet(root); }
+// 전문가 모드 인트로 문구 창과 같은 칸(크기 · 회전 · 장평 · 자간 · 색 · 테두리 · 위치) + 맨 위 문구 · 멘트 예시 · 글꼴 - 정렬 · 줄 폭은 없음(늘 가운데 · 자동 한 줄)
+function spiTxPop(root) {
+    document.getElementById('spiTxs')?.remove(); document.getElementById('spiTtp')?.remove();
+    const i = state.intro, fonts = fontOptions.filter(f => f.id === '' || f.cssUrl || f.family);
+    const st = () => root.isConnected ? root : document.querySelector('#simplePane .spi');
+    const txEl = () => { const r = st(); return r && r.querySelector('.spi-tx'); };
+    const box = document.createElement('div'); box.id = 'spiTtp'; box.className = 'text-toolbar intro-tt spi-ttp';
+    box.innerHTML = `<div class="itt-head"><b class="itt-title"><i>Aa</i>인트로 문구</b><button type="button" class="tt-close" aria-label="닫기">✕</button></div>
+        ${spiRichNote('spiTtpT')}<textarea class="wz-inp spi-ttp-t" id="spiTtpT" rows="2" placeholder="우리 결혼합니다"${spiRich() ? ' readonly' : ''}>${esc(i.text || '')}</textarea>
+        ${spiRich() ? '' : `<div class="spi-txq2">${SPI_TXQ.map(t => `<button type="button" class="${(i.text || '') === t ? 'on' : ''}" data-tq="${esc(t)}">${esc(t)}</button>`).join('')}</div>`}
+        <div class="spi-ttp-f">${fonts.map(f => `<button type="button" class="${(i.font || '') === f.id ? 'on' : ''}" data-f="${esc(f.id)}"${f.family ? ` style="font-family:${esc(f.family.replace(/"/g, "'"))}"` : ''}>${esc(f.id ? f.label.replace(/\s*\(.*\)\s*$/, '') : '청첩장 글꼴')}</button>`).join('')}</div>
+        <div class="itt-grid">${ittCell('크기', 'fs', '')}${ittCell('회전', 'rot', '')}${ittCell('장평', 'sx', '')}${ittCell('자간', 'ls', '')}</div>
+        <div class="itt-row"><small>색</small>${ittColorHtml(i.color)}</div>
+        <div class="itt-row"><small>테두리</small>${ittEdgeHtml(i)}</div>
+        <div class="itt-row tt-pos"><small>위치</small><div class="itt-nudge"><button type="button" data-nudge="left" title="왼쪽">←</button><button type="button" data-nudge="up" title="위">↑</button><button type="button" class="mid" data-act="center-x" title="좌우 가운데로">가운데</button><button type="button" data-nudge="down" title="아래">↓</button><button type="button" data-nudge="right" title="오른쪽">→</button></div></div>`;
+    document.body.appendChild(box);
+    fonts.forEach(f => f.id && loadFontCss(f.id));
+    spiStkUnsel(st(), true); spiPause(st(), true); spiRichBind(box);
+    { const tx = txEl(), ty = tx && tx.querySelector('.intro-typed'); if (ty) ty.textContent = i.text || ''; tx && tx.classList.add('spi-tx-on'); }
+    const mob = () => window.innerWidth <= 860, vv = window.visualViewport;
+    const place = () => { if (!box.isConnected) return;
+        if (mob()) { const off = vv ? Math.max(0, window.innerHeight - (vv.offsetTop + vv.height)) : 0, h = vv ? vv.height : window.innerHeight;
+            box.style.left = '8px'; box.style.right = '8px'; box.style.width = 'auto'; box.style.top = 'auto'; box.style.bottom = (off + 8) + 'px'; box.style.maxHeight = Math.max(200, Math.min(h - 16, window.innerHeight * 0.62)) + 'px'; box.style.overflowY = 'auto'; return; }
+        const tx = txEl(), r = (tx || st() || document.body).getBoundingClientRect(), bw = box.offsetWidth, bh = box.offsetHeight;
+        let left = r.right + 18, top = r.top + r.height / 2 - bh / 2; // (PC: 미리보기 글자 오른쪽, 자리가 없으면 왼쪽)
+        if (left + bw > window.innerWidth - 8) left = Math.max(8, r.left - bw - 18);
+        top = Math.max(8, Math.min(window.innerHeight - bh - 8, top));
+        box.style.left = left + 'px'; box.style.top = top + 'px'; box.style.maxHeight = (window.innerHeight - 16) + 'px'; box.style.overflowY = 'auto'; };
+    const vals = () => { const q = k => box.querySelector(`[data-val="${k}"]`);
+        if (q('fs')) q('fs').textContent = Math.round(i.fontSize || 26) + 'px'; if (q('rot')) q('rot').textContent = (i.rotation || 0) + '°';
+        if (q('sx')) q('sx').textContent = (i.sx || 100) + '%'; if (q('ls')) q('ls').textContent = ittLsText(i.ls); };
+    const live = () => { const tx = txEl(); if (tx) {
+            tx.style.fontFamily = spiFontFamily(i.font); tx.style.fontSize = fontToCqw(i.fontSize || 26); tx.style.color = spiTextColor(i);
+            tx.style.transform = introTextTransform(i); tx.style.letterSpacing = lsEm(i.ls); tx.style.textShadow = textEdge(i) || '';
+            tx.style.left = (i.x ?? 50) + '%'; tx.style.top = (i.y ?? 50) + '%'; if (!i.textWidthPct) tx.style.width = '';
+            const ty = tx.querySelector('.intro-typed'); if (ty) ty.textContent = i.text || ''; }
+        vals(); scheduleSnapshot(); };
+    const rebake = () => { if (!i.textWidthManual) delete i.textWidthPct; live(); clearTimeout(box._b); box._b = setTimeout(() => { const r = st(); if (r) spiBakeSoon(r); }, 120); };
+    const mark = (sel, el) => box.querySelectorAll(sel).forEach(x => x.classList.toggle('on', x === el));
+    // 휴대폰: 창이 아래를 덮으니 미리보기 글자가 창 위(보이는 곳 가운데)에 오게 화면을 옮김
+    const bring = () => { const tx = txEl(); if (!tx || !mob()) return; const r = tx.getBoundingClientRect(), bt = box.getBoundingClientRect().top, top = 64;
+        if (r.top >= top && r.bottom <= bt - 12) return;
+        let sc = tx.parentElement; while (sc && sc !== document.body && !(sc.scrollHeight > sc.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
+        const d = (r.top + r.height / 2) - (top + bt) / 2; if (!sc || sc === document.body) window.scrollBy({ top: d, behavior: 'smooth' }); else sc.scrollBy({ top: d, behavior: 'smooth' }); };
+    vals(); place(); requestAnimationFrame(() => { place(); bring(); });
+    const t = box.querySelector('#spiTtpT');
+    t.addEventListener('input', () => { i.text = t.value; delete i.html; mark('[data-tq]', null); rebake(); });
+    box.querySelectorAll('[data-tq]').forEach(b => b.addEventListener('click', () => { t.value = i.text = b.dataset.tq; delete i.html; mark('[data-tq]', b); rebake(); }));
+    box.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.f; if (v) { i.font = v; loadFontCss(v); } else delete i.font; mark('[data-f]', b); rebake(); }));
+    const fsSet = v => { i.fontSize = Math.max(14, Math.min(60, Math.round(v * 10) / 10)); };
+    box.querySelector('[data-act="fs-dec"]').addEventListener('click', () => { fsSet((i.fontSize || 26) - 1); rebake(); });
+    box.querySelector('[data-act="fs-inc"]').addEventListener('click', () => { fsSet((i.fontSize || 26) + 1); rebake(); });
+    bindEditableValue(box, 'fs', 14, 60, v => fsSet(v), () => i.fontSize || 26, rebake);
+    const rotSet = v => { i.rotation = Math.max(-180, Math.min(180, Math.round(v * 10) / 10)); };
+    box.querySelector('[data-act="rot-dec"]').addEventListener('click', () => { rotSet((i.rotation || 0) - 1); live(); });
+    box.querySelector('[data-act="rot-inc"]').addEventListener('click', () => { rotSet((i.rotation || 0) + 1); live(); });
+    bindEditableValue(box, 'rot', -180, 180, v => rotSet(v), () => i.rotation || 0, live);
+    const setSx = v => { v = Math.max(50, Math.min(200, Math.round(v))); if (v === 100) delete i.sx; else i.sx = v; };
+    box.querySelector('[data-act="sx-dec"]').addEventListener('click', () => { setSx((i.sx || 100) - 1); rebake(); });
+    box.querySelector('[data-act="sx-inc"]').addEventListener('click', () => { setSx((i.sx || 100) + 1); rebake(); });
+    bindEditableValue(box, 'sx', 50, 200, v => setSx(v), () => i.sx || 100, rebake);
+    bindIttLs(box, () => i.ls, v => { if (v) i.ls = v; else delete i.ls; }, rebake);
+    bindIttColor(box, () => i.color || '', c => { if (c) i.color = c; else delete i.color; live(); });
+    bindIttEdge(box, q => q === 'color' ? i.glow : edgeOf(i), (m, c) => { setEdge(i, m, c); live(); });
+    const NUDGE = 0.4;
+    box.querySelectorAll('[data-nudge]').forEach(b => b.addEventListener('click', () => { const d = b.dataset.nudge, y = i.y ?? 50, x = i.x ?? 50;
+        if (d === 'up') i.y = Math.max(2, y - NUDGE); if (d === 'down') i.y = Math.min(98, y + NUDGE); if (d === 'left') i.x = Math.max(2, x - NUDGE); if (d === 'right') i.x = Math.min(98, x + NUDGE); live(); }));
+    box.querySelector('[data-act="center-x"]').addEventListener('click', () => { i.x = 50; live(); });
+    const kb = () => place();
+    if (vv) { vv.addEventListener('resize', kb); vv.addEventListener('scroll', kb); }
+    window.addEventListener('resize', kb);
+    const born = Date.now();
+    const out = e => { if (!box.isConnected) return done(); if (Date.now() - born < 400) return; const tx = txEl();
+        if (box.contains(e.target) || (tx && tx.contains(e.target)) || (e.target.isConnected === false)) return; done(); };
+    const done = () => { document.removeEventListener('pointerdown', out, true); window.removeEventListener('resize', kb); if (vv) { vv.removeEventListener('resize', kb); vv.removeEventListener('scroll', kb); }
+        if (!box.isConnected) return; box.remove(); txEl()?.classList.remove('spi-tx-on'); try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); SPI.play = true; spRender(); };
+    document.addEventListener('pointerdown', out, true);
+    box.querySelector('.tt-close').addEventListener('click', done);
+}
 // 미리보기 글자를 누르면 뜨는 글자 고치기 창 (사용자 2026-10-20: 전문가 모드처럼 글 적기 · 글꼴 · 크기 · 색 · 정렬) - 바꾸면 미리보기 글자가 바로 바뀜
 function spiTxSheet(root) {
     document.getElementById('spiTxs')?.remove();
@@ -14409,7 +14490,7 @@ function spiTxSheet(root) {
         <div class="spi-txs-l">글꼴</div><div class="spi-row">${fonts.map(f => `<button type="button" class="spi-font${(i.font || '') === f.id ? ' on' : ''}" data-f="${esc(f.id)}"${f.family ? ` style="font-family:${esc(f.family.replace(/"/g, "'"))}"` : ''}>${esc(f.id ? f.label.replace(/\s*\(.*\)\s*$/, '') : '청첩장 글꼴')}</button>`).join('')}</div>
         <div class="sp-range"><span>크기</span><input type="range" id="spiTxsS" min="14" max="56" step="1" value="${fsz()}"><span id="spiTxsSV">${fsz()}</span></div>
         <div class="spi-txs-r"><div class="spi-cols">${cols.map(([c, t]) => `<button type="button" class="${(i.color || '').toUpperCase() === c.toUpperCase() ? 'on' : ''}${c ? '' : ' def'}" data-c="${c}" title="${t}" aria-label="글자 색 ${t}"${c ? ` style="--c:${c}"` : ''}>${c ? '' : '기본'}</button>`).join('')}</div>
-            <div class="spi-al">${[['left', '왼쪽'], ['center', '가운데'], ['right', '오른쪽']].map(([v, t]) => `<button type="button" class="${(i.align || 'center') === v ? 'on' : ''}" data-a="${v}" aria-label="${t} 정렬">${t}</button>`).join('')}</div></div>
+</div>
     </div>`;
     document.body.appendChild(box);
     fonts.forEach(f => f.id && loadFontCss(f.id));
@@ -14478,7 +14559,7 @@ function spiDragBind(root) {
             if (tx) { i.x = cl(x0 + dx); i.y = cl(y0 + dy); tx.style.left = i.x + '%'; tx.style.top = i.y + '%'; }
             else { const k = fit === 'custom' ? 1 : -1.6; i.bgX = cl(x0 + dx * k); i.bgY = cl(y0 + dy * k); img.style.cssText = introBgImgCss(i); } };
         const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); ph.classList.remove('spi-dragging');
-            if (tx && moved < 6) { tx.style.left = (i.x ?? 50) + '%'; tx.style.top = (i.y ?? 50) + '%'; return spiTxSheet(root); } // (글자를 톡 누름 = 글자 고치기 창)
+            if (tx && moved < 6) { tx.style.left = (i.x ?? 50) + '%'; tx.style.top = (i.y ?? 50) + '%'; return spiTxOpen(root); } // (글자를 톡 누름 = 글자 고치기 창)
             try { applyIntroPreviewStyle(); } catch (er) {} scheduleSnapshot(); if (SPI.play) { root.classList.remove('spi-paused'); setTimeout(() => spiRun(root), 900); } };
         window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
     });
