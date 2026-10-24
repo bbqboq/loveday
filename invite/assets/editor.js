@@ -11690,12 +11690,16 @@ function spRenderAsk(pane) {
         if (pane.querySelector('#spCropBox, #spVfpBox')) spTaskMark('hero:edit', true);
         if (scrollPh || !spHeroScrollOk()) spTaskMark('hero:shade', true);
         if (pane.querySelector('.hl-row')) spTaskMark('hero:layout', true); };
-    const go = n => { if (n > spStep) lookSeen(); if (n >= N) return spAskToList(); spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n)); spRender(); spAskAutoSave(); }; // 정리 화면을 끄면 바로 완성본
+    const go = n => { if (n > spStep) lookSeen(); if (n >= N) return spAskToList(); spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n));
+        { const to = spAskSteps()[spStep]; if (to && to.k === 'finish' && SPI.dstep === 'edit' && spOpt('finish', 'introSteps')) SPI.dstep = 'pick'; } // 인트로 질문에 새로 들어오면 늘 ① 분위기 고르기부터 (사용자 보고: 뒤로 갔다 오면 바로 ② 마지막 화면이 나옴)
+        spRender(); spAskAutoSave(); }; // 정리 화면을 끄면 바로 완성본
     const lookToScroll = () => st && st.k === 'hero' && st.part === 'look' && !scrollPh && spHeroScrollOk();
     const next = () => { const need = scrollPh ? '' : spAskNeed(st); if (need) return spAskNag(pane, need); if (lookToScroll()) { lookSeen(); return spHeroToScroll(pane.querySelector('#spBody')); } return go(spStep + 1); };
     pane._askNeed = () => scrollPh ? '' : spAskNeed(st); spAskNeedSync(pane);
     if (!pane._askNeedOn) { pane._askNeedOn = true; const sync = () => setTimeout(() => spAskNeedSync(pane), 60); pane.addEventListener('input', sync); pane.addEventListener('click', sync, true); pane.addEventListener('change', sync); }
-    const prev = () => scrollPh ? (spHeroPhase = 'pick', spRender()) : go(spStep - 1);
+    const prev = () => scrollPh ? (spHeroPhase = 'pick', spRender())
+        : st && st.k === 'finish' && SPI.dstep === 'edit' && spOpt('finish', 'introSteps') && state.intro && state.intro.enabled ? (SPI.dstep = 'pick', SPI.pk = spiSetOf() || SPI.pk, spRender()) // 인트로 ② 자세히 꾸미기에서 [이전] = ① 분위기 고르기로
+        : go(spStep - 1);
     pane.querySelector('#spBack').addEventListener('click', prev);
     pane.querySelector('#spNow')?.addEventListener('click', () => spOpenPreview(false));
     pane.querySelector('#spPrev')?.addEventListener('click', prev);
@@ -14071,7 +14075,7 @@ function spIntroPanel(box, kind) {
             cards.forEach(c => c.addEventListener('click', () => { if (c.dataset.spiBig === SPI.pk) spiBigPlay(root); else { go(c.dataset.spiBig, true); mark(c.dataset.spiBig); } }));
             root.querySelectorAll('[data-spi-pkc]').forEach(b => b.addEventListener('click', () => { go(b.dataset.spiPkc, true); mark(b.dataset.spiPkc); }));
             root.querySelectorAll('[data-spi-bstep]').forEach(b => b.addEventListener('click', () => { const n = order.indexOf(SPI.pk) + Number(b.dataset.spiBstep); const id = order[(n + order.length) % order.length]; go(id, true); mark(id); }));
-            root.querySelector('#spiPickGo').addEventListener('click', () => { const id = SPI.pk; SPI.dstep = 'edit'; state.intro.spiPicked = 1; state.intro.spiAsk = 'yes'; spiSetApply(id); setTimeout(() => { const s0 = document.querySelector('#simplePane .spi'); if (s0) s0.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); });
+            root.querySelector('#spiPickGo').addEventListener('click', () => { const id = SPI.pk; SPI.dstep = 'edit'; state.intro.spiPicked = 1; state.intro.spiAsk = 'yes'; if (id === spiSetOf() && state.intro.enabled) spRender(); else spiSetApply(id); setTimeout(() => { const s0 = document.querySelector('#simplePane .spi'); if (s0) s0.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); });
             root.querySelector('#spiNoIntro')?.addEventListener('click', () => { state.intro.enabled = false; if (ask) { state.intro.spiAsk = 'no'; SPI.dstep = 'ask'; } spChanged && spChanged(); scheduleSnapshot(); spRender(); });
             root.querySelector('#spiNoIntro2')?.addEventListener('click', () => { // 두 단계: 인트로 끄고 질문 화면이면 바로 다음으로 (예전 '넣을까요? → 넣지 않을게요'와 같음)
                 state.intro.enabled = false; state.intro.spiAsk = 'no'; spChanged && spChanged(); scheduleSnapshot();
