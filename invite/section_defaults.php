@@ -18,7 +18,7 @@
  *                ask    : 처음 만들 때 질문 [{"id":"names:name","on":true}, ...] (순서 = 묻는 순서)
  *                off    : 끈 세부 옵션 {step: [key]} · showOff: 디자인에서 꺼 둔 섹션도 목록에 보이기
  *                heroSample : 메인 사진 예시 '/invite/uploads/site/….webp' (고객이 사진을 고르기 전까지 간편 만들기 첫 화면에 보임)
- *                introPanel : 인트로 칸 'f'(재생 막대 + 움직이는 효과 카드, 기본) | 'e'(재생 막대) | 'b'(인트로 화면 그대로 + 아래 탭) | 'old'(예전 칸)
+ *                introPanel : 인트로 칸 'd'(미리보기 위에서 바로 + 추천 + 분위기 16가지, 기본) | 's'(쉬운 칸) | 'f'(재생 막대 + 움직이는 효과 카드) | 'e'(재생 막대) | 'b'(인트로 화면 그대로 + 아래 탭) | 'old'(예전 칸)
  *                nbPanel : 첫 화면 ↓ 스크롤 버튼 칸 'rows'(1 이름표 줄, 기본) | 'tiles'(2 버튼 그림 고르기) | 'focus'(3 미리보기 중심) | 'old'(예전 긴 칸)
  *                readyStyle : 목록 화면 맨 위 발행 준비 카드 'next'(C안 큰 버튼 하나 = 다음 할 일, 기본) | 'bar'(예전 막대 + 고칠 것 칩)
  *                pcPick : PC 디자인 고르기 화면 'grid'(한눈에 격자 + 오른쪽 휴대폰, 기본) | 'film'(큰 휴대폰 + 아래 표지 띠) | 'car'(넘겨 보기 - 예전)
@@ -280,7 +280,7 @@ function section_easy_default(): array { return section_easy_clean([]); }
 const SECTION_EASY_OPTS = [
     // flow = 단계가 아니라 간편 만들기 전체에 걸친 기능 (관리자 손쉬운 제작 탭 맨 위 칸)
     // (질문 하나하나 켜고 끄기·순서는 SECTION_EASY_ASK - 관리자 탭 "처음 만들 때 질문" 칸)
-    'flow' => ['pick' => '디자인 고르기: 큰 휴대폰 넘겨 보기 (끄면 예전 카드)', 'ask' => '처음 만들 때 질문에 답하기', 'skip' => '질문 [나중에 할게요]', 'free' => '답 안 해도 [다음]으로 넘어가기 (끄면 고르거나 적어야 넘어가요 · [나중에 할게요]도 숨김)', 'now' => '지금 청첩장 카드', 'summary' => '목록 맨 위 발행 준비 카드 (빠진 것 · 완성본 보기)', 'order' => '목록: 섹션 순서 바꾸기', 'help' => '도움말 버튼 (간편·전문가 모드)', 'helpIntro' => '처음 한 번 사용법 안내', 'precheck' => '발행 전 마지막 점검 (간편·전문가 모드)', 'myphoto' => '디자인 고르기: 내 사진으로 보기', 'stkset' => '스티커 한 번에 꾸미기 (간편 색·글꼴 칸 · 전문가 스티커 창 [세트])', 'sskin' => '섹션 스킨 고르기 (전문가 모드 편집창 맨 위 · 모양·디자인 스킨 21가지 그림)', 'mobileEasy' => '휴대폰에서 새로 만들 땐 바로 간편 만들기 (만드는 방식을 묻지 않음)', 'moreTip' => '다 만든 뒤 목록 화면 \'더 꾸미고 싶다면 전문가 모드\' 안내 카드', 'later' => '목록: 꾸미기 · 더 넣을 수 있는 칸 · 섹션 순서 바꾸기는 채우기를 다 끝낸 뒤에 보이기', 'deskShadow' => '목록 꾸미기: PC 그림자 켜고 끄기 줄', 'oneByOne' => '목록: 채우는 동안 할 일을 옵션 하나씩 (이름 · 날짜 · 사진 올리기 · 사진 보일 부분 따로)', 'hideDone' => '목록: 채우는 동안 다 채운 칸은 접어서 \'다 채운 칸 n개\' 줄로 모으기', 'lensBub' => '휴대폰 작은 창: 글자를 적을 땐 적는 칸에 붙는 말풍선 (끄면 키보드 위 가로 띠)', 'lensPrompt' => '휴대폰 작은 창: 엔딩 크레딧 줄을 적을 땐 크레딧이 그 줄로 굴러가는 프롬프터'],
+    'flow' => ['pick' => '디자인 고르기: 큰 휴대폰 넘겨 보기 (끄면 예전 카드)', 'ask' => '처음 만들 때 질문에 답하기', 'skip' => '질문 [나중에 할게요]', 'free' => '답 안 해도 [다음]으로 넘어가기 (끄면 고르거나 적어야 넘어가요 · [나중에 할게요]도 숨김)', 'now' => '지금 청첩장 카드', 'summary' => '목록 맨 위 발행 준비 카드 (빠진 것 · 완성본 보기)', 'order' => '목록: 섹션 순서 바꾸기', 'help' => '도움말 버튼 (간편·전문가 모드)', 'helpIntro' => '처음 한 번 사용법 안내', 'precheck' => '발행 전 마지막 점검 (간편·전문가 모드)', 'myphoto' => '디자인 고르기: 내 사진으로 보기', 'stkset' => '스티커 한 번에 꾸미기 (간편 색·글꼴 칸 · 전문가 스티커 창 [세트])', 'sskin' => '섹션 스킨 고르기 (전문가 모드 편집창 맨 위 · 모양·디자인 스킨 21가지 그림)', 'mobileEasy' => '휴대폰에서 새로 만들 땐 바로 간편 만들기 (만드는 방식을 묻지 않음)', 'moreTip' => '다 만든 뒤 목록 화면 \'더 꾸미고 싶다면 전문가 모드\' 안내 카드', 'later' => '목록: 꾸미기 · 더 넣을 수 있는 칸 · 섹션 순서 바꾸기는 채우기를 다 끝낸 뒤에 보이기', 'deskShadow' => '목록 꾸미기: PC 그림자 켜고 끄기 줄', 'oneByOne' => '목록: 채우는 동안 할 일을 옵션 하나씩 (이름 · 날짜 · 사진 올리기 · 사진 보일 부분 따로)', 'hideDone' => '목록: 채우는 동안 다 채운 칸은 접어서 \'다 채운 칸 n개\' 줄로 모으기', 'lensBub' => '휴대폰 작은 창: 글자를 적을 땐 적는 칸에 붙는 말풍선 (끄면 키보드 위 가로 띠)', 'lensPrompt' => '휴대폰 작은 창: 엔딩 크레딧 줄을 적을 땐 크레딧이 그 줄로 굴러가는 프롬프터', 'scrollNoLens' => '휴대폰 작은 창: 첫 화면 스크롤 버튼(↓) 화면에선 작은 창 안 띄우기 (칸 안 전·후 그림으로 봄 - 끄면 예전처럼 창이 뜸)'],
     'names' => ['time' => '예식 시간', 'tbd' => '아직 일정을 잡지 않았어요'],
     'hero' => ['layout' => '레이아웃 고르기', 'askNoLayout' => '질문 화면(첫 화면 꾸미기)에선 레이아웃 고르기 숨기기 (끄면 질문에도 나와요 · 목록 화면에선 늘 바꿀 수 있어요)', 'lines' => '글자 바꾸기 · 효과', 'kind' => '사진 / 유튜브 고르기', 'crop' => '보일 부분 · 확대', 'shade' => '글자 잘 보이게 (그라데이션)',
                'scroll' => '↓ 스크롤 버튼', 'scrollSize' => '스크롤 버튼 크기', 'scrollCustom' => '스크롤 버튼 직접 꾸미기', 'scrollMotion' => '스크롤 버튼 움직임', 'scrollFx' => '스크롤 버튼 등장 효과', 'scrollOpacity' => '스크롤 버튼 진하기'],
@@ -420,16 +420,30 @@ function section_defaults_easy_mview(): string
     return in_array($v, SECTION_EASY_MVIEWS, true) ? $v : 'split';
 }
 
-const SECTION_EASY_INTROS = ['s', 'f', 'e', 'b', 'old'];
-/** 간편 만들기 인트로 칸 모양 (기본 's' = 쉬운 칸: 분위기 고르기 + 문구 + 더 꾸미기, 1018z18o) */
+const SECTION_EASY_INTROS = ['d', 's', 'f', 'e', 'b', 'old'];
+/** 간편 만들기 인트로 칸 모양 (기본 'd' = 미리보기 위에서 바로 + 추천 분위기 + 분위기 16가지, 1018z18p · 's' = 쉬운 칸 1018z18o) */
 function section_defaults_easy_intro(): string
 {
     $f = section_defaults_file();
-    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 's';
+    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 'd';
     $j = json_decode((string) file_get_contents($f), true);
     $v = is_array($j) ? (string) ($j['easy']['introPanel'] ?? '') : '';
-    return in_array($v, SECTION_EASY_INTROS, true) ? $v : 's';
+    return in_array($v, SECTION_EASY_INTROS, true) ? $v : 'd';
 }
+/** 간편 만들기 첫 화면 글자 효과 고르기 'list'(줄마다 ▶ 미리 보기 + 고르기, 기본 1018z18p) | 'cards'(움직이는 카드 1018z18o) */
+const SECTION_EASY_FXS = ['list', 'cards'];
+/** 간편 만들기 인트로 스티커 고치기 'bubble'(말풍선 메뉴 + 두 손가락, 기본 1018z18p) | 'gizmo'(전문가 모드와 같은 조작 틀 1018z18m) */
+const SECTION_EASY_STKS = ['bubble', 'gizmo'];
+function section_defaults_easy_pick(string $key, array $allowed): string
+{
+    $f = section_defaults_file();
+    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return $allowed[0];
+    $j = json_decode((string) file_get_contents($f), true);
+    $v = is_array($j) ? (string) ($j['easy'][$key] ?? '') : '';
+    return in_array($v, $allowed, true) ? $v : $allowed[0];
+}
+function section_defaults_easy_fx(): string { return section_defaults_easy_pick('fxPanel', SECTION_EASY_FXS); }
+function section_defaults_easy_stk(): string { return section_defaults_easy_pick('stkEdit', SECTION_EASY_STKS); }
 const SECTION_EASY_NBS = ['rows', 'tiles', 'focus', 'old'];
 /** 간편 만들기 ↓ 스크롤 버튼 칸 모양 (기본 'rows' = 1 이름표 줄) */
 function section_defaults_easy_nb(): string
@@ -511,8 +525,14 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if (!in_array($easyNb, SECTION_EASY_NBS, true)) $easyNb = 'rows';
     $easyNbSet = $easyNb !== 'rows';
     $easyIp = ($easyMore !== null && array_key_exists('introPanel', $easyMore)) ? (string) $easyMore['introPanel'] : section_defaults_easy_intro(); // 인트로 칸 모양
-    if (!in_array($easyIp, SECTION_EASY_INTROS, true)) $easyIp = 's';
-    $easyIpSet = $easyIp !== 's';
+    if (!in_array($easyIp, SECTION_EASY_INTROS, true)) $easyIp = 'd';
+    $easyIpSet = $easyIp !== 'd';
+    $easyFx = ($easyMore !== null && array_key_exists('fxPanel', $easyMore)) ? (string) $easyMore['fxPanel'] : section_defaults_easy_fx(); // 글자 효과 고르기
+    if (!in_array($easyFx, SECTION_EASY_FXS, true)) $easyFx = 'list';
+    $easyFxSet = $easyFx !== 'list';
+    $easyStk = ($easyMore !== null && array_key_exists('stkEdit', $easyMore)) ? (string) $easyMore['stkEdit'] : section_defaults_easy_stk(); // 인트로 스티커 고치기
+    if (!in_array($easyStk, SECTION_EASY_STKS, true)) $easyStk = 'bubble';
+    $easyStkSet = $easyStk !== 'bubble';
     $easyVideo = ($easyMore !== null && array_key_exists('videoSample', $easyMore)) ? (string) $easyMore['videoSample'] : section_defaults_easy_video(); // 메인 영상 예시
     if (!preg_match(SECTION_YT_ID_RE, $easyVideo)) $easyVideo = '';
     // $easyOff: null = 저장된 값 그대로, [] = 모두 켬, {step:[key]} = 새로 저장
@@ -536,7 +556,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     $hid = [];
     foreach ($hidden as $id) if (is_string($id) && preg_match(SECTION_ID_RE, $id) && !in_array($id, $hid, true)) $hid[] = $id;
     $f = section_defaults_file();
-    if (!$clean && !$hid && !$groups && !$labels && !$start && !$easy && !$easyOff && !$easyAsk && !$easyShowOff && $easyHero === '' && $easyVideo === '' && !$easyMviewSet && !$easyPcSet && !$easyRdSet && !$easyNbSet && !$easyIpSet && $panel === SECTION_PANEL_DEFAULT && $prefs === SECTION_PREF_DEFAULTS) return !is_file($f) || @unlink($f);
+    if (!$clean && !$hid && !$groups && !$labels && !$start && !$easy && !$easyOff && !$easyAsk && !$easyShowOff && $easyHero === '' && $easyVideo === '' && !$easyMviewSet && !$easyPcSet && !$easyRdSet && !$easyNbSet && !$easyIpSet && !$easyFxSet && !$easyStkSet && $panel === SECTION_PANEL_DEFAULT && $prefs === SECTION_PREF_DEFAULTS) return !is_file($f) || @unlink($f);
     $dir = dirname($f);
     if (!is_dir($dir) && !@mkdir($dir, 0755, true)) return false;
     $tmp = $f . '.' . bin2hex(random_bytes(4)) . '.tmp';
@@ -544,7 +564,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if ($groups) { $data['groups'] = $groups['groups']; $data['groupEtc'] = $groups['etc']; }
     if ($labels) $data['labels'] = $labels;
     if ($start) $data['start'] = $start;
-    if ($easy || $easyOff || $easyAsk || $easyShowOff || $easyHero !== '' || $easyVideo !== '' || $easyMviewSet || $easyPcSet || $easyRdSet || $easyNbSet || $easyIpSet) $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []) + ($easyHero !== '' ? ['heroSample' => $easyHero] : []) + ($easyHeroPos ? ['heroPos' => $easyHeroPos] : []) + ($easyMviewSet ? ['mobileView' => $easyMview] : []) + ($easyPcSet ? ['pcPick' => $easyPc] : []) + ($easyRdSet ? ['readyStyle' => $easyRd] : []) + ($easyNbSet ? ['nbPanel' => $easyNb] : []) + ($easyIpSet ? ['introPanel' => $easyIp] : []) + ($easyVideo !== '' ? ['videoSample' => $easyVideo] : []);
+    if ($easy || $easyOff || $easyAsk || $easyShowOff || $easyHero !== '' || $easyVideo !== '' || $easyMviewSet || $easyPcSet || $easyRdSet || $easyNbSet || $easyIpSet || $easyFxSet || $easyStkSet) $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []) + ($easyHero !== '' ? ['heroSample' => $easyHero] : []) + ($easyHeroPos ? ['heroPos' => $easyHeroPos] : []) + ($easyMviewSet ? ['mobileView' => $easyMview] : []) + ($easyPcSet ? ['pcPick' => $easyPc] : []) + ($easyRdSet ? ['readyStyle' => $easyRd] : []) + ($easyNbSet ? ['nbPanel' => $easyNb] : []) + ($easyIpSet ? ['introPanel' => $easyIp] : []) + ($easyFxSet ? ['fxPanel' => $easyFx] : []) + ($easyStkSet ? ['stkEdit' => $easyStk] : []) + ($easyVideo !== '' ? ['videoSample' => $easyVideo] : []);
     $data['updated_at'] = date('c');
     $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     if (@file_put_contents($tmp, $json, LOCK_EX) === false) return false;
@@ -557,5 +577,5 @@ if (realpath((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
     header('Cache-Control: no-store');
     header('X-Content-Type-Options: nosniff');
     $grp = section_defaults_groups();
-    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'scope' => device_scope_get() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos(), 'mobileView' => section_defaults_easy_mview(), 'pcPick' => section_defaults_easy_pcpick(), 'readyStyle' => section_defaults_easy_ready(), 'nbPanel' => section_defaults_easy_nb(), 'introPanel' => section_defaults_easy_intro(), 'videoSample' => section_defaults_easy_video()]], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'scope' => device_scope_get() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos(), 'mobileView' => section_defaults_easy_mview(), 'pcPick' => section_defaults_easy_pcpick(), 'readyStyle' => section_defaults_easy_ready(), 'nbPanel' => section_defaults_easy_nb(), 'introPanel' => section_defaults_easy_intro(), 'fxPanel' => section_defaults_easy_fx(), 'stkEdit' => section_defaults_easy_stk(), 'videoSample' => section_defaults_easy_video()]], JSON_UNESCAPED_UNICODE);
 }
