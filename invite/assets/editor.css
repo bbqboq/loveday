@@ -5467,3 +5467,9 @@ html.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane * { pointer-events: none
 .sp-dock button:disabled { opacity: .7; }
 html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 @media (min-width: 861px) { .sp-dock { margin: 12px 0 0; padding-left: 0; padding-right: 0; } }
+/* 1018z18z 인트로 ② 배경 투명도 */
+.spi-opx { margin: 8px 0 4px; padding: 12px 14px; border-radius: 14px; background: #fff; border: 1px solid var(--ui-line, #E6DFD5); display: grid; gap: 6px; }
+.spi-opx-h { display: flex; justify-content: space-between; align-items: center; } .spi-opx-h b { font-size: 14.5px; } .spi-opx-h output { font-weight: 700; font-size: 14px; }
+.spi-opx .sp-range { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8A7F72; } .spi-opx .sp-range input { flex: 1; min-width: 0; }
+.spi-opx > small { font-size: 12px; color: #8A7F72; }
+.spi-opx .sp-range { border: 0; padding: 0; background: none; box-shadow: none; }

@@ -13753,7 +13753,22 @@ function spiDur() { return Math.max(0.5, Math.min(4, +state.intro.duration || 2.
 function spiDurStepHtml() {
     const d = spiDur();
     return `<div class="spi-durx"><span><b>화면이 보이는 시간</b><small>0.5초씩 · 최대 3초</small></span>
-        <button type="button" data-spi-dstep="-" aria-label="0.5초 짧게"${d <= 0.5 ? ' disabled' : ''}>−</button><output aria-live="polite">${String(d).replace(/\.0$/, '')}초</output><button type="button" data-spi-dstep="+" aria-label="0.5초 길게"${d >= 3 ? ' disabled' : ''}>+</button></div>`;
+        <button type="button" data-spi-dstep="-" aria-label="0.5초 짧게"${d <= 0.5 ? ' disabled' : ''}>−</button><output aria-live="polite">${String(d).replace(/\.0$/, '')}초</output><button type="button" data-spi-dstep="+" aria-label="0.5초 길게"${d >= 3 ? ' disabled' : ''}>+</button></div>${spiOpLvHtml()}`;
+}
+// ② '배경 투명도' 막대 (보이는 시간 밑, 1018z18z) = intro.bgOpacity (0 투명 = 뒤 첫 화면이 보임 · 100 진하게) - 하객 화면과 같은 값
+function spiOpLvHtml() {
+    if (!spOpt('finish', 'introOp')) return '';
+    const op = Math.round(introBgOp(state.intro) * 100);
+    return `<div class="spi-opx"><div class="spi-opx-h"><b>배경 투명도</b><output id="spiOpV">${op}%</output></div>
+        <div class="sp-range"><span>투명</span><input type="range" id="spiOpR" min="0" max="100" step="5" value="${op}" aria-label="배경 투명도"><span>진하게</span></div>
+        <small>낮추면 뒤 첫 화면이 비쳐 보여요</small></div>`;
+}
+function spiOpLvBind(box, root) {
+    const r = box.querySelector('#spiOpR'); if (!r) return;
+    r.addEventListener('input', () => { const v = +r.value; if (v >= 100) delete state.intro.bgOpacity; else state.intro.bgOpacity = v;
+        const o = box.querySelector('#spiOpV'); if (o) o.textContent = v + '%';
+        root.querySelectorAll('.spi-ov').forEach(ov => { const b = spiOvBg(state.intro); ov.style.background = b.bg; const im = ov.querySelector('.spi-bgimg'); if (im) im.style.opacity = introBgOp(state.intro); }); });
+    r.addEventListener('change', () => { scheduleSnapshot(); spRender(); });
 }
 // 칸 안 인트로 화면: 아래 = 지금 첫 화면(작은 레이아웃 그림), 위 = 인트로 (하객 화면 playIntroAnimation과 같은 값으로)
 function spiPhoneHtml() {
@@ -14187,6 +14202,7 @@ function spIntroPanel(box, kind) {
                 ${spOpt('finish', 'introSimple') ? '' : spiTextHtml(true) + sections.bg + sections.col + (fx ? `<div class="wz-field spi-sec"><div class="wz-lab">글자 효과</div>${spiFxChipsHtml()}</div>` : '') + spiDurHtml()}${sections.stk}${two && spOpt('finish', 'intro') ? '<button type="button" class="spi-askno spi-noint" data-spi-tool="onoff">인트로 없이 할게요</button>' : ''}</div>` : ''}</div>`;
         const root = box.querySelector('.spi');
         spiBindCommon(box);
+        spiOpLvBind(box, root);
         box.querySelectorAll('[data-spi-dstep]').forEach(b => b.addEventListener('click', () => { // 보이는 시간 0.5초씩 0.5~3초
             const d = Math.max(0.5, Math.min(3, Math.round((spiDur() + (b.dataset.spiDstep === '+' ? 0.5 : -0.5)) * 2) / 2));
             state.intro.duration = d; scheduleSnapshot(); SPI.play = true; spRender(); }));
