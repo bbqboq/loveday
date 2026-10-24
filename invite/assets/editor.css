@@ -5401,3 +5401,31 @@ html.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane * { pointer-events: none
 .sp-accp .sp-accp-c .ssk-th { width: 128px; height: 92px; border-radius: 12px; }
 .sp-accp .sp-accp-c b { font-size: 12px; text-align: center; }
 .sp-accp-sw { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+
+/* 글자 효과 고르기 '누르면 바로' (1018z18w) - 줄 전체가 버튼, 왼쪽 동그라미 ✓, 오른쪽에 그 효과로 움직이는 글자 */
+.hlb-tap .hlb-pv { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; }
+.hlb-tap .hlb-row { width: 100%; border: 0; background: #fff; font: inherit; color: inherit; text-align: left; cursor: pointer; padding: 10px 12px; -webkit-tap-highlight-color: transparent; }
+.hlb-tap .hlb-row + .hlb-row { border-top: 1px solid var(--wz-line, #EEE9E2); }
+.hlb-tap .hlb-row.on { background: var(--ui-tint, #FBF8F3); }
+.hlb-rd { flex: none; position: relative; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #CFC8BE; background: #fff; }
+.hlb-tap .hlb-row.on .hlb-rd { border-color: var(--wz-ink, #2B2320); background: var(--wz-ink, #2B2320); }
+.hlb-tap .hlb-row.on .hlb-rd::after { content: ''; position: absolute; left: 7px; top: 3.5px; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.hlb-tap .hlb-row.on .hlb-tx b { color: var(--wz-ink, #2B2320); }
+.hlb-smp { flex: none; width: 104px; height: 34px; }
+.hlb-tap .hlb-mix { margin: 0; }
+/* 계좌 모양 고르기 '이름 버튼' (1018z18w) - 그림을 그리지 않아 바로 뜸, 아이콘은 CSS로 */
+.sp-accc-g { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.sp-accc-b { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 2px 7px; border-radius: 12px; border: 1.5px solid var(--wz-line, #E3DED6); background: #fff; font: inherit; color: var(--wz-ink, #2B2320); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sp-accc-b b { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.sp-accc-b.on { border-color: var(--wz-ink, #2B2320); background: var(--ui-tint, #FBF8F3); box-shadow: 0 0 0 1px var(--wz-ink, #2B2320) inset; }
+.sp-accc-b.on b { font-weight: 800; }
+.sp-acci { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 4px; width: 46px; height: 32px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; }
+.sp-acci s { display: block; height: 7px; border-radius: 2px; background: #D9D2C8; text-decoration: none; }
+.sp-acci-theme s { background: color-mix(in srgb, var(--ui-point, #B8925A) 45%, #fff); border-left: 3px solid var(--ui-point, #B8925A); }
+.sp-acci-basic { border: 1px solid #D9D2C8; background: #FBF9F6; } .sp-acci-basic s { background: #fff; border: 1px solid #E3DDD4; height: 8px; }
+.sp-acci-line { gap: 6px; } .sp-acci-line s { height: 0; border-radius: 0; border-bottom: 1.5px solid #BFB6AA; background: none; }
+.sp-acci-outline s { height: 9px; background: none; border: 1.5px solid #9D9488; }
+.sp-acci-center { align-items: center; } .sp-acci-center s { width: 60%; } .sp-acci-center s + s { width: 40%; }
+.sp-acci-vintage { border: 3px double #B79C72; background: #F7EFE1; } .sp-acci-vintage s { background: #D8C3A0; height: 5px; }
+.sp-acci-free { gap: 3px; } .sp-acci-free s { height: 3px; } .sp-acci-free s:first-child { width: 80%; } .sp-acci-free s + s { width: 60%; box-shadow: 0 6px 0 #D9D2C8; margin-bottom: 6px; }
+.sp-accc-b.on .sp-acci-line s { border-color: var(--wz-ink, #2B2320); }

@@ -116,6 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 간편 만들기 인트로 칸 모양 (재생 막대 + 효과 카드 / 재생 막대 / 인트로 화면 그대로 / 예전) - 누르면 바로 저장
         $v = (string) ($_POST['view'] ?? '');
         $ok = defined('SECTION_EASY_INTROS') && in_array($v, SECTION_EASY_INTROS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['introPanel' => $v]);
+    } elseif ($act === 'easy_acc') {
+        // 계좌 모양 고르기 (이름 칩 / 그림 카드) - 누르면 바로 저장 (1018z18w)
+        $v = (string) ($_POST['view'] ?? '');
+        $ok = defined('SECTION_EASY_ACCS') && in_array($v, SECTION_EASY_ACCS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['accPanel' => $v]);
     } elseif ($act === 'easy_fx' || $act === 'easy_stk') {
         // 첫 화면 글자 효과 고르기 (줄마다 ▶ / 움직이는 카드) · 인트로 스티커 고치기 (말풍선 메뉴 / 조작 틀) - 누르면 바로 저장 (1018z18p, 되돌리기용)
         $v = (string) ($_POST['view'] ?? ''); $isFx = $act === 'easy_fx';
@@ -166,7 +170,7 @@ $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
 $easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyNb = function_exists('section_defaults_easy_nb') ? section_defaults_easy_nb() : 'swipe'; $easyIntro = function_exists('section_defaults_easy_intro') ? section_defaults_easy_intro() : 'f'; // (section_defaults.php를 같이 안 올렸어도 페이지가 열리게)
-$easyFx = function_exists('section_defaults_easy_fx') ? section_defaults_easy_fx() : 'cards'; $easyStk = function_exists('section_defaults_easy_stk') ? section_defaults_easy_stk() : 'gizmo';
+$easyFx = function_exists('section_defaults_easy_fx') ? section_defaults_easy_fx() : 'tap'; $easyAcc = function_exists('section_defaults_easy_acc') ? section_defaults_easy_acc() : 'chips'; $easyStk = function_exists('section_defaults_easy_stk') ? section_defaults_easy_stk() : 'gizmo';
 $easyVideo = section_defaults_easy_video(); // (1018z18o: 예전엔 이 줄이 위 주석 안에 들어가 메인 영상 예시 칸이 늘 비어 보였음)
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
@@ -884,9 +888,20 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             <div class="ez-mview" id="ezFxp">
                 <div class="ez-mview-h"><b>첫 화면 글자 효과 고르기</b><small>간편 만들기 '첫 화면을 꾸며요' 질문 · 목록 메인 화면 칸의 '글자가 나타나는 모습'이에요. 누르면 바로 저장돼요.</small></div>
                 <div class="ez-mview-g" role="radiogroup" aria-label="글자 효과 고르기">
-                    <?php foreach ([['list', '줄마다 ▶ 미리 보기', '효과마다 한 줄 · ▶를 누르면 위 첫 화면 그림에서 바로 보여 주고 [고르기]로 정해요.', '추천'], ['cards', '움직이는 카드 (예전)', '효과 카드 5장이 각자 되풀이해 움직여요.', '']] as [$mk, $mt, $md, $mb]): ?>
+                    <?php foreach ([['tap', '누르면 바로 고르기', '줄 하나를 누르면 그 효과로 정해지고 위 첫 화면 그림에서 바로 보여 줘요. 줄마다 오른쪽 글자가 그 효과로 움직여요.', '추천'], ['list', '▶ 미리 보기 + 고르기 (예전)', '효과마다 한 줄 · ▶를 누르면 위 그림에서 보여 주고 [모든 줄에]로 정해요.', ''], ['cards', '움직이는 카드 (예전)', '효과 카드 5장이 각자 되풀이해 움직여요.', '']] as [$mk, $mt, $md, $mb]): ?>
                     <button type="button" class="ez-mview-c<?= $easyFx === $mk ? ' on' : '' ?>" data-fxp="<?= $mk ?>" role="radio" aria-checked="<?= $easyFx === $mk ? 'true' : 'false' ?>">
-                        <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk === 'list' ? 'rows' : 'tiles' ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
+                        <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk === 'cards' ? 'tiles' : 'rows' ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
+                        <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
+                    </button>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="ez-mview" id="ezAccp">
+                <div class="ez-mview-h"><b>계좌 모양 고르기</b><small>간편 만들기 '마음 전할 곳' 칸 계좌번호 아래 '하객에게 이렇게 보여요'예요. 누르면 바로 저장돼요. (마음 전할 곳 [옵션] '계좌 모양을 그림 카드로 고르기'를 끄면 예전 글자 버튼 세 줄)</small></div>
+                <div class="ez-mview-g" role="radiogroup" aria-label="계좌 모양 고르기">
+                    <?php foreach ([['chips', '이름 버튼 (바로 뜸)', '모양 이름 버튼 7개 · 누르면 작은 청첩장 창에서 바로 보여 줘요. 그림을 안 그려서 기다리지 않아요.', '추천'], ['pics', '그림 카드 넘기기 (예전)', '모양마다 지금 계좌를 진짜로 그린 작은 그림 카드 · 휴대폰에선 그림이 늦게 떠요.', '']] as [$mk, $mt, $md, $mb]): ?>
+                    <button type="button" class="ez-mview-c<?= $easyAcc === $mk ? ' on' : '' ?>" data-accp="<?= $mk ?>" role="radio" aria-checked="<?= $easyAcc === $mk ? 'true' : 'false' ?>">
+                        <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk === 'chips' ? 'rows' : 'tiles' ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
                         <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
                     </button>
                     <?php endforeach; ?>
@@ -1822,7 +1837,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             post({ act: 'easy_intro', view: b.dataset.ipp }).then(() => toast('인트로 칸 모양을 저장했어요')).catch(err => { say(err.message); pick(prev); });
         }));
     })();
-    [['ezFxp', 'fxp', 'easy_fx', '글자 효과 고르기를 저장했어요'], ['ezStk', 'stkp', 'easy_stk', '스티커 고치기 모양을 저장했어요']].forEach(([id, key, act, msg]) => { // (1018z18p)
+    [['ezFxp', 'fxp', 'easy_fx', '글자 효과 고르기를 저장했어요'], ['ezAccp', 'accp', 'easy_acc', '계좌 모양 고르기를 저장했어요'], ['ezStk', 'stkp', 'easy_stk', '스티커 고치기 모양을 저장했어요']].forEach(([id, key, act, msg]) => { // (1018z18p)
         const box = document.getElementById(id); if (!box) return;
         box.querySelectorAll('[data-' + key + ']').forEach(b => b.addEventListener('click', () => {
             if (readonly) return;

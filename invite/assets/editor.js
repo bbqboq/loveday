@@ -191,7 +191,8 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy) { EASY_VIDEO_SAMPLE = /^[\w-]{11}$/.test(j.easy.videoSample || '') ? j.easy.videoSample : ''; try { if (spApplyVideoSample()) renderPreview(); } catch (e) {} } // 메인 영상 예시 (관리자 손쉬운 제작)
     if (j && j.easy) { EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; EASY_HERO_POS = j.easy.heroPos && typeof j.easy.heroPos === 'object' ? j.easy.heroPos : {}; } // 메인 사진 예시 + 보일 부분·확대 (관리자 손쉬운 제작)
     if (j && j.easy && ['swipe', 'rows', 'tiles', 'focus', 'old'].includes(j.easy.nbPanel) && j.easy.nbPanel !== EASY_NB) { EASY_NB = j.easy.nbPanel; try { if (spHeroPhase === 'scroll' && document.getElementById('simplePane')) spRender(); } catch (e) {} } // 스크롤 버튼 칸 모양 (관리자 손쉬운 제작)
-    if (j && j.easy && ['list', 'cards'].includes(j.easy.fxPanel || 'list') && (j.easy.fxPanel || 'list') !== EASY_FX) { EASY_FX = j.easy.fxPanel || 'list'; try { if (document.querySelector('#simplePane :is(.hlb, .hlx-all)')) spRender(); } catch (e) {} } // 첫 화면 글자 효과 고르기 (1018z18p)
+    if (j && j.easy && ['chips', 'pics'].includes(j.easy.accPanel || 'chips')) EASY_ACC = j.easy.accPanel || 'chips'; // 계좌 모양 고르기 (1018z18w)
+    if (j && j.easy && ['tap', 'list', 'cards'].includes(j.easy.fxPanel || 'tap') && (j.easy.fxPanel || 'tap') !== EASY_FX) { EASY_FX = j.easy.fxPanel || 'tap'; try { if (document.querySelector('#simplePane :is(.hlb, .hlx-all)')) spRender(); } catch (e) {} } // 첫 화면 글자 효과 고르기 (1018z18p)
     if (j && j.easy && ['bubble', 'gizmo'].includes(j.easy.stkEdit || 'bubble')) EASY_STK = j.easy.stkEdit || 'bubble'; // 인트로 스티커 고치기 (1018z18p)
     if (j && j.easy && ['d', 's', 'f', 'e', 'b', 'old'].includes(j.easy.introPanel || 'd') && (j.easy.introPanel || 'd') !== EASY_INTRO) { EASY_INTRO = j.easy.introPanel || 'd'; try { if (document.querySelector('#simplePane .spi, #simplePane #spIntroPv')) spRender(); } catch (e) {} } // 인트로 칸 모양 (관리자 손쉬운 제작)
     if (j && j.easy && ['next', 'bar'].includes(j.easy.readyStyle) && j.easy.readyStyle !== EASY_READY) { EASY_READY = j.easy.readyStyle; try { if (document.getElementById('spReady')) spRender(); } catch (e) {} } // 발행 준비 카드 모양 (관리자 손쉬운 제작)
@@ -12559,6 +12560,15 @@ function hlbHtml(hb, kind, lay, allFx, anims) {
     const mixed = allFx === null && (anims || []).length > 1;
     const note = mixed ? `<p class="hlb-mix"><b>지금은 줄마다 달라요</b> · ${Object.keys(cnt).map(v => esc(nm(v) || '없음') + ' ' + cnt[v] + '줄').join(' · ')}<br>아래에서 고르면 모든 줄이 같게 바뀌어요.</p>`
         : `<p class="hlb-link">위 글자 줄 오른쪽 <b>[효과 ▾]</b>는 그 줄만 바꿔요 · 아래에서 고르면 모든 줄이 같게 바뀌어요.</p>`;
+    if (EASY_FX === 'tap') { // 누르면 바로 고름 (1018z18w, 사용자: '▶ · 모든 줄에 · n줄 쓰는 중이 이해가 안 간다') - 줄마다 그 효과로 움직이는 글자 + 고른 줄 ✓, 위 그림이 고른 효과로 되풀이
+        const pick = allFx === null ? null : allFx || '';
+        const smp = hlxSample(InviteBlocks.heroFill('{신랑} & {신부}', hb.fields).replace(/^\s*&\s*$/, '') || '결혼합니다'); // 줄마다 움직이는 글자 = 두 분 이름
+        return `<div class="hlb hlb-tap"><div class="hlb-h"><b>글자가 나타나는 모습</b><small>하나를 누르면 첫 화면 글자가 모두 그렇게 나타나요</small></div>
+        <button type="button" class="hlb-pv" data-fx="${esc(pick || 'none')}" data-hlb-again aria-label="다시 보기">${spHeroLayoutMini(lay, hb, kind === 'video' ? 'video' : 'photo')}<span class="hlb-now">${pick ? '↻ 다시 보기' : pick === '' ? '움직임 없음' : '글자마다 달라요'}</span></button>
+        ${mixed ? '<p class="hlb-mix">지금은 글자마다 효과가 달라요. 아래에서 하나를 고르면 모두 같아져요.</p>' : ''}
+        <div class="hlb-list" role="radiogroup" aria-label="글자가 나타나는 모습">${InviteBlocks.HL_ANIMS.map(([v]) => { const [n, d] = HLX_TXT[v] || [v, '']; const on = pick === v;
+            return `<button type="button" class="hlb-row${on ? ' on' : ''}" data-hl-all="${esc(v)}" role="radio" aria-checked="${on}"><i class="hlb-rd" aria-hidden="true"></i><span class="hlb-tx"><b>${esc(n)}</b><small>${esc(d)}</small></span><span class="hlx-s hlb-smp" aria-hidden="true"><i class="hlx-t hlx-a-${v || 'none'}">${esc(smp)}</i></span></button>`; }).join('')}</div></div>`;
+    }
     return `<div class="hlb"><div class="hlb-h"><b>글자가 나타나는 모습</b><small>▶를 누르면 아래 그림에서 바로 보여 줘요</small></div>${note}
         <div class="hlb-pv" data-fx="${esc(show || 'none')}">${spHeroLayoutMini(lay, hb, kind === 'video' ? 'video' : 'photo')}<span class="hlb-now">${show ? '▶ 보는 중: ' + esc(nm(show)) : '움직임 없음'}</span></div>
         <div class="hlb-list">${InviteBlocks.HL_ANIMS.map(([v]) => { const [n, d] = HLX_TXT[v] || [v, '']; const picked = allFx === v, playing = show === v, c = mixed ? cnt[v || ''] || 0 : 0;
@@ -12643,6 +12653,7 @@ function spBindHeroLayout(box, hb, after) {
         box.querySelectorAll('.hlb-row').forEach(r => { const me = r.querySelector('[data-hlb-play]') === b; r.classList.toggle('play', me); r.querySelector('.hlb-pl').textContent = me && v ? '❚❚' : '▶'; });
     }));
     box.querySelectorAll('.hlb [data-hl-all]').forEach(b => b.addEventListener('click', () => { HLB.play = b.dataset.hlAll; }, true));
+    box.querySelector('[data-hlb-again]')?.addEventListener('click', e => { const pv = e.currentTarget, v = pv.dataset.fx; if (!v || v === 'none') return; pv.dataset.fx = 'none'; void pv.offsetWidth; pv.dataset.fx = v; playTwice(); }); // 위 그림을 누르면 처음부터 다시
     box.querySelectorAll('[data-hl]').forEach(t => {
         if (t.hasAttribute('data-hl-plain')) { t._segs = hlSegs(hb.fields[t.dataset.hl], hb.fields); t._disp = t.value; }
         t.addEventListener('input', () => {
@@ -13497,7 +13508,9 @@ let spAccKk = false; // 카카오페이 스위치를 켰는데 아직 링크를 
 function spAccLookOf(f) { return f.display !== 'cards' ? 'free' : (f.accStyle || 'basic'); }
 function spAccPicsHtml(f) {
     const cur = spAccLookOf(f), O = k => spOpt('account', k), kk = !!(f.groomKakao || f.brideKakao) || spAccKk, cards = f.display === 'cards';
-    const looks = O('display') ? `<div class="wz-field sp-accp"><div class="wz-lab">하객에게 이렇게 보여요 <small>옆으로 넘겨 골라요</small></div>
+    const looks = O('display') && EASY_ACC !== 'pics' ? `<div class="wz-field sp-accp sp-accc"><div class="wz-lab">하객에게 이렇게 보여요 <small>누르면 작은 청첩장 창에서 바로 보여요</small></div>
+        <div class="sp-accc-g" role="radiogroup" aria-label="계좌 모양">${SP_ACC_LOOKS.map(([v, l]) => `<button type="button" class="sp-accc-b${cur === v ? ' on' : ''}" data-acc-look="${v}" role="radio" aria-checked="${cur === v}"><i class="sp-acci sp-acci-${v}" aria-hidden="true"><s></s><s></s></i><b>${l}</b></button>`).join('')}</div></div>`
+        : O('display') ? `<div class="wz-field sp-accp"><div class="wz-lab">하객에게 이렇게 보여요 <small>옆으로 넘겨 골라요</small></div>
         <div class="ssk sp-accp-ssk" data-ssk-for="account"><div class="ssk-row">${SP_ACC_LOOKS.map(([v, l]) => `<div class="ssk-c sp-accp-c${cur === v ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${cur === v}" data-acc-look="${v}" data-ssk="${v === 'free' ? 'l:display:free' : 'l:accStyle:' + v}"><span class="ssk-th"><span class="ssk-ld"></span></span><b>${l}</b></div>`).join('')}</div></div></div>` : '';
     const fold = O('display') && cards ? `<label class="sp-sw"><span><b>계좌를 접어 두기</b><small>${f.accCollapse ? '하객이 눌러야 계좌번호가 보여요' : '지금은 계좌번호가 바로 보여요'}</small></span><input type="checkbox" id="spAccFold" ${f.accCollapse ? 'checked' : ''}><i></i></label>` : '';
     const kakao = O('kakao') ? `<label class="sp-sw"><span><b>카카오페이 송금 버튼</b><small>${kk ? (cards ? '송금 링크를 적으면 버튼이 생겨요' : '카드 모양을 고르면 버튼이 보여요') : '카카오페이 송금 링크가 있을 때만 켜요'}</small></span><input type="checkbox" id="spAccKk" ${kk ? 'checked' : ''}><i></i></label>
@@ -13520,6 +13533,7 @@ function spAccPicsBind(box, f) {
     const b = spBlock('account'), redo = () => { spChanged(['account']); scheduleSnapshot(); spRender(); };
     const pick = c => { const v = c.dataset.accLook; if (v === 'free') f.display = 'free'; else { f.display = 'cards'; if (v === 'basic') delete f.accStyle; else f.accStyle = v; } redo(); };
     const cards = [...box.querySelectorAll('.sp-accp-c')];
+    box.querySelectorAll('.sp-accc-b').forEach(c => c.addEventListener('click', () => { if (c.classList.contains('on')) { spLensShow?.(3000); return; } pick(c); })); // 이름 버튼 (그림을 안 그려서 바로)
     cards.forEach(c => { c.addEventListener('click', () => pick(c)); c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(c); } }); });
     if (cards.length) sskLazy(box, cards, c => spAccPicFill(c, b));
     box.querySelector('#spAccFold')?.addEventListener('change', e => { f.accCollapse = e.target.checked; redo(); });
@@ -13641,7 +13655,8 @@ function spFinishMoreBind(box) {
 //  관리자 손쉬운 제작 → '인트로 칸'(easy.introPanel): 'f' E + 움직이는 효과 카드(기본) · 'e' 재생 막대 · 'b' 인트로 화면 그대로 + 아래 탭 · 'old' 예전 칸
 //  셋 다 칸 안에서 진짜 인트로가 되풀이 재생 (배경·글자 효과·글꼴·스티커를 바꾸면 처음부터) → [인트로 보기] 버튼 없음
 var EASY_INTRO = 'd'; // 'd' 미리보기 위에서 바로 + 추천 + 분위기 16가지(기본, 1018z18p) · 's' 쉬운 칸(1018z18o) · 'f' · 'e' · 'b' · 'old' (관리자 손쉬운 제작 → 인트로 칸 - 되돌리기도 여기서)
-var EASY_FX = 'list'; // 첫 화면 글자 효과 고르기 'list' 줄마다 ▶(1018z18p) · 'cards' 움직이는 카드(1018z18o)
+var EASY_ACC = 'chips'; // 간편 계좌 모양 고르기 'chips' 이름 버튼(1018z18w) · 'pics' 그림 카드(1018z18v)
+var EASY_FX = 'tap'; // 첫 화면 글자 효과 고르기 'tap' 누르면 바로 고름(1018z18w) · 'list' 줄마다 ▶(1018z18p) · 'cards' 움직이는 카드(1018z18o)
 var EASY_STK = 'bubble'; // 인트로 스티커 고치기 'bubble' 말풍선 메뉴 + 두 손가락(1018z18p) · 'gizmo' 조작 틀(1018z18m)
 const SPI = { tab: 'bg', play: true, more: false };
 const SPI_FX_SEC = 1.6; // 효과 카드 한 번 길이
