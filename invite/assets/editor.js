@@ -12564,7 +12564,7 @@ function spHeroLayoutHtml(hb, kind) {
     // 문구 칸 (A안): 글 칸 오른쪽 끝에 [효과 ▾] - 누르면 작은 창 (효과 · 전문가 모드는 방향·휘기도) / 맨 아래 "모두 같게" 한 줄
     const FX = InviteBlocks.HL_ANIMS.map(([v, l]) => [v, { '': '없음', write: '써지듯', fade: '나타나기', up: '위로', zoom: '커지며' }[v] || l]);
     const anims = keys.map(k => f.layout[k].anim || ''), allFx = anims.every(v => v === anims[0]) ? anims[0] : null, anyAnim = anims.some(Boolean);
-    const rowsOf = t => Math.min(4, Math.max(1, String(t || '').split('\n').length));
+    const rowsOf = t => Math.min(4, Math.max(1, String(t || '').replace(/\n+$/, '').split('\n').length)); // (끝 빈 줄은 안 셈 - 칸이 쓸데없이 높았음)
     const fxName = v => (FX.find(x => x[0] === (v || '')) || FX[0])[1];
     const plain = !adv && hlPlainOn(), shown = k => plain ? hlSegShow(hlSegs(f[k], f)) : (f[k] || '');
     const res = k => adv || plain ? '' : `<small class="hl-res" data-hl-res="${esc(k)}"${/\{/.test(f[k] || '') ? '' : ' hidden'}>보이는 글자: <b>${esc(InviteBlocks.heroFill(f[k] || '', f).replace(/\n/g, ' '))}</b></small>`; // {신랑} 같은 칸이 실제로 무슨 글자가 되는지
@@ -12581,7 +12581,7 @@ function spHeroLayoutHtml(hb, kind) {
             ${keys.length ? `<div class="hl-xh"><div class="mini-label hl-xl">글자 · 효과</div>${replay}</div><div class="hl-lines">${lines}</div>${all}<p class="field-hint" style="margin-top:6px">${tip}</p>` : ''}`;
     }
     return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div><div class="hl-row">${cards}</div></div>
-        ${keys.length && spOpt('hero', 'lines') ? `<div class="wz-field"><div class="wz-lab"><span>글자 · 효과</span>${replay}</div><div class="hl-lines">${lines}</div>${all}<p class="wz-hint" style="margin:6px 0 0">${tip}</p></div>` : ''}`;
+        ${keys.length && spOpt('hero', 'lines') ? `<div class="wz-field"><div class="wz-lab"><span>글자 · 효과</span>${replay}</div><div class="hl-lines">${lines}</div>${all}${plain ? '' : `<p class="wz-hint" style="margin:6px 0 0">${tip}</p>`}</div>` : ''}`; // (간편: 아래 긴 설명 뺌 - 세로 줄이기, 1018z18z3)
 }
 // 글자 효과 카드 (1018z18o, 사용자: '써지듯·나타나기가 뭔지 초보는 모름') - 카드마다 그 문구가 실제로 그 효과로 되풀이해 나타남
 const HLX_TXT = { '': ['없음', '바로 보여요'], write: ['써지듯', '왼쪽부터 써져요'], fade: ['나타나기', '서서히 보여요'], up: ['위로', '아래에서 올라와요'], zoom: ['커지며', '작았다 커져요'] };
@@ -12618,12 +12618,11 @@ function hlbHtml(hb, kind, lay, allFx, anims) {
         const O = hlcOpts(), cur = hlcCur(hb, lay, anims, allFx), i = O.findIndex(o => o[0] === cur);
         const name = i < 0 ? '글자마다 달라요' : O[i][1], desc = i < 0 ? '그림을 누르면 하나로 맞춰요' : O[i][2];
         const each = cur === '@d' || i < 0;
-        return `<div class="hlb hlc"><div class="hlb-h"><b>글자가 나타나는 모습</b><small>그림을 누르면 다음 효과 · 마음에 들면 그대로 두면 돼요</small></div>
+        return `<div class="hlb hlc"><div class="hlb-h"><b>글자가 나타나는 모습</b><small>그림을 누르면 다음 효과</small></div>
         <div class="hlc-row"><button type="button" class="hlc-ar" data-hlc-step="-1" aria-label="앞 효과">‹</button>
             <button type="button" class="hlb-pv hlc-pv" data-hlc-step="1" data-fx="${esc(each ? 'each' : (cur || 'none'))}" aria-label="눌러서 다음 효과">${hlcMini(spHeroLayoutMini(lay, hb, kind === 'video' ? 'video' : 'photo'), each ? anims : null)}<span class="hlc-pill"><b>${esc(name)}</b>${i < 0 ? '' : ` · ${i + 1} / ${O.length}`}</span></button>
             <button type="button" class="hlc-ar" data-hlc-step="1" aria-label="다음 효과">›</button></div>
-        <p class="hlc-desc">${esc(desc)}</p>
-        <div class="hlc-dots" aria-hidden="true">${O.map((o, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('')}</div></div>`;
+</div>`; // (아래 설명 · 점은 뺌 - 이름 · n/6이 그림에 있어서, 1018z18z3)
     }
     if (EASY_FX === 'tap') { // 누르면 바로 고름 (1018z18w, 사용자: '▶ · 모든 줄에 · n줄 쓰는 중이 이해가 안 간다') - 줄마다 그 효과로 움직이는 글자 + 고른 줄 ✓, 위 그림이 고른 효과로 되풀이
         const pick = allFx === null ? null : allFx || '';
@@ -12778,7 +12777,7 @@ function spHero(box) {
             ${HO('shade') && InviteBlocks.heroTextOn(f, 'video') ? `<div class="sp-shade" data-blk="heroVideo">${shadeFieldHtml(f, 'video', spBlock('heroVideo'))}</div>` : ''}`;
     }
     if (spViewNow() !== 'quick' && spHeroScrollOk()) html += '<button type="button" class="sp-link" id="spToScroll">↓ 스크롤 버튼 모양 바꾸기</button>'; // 목록 화면에서 스크롤 버튼 고르기로
-    html += '<p class="wz-hint">글자 위치·그림자 같은 세부 모양은 <b>전문가 모드</b>에서 바꿀 수 있어요.</p>';
+    if (spViewNow() !== 'quick') html += '<p class="wz-hint">글자 위치·그림자 같은 세부 모양은 <b>전문가 모드</b>에서 바꿀 수 있어요.</p>'; // (질문 화면에선 뺌 - 세로 줄이기)
     box.innerHTML = html;
     box.querySelector('#spToScroll')?.addEventListener('click', () => { spHeroPhase = 'scroll'; spRender(); setTimeout(spScrollToNextBtn, 80); });
     if (hb) spBindHeroLayout(box, hb);
@@ -13981,7 +13980,7 @@ function spiClearToColor() {
 // 분위기 16가지 (1018z18p) - stk = [테마, 그림, 가로%, 세로%, 등장 효과, 크기(390px 기준), 계속 움직임] (1018z18t: 크게 · 4~5개씩, 사용자 '스티커가 너무 작고 적다') · 움직이는 그림(STK_ART 끝 1)을 섞어 분위기마다 다른 움직임
 // 기본값은 assets/intro-sets.js (window.LD_INTRO_SETS - 관리자 화면과 같이 씀), 관리자가 고친 값은 intro_sets.php가 덮어씀 (spiSetsLoad)
 const SPI_SETS = (Array.isArray(window.LD_INTRO_SETS) && window.LD_INTRO_SETS.length ? window.LD_INTRO_SETS : [{ id: 'type', n: '타자기', d: '한 글자씩 또박또박', anim: 'type', bg: '', stk: [] }]).map(x => Object.assign({}, x, { stk: (x.stk || []).map(r => r.slice()) }));
-const SPI_TXQ = ['우리 결혼합니다', '저희 결혼해요', '소중한 분들을 초대합니다', "We're getting married"];
+const SPI_TXQ = ['우리 결혼합니다', '저희 결혼해요', '소중한 분들을 초대합니다', '두 사람이 하나 되는 날', '함께 축복해 주세요', "We're getting married"];
 function spiSetOf() { const i = state.intro; return SPI_SETS.find(x => x.id === i.preset) ? i.preset : ''; }
 // 디자인에 맞춘 추천 분위기 (디자인 id → 꾸밈 → 바탕 밝기)
 const SPI_REC_OF = { 'p-webtoon': 'webtoon', 'p-angel': 'dove', 'p-cosmos': 'night', 'p-rain': 'rain', 'p-midnight': 'champagne', 'p-spring': 'spring', 'p-winter': 'snow', 'p-sea': 'sea', 'p-wine': 'autumn', 'p-olive': 'garden', 'p-picnic': 'party', 'p-retro': 'party', 'p-press': 'type', 'p-hanji': 'draw', 'p-ticket': 'sea' };
@@ -14402,6 +14401,7 @@ function spiTxSheet(root) {
     box.innerHTML = `<div class="spi-txs-bg" data-x></div><div class="spi-txs-c" role="dialog" aria-label="인트로 글자 고치기">
         <div class="spi-txs-h"><b>인트로 글자</b><button type="button" class="spi-txs-ok" data-x>완료</button></div>
         ${spiRichNote('spiTxsT')}<textarea class="wz-inp" id="spiTxsT" rows="2" placeholder="우리 결혼합니다"${spiRich() ? ' readonly' : ''}>${esc(i.text || '')}</textarea>
+        ${spiRich() ? '' : `<div class="spi-txq2">${SPI_TXQ.map(t => `<button type="button" class="${(i.text || '') === t ? 'on' : ''}" data-tq="${esc(t)}">${esc(t)}</button>`).join('')}</div>`}
         <div class="spi-txs-l">글꼴</div><div class="spi-row">${fonts.map(f => `<button type="button" class="spi-font${(i.font || '') === f.id ? ' on' : ''}" data-f="${esc(f.id)}"${f.family ? ` style="font-family:${esc(f.family.replace(/"/g, "'"))}"` : ''}>${esc(f.id ? f.label.replace(/\s*\(.*\)\s*$/, '') : '청첩장 글꼴')}</button>`).join('')}</div>
         <div class="sp-range"><span>크기</span><input type="range" id="spiTxsS" min="14" max="56" step="1" value="${fsz()}"><span id="spiTxsSV">${fsz()}</span></div>
         <div class="spi-txs-r"><div class="spi-cols">${cols.map(([c, t]) => `<button type="button" class="${(i.color || '').toUpperCase() === c.toUpperCase() ? 'on' : ''}${c ? '' : ' def'}" data-c="${c}" title="${t}" aria-label="글자 색 ${t}"${c ? ` style="--c:${c}"` : ''}>${c ? '' : '기본'}</button>`).join('')}</div>
@@ -14414,7 +14414,7 @@ function spiTxSheet(root) {
         if (!i.textWidthPct) tx.style.width = '';
         tx.style.fontFamily = spiFontFamily(i.font); tx.style.fontSize = fontToCqw(i.fontSize || 26); tx.style.color = spiTextColor(i); tx.style.textAlign = i.align || 'center';
         const ty = tx.querySelector('.intro-typed'); if (ty) ty.textContent = i.text || ''; };
-    const rerun = () => { clearTimeout(box._t); box._t = setTimeout(() => { const r = st(); if (r) { spiRun(r); spiFxRun(r); } }, 500); };
+    const rerun = () => { clearTimeout(box._t); box._t = setTimeout(() => { const r = st(); if (r) { spiRun(r); spiFxRun(r); spiBakeSoon(r); } }, 500); }; // (글꼴·글자가 바뀌면 한 줄 폭 다시 잼)
     const mark = (sel, el) => box.querySelectorAll(sel).forEach(x => x.classList.toggle('on', x === el));
     spiStkUnsel(st(), true); spiPause(st(), true); spiRichBind(box);
     // 휴대폰 키보드가 올라오면 창을 키보드 위로 (아이폰은 fixed 아래 창이 키보드에 가려짐)
@@ -14423,6 +14423,7 @@ function spiTxSheet(root) {
     if (vv) { vv.addEventListener('resize', kb); vv.addEventListener('scroll', kb); kb(); }
     const t = box.querySelector('#spiTxsT');
     t.addEventListener('input', () => { i.text = t.value; delete i.html; delete i.textWidthPct; live(); });
+    box.querySelectorAll('[data-tq]').forEach(b => b.addEventListener('click', () => { t.value = i.text = b.dataset.tq; delete i.html; delete i.textWidthPct; mark('[data-tq]', b); live(); rerun(); })); // 멘트 예시 (1018z18z3)
     box.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.f; if (v) { i.font = v; loadFontCss(v); } else delete i.font; delete i.textWidthPct; mark('[data-f]', b); live(); }));
     const sr = box.querySelector('#spiTxsS');
     sr.addEventListener('input', () => { i.fontSize = +sr.value; delete i.textWidthPct; box.querySelector('#spiTxsSV').textContent = sr.value; live(); });

@@ -232,7 +232,7 @@ body {
 .intro-overlay .intro-text {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
     font-size: 26px; text-align: center; padding: 0 30px; color: var(--p-ink, #2B2320);
-    white-space: pre-wrap; word-break: keep-all; max-width: 90%;
+    white-space: pre-wrap; word-break: keep-all; max-width: 90%; width: max-content; /* 직접 줄을 안 바꾸면 들어가는 한 한 줄로 (1018z18z3) */
 }
 @media (max-width: 505px) {
     .intro-overlay { max-width: none; }
