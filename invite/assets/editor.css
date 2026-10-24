@@ -5443,3 +5443,27 @@ html.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane * { pointer-events: none
 .hlc-dots { display: flex; justify-content: center; gap: 6px; } .hlc-dots i { width: 6px; height: 6px; border-radius: 3px; background: #CFC6BA; transition: width .2s; } .hlc-dots i.on { width: 16px; background: var(--wz-ink, #2B2320); }
 /* 인트로 ② 자세히 꾸미기 - 위 동그란 도구 대신 (문구·스티커 칸과 겹쳐서, 1018z18x) */
 .spi-txlook { border: 0; background: none; padding: 0; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--wz-ink, #2B2320); text-decoration: underline; cursor: pointer; }
+
+/* 1018z18y 인트로 ② 보이는 시간 */
+.spi-durx { display: flex; align-items: center; gap: 8px; margin: 14px 0 4px; padding: 12px 14px; border-radius: 14px; background: #fff; border: 1px solid var(--ui-line, #E6DFD5); }
+.spi-durx > span { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.spi-durx b { font-size: 14.5px; } .spi-durx small { font-size: 12px; color: #8A7F72; }
+.spi-durx button { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--ui-line, #E6DFD5); background: #fff; font: inherit; font-size: 20px; color: #2B2320; cursor: pointer; }
+.spi-durx button:disabled { opacity: .35; cursor: default; }
+.spi-durx output { min-width: 46px; text-align: center; font-weight: 700; font-size: 15px; }
+/* 1018z18y 발행 준비 '단순' - 위 진행 한 줄 + 맨 아래 고정 버튼 줄 */
+.spb-slim { gap: 8px; padding: 14px 16px; }
+.spb-slim .sl-t { margin: 2px 0 0; display: grid; gap: 2px; }
+.spb-slim .sl-t b { font-size: 15.5px; font-weight: 800; color: var(--wz-ink, #1B1A18); }
+.spb-slim .sl-t span { font-size: 12.5px; color: var(--wz-sub); word-break: break-all; }
+.spb-slim.s4 .sl-t b { color: #7C4650; }
+#simplePane .sp-list-end.sl-dock #spListDone, #simplePane .sp-list-end.sl-dock > .wz-hint { display: none; }
+.sp-dock { position: sticky; bottom: 0; z-index: 40; display: flex; gap: 8px; margin: 12px -16px 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: linear-gradient(to bottom, rgba(246,242,236,0), var(--ui-page, #F6F2EC) 28%); }
+.sp-dock button { height: 52px; border-radius: 16px; font: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; }
+.sp-dock button b { font-weight: inherit; }
+.sp-dock .dk-main { flex: 1; border: 0; background: var(--wz-ink, #1B1A18); color: #fff; }
+.sp-dock.s3 .dk-main, .sp-dock.s4 .dk-main { background: #7C4650; }
+.sp-dock .dk-sub { flex: 0 0 38%; border: 1px solid var(--ui-line, #E6DFD5); background: #fff; color: var(--wz-ink, #1B1A18); }
+.sp-dock button:disabled { opacity: .7; }
+html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
+@media (min-width: 861px) { .sp-dock { margin: 12px 0 0; padding-left: 0; padding-right: 0; } }

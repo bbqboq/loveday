@@ -51,6 +51,11 @@ if ($sampleId !== '') {
         exit('유효하지 않은 링크입니다.');
     }
     if (invite_owner_locked($pdo, $invite)) invite_owner_lock_fail($invite); // 기간이 끝나면 주인 미리보기도 잠금 (결제하면 풀림)
+    // 아직 저장 전(두 분 이름·날짜를 정하기 전) 간편 만들기 [완성본 보기]: 에디터가 지금 디자인을 POST로 보내면 저장하지 않고 그대로 하객 화면으로 그림 (1018z18y)
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['design']) && is_string($_POST['design']) && strlen($_POST['design']) < 3_000_000) {
+        $pd = json_decode($_POST['design'], true);
+        if (is_array($pd)) { $invite['design_json'] = json_encode($pd, JSON_UNESCAPED_UNICODE); header('Cache-Control: no-store'); }
+    }
 } else {
     $slug = (string) ($_GET['s'] ?? '');
     if (!preg_match('/^[a-z0-9]{4,20}$/', $slug)) {

@@ -195,7 +195,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy && ['pic', 'tap', 'list', 'cards'].includes(j.easy.fxPanel || 'pic') && (j.easy.fxPanel || 'pic') !== EASY_FX) { EASY_FX = j.easy.fxPanel || 'pic'; try { if (document.querySelector('#simplePane :is(.hlb, .hlx-all)')) spRender(); } catch (e) {} } // 첫 화면 글자 효과 고르기 (1018z18p)
     if (j && j.easy && ['bubble', 'gizmo'].includes(j.easy.stkEdit || 'bubble')) EASY_STK = j.easy.stkEdit || 'bubble'; // 인트로 스티커 고치기 (1018z18p)
     if (j && j.easy && ['d', 's', 'f', 'e', 'b', 'old'].includes(j.easy.introPanel || 'd') && (j.easy.introPanel || 'd') !== EASY_INTRO) { EASY_INTRO = j.easy.introPanel || 'd'; try { if (document.querySelector('#simplePane .spi, #simplePane #spIntroPv')) spRender(); } catch (e) {} } // 인트로 칸 모양 (관리자 손쉬운 제작)
-    if (j && j.easy && ['next', 'bar'].includes(j.easy.readyStyle) && j.easy.readyStyle !== EASY_READY) { EASY_READY = j.easy.readyStyle; try { if (document.getElementById('spReady')) spRender(); } catch (e) {} } // 발행 준비 카드 모양 (관리자 손쉬운 제작)
+    if (j && j.easy && ['slim', 'next', 'bar'].includes(j.easy.readyStyle) && j.easy.readyStyle !== EASY_READY) { EASY_READY = j.easy.readyStyle; try { if (document.getElementById('spReady')) spRender(); } catch (e) {} } // 발행 준비 카드 모양 (관리자 손쉬운 제작)
     if (j && j.easy && ['grid', 'film', 'car'].includes(j.easy.pcPick)) EASY_PC_PICK = j.easy.pcPick; // PC 디자인 고르기 화면 (관리자 손쉬운 제작)
     DPK_SECDEF = true;
     if (j && j.easy) { try { if (startTrack === 'simple' && document.getElementById('screenDesign').classList.contains('active')) renderDesignScreen(); } catch (e) {} } // 디자인 고르기 (flow.pick · 메인 사진 예시)
@@ -9385,8 +9385,8 @@ function bindDesignCards(box) {
 //  관리자 손쉬운 제작 → 간편 만들기 전체 → '디자인 고르기: 큰 휴대폰 넘겨 보기'(flow.pick)를 끄면 예전 카드 화면
 const DPK = { ids: [], cur: '', filt: 'all', shots: {}, samples: {}, q: Promise.resolve(), key: '', touched: false, raf: 0, bound: false, todo: [], ovId: '', mode: 'car', sig: {}, sigKey: '' };
 // PC 화면 모양 (관리자 손쉬운 제작 → PC 디자인 고르기 화면): 'grid' 한눈에 격자 + 오른쪽 휴대폰 · 'film' 큰 휴대폰 + 아래 표지 띠 · 'car' 넘겨 보기(예전, 휴대폰은 늘 이것)
-let EASY_PC_PICK = 'grid', DPK_SECDEF = false, EASY_READY = 'next', EASY_NB = 'swipe'; // EASY_NB: 간편 스크롤 버튼 칸 'swipe' 첫 화면 큰 그림 넘기기(기본, 1018z18r) | 'rows' 1 이름표 줄 | 'tiles' 2 버튼 그림 | 'focus' 3 미리보기 중심 | 'old' 예전 긴 칸
-// EASY_READY: 목록 화면 발행 준비 카드 'next'(C안 큰 버튼 하나) | 'bar'(예전 막대 + 칩)
+let EASY_PC_PICK = 'grid', DPK_SECDEF = false, EASY_READY = 'slim', EASY_NB = 'swipe'; // EASY_NB: 간편 스크롤 버튼 칸 'swipe' 첫 화면 큰 그림 넘기기(기본, 1018z18r) | 'rows' 1 이름표 줄 | 'tiles' 2 버튼 그림 | 'focus' 3 미리보기 중심 | 'old' 예전 긴 칸
+// EASY_READY: 목록 화면 발행 준비 카드 'slim'(진행 한 줄 + 아래 고정 버튼, 1018z18y 기본) | 'next'(C안 큰 버튼 하나) | 'bar'(예전 막대 + 칩)
 function dpkMode() { try { return window.matchMedia('(min-width: 861px)').matches && !window.matchMedia('(pointer: coarse)').matches ? EASY_PC_PICK : 'car'; } catch (e) { return 'car'; } }
 // 관리자가 찍어 둔 디자인 그림 (관리자 → 추천 디자인 → 디자인 썸네일 만들기 = ?thumbs=make, dpk_thumbs.php)
 //  있으면 휴대폰 속 청첩장을 진짜로 그리지 않고 그림만: c = 첫 화면 · l = 긴 화면(위쪽 섹션들, h = 390px 폭일 때 높이)
@@ -10267,18 +10267,24 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     document.getElementById('spPvOpen').hidden = true;
     document.getElementById('spPvBack').textContent = final ? '수정하기' : quick ? '닫기' : '돌아가기';
     const box = document.getElementById('spPvReal');
-    const real = !!EDIT_TOKEN && !SAMPLE_ID && saveGateOk(); // 아직 저장 전(이름을 안 적음)이면 에디터 미리보기로
+    const gate = saveGateOk(), real = !!EDIT_TOKEN && !SAMPLE_ID; // 아직 저장 전(이름·날짜를 안 정함)이어도 하객 화면 그대로 (저장 없이 지금 디자인을 보내서 그림, 1018z18y)
     root.classList.toggle('sp-pv-real', real);
+    if (real && !gate && final && !isPublished) spPvSay('완성본이에요', '하객이 보는 화면 그대로예요.\n[발행하기]를 누르면 저장하고 하객에게 보낼 주소가 생겨요.');
     if (!real) {
         if (EDIT_TOKEN && !SAMPLE_ID) { if (final) spPvSay('완성본 미리보기예요', '[발행하기]를 누르면 저장하고 하객에게 보낼 주소가 생겨요.'); else spPvSay('하객에게 이렇게 보여요', '두 분 이름과 예식 날짜를 정하면 그때부터 저장돼요.'); }
         try { renderPreview(); } catch (e) {} const pane = document.querySelector('.preview-pane'); if (pane) pane.scrollTop = 0; return; }
     box.innerHTML = '<div class="sp-pvload">불러오는 중…</div>';
-    const ok = saved || await saveToServer(false, true);
+    const ok = saved || !gate || await saveToServer(false, true);
     if (seq !== spPvSeq || !root.classList.contains('sp-pv')) return; // 그새 닫았음
     if (!ok) { spPvSay('저장하지 못했어요', '인터넷 연결을 확인하고 닫았다가 잠시 뒤 다시 눌러 주세요.', 'err'); document.getElementById('spPvPub').hidden = true; document.getElementById('spPvCopy').hidden = true; box.innerHTML = `<div class="sp-pvload">저장하지 못했어요. 닫고 잠시 뒤 다시 눌러 주세요.${lastSaveErr ? `<br><small>${esc(lastSaveErr)}</small>` : ''}</div>`; return; }
     const fr = document.createElement('iframe');
     fr.title = '완성본 미리보기'; fr.setAttribute('allow', 'autoplay; fullscreen; clipboard-write; web-share');
-    fr.src = `invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}&_=${Date.now()}`;
+    const url = `invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}&_=${Date.now()}`;
+    if (gate) fr.src = url;
+    else { fr.name = 'spPvFr' + seq; setTimeout(() => { if (!fr.isConnected) return; // 저장 전: 지금 디자인을 그대로 보내서 그림 (저장 안 함)
+        const fm = document.createElement('form'); fm.method = 'post'; fm.action = url; fm.target = fr.name; fm.hidden = true;
+        const inp = document.createElement('input'); inp.type = 'hidden'; inp.name = 'design'; try { inp.value = JSON.stringify(JSON.parse(saveBody(false)).design); } catch (e) { inp.value = ''; }
+        fm.appendChild(inp); document.body.appendChild(fm); fm.submit(); fm.remove(); }, 0); }
     // 서버가 다른 화면 안에 끼워 보이기를 막으면(X-Frame-Options: DENY 등) 창이 하얗게 비어 버림 → 에디터 미리보기(보기 전용) + [새 창으로 보기]
     const fallback = () => {
         if (seq !== spPvSeq || !root.classList.contains('sp-pv-real')) return;
@@ -10289,6 +10295,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     };
     const guard = setTimeout(fallback, 9000); // (아예 안 열리면)
     fr.addEventListener('load', () => { // 배경음악을 켰으면 바로 틀기 (실제 화면의 음악 버튼과 같은 음악)
+        try { if (fr.contentWindow.location.href === 'about:blank') return; } catch (e) {} // (저장 전 POST 방식 - 빈 창이 먼저 열림)
         clearTimeout(guard);
         let okFrame = false; try { const d = fr.contentDocument; okFrame = !!(d && d.body && d.body.children.length && /invite_view/.test(d.location.href)); } catch (e) {}
         if (!okFrame) return fallback();
@@ -11866,9 +11873,34 @@ function spNextHtml(bads, all, nOk, short) {
         <button type="button" class="nx-big" ${act}><span><small>${esc(cap)}</small><b>${esc(t)}</b></span><i aria-hidden="true">›</i></button>
         <p class="nx-after">${esc(after)}</p>${live}${sub ? `<div class="nx-subs">${sub}</div>` : ''}</div>`;
 }
+// 발행 준비 '단순' (1018z18y 기본, 사용자: '위 검정 버튼과 아래 꼭 필요한 것이 겹쳐서 헷갈린다') - 위엔 진행 한 줄 + 남은 개수만 (할 일은 아래 ! 칸),
+//  화면 맨 아래에 늘 붙어 있는 버튼 줄 #spDock = [완성본 보기] → (완성본을 봤으면) + [발행하기] → (발행 뒤) [주소 복사하기]
+const spReadyStep = bads => bads.length ? 1 : isPublished ? 4 : state.spPvSeen ? 3 : 2;
+function spSlimHtml(bads, all, nOk) {
+    const step = spReadyStep(bads), fill = Math.round(nOk / Math.max(1, all) * 100);
+    const seg = n => `<i class="${step > n ? 'done' : step === n ? 'cur' : ''}"${n === 1 && step === 1 ? ` style="--f:${fill}%"` : ''}></i>`;
+    const lab = (n, t) => `<span class="${step > n ? 'done' : step === n ? 'cur' : ''}">${step > n ? '✓' : n} ${t}</span>`;
+    const [t, sub] = step === 1 ? [`아직 ${bads.length}개 남았어요`, '아래 ! 표시가 있는 칸만 채우면 돼요']
+        : step === 2 ? ['다 채웠어요!', '맨 아래 [완성본 보기]로 하객 화면을 확인해요']
+        : step === 3 ? ['이제 발행만 하면 돼요', '[발행하기]를 누르면 하객에게 보낼 주소가 생겨요']
+        : ['발행했어요', spPubUrl() || '고친 내용은 저장되면 하객 화면에도 바로 바뀌어요'];
+    const live = step === 4 ? (([k, tx]) => `<p class="nx-live${k ? ' ' + k : ''}" aria-live="polite">${esc(tx)}</p>`)(spPubLiveText()) : '';
+    return `<div class="spb-ready spb-next spb-slim s${step}" id="spReady">
+        <div class="nx-seg" aria-hidden="true">${seg(1)}${seg(2)}${seg(3)}</div>
+        <div class="nx-lab">${lab(1, '채우기')}${lab(2, '확인하기')}${lab(3, '발행하기')}</div>
+        <p class="sl-t"><b>${esc(t)}</b><span>${esc(sub)}</span></p>${live}</div>`;
+}
+function spDockHtml(bads) {
+    if (EASY_READY !== 'slim' || !spOpt('flow', 'summary')) return '';
+    const step = spReadyStep(bads), pv = (cls, t) => `<button type="button" class="${cls}" data-nx="pv">${t}</button>`;
+    const btns = step < 3 ? pv('dk-main', '완성본 보기')
+        : step === 3 ? pv('dk-sub', '완성본 보기') + '<button type="button" class="dk-main" data-nx="pub"><b>발행하기</b></button>'
+        : pv('dk-sub', '완성본 보기') + '<button type="button" class="dk-main" data-nx="copy"><b>주소 복사하기</b></button>';
+    return `<div class="sp-dock s${step}" id="spDock">${btns}</div>`;
+}
 function spNextBind(pane) {
-    const box = pane.querySelector('#spReady.spb-next'); if (!box) return;
-    box.querySelectorAll('[data-nx]').forEach(b => b.addEventListener('click', async () => {
+    const box = pane.querySelector('#spReady.spb-next'), dock = pane.querySelector('#spDock'); if (!box && !dock) return;
+    [...(box ? box.querySelectorAll('[data-nx]') : []), ...(dock ? dock.querySelectorAll('[data-nx]') : [])].forEach(b => b.addEventListener('click', async () => {
         const k = b.dataset.nx;
         if (k === 'pv') pane.querySelector('#spListDone').click();
         else if (k === 'kk') kkSheetOpen();
@@ -11891,7 +11923,7 @@ function spMoreTipHtml() {
 function spReadyHtmlOf(checks, bads) {
     const all = checks.filter(c => !c.info).length + bads.filter(b => b.task).length, nOk = all - bads.length, ready = spOpt('flow', 'summary') && all > 0;
     const short = { names: '이름', date: '날짜', time: '시간', venue: '예식장', hero: spHeroKind() === 'video' ? '첫 화면 영상' : '첫 화면 사진', gallery: '갤러리', greet: '인사말', account: '계좌', contact: '연락처' };
-    const readyHtml = ready && EASY_READY === 'next' ? spNextHtml(bads, all, nOk, short) : ready ? `<div class="spb-ready${bads.length ? '' : ' ok'}${spReadyFlash ? ' flash' : ''}" id="spReady"><div class="r1"><b>${isPublished ? '발행한 청첩장' : bads.length ? '발행 준비' : '발행 준비 다 됐어요'}</b><span>${nOk} / ${all}</span></div>
+    const readyHtml = ready && EASY_READY === 'slim' ? spSlimHtml(bads, all, nOk) : ready && EASY_READY === 'next' ? spNextHtml(bads, all, nOk, short) : ready ? `<div class="spb-ready${bads.length ? '' : ' ok'}${spReadyFlash ? ' flash' : ''}" id="spReady"><div class="r1"><b>${isPublished ? '발행한 청첩장' : bads.length ? '발행 준비' : '발행 준비 다 됐어요'}</b><span>${nOk} / ${all}</span></div>
         <p>${bads.length ? `아래 ${bads.length}개를 채우면 좋아요 · 눌러서 바로 채워요` : isPublished ? '고친 내용은 저장되면 하객 화면에도 바로 바뀌어요' : '이제 완성본을 보고 발행하면 돼요'}</p><div class="bar"><i style="width:${Math.round(nOk / all * 100)}%"></i></div>
         ${bads.length ? `<div class="chips">${bads.map(c => `<button type="button" data-pc-go="${c.id}" title="${esc(c.t)}">${esc(short[c.id] || c.t)}</button>`).join('')}</div>` : ''}
         <div class="acts"><button type="button" class="wz-next" id="spReadyPv">완성본 보기</button><button type="button" class="wz-next ghost" id="spReadyKk">카톡 미리보기</button></div></div>` : '';
@@ -12032,6 +12064,7 @@ function spListLive() {
         if (typing()) { if (!pane._liveWait) { pane._liveWait = true; document.addEventListener('focusout', () => { pane._liveWait = false; setTimeout(spListLive, 60); }, { once: true }); } return; }
         spRender(); return;
     }
+    { const od = pane.querySelector('#spDock'), dh = spDockHtml(fill); if (od && dh && od.outerHTML !== dh) { const t = document.createElement('div'); t.innerHTML = dh; od.replaceWith(t.firstElementChild); spNextBind(pane); } } // 아래 고정 버튼 줄 (단순 카드)
     const old = pane.querySelector('#spReady'), html = spReadyHtmlOf(checks, fill);
     if (old && html) { const t = document.createElement('div'); t.innerHTML = html; const nw = t.firstElementChild; if (nw && nw.outerHTML !== old.outerHTML) { old.replaceWith(nw); pane.querySelectorAll('#spReady [data-pc-go]').forEach(b => b.addEventListener('click', () => pubGo(b.dataset.pcGo))); spNextBind(pane); pane.querySelector('#spReadyPv')?.addEventListener('click', () => pane.querySelector('#spListDone').click()); pane.querySelector('#spReadyKk')?.addEventListener('click', () => kkSheetOpen()); } }
     const warnOf = {}; bads.forEach(c => { const k = (PUB_GO[c.id] || [])[1]; if (k && !warnOf[k]) warnOf[k] = c.t; });
@@ -12109,11 +12142,11 @@ function spRenderList() {
     spReadyFlash = false;
     pane.innerHTML = `<div class="sp-head"><div><small>${spInPlace ? '정보 입력 · 지금 디자인 그대로' : '간편 만들기' + (tpl ? ' · ' + esc(tpl) : '')}</small><b>청첩장 만들기</b></div>${spUdHtml()}</div>
         <div class="spb">
-            ${readyHtml}${later ? '' : spMoreTipHtml()}${ready ? '<!--' : ''}<div class="spb-prog"><div><b>꼭 필요한 것</b><span>${nDone} / ${must.length}</span></div><div class="spb-dots">${must.map(m => `<i class="${m[1] ? 'on' : ''}"></i>`).join('')}</div><p>${left.length ? esc(left.join(' · ')) + (left.length === 1 ? '만 넣으면 보낼 수 있어요.' : '을(를) 넣으면 보낼 수 있어요.') : '꼭 필요한 건 다 채웠어요. 나머지는 원할 때만 채우면 돼요.'}</p></div>${ready ? '-->' : ''}
+            ${readyHtml}${later || (EASY_READY === 'slim' && fill.length) ? '' : spMoreTipHtml()}${ready ? '<!--' : ''}<div class="spb-prog"><div><b>꼭 필요한 것</b><span>${nDone} / ${must.length}</span></div><div class="spb-dots">${must.map(m => `<i class="${m[1] ? 'on' : ''}"></i>`).join('')}</div><p>${left.length ? esc(left.join(' · ')) + (left.length === 1 ? '만 넣으면 보낼 수 있어요.' : '을(를) 넣으면 보낼 수 있어요.') : '꼭 필요한 건 다 채웠어요. 나머지는 원할 때만 채우면 돼요.'}</p></div>${ready ? '-->' : ''}
             ${groups}${addHtml}
             ${spOpt('flow', 'order') && !later ? '' : '<!--'}<button type="button" class="spb-order" id="spOrderBtn"><span aria-hidden="true">⇅</span><span><b>섹션 순서 바꾸기</b><small>청첩장에 나오는 순서를 끌어서 바꿔요${window.innerWidth > 860 ? ' · 위 칸을 바로 끌어도 돼요' : ''}</small></span></button>${spOpt('flow', 'order') && !later ? '' : '-->'}
         </div>
-        <div class="sp-list-end"><button type="button" class="wz-next" id="spListDone">완성본 보기</button><p class="wz-hint">${isPublished ? '하객이 보는 화면 그대로 보여 드려요.' : '저장하고 다 된 모습을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.'}</p>${spOpt('flow', 'ask') && !spInPlace && spAskSteps().length ? '<button type="button" class="spb-again" id="spAskAgain">질문에 처음부터 다시 답하기</button>' : ''}</div>`;
+        <div class="sp-list-end${spDockHtml(fill) ? ' sl-dock' : ''}"><button type="button" class="wz-next" id="spListDone">완성본 보기</button><p class="wz-hint">${isPublished ? '하객이 보는 화면 그대로 보여 드려요.' : '저장하고 다 된 모습을 보여드려요. 거기서 [발행하기]를 누르면 하객에게 보낼 주소가 생겨요.'}</p>${spOpt('flow', 'ask') && !spInPlace && spAskSteps().length ? '<button type="button" class="spb-again" id="spAskAgain">질문에 처음부터 다시 답하기</button>' : ''}</div>${spDockHtml(fill)}`;
     spBindHeadTools(pane);
     pane.querySelector('#spOrderBtn')?.addEventListener('click', () => { stopAllBgm(); spOrderMode = true; spRender(); });
     if (!hideD) spBindListDrag(pane); // (칸이 숨어 있으면 끌어서 옮길 이웃이 안 맞아서)
@@ -12556,7 +12589,15 @@ function hlxCards(attr, cur, sample) {
 }
 // 글자 효과 B안 (1018z18p, 목업 45R2pgcau5erNH3qckyu5x): 위 첫 화면 작은 그림 + 효과마다 한 줄 [▶ 미리 보기] 이름 · 설명 [고르기] - ▶는 위 그림에서만 재생(값은 안 바뀜)
 const HLB = { play: '' };
-const hlcOpts = () => [['@d', '디자인 맞춤', '이 디자인에 원래 들어 있던 움직임 그대로 (기본)'], ...InviteBlocks.HL_ANIMS.map(([v]) => [v || '', (HLX_TXT[v || ''] || [v])[0], (HLX_TXT[v || ''] || ['', ''])[1]])];
+const hlcOpts = () => [['@d', '디자인 맞춤', '이 디자인에 원래 들어 있던 움직임 그대로 (기본)'], ...InviteBlocks.HL_ANIMS.filter(([v]) => v).map(([v]) => [v, (HLX_TXT[v] || [v])[0], (HLX_TXT[v] || ['', ''])[1]]), ['', (HLX_TXT[''] || ['없음'])[0], (HLX_TXT[''] || ['', '움직이지 않고 바로 보여요'])[1]]]; // '없음'은 맨 뒤 (1018z18y)
+// 디자인 맞춤·줄마다 다를 땐 그림 속 글 줄마다 제 효과로 되풀이 (HTML에서 바로 - 다시 그려도 늘 움직임)
+function hlcMini(html, anims) {
+    if (!anims) return html;
+    const t = document.createElement('template'); t.innerHTML = html;
+    const sp = [...t.content.querySelectorAll('.hl-m > span')], L = sp.slice(Math.max(0, sp.length - anims.length));
+    L.forEach((el, i) => { if (anims[i]) el.classList.add('hlx-a-' + anims[i]); el.style.animationDelay = (i * .15) + 's'; });
+    return t.innerHTML;
+}
 const hlcDesign = lay => (lay && lay.layers || []).map(L => L.anim || '');
 function hlcCur(hb, lay, anims, allFx) { // '@d' = 디자인 그대로 · 효과 이름 = 모든 줄 같게 · null = 줄마다 다르게 고침
     const d = hlcDesign(lay);
@@ -12577,7 +12618,7 @@ function hlbHtml(hb, kind, lay, allFx, anims) {
         const each = cur === '@d' || i < 0;
         return `<div class="hlb hlc"><div class="hlb-h"><b>글자가 나타나는 모습</b><small>그림을 누르면 다음 효과 · 마음에 들면 그대로 두면 돼요</small></div>
         <div class="hlc-row"><button type="button" class="hlc-ar" data-hlc-step="-1" aria-label="앞 효과">‹</button>
-            <button type="button" class="hlb-pv hlc-pv" data-hlc-step="1" data-fx="${esc(each ? 'each' : (cur || 'none'))}"${each ? ` data-anims="${esc(JSON.stringify(anims || []))}"` : ''} aria-label="눌러서 다음 효과">${spHeroLayoutMini(lay, hb, kind === 'video' ? 'video' : 'photo')}<span class="hlc-pill"><b>${esc(name)}</b>${i < 0 ? '' : ` · ${i + 1} / ${O.length}`}</span></button>
+            <button type="button" class="hlb-pv hlc-pv" data-hlc-step="1" data-fx="${esc(each ? 'each' : (cur || 'none'))}" aria-label="눌러서 다음 효과">${hlcMini(spHeroLayoutMini(lay, hb, kind === 'video' ? 'video' : 'photo'), each ? anims : null)}<span class="hlc-pill"><b>${esc(name)}</b>${i < 0 ? '' : ` · ${i + 1} / ${O.length}`}</span></button>
             <button type="button" class="hlc-ar" data-hlc-step="1" aria-label="다음 효과">›</button></div>
         <p class="hlc-desc">${esc(desc)}</p>
         <div class="hlc-dots" aria-hidden="true">${O.map((o, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('')}</div></div>`;
@@ -12647,10 +12688,6 @@ function spBindHeroLayout(box, hb, after) {
         let i = O.findIndex(o => o[0] === hlcCur(hb, def, Ls, all)); const st = Number(b.dataset.hlcStep);
         i = i < 0 ? (st > 0 ? 0 : O.length - 1) : (i + st + O.length) % O.length;
         HLB.play = ''; if (O[i][0] === '@d') applyDesign(); else applyAll(O[i][0]); }));
-    { const pv = box.querySelector('.hlc-pv[data-anims]'); if (pv) { // 디자인 맞춤·줄마다 다를 땐 그림 속 글 줄마다 제 효과로 되풀이
-        let A = []; try { A = JSON.parse(pv.dataset.anims); } catch (e) {}
-        const sp = [...pv.querySelectorAll('.hl-m > span')], L = sp.slice(Math.max(0, sp.length - A.length));
-        L.forEach((el, i) => { if (A[i]) el.classList.add('hlx-a-' + A[i]); el.style.animationDelay = (i * .15) + 's'; }); } }
     const applyAllOf = c => { // 효과를 모든 문구에 한 번에
         const v = c.dataset.hlAll, Ls = lays(); if (!Ls.length) return;
         const sameDelay = Ls.every(L => Math.abs((Number(L.animDelay) || 0) - (Number(Ls[0].animDelay) || 0)) < .05);
@@ -13711,7 +13748,13 @@ const SPI_STK_G = [ // 인트로 빠른 스티커 (1018z18t: 8개 → 묶음 7 �
 const SPI_STK = SPI_STK_G.flatMap(g => g[2]);
 const SPI_STK_AT = [[24, 32], [76, 30], [22, 68], [78, 70], [50, 22], [50, 80], [30, 50], [70, 50]];
 const spiStkSrc = ([t, k]) => `/invite/assets/stickers/${t}/${k}.svg`;
-function spiDur() { return Math.max(1.5, Math.min(4, +state.intro.duration || 2.5)); }
+function spiDur() { return Math.max(0.5, Math.min(4, +state.intro.duration || 2.5)); }
+// ② 자세히 꾸미기 '화면이 보이는 시간' - 0.5초씩, 0.5~3초 (1018z18y)
+function spiDurStepHtml() {
+    const d = spiDur();
+    return `<div class="spi-durx"><span><b>화면이 보이는 시간</b><small>0.5초씩 · 최대 3초</small></span>
+        <button type="button" data-spi-dstep="-" aria-label="0.5초 짧게"${d <= 0.5 ? ' disabled' : ''}>−</button><output aria-live="polite">${String(d).replace(/\.0$/, '')}초</output><button type="button" data-spi-dstep="+" aria-label="0.5초 길게"${d >= 3 ? ' disabled' : ''}>+</button></div>`;
+}
 // 칸 안 인트로 화면: 아래 = 지금 첫 화면(작은 레이아웃 그림), 위 = 인트로 (하객 화면 playIntroAnimation과 같은 값으로)
 function spiPhoneHtml() {
     let under = '';
@@ -14123,8 +14166,9 @@ function spIntroPanel(box, kind) {
                 nx.addEventListener('click', ev => { if (nx.dataset.spiPick !== '1' || !root.isConnected) return; ev.preventDefault(); ev.stopImmediatePropagation(); root.querySelector('#spiPickGo').click(); }, true); }, 0);
             return;
         }
+        const tl = two && spOpt('finish', 'introTools'); // 1018z18y: ② 자세히 꾸미기 = 동그란 도구 넷 + 보이는 시간만 (아래 문구·스티커 칸은 도구와 겹쳐서 뺌)
         const tool = (k, ico, t, extra) => `<button type="button" class="spi-tool" data-spi-tool="${k}"${extra || ''}><span aria-hidden="true">${ico}</span>${t}</button>`;
-        box.innerHTML = spH('인트로', spOpt('finish', 'introSimple') ? '문구만 적으면 끝이에요. 글자 · 스티커는 미리보기에서 누르면 바로 고쳐요.' : '글자 · 스티커를 누르면 바로 고쳐요. 아래에서 문구 · 색 · 효과도 바꿀 수 있어요.') + `<div class="spi spi-k-d spi-d-edit${SPI.play ? '' : ' spi-paused'}">
+        box.innerHTML = spH('인트로', tl ? '아래 버튼으로 글자 · 스티커를 고쳐요. 미리보기에서 눌러도 돼요.' : spOpt('finish', 'introSimple') ? '문구만 적으면 끝이에요. 글자 · 스티커는 미리보기에서 누르면 바로 고쳐요.' : '글자 · 스티커를 누르면 바로 고쳐요. 아래에서 문구 · 색 · 효과도 바꿀 수 있어요.') + `<div class="spi spi-k-d spi-d-edit${SPI.play ? '' : ' spi-paused'}">
             ${two ? '<div class="spi-pkhd"><span class="spi-step"><span>1 분위기 고르기</span> <i>›</i> <b>2</b> 자세히 꾸미기</span></div>' : ''}
             <div class="spi-win big spi-win-d">${spiPhoneHtml()}
                 <span class="spi-dbadge">${cur ? (cur === rec ? '추천 · ' : '') + esc(curSet.n) : '직접 꾸민 인트로'}</span>
@@ -14134,14 +14178,18 @@ function spIntroPanel(box, kind) {
             <div class="spi-rec"><span><b>분위기 · ${cur ? esc(curSet.n) : '직접 꾸밈'}</b><small>${cur === rec ? '이 디자인에 어울리는 추천이에요' : '다른 분위기로 언제든 바꿀 수 있어요'}</small></span>
                 ${two ? '<button type="button" class="spi-rnext" id="spiRepick">분위기 다시 고르기</button>' : '<button type="button" class="spi-rnext" id="spiNext">↻ 다른 분위기</button>'}</div>
             ${two ? '' : `<div class="wz-field spi-sec" id="spiSetsSec"><div class="wz-lab"><span>분위기 ${SPI_SETS.length}가지</span><small>옆으로 넘겨 보고 눌러요</small></div>${spiSetsHtml(rec)}</div>`}
-            ${two && on ? '' : `<div class="spi-tools">${tool('text', SPI_ICO.text, '글자', on ? '' : ' disabled')}${spOpt('finish', 'introStk') ? tool('stk', SPI_ICO.stk, '스티커 넣기', on ? '' : ' disabled') : ''}${tool('help', SPI_ICO.help, '사용법')}${spOpt('finish', 'intro') ? tool('onoff', SPI_ICO.power, on ? '인트로 끄기' : '인트로 켜기') : ''}</div>`}
-            ${on ? `<div class="spi-detail">
+            ${two && on && !tl ? '' : `<div class="spi-tools">${tool('text', SPI_ICO.text, '글자', on ? '' : ' disabled')}${spOpt('finish', 'introStk') ? tool('stk', SPI_ICO.stk, '스티커 넣기', on ? '' : ' disabled') : ''}${tool('help', SPI_ICO.help, '사용법')}${spOpt('finish', 'intro') ? tool('onoff', SPI_ICO.power, on ? '인트로 끄기' : '인트로 켜기') : ''}</div>`}
+            ${tl && on ? spiDurStepHtml() : ''}
+            ${on && !tl ? `<div class="spi-detail">
                 <div class="wz-field spi-sec"><div class="wz-lab"><span>문구</span>${two ? '<button type="button" class="spi-txlook" data-spi-tool="text">글꼴 · 크기 · 색 ›</button>' : '<small>미리보기 글자를 눌러도 고칠 수 있어요</small>'}</div>
                     ${spiRichNote('spiText')}<textarea class="wz-inp spi-txt" id="spiText" rows="2" placeholder="우리 결혼합니다"${spiRich() ? ' readonly' : ''}>${esc(i.text || '')}</textarea>
                     <div class="sp-chips spi-txq">${SPI_TXQ.map(t => `<button type="button" class="${(i.text || '') === t ? 'on' : ''}" data-spi-tq="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>
                 ${spOpt('finish', 'introSimple') ? '' : spiTextHtml(true) + sections.bg + sections.col + (fx ? `<div class="wz-field spi-sec"><div class="wz-lab">글자 효과</div>${spiFxChipsHtml()}</div>` : '') + spiDurHtml()}${sections.stk}${two && spOpt('finish', 'intro') ? '<button type="button" class="spi-askno spi-noint" data-spi-tool="onoff">인트로 없이 할게요</button>' : ''}</div>` : ''}</div>`;
         const root = box.querySelector('.spi');
         spiBindCommon(box);
+        box.querySelectorAll('[data-spi-dstep]').forEach(b => b.addEventListener('click', () => { // 보이는 시간 0.5초씩 0.5~3초
+            const d = Math.max(0.5, Math.min(3, Math.round((spiDur() + (b.dataset.spiDstep === '+' ? 0.5 : -0.5)) * 2) / 2));
+            state.intro.duration = d; scheduleSnapshot(); SPI.play = true; spRender(); }));
         box.querySelector('#spiRepick')?.addEventListener('click', () => { SPI.dstep = 'pick'; SPI.pk = spiSetOf() || rec; spiStkUnsel(root, true); spRender(); setTimeout(() => { const s0 = document.querySelector('#simplePane .spi'); if (s0) s0.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); });
         box.querySelector('#spiOnBtn')?.addEventListener('click', () => { state.intro.enabled = true; scheduleSnapshot(); spRender(); });
         box.querySelector('#spiRe')?.addEventListener('click', () => { SPI.play = true; spiStkUnsel(root, true); root._once = true; spiRun(root); });
@@ -16170,7 +16218,7 @@ const LDH_EASY = [
     { t: '이름 · 날짜 · 예식장 바꾸기', d: '틀린 글자를 고쳐요', steps: ['아래 [그 칸으로 가기]를 누르면 바로 그 칸이 열려요.', '칸에 적으면 위(옆) 청첩장에 바로 바뀌고, 지금 적는 곳이 반짝 빛나요.'], go: ['그 칸으로 가기', () => ldhEasyGo('names:name', 'names')] },
     { t: '예식 날짜가 아직 안 정해졌어요', d: '날짜 없이도 먼저 만들 수 있어요', when: () => spOpt('names', 'tbd'), steps: ['날짜 질문(목록 화면은 \'두 사람\' 칸)에서 [아직 일정을 잡지 않았어요]를 누르고 [다음]을 눌러요.', '청첩장 날짜 자리에는 \'날짜는 정해지면 알려 드릴게요\' 같은 안내가 나오고, 디데이는 잠시 꺼져요.', '날짜가 정해지면 같은 곳에서 버튼을 다시 눌러 끄고 날짜를 적어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('names:date', 'names')] },
     { t: '사진 · 영상 바꾸기', d: '첫 화면 사진이나 유튜브 영상을 넣어요', steps: ['아래 [그 칸으로 가기]를 눌러요.', '사진은 [사진 고르기]를 누르고 한 장 골라요. 영상은 유튜브 주소를 그대로 붙여 넣어요.', '처음에 보이는 사진·영상은 예시예요. 목록에 \'아직 예시\'라고 나오면 내 사진·영상으로 바꿔 주세요.', '\'보일 부분 · 확대\'에서 사진을 끌면 보일 곳을 옮기고, 막대로 크게 할 수 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('hero:media', 'hero')] },
-    { t: '무엇이 빠졌는지 보기', d: '맨 위 \'발행 준비\' 카드', when: c => c.view === 'list' && spOpt('flow', 'summary'), steps: () => EASY_READY === 'next' ? ['목록 화면 맨 위 카드의 큰 검은 버튼이 지금 할 일 하나를 알려 줘요 (예: 두 분 이름 적기).', '버튼을 누르면 그 칸이 바로 열려요. 채우면 버튼이 다음 할 일로 바뀌어요: ① 채우기 → ② 완성본 보기 → ③ 발행하기.', '발행한 뒤엔 [주소 복사하기]로 하객에게 보낼 주소를 복사해요.'] : ['목록 화면 맨 위 \'발행 준비\' 카드에 아직 채우지 않은 것이 단추로 나와요 (예: 날짜 · 계좌).', '단추를 누르면 그 칸이 바로 열려요. 아래 칸 중 ! 표시가 있는 칸도 채우면 좋아요.', '다 채우면 \'발행 준비 다 됐어요\'로 바뀌어요. [완성본 보기]로 보고 발행하면 돼요.'], show: () => [{ el: () => ldhFirst('#spReady'), t: '발행 준비', x: '여기 단추를 누르면 빠진 칸이 바로 열려요.' }] },
+    { t: '무엇이 빠졌는지 보기', d: '맨 위 \'발행 준비\' 카드', when: c => c.view === 'list' && spOpt('flow', 'summary'), steps: () => EASY_READY === 'slim' ? ['목록 화면 맨 위 줄이 지금 어디까지 왔는지 알려 줘요: ① 채우기 → ② 확인하기 → ③ 발행하기.', '아래 칸 중 ! 표시가 있는 칸만 채우면 돼요. 채우면 칸이 접혀 사라져요.', '화면 맨 아래 [완성본 보기]로 하객 화면을 보고, [발행하기] → [주소 복사하기]로 보내요.'] : EASY_READY === 'next' ? ['목록 화면 맨 위 카드의 큰 검은 버튼이 지금 할 일 하나를 알려 줘요 (예: 두 분 이름 적기).', '버튼을 누르면 그 칸이 바로 열려요. 채우면 버튼이 다음 할 일로 바뀌어요: ① 채우기 → ② 완성본 보기 → ③ 발행하기.', '발행한 뒤엔 [주소 복사하기]로 하객에게 보낼 주소를 복사해요.'] : ['목록 화면 맨 위 \'발행 준비\' 카드에 아직 채우지 않은 것이 단추로 나와요 (예: 날짜 · 계좌).', '단추를 누르면 그 칸이 바로 열려요. 아래 칸 중 ! 표시가 있는 칸도 채우면 좋아요.', '다 채우면 \'발행 준비 다 됐어요\'로 바뀌어요. [완성본 보기]로 보고 발행하면 돼요.'], show: () => [{ el: () => ldhFirst('#spReady'), t: '발행 준비', x: '여기 단추를 누르면 빠진 칸이 바로 열려요.' }] },
     { t: '하객에게 보내기', d: '발행하고 카카오톡으로 보내요', steps: ['아래 [완성본 열기]를 눌러요.', '화면 아래 [발행하기]를 눌러요. 발행해야 하객이 볼 수 있어요.', '발행한 뒤 [내 청첩장] 화면에서 카카오톡 공유나 링크 복사를 눌러 보내요.'], go: ['완성본 열기', () => spOpenPreview(true)] },
     { t: '카톡으로 보낼 때 모양 바꾸기', d: '사진 · 제목 · 내용 · 버튼', steps: ['아래 [바로 열기]를 누르면 카톡으로 받았을 때 모습이 보여요 (목록 맨 위 카드 · 완성본 화면 아래 [카톡 미리보기]도 같아요).', '미리보기 사진을 끌면 보이는 부분이 바뀌고, [다른 사진 고르기]로 사진을 바꿔요. 세로 · 정사각 · 가로도 골라요.', '제목 · 내용 · 버튼 이름을 적으면 바로 미리보기에 보여요. 내용을 비워 두면 날짜와 예식장이 들어가요.'], go: ['바로 열기', () => { closeLdh(); kkSheetOpen(); }] },
     { t: '발행하기 전에 확인하기', d: '빠진 것이 있으면 알려 줘요', when: () => spOpt('flow', 'precheck'), steps: ['[발행하기]를 누르면 예시 사진·예시 영상·빈 계좌·미정 날짜처럼 빠진 것이 있을 때 \'발행 전에 확인해요\' 창이 떠요.', '줄을 누르면 그 칸이 바로 열려요. 다 고치지 않아도 [그래도 발행하기]로 발행할 수 있어요.', '[카톡 미리보기]로 카카오톡에서 어떻게 보일지도 봐요.'] },

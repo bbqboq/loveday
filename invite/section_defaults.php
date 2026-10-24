@@ -20,7 +20,7 @@
  *                heroSample : 메인 사진 예시 '/invite/uploads/site/….webp' (고객이 사진을 고르기 전까지 간편 만들기 첫 화면에 보임)
  *                introPanel : 인트로 칸 'd'(미리보기 위에서 바로 + 추천 + 분위기 16가지, 기본) | 's'(쉬운 칸) | 'f'(재생 막대 + 움직이는 효과 카드) | 'e'(재생 막대) | 'b'(인트로 화면 그대로 + 아래 탭) | 'old'(예전 칸)
  *                nbPanel : 첫 화면 ↓ 스크롤 버튼 칸 'swipe'(첫 화면 큰 그림 넘기기, 기본) | 'rows'(1 이름표 줄) | 'tiles'(2 버튼 그림 고르기) | 'focus'(3 미리보기 중심) | 'old'(예전 긴 칸)
- *                readyStyle : 목록 화면 맨 위 발행 준비 카드 'next'(C안 큰 버튼 하나 = 다음 할 일, 기본) | 'bar'(예전 막대 + 고칠 것 칩)
+ *                readyStyle : 목록 화면 맨 위 발행 준비 카드 'slim'(진행 한 줄 + 아래 고정 버튼, 기본) | 'next'(C안 큰 버튼 하나 = 다음 할 일) | 'bar'(예전 막대 + 고칠 것 칩)
  *                pcPick : PC 디자인 고르기 화면 'grid'(한눈에 격자 + 오른쪽 휴대폰, 기본) | 'film'(큰 휴대폰 + 아래 표지 띠) | 'car'(넘겨 보기 - 예전)
  *                mobileView : 휴대폰 간편 만들기 보기 방식 'split'(① 반반 화면, 기본) | 'lens'(② 떠 있는 돋보기 창) | 'lens2'(③ 비켜서고 접히는 창 + 바꾸면 잠깐 보여 주기) | 'peek'(④ 바꾸면 잠깐 보여 주기) | 'off'(질문만)
  *                heroPos    : 그 예시 사진에서 보일 부분·확대 {focus:'x% y%', zoom:1~4} (관리자가 끌어서 정함, 고객 화면 state.imgFocus/imgZoom으로 들어감)
@@ -309,7 +309,7 @@ const SECTION_EASY_OPTS = [
     'lottery' => ['title' => '제목', 'desc' => '안내 문구', 'method' => '참여 방식', 'timeLimit' => '예식 시간에만 응모 받기', 'prizes' => '경품 안내'],
     'dayinfo' => ['title' => '제목', 'desc' => '안내 문구', 'show' => '섹션이 보이는 때', 'popup' => '예식 당일 청첩장을 열면 안내 팝업 띄우기', 'items' => '안내 항목'],
     'thanks' => ['show' => '하객에게 보이는 때', 'toTop' => '보일 때 맨 위로', 'hideRsvp' => '예식 후 참석·안내 숨김', 'anniv' => '결혼기념일 띠', 'style' => '모양', 'photo' => '사진', 'phW' => '사진 크기', 'phRatio' => '사진 모양', 'phH' => '사진 높이', 'eyebrow' => '작은 머리글', 'title' => '제목', 'text' => '인사말', 'sign' => '서명', 'signText' => '서명 문구', 'btnLabel' => '버튼 이름', 'btnUrl' => '연결 주소'],
-    'finish' => ['intro' => '인트로', 'introFx' => '인트로 배경 · 글자 효과', 'introMedia' => '인트로 배경에 사진 · 유튜브 영상', 'introDur' => '인트로 재생 길이', 'introStk' => '인트로 스티커', 'introSteps' => '인트로 칸: ① 분위기 고르기 → ② 자세히 꾸미기 두 단계로 (끄면 한 화면에 다)', 'intro2' => '인트로 칸: 두 단계로 (① 분위기 고르기 + [인트로 없이 할게요] → ② 자세히 꾸미기, 끄면 먼저 "넣을까요?"를 묻는 세 단계)', 'introAsk' => '인트로 칸: 먼저 "인트로를 넣을까요?" 묻기 (위 \'두 단계로\'를 껐을 때만)', 'introSimple' => '인트로 칸: 자세히 꾸미기는 문구 · 스티커만 (끄면 글자 크기 · 색 · 글꼴 · 배경 · 효과 · 재생 길이 칸까지)', 'ambient' => '더 꾸미기: 장식 효과', 'scrollFx' => '더 꾸미기: 섹션 나타나는 효과', 'scrollbar' => '더 꾸미기: 스크롤바', 'share' => '더 꾸미기: 떠 있는 공유 버튼', 'shadow' => '더 꾸미기: PC 그림자', 'font' => '더 꾸미기: 글꼴'],
+    'finish' => ['intro' => '인트로', 'introFx' => '인트로 배경 · 글자 효과', 'introMedia' => '인트로 배경에 사진 · 유튜브 영상', 'introDur' => '인트로 재생 길이', 'introStk' => '인트로 스티커', 'introSteps' => '인트로 칸: ① 분위기 고르기 → ② 자세히 꾸미기 두 단계로 (끄면 한 화면에 다)', 'intro2' => '인트로 칸: 두 단계로 (① 분위기 고르기 + [인트로 없이 할게요] → ② 자세히 꾸미기, 끄면 먼저 "넣을까요?"를 묻는 세 단계)', 'introAsk' => '인트로 칸: 먼저 "인트로를 넣을까요?" 묻기 (위 \'두 단계로\'를 껐을 때만)', 'introSimple' => '인트로 칸: 자세히 꾸미기는 문구 · 스티커만 (끄면 글자 크기 · 색 · 글꼴 · 배경 · 효과 · 재생 길이 칸까지)', 'introTools' => '인트로 칸: ② 자세히 꾸미기 = 동그란 버튼 넷(글자 · 스티커 넣기 · 사용법 · 끄기) + 보이는 시간만 (끄면 아래 문구 · 스티커 칸)', 'ambient' => '더 꾸미기: 장식 효과', 'scrollFx' => '더 꾸미기: 섹션 나타나는 효과', 'scrollbar' => '더 꾸미기: 스크롤바', 'share' => '더 꾸미기: 떠 있는 공유 버튼', 'shadow' => '더 꾸미기: PC 그림자', 'font' => '더 꾸미기: 글꼴'],
 ];
 /** 끈 세부 옵션 정리 {step: [key, ...]} */
 function section_easy_off_clean($in): array
@@ -458,7 +458,7 @@ function section_defaults_easy_nb(): string
     return in_array($v, SECTION_EASY_NBS, true) ? $v : 'swipe';
 }
 
-const SECTION_EASY_READYS = ['next', 'bar'];
+const SECTION_EASY_READYS = ['slim', 'next', 'bar']; // slim = 1018z18y 단순 (위 진행 한 줄 + 아래 고정 [완성본 보기])
 /** 목록 화면 발행 준비 카드 모양 (기본 'next' = C안 큰 버튼 하나) */
 function section_defaults_easy_ready(): string
 {
@@ -466,7 +466,7 @@ function section_defaults_easy_ready(): string
     if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 'next';
     $j = json_decode((string) file_get_contents($f), true);
     $v = is_array($j) ? (string) ($j['easy']['readyStyle'] ?? '') : '';
-    return in_array($v, SECTION_EASY_READYS, true) ? $v : 'next';
+    return in_array($v, SECTION_EASY_READYS, true) ? $v : 'slim';
 }
 
 const SECTION_EASY_PCPICKS = ['grid', 'film', 'car'];
@@ -522,8 +522,8 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if (!in_array($easyPc, SECTION_EASY_PCPICKS, true)) $easyPc = 'grid';
     $easyPcSet = $easyPc !== 'grid';
     $easyRd = ($easyMore !== null && array_key_exists('readyStyle', $easyMore)) ? (string) $easyMore['readyStyle'] : section_defaults_easy_ready(); // 발행 준비 카드 모양
-    if (!in_array($easyRd, SECTION_EASY_READYS, true)) $easyRd = 'next';
-    $easyRdSet = $easyRd !== 'next';
+    if (!in_array($easyRd, SECTION_EASY_READYS, true)) $easyRd = 'slim';
+    $easyRdSet = $easyRd !== 'slim';
     $easyNb = ($easyMore !== null && array_key_exists('nbPanel', $easyMore)) ? (string) $easyMore['nbPanel'] : section_defaults_easy_nb(); // 스크롤 버튼 칸 모양
     if (!in_array($easyNb, SECTION_EASY_NBS, true)) $easyNb = 'swipe';
     $easyNbSet = $easyNb !== 'swipe';
