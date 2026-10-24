@@ -430,8 +430,8 @@ function section_defaults_easy_intro(): string
     $v = is_array($j) ? (string) ($j['easy']['introPanel'] ?? '') : '';
     return in_array($v, SECTION_EASY_INTROS, true) ? $v : 'd';
 }
-/** 간편 만들기 첫 화면 글자 효과 고르기 'tap'(누르면 바로 고름, 기본 1018z18w) | 'list'(줄마다 ▶ 미리 보기 + 고르기 1018z18p) | 'cards'(움직이는 카드 1018z18o) */
-const SECTION_EASY_FXS = ['tap', 'list', 'cards'];
+/** 간편 만들기 첫 화면 글자 효과 고르기 'pic'(그림을 눌러 바꾸기 + 디자인 맞춤, 기본 1018z18x) | 'tap'(누르면 바로 고름 1018z18w) | 'list'(줄마다 ▶ 미리 보기 + 고르기 1018z18p) | 'cards'(움직이는 카드 1018z18o) */
+const SECTION_EASY_FXS = ['pic', 'tap', 'list', 'cards'];
 /** 간편 만들기 인트로 스티커 고치기 'bubble'(말풍선 메뉴 + 두 손가락, 기본 1018z18p) | 'gizmo'(전문가 모드와 같은 조작 틀 1018z18m) */
 const SECTION_EASY_STKS = ['bubble', 'gizmo'];
 function section_defaults_easy_pick(string $key, array $allowed): string
@@ -531,8 +531,8 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if (!in_array($easyIp, SECTION_EASY_INTROS, true)) $easyIp = 'd';
     $easyIpSet = $easyIp !== 'd';
     $easyFx = ($easyMore !== null && array_key_exists('fxPanel', $easyMore)) ? (string) $easyMore['fxPanel'] : section_defaults_easy_fx(); // 글자 효과 고르기
-    if (!in_array($easyFx, SECTION_EASY_FXS, true)) $easyFx = 'tap';
-    $easyFxSet = $easyFx !== 'tap';
+    if (!in_array($easyFx, SECTION_EASY_FXS, true)) $easyFx = 'pic';
+    $easyFxSet = $easyFx !== 'pic';
     $easyAcc = ($easyMore !== null && array_key_exists('accPanel', $easyMore)) ? (string) $easyMore['accPanel'] : section_defaults_easy_acc(); // 계좌 모양 고르기
     if (!in_array($easyAcc, SECTION_EASY_ACCS, true)) $easyAcc = 'chips';
     $easyAccSet = $easyAcc !== 'chips';

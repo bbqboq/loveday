@@ -192,7 +192,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy) { EASY_HERO_SAMPLE = typeof j.easy.heroSample === 'string' ? j.easy.heroSample : ''; EASY_HERO_POS = j.easy.heroPos && typeof j.easy.heroPos === 'object' ? j.easy.heroPos : {}; } // 메인 사진 예시 + 보일 부분·확대 (관리자 손쉬운 제작)
     if (j && j.easy && ['swipe', 'rows', 'tiles', 'focus', 'old'].includes(j.easy.nbPanel) && j.easy.nbPanel !== EASY_NB) { EASY_NB = j.easy.nbPanel; try { if (spHeroPhase === 'scroll' && document.getElementById('simplePane')) spRender(); } catch (e) {} } // 스크롤 버튼 칸 모양 (관리자 손쉬운 제작)
     if (j && j.easy && ['chips', 'pics'].includes(j.easy.accPanel || 'chips')) EASY_ACC = j.easy.accPanel || 'chips'; // 계좌 모양 고르기 (1018z18w)
-    if (j && j.easy && ['tap', 'list', 'cards'].includes(j.easy.fxPanel || 'tap') && (j.easy.fxPanel || 'tap') !== EASY_FX) { EASY_FX = j.easy.fxPanel || 'tap'; try { if (document.querySelector('#simplePane :is(.hlb, .hlx-all)')) spRender(); } catch (e) {} } // 첫 화면 글자 효과 고르기 (1018z18p)
+    if (j && j.easy && ['pic', 'tap', 'list', 'cards'].includes(j.easy.fxPanel || 'pic') && (j.easy.fxPanel || 'pic') !== EASY_FX) { EASY_FX = j.easy.fxPanel || 'pic'; try { if (document.querySelector('#simplePane :is(.hlb, .hlx-all)')) spRender(); } catch (e) {} } // 첫 화면 글자 효과 고르기 (1018z18p)
     if (j && j.easy && ['bubble', 'gizmo'].includes(j.easy.stkEdit || 'bubble')) EASY_STK = j.easy.stkEdit || 'bubble'; // 인트로 스티커 고치기 (1018z18p)
     if (j && j.easy && ['d', 's', 'f', 'e', 'b', 'old'].includes(j.easy.introPanel || 'd') && (j.easy.introPanel || 'd') !== EASY_INTRO) { EASY_INTRO = j.easy.introPanel || 'd'; try { if (document.querySelector('#simplePane .spi, #simplePane #spIntroPv')) spRender(); } catch (e) {} } // 인트로 칸 모양 (관리자 손쉬운 제작)
     if (j && j.easy && ['next', 'bar'].includes(j.easy.readyStyle) && j.easy.readyStyle !== EASY_READY) { EASY_READY = j.easy.readyStyle; try { if (document.getElementById('spReady')) spRender(); } catch (e) {} } // 발행 준비 카드 모양 (관리자 손쉬운 제작)
@@ -12556,6 +12556,13 @@ function hlxCards(attr, cur, sample) {
 }
 // 글자 효과 B안 (1018z18p, 목업 45R2pgcau5erNH3qckyu5x): 위 첫 화면 작은 그림 + 효과마다 한 줄 [▶ 미리 보기] 이름 · 설명 [고르기] - ▶는 위 그림에서만 재생(값은 안 바뀜)
 const HLB = { play: '' };
+const hlcOpts = () => [['@d', '디자인 맞춤', '이 디자인에 원래 들어 있던 움직임 그대로 (기본)'], ...InviteBlocks.HL_ANIMS.map(([v]) => [v || '', (HLX_TXT[v || ''] || [v])[0], (HLX_TXT[v || ''] || ['', ''])[1]])];
+const hlcDesign = lay => (lay && lay.layers || []).map(L => L.anim || '');
+function hlcCur(hb, lay, anims, allFx) { // '@d' = 디자인 그대로 · 효과 이름 = 모든 줄 같게 · null = 줄마다 다르게 고침
+    const d = hlcDesign(lay);
+    if (d.length && (anims || []).length === d.length && anims.every((a, i) => a === d[i])) return '@d';
+    return allFx === null || allFx === undefined ? null : allFx || '';
+}
 function hlbHtml(hb, kind, lay, allFx, anims) {
     const show = HLB.play || allFx || '';
     const nm = v => (HLX_TXT[v || ''] || ['', ''])[0];
@@ -12564,6 +12571,17 @@ function hlbHtml(hb, kind, lay, allFx, anims) {
     const mixed = allFx === null && (anims || []).length > 1;
     const note = mixed ? `<p class="hlb-mix"><b>지금은 줄마다 달라요</b> · ${Object.keys(cnt).map(v => esc(nm(v) || '없음') + ' ' + cnt[v] + '줄').join(' · ')}<br>아래에서 고르면 모든 줄이 같게 바뀌어요.</p>`
         : `<p class="hlb-link">위 글자 줄 오른쪽 <b>[효과 ▾]</b>는 그 줄만 바꿔요 · 아래에서 고르면 모든 줄이 같게 바뀌어요.</p>`;
+    if (EASY_FX === 'pic') { // C안 그림을 눌러 바꾸기 (1018z18x, 목업 M56sZqfgAqpgvwKx1yGX9K) - 첫 화면 그림을 누르거나 ‹ ›로 다음 효과, 맨 앞 '디자인 맞춤'(디자인에 들어 있던 줄마다 효과 그대로)이 기본
+        const O = hlcOpts(), cur = hlcCur(hb, lay, anims, allFx), i = O.findIndex(o => o[0] === cur);
+        const name = i < 0 ? '글자마다 달라요' : O[i][1], desc = i < 0 ? '그림을 누르면 하나로 맞춰요' : O[i][2];
+        const each = cur === '@d' || i < 0;
+        return `<div class="hlb hlc"><div class="hlb-h"><b>글자가 나타나는 모습</b><small>그림을 누르면 다음 효과 · 마음에 들면 그대로 두면 돼요</small></div>
+        <div class="hlc-row"><button type="button" class="hlc-ar" data-hlc-step="-1" aria-label="앞 효과">‹</button>
+            <button type="button" class="hlb-pv hlc-pv" data-hlc-step="1" data-fx="${esc(each ? 'each' : (cur || 'none'))}"${each ? ` data-anims="${esc(JSON.stringify(anims || []))}"` : ''} aria-label="눌러서 다음 효과">${spHeroLayoutMini(lay, hb, kind === 'video' ? 'video' : 'photo')}<span class="hlc-pill"><b>${esc(name)}</b>${i < 0 ? '' : ` · ${i + 1} / ${O.length}`}</span></button>
+            <button type="button" class="hlc-ar" data-hlc-step="1" aria-label="다음 효과">›</button></div>
+        <p class="hlc-desc">${esc(desc)}</p>
+        <div class="hlc-dots" aria-hidden="true">${O.map((o, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('')}</div></div>`;
+    }
     if (EASY_FX === 'tap') { // 누르면 바로 고름 (1018z18w, 사용자: '▶ · 모든 줄에 · n줄 쓰는 중이 이해가 안 간다') - 줄마다 그 효과로 움직이는 글자 + 고른 줄 ✓, 위 그림이 고른 효과로 되풀이
         const pick = allFx === null ? null : allFx || '';
         const smp = hlxSample(InviteBlocks.heroFill('{신랑} & {신부}', hb.fields).replace(/^\s*&\s*$/, '') || '결혼합니다'); // 줄마다 움직이는 글자 = 두 분 이름
@@ -12618,13 +12636,29 @@ function spBindHeroLayout(box, hb, after) {
     }));
     const playTwice = () => { spScrollPreview([hb.id]); setTimeout(() => InviteBlocks.playHeroAnimsTwice(document.getElementById('previewRoot')), 250); };
     const lays = () => (hb.fields.heroLayers || []).map(k => hb.fields.layout[k]).filter(Boolean);
-    box.querySelectorAll('[data-hl-all]').forEach(c => c.addEventListener('click', () => { // 효과를 모든 문구에 한 번에
+    const applyAll = v => { const c = { dataset: { hlAll: v } }; return applyAllOf(c); };
+    const applyDesign = () => { // 디자인 맞춤: 레이아웃에 들어 있던 줄마다 효과 · 시작 시간으로
+        const def = spHeroLayouts().find(l => l.id === hb.fields.heroLayout); const D = (def && def.layers) || [];
+        (hb.fields.heroLayers || []).forEach((k, i) => { const L = hb.fields.layout[k]; if (!L) return; L.anim = (D[i] && D[i].anim) || ''; L.animDelay = D[i] && D[i].animDelay != null ? D[i].animDelay : 0; });
+        renderPreview(); scheduleSnapshot(); after(); if (D.some(L => L.anim)) playTwice(); };
+    box.querySelectorAll('[data-hlc-step]').forEach(b => b.addEventListener('click', () => { // C안: 그림·‹ › = 다음/앞 효과로 바로 바꿈
+        const O = hlcOpts(), def = spHeroLayouts().find(l => l.id === hb.fields.heroLayout) || { layers: [] };
+        const Ls = (hb.fields.heroLayers || []).map(k => (hb.fields.layout[k] || {}).anim || ''), all = Ls.every(a => a === Ls[0]) ? (Ls[0] || '') : null;
+        let i = O.findIndex(o => o[0] === hlcCur(hb, def, Ls, all)); const st = Number(b.dataset.hlcStep);
+        i = i < 0 ? (st > 0 ? 0 : O.length - 1) : (i + st + O.length) % O.length;
+        HLB.play = ''; if (O[i][0] === '@d') applyDesign(); else applyAll(O[i][0]); }));
+    { const pv = box.querySelector('.hlc-pv[data-anims]'); if (pv) { // 디자인 맞춤·줄마다 다를 땐 그림 속 글 줄마다 제 효과로 되풀이
+        let A = []; try { A = JSON.parse(pv.dataset.anims); } catch (e) {}
+        const sp = [...pv.querySelectorAll('.hl-m > span')], L = sp.slice(Math.max(0, sp.length - A.length));
+        L.forEach((el, i) => { if (A[i]) el.classList.add('hlx-a-' + A[i]); el.style.animationDelay = (i * .15) + 's'; }); } }
+    const applyAllOf = c => { // 효과를 모든 문구에 한 번에
         const v = c.dataset.hlAll, Ls = lays(); if (!Ls.length) return;
         const sameDelay = Ls.every(L => Math.abs((Number(L.animDelay) || 0) - (Number(Ls[0].animDelay) || 0)) < .05);
         Ls.forEach((L, i) => { L.anim = v; if (v && sameDelay && Ls.length > 1) L.animDelay = +(i * Math.min(.6, 2 / (Ls.length - 1))).toFixed(1); }); // 다 같이 시작하던 거면 줄마다 차례로 (0.6초씩, 많으면 다 합쳐 2초 안에)
         renderPreview(); scheduleSnapshot(); after();
         if (v) playTwice();
-    }));
+    };
+    box.querySelectorAll('[data-hl-all]').forEach(c => c.addEventListener('click', () => applyAllOf(c)));
     // [효과 ▾] → 작은 창 (한 번에 하나, 바깥을 누르거나 Esc면 닫힘)
     const adv = !document.documentElement.classList.contains('simple-mode');
     const closePop = () => { box.querySelectorAll('.hl-pop').forEach(x => x.remove()); box.querySelectorAll('.hl-fxb.open').forEach(x => x.classList.remove('open')); hlPopKey = ''; };
@@ -13660,7 +13694,7 @@ function spFinishMoreBind(box) {
 //  셋 다 칸 안에서 진짜 인트로가 되풀이 재생 (배경·글자 효과·글꼴·스티커를 바꾸면 처음부터) → [인트로 보기] 버튼 없음
 var EASY_INTRO = 'd'; // 'd' 미리보기 위에서 바로 + 추천 + 분위기 16가지(기본, 1018z18p) · 's' 쉬운 칸(1018z18o) · 'f' · 'e' · 'b' · 'old' (관리자 손쉬운 제작 → 인트로 칸 - 되돌리기도 여기서)
 var EASY_ACC = 'chips'; // 간편 계좌 모양 고르기 'chips' 이름 버튼(1018z18w) · 'pics' 그림 카드(1018z18v)
-var EASY_FX = 'tap'; // 첫 화면 글자 효과 고르기 'tap' 누르면 바로 고름(1018z18w) · 'list' 줄마다 ▶(1018z18p) · 'cards' 움직이는 카드(1018z18o)
+var EASY_FX = 'pic'; // 첫 화면 글자 효과 고르기 'tap' 누르면 바로 고름(1018z18w) · 'list' 줄마다 ▶(1018z18p) · 'cards' 움직이는 카드(1018z18o)
 var EASY_STK = 'bubble'; // 인트로 스티커 고치기 'bubble' 말풍선 메뉴 + 두 손가락(1018z18p) · 'gizmo' 조작 틀(1018z18m)
 const SPI = { tab: 'bg', play: true, more: false };
 const SPI_FX_SEC = 1.6; // 효과 카드 한 번 길이
@@ -14100,12 +14134,12 @@ function spIntroPanel(box, kind) {
             <div class="spi-rec"><span><b>분위기 · ${cur ? esc(curSet.n) : '직접 꾸밈'}</b><small>${cur === rec ? '이 디자인에 어울리는 추천이에요' : '다른 분위기로 언제든 바꿀 수 있어요'}</small></span>
                 ${two ? '<button type="button" class="spi-rnext" id="spiRepick">분위기 다시 고르기</button>' : '<button type="button" class="spi-rnext" id="spiNext">↻ 다른 분위기</button>'}</div>
             ${two ? '' : `<div class="wz-field spi-sec" id="spiSetsSec"><div class="wz-lab"><span>분위기 ${SPI_SETS.length}가지</span><small>옆으로 넘겨 보고 눌러요</small></div>${spiSetsHtml(rec)}</div>`}
-            <div class="spi-tools">${tool('text', SPI_ICO.text, '글자', on ? '' : ' disabled')}${spOpt('finish', 'introStk') ? tool('stk', SPI_ICO.stk, '스티커 넣기', on ? '' : ' disabled') : ''}${tool('help', SPI_ICO.help, '사용법')}${spOpt('finish', 'intro') ? tool('onoff', SPI_ICO.power, on ? '인트로 끄기' : '인트로 켜기') : ''}</div>
+            ${two && on ? '' : `<div class="spi-tools">${tool('text', SPI_ICO.text, '글자', on ? '' : ' disabled')}${spOpt('finish', 'introStk') ? tool('stk', SPI_ICO.stk, '스티커 넣기', on ? '' : ' disabled') : ''}${tool('help', SPI_ICO.help, '사용법')}${spOpt('finish', 'intro') ? tool('onoff', SPI_ICO.power, on ? '인트로 끄기' : '인트로 켜기') : ''}</div>`}
             ${on ? `<div class="spi-detail">
-                <div class="wz-field spi-sec"><div class="wz-lab"><span>문구</span><small>미리보기 글자를 눌러도 고칠 수 있어요</small></div>
+                <div class="wz-field spi-sec"><div class="wz-lab"><span>문구</span>${two ? '<button type="button" class="spi-txlook" data-spi-tool="text">글꼴 · 크기 · 색 ›</button>' : '<small>미리보기 글자를 눌러도 고칠 수 있어요</small>'}</div>
                     ${spiRichNote('spiText')}<textarea class="wz-inp spi-txt" id="spiText" rows="2" placeholder="우리 결혼합니다"${spiRich() ? ' readonly' : ''}>${esc(i.text || '')}</textarea>
                     <div class="sp-chips spi-txq">${SPI_TXQ.map(t => `<button type="button" class="${(i.text || '') === t ? 'on' : ''}" data-spi-tq="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>
-                ${spOpt('finish', 'introSimple') ? '' : spiTextHtml(true) + sections.bg + sections.col + (fx ? `<div class="wz-field spi-sec"><div class="wz-lab">글자 효과</div>${spiFxChipsHtml()}</div>` : '') + spiDurHtml()}${sections.stk}</div>` : ''}</div>`;
+                ${spOpt('finish', 'introSimple') ? '' : spiTextHtml(true) + sections.bg + sections.col + (fx ? `<div class="wz-field spi-sec"><div class="wz-lab">글자 효과</div>${spiFxChipsHtml()}</div>` : '') + spiDurHtml()}${sections.stk}${two && spOpt('finish', 'intro') ? '<button type="button" class="spi-askno spi-noint" data-spi-tool="onoff">인트로 없이 할게요</button>' : ''}</div>` : ''}</div>`;
         const root = box.querySelector('.spi');
         spiBindCommon(box);
         box.querySelector('#spiRepick')?.addEventListener('click', () => { SPI.dstep = 'pick'; SPI.pk = spiSetOf() || rec; spiStkUnsel(root, true); spRender(); setTimeout(() => { const s0 = document.querySelector('#simplePane .spi'); if (s0) s0.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); });

@@ -170,7 +170,7 @@ $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
 $easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyNb = function_exists('section_defaults_easy_nb') ? section_defaults_easy_nb() : 'swipe'; $easyIntro = function_exists('section_defaults_easy_intro') ? section_defaults_easy_intro() : 'f'; // (section_defaults.php를 같이 안 올렸어도 페이지가 열리게)
-$easyFx = function_exists('section_defaults_easy_fx') ? section_defaults_easy_fx() : 'tap'; $easyAcc = function_exists('section_defaults_easy_acc') ? section_defaults_easy_acc() : 'chips'; $easyStk = function_exists('section_defaults_easy_stk') ? section_defaults_easy_stk() : 'gizmo';
+$easyFx = function_exists('section_defaults_easy_fx') ? section_defaults_easy_fx() : 'pic'; $easyAcc = function_exists('section_defaults_easy_acc') ? section_defaults_easy_acc() : 'chips'; $easyStk = function_exists('section_defaults_easy_stk') ? section_defaults_easy_stk() : 'gizmo';
 $easyVideo = section_defaults_easy_video(); // (1018z18o: 예전엔 이 줄이 위 주석 안에 들어가 메인 영상 예시 칸이 늘 비어 보였음)
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
@@ -888,7 +888,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             <div class="ez-mview" id="ezFxp">
                 <div class="ez-mview-h"><b>첫 화면 글자 효과 고르기</b><small>간편 만들기 '첫 화면을 꾸며요' 질문 · 목록 메인 화면 칸의 '글자가 나타나는 모습'이에요. 누르면 바로 저장돼요.</small></div>
                 <div class="ez-mview-g" role="radiogroup" aria-label="글자 효과 고르기">
-                    <?php foreach ([['tap', '누르면 바로 고르기', '줄 하나를 누르면 그 효과로 정해지고 위 첫 화면 그림에서 바로 보여 줘요. 줄마다 오른쪽 글자가 그 효과로 움직여요.', '추천'], ['list', '▶ 미리 보기 + 고르기 (예전)', '효과마다 한 줄 · ▶를 누르면 위 그림에서 보여 주고 [모든 줄에]로 정해요.', ''], ['cards', '움직이는 카드 (예전)', '효과 카드 5장이 각자 되풀이해 움직여요.', '']] as [$mk, $mt, $md, $mb]): ?>
+                    <?php foreach ([['pic', '그림을 눌러 바꾸기', '첫 화면 그림을 누르거나 ‹ ›로 다음 효과. 맨 앞 [디자인 맞춤](디자인에 들어 있던 움직임 그대로)이 기본으로 골라져 있어요.', '추천'], ['tap', '누르면 바로 고르기 (예전)', '줄 하나를 누르면 그 효과로 정해지고 위 첫 화면 그림에서 바로 보여 줘요. 줄마다 오른쪽 글자가 그 효과로 움직여요.', ''], ['list', '▶ 미리 보기 + 고르기 (예전)', '효과마다 한 줄 · ▶를 누르면 위 그림에서 보여 주고 [모든 줄에]로 정해요.', ''], ['cards', '움직이는 카드 (예전)', '효과 카드 5장이 각자 되풀이해 움직여요.', '']] as [$mk, $mt, $md, $mb]): ?>
                     <button type="button" class="ez-mview-c<?= $easyFx === $mk ? ' on' : '' ?>" data-fxp="<?= $mk ?>" role="radio" aria-checked="<?= $easyFx === $mk ? 'true' : 'false' ?>">
                         <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk === 'cards' ? 'tiles' : 'rows' ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
                         <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
