@@ -5173,3 +5173,41 @@ textarea[readonly].spi-txt, .spi-txs textarea[readonly] { background: #F6F3EE; c
 @media (min-width: 861px) { .sticker-palette.stk2.spi-pal { right: 24px; bottom: 24px; left: auto; top: auto; z-index: 9550; } }
 @media (max-width: 860px) { .sticker-palette.stk2.spi-pal { z-index: 9550; } }
 @media (prefers-reduced-motion: reduce) { .spi-ph .spi-stk, .spi-ph .spi-stk.on { transition: none; animation: none; } }
+/* 스티커 누름 · 끌기 표시 (1018z18o, 전문가 모드도 간편 인트로 칸처럼) */
+#previewRoot .sticker-el.selected, #introOverlayStatic .sticker-el.selected { animation: spiStkOn .5s ease 1; }
+.sticker-el.stk-lift { scale: 1.12; filter: drop-shadow(0 8px 10px rgba(0,0,0,.38)) !important; transition: scale .12s ease; cursor: grabbing; }
+@media (prefers-reduced-motion: reduce) { #previewRoot .sticker-el.selected, #introOverlayStatic .sticker-el.selected { animation: none; } }
+/* 글자 효과 카드 (1018z18o) - 카드마다 그 문구가 그 효과로 되풀이해 나타남 */
+.hlx { display: flex; gap: 6px; overflow-x: auto; padding: 2px 1px 6px; scrollbar-width: none; }
+.hlx::-webkit-scrollbar { display: none; }
+.hlx-c { flex: 0 0 auto; width: 88px; display: flex; flex-direction: column; align-items: stretch; gap: 3px; padding: 5px 5px 7px; border: 1.5px solid var(--wz-line2, #E3DED6); border-radius: 12px; background: #fff; font: inherit; color: #2B2320; cursor: pointer; text-align: center; }
+.hlx-c.on { border-color: var(--wz-ink, #1B1A18); box-shadow: 0 0 0 1px var(--wz-ink, #1B1A18); }
+.hlx-s { height: 40px; border-radius: 8px; background: linear-gradient(160deg, #75685D, #2F2925); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 0 4px; }
+.hlx-t { display: inline-block; max-width: 100%; color: #fff; font-style: normal; font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hlx-c b { font-size: 12.5px; } .hlx-c small { font-size: 10.5px; color: #8A847C; line-height: 1.3; }
+.hlx-a-write { -webkit-mask-image: linear-gradient(90deg, #000 0 40%, transparent 60% 100%); mask-image: linear-gradient(90deg, #000 0 40%, transparent 60% 100%); -webkit-mask-size: 250% 100%; mask-size: 250% 100%; animation: hlxWrite 2.6s cubic-bezier(.4, .1, .5, .95) infinite; }
+@keyframes hlxWrite { 0% { -webkit-mask-position: 100% 0; mask-position: 100% 0; } 55%, 100% { -webkit-mask-position: 0 0; mask-position: 0 0; } }
+.hlx-a-fade { animation: hlxFade 2.6s ease infinite; } @keyframes hlxFade { 0% { opacity: 0; } 50%, 100% { opacity: 1; } }
+.hlx-a-up { animation: hlxUp 2.6s cubic-bezier(.22, .9, .32, 1) infinite; } @keyframes hlxUp { 0% { opacity: 0; translate: 0 12px; } 45%, 100% { opacity: 1; translate: 0 0; } }
+.hlx-a-zoom { animation: hlxZoom 2.6s cubic-bezier(.22, .9, .32, 1) infinite; } @keyframes hlxZoom { 0% { opacity: 0; scale: .55; } 45%, 100% { opacity: 1; scale: 1; } }
+.hlx-all { margin-top: 10px; } .hlx-h { display: flex; align-items: baseline; gap: 8px; margin: 0 0 6px; } .hlx-h b { font-size: 13px; } .hlx-h small { font-size: 11.5px; color: #8A847C; }
+.hl-pop .hlx { flex-wrap: wrap; overflow: visible; } .hl-pop .hlx-c { width: 86px; }
+.hl-line:has(.hl-res:not([hidden])) { flex-wrap: wrap; } .hl-res { display: block; order: 3; flex: 0 0 100%; margin: -4px 0 4px 12px; font-size: 11.5px; color: #8A847C; } .hl-res[hidden] { display: none; } .hl-res b { color: #2B2320; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .hlx-t { animation: none !important; } }
+.hl-pop .hl-pg button.hlx-c { border-radius: 12px; padding: 5px 5px 7px; white-space: normal; background: #fff; color: #2B2320; border: 1.5px solid var(--wz-line2, #E3DED6); }
+.hl-pop .hl-pg button.hlx-c.on { background: #fff; color: #2B2320; border-color: var(--wz-ink, #1B1A18); box-shadow: 0 0 0 1px var(--wz-ink, #1B1A18); }
+.hl-pop:has(.hlx) { max-width: min(296px, calc(100vw - 40px)); }
+/* 쉬운 인트로 칸 's' (1018z18o) */
+.spi-win.spi-win-s { height: min(46vh, 400px); }
+.spi-sets { display: flex; gap: 8px; overflow-x: auto; padding: 2px 1px 8px; scrollbar-width: none; }
+.spi-sets::-webkit-scrollbar { display: none; }
+.spi-set { flex: 0 0 auto; width: 96px; display: flex; flex-direction: column; gap: 3px; padding: 5px 5px 8px; border: 1.5px solid var(--wz-line, #E3DED6); border-radius: 14px; background: #fff; font: inherit; color: var(--wz-ink, #2B2320); cursor: pointer; text-align: center; }
+.spi-set.on { border-color: var(--wz-ink, #1B1A18); box-shadow: 0 0 0 1px var(--wz-ink, #1B1A18); }
+.spi-set b { font-size: 13px; } .spi-set small { font-size: 10.5px; color: var(--wz-sub, #8A847C); line-height: 1.3; }
+.spi-set-ph { position: relative; display: block; aspect-ratio: 9 / 13; border-radius: 10px; overflow: hidden; container-type: inline-size; }
+.spi-set-tx { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 92%; font-size: 13px; line-height: 1.35; text-align: center; word-break: keep-all; }
+.spi-set-stk { position: absolute; width: 26%; height: auto; transform: translate(-50%, -50%); }
+.spi-txq { margin-top: 8px; }
+.spi-more { width: 100%; display: flex; align-items: center; gap: 8px; padding: 12px 14px; border: 1px dashed var(--wz-line, #DED8CF); border-radius: 14px; background: #fff; font: inherit; color: var(--wz-ink, #2B2320); cursor: pointer; text-align: left; }
+.spi-more span { font-weight: 700; font-size: 14px; flex: none; } .spi-more small { flex: 1; min-width: 0; font-size: 11.5px; color: var(--wz-sub, #8A847C); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .spi-more i { font-style: normal; color: var(--wz-sub, #8A847C); }
+.spi-morebox { display: flex; flex-direction: column; gap: 12px; padding: 12px; border-radius: 14px; background: var(--ui-soft, #F6F3EE); }

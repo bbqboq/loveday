@@ -2430,3 +2430,22 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-bd-navy { --p-bd: linear-gradient(90deg, transparent 10px, color-mix(in srgb, var(--p-accent) 60%, transparent) 10px 11px, transparent 11px 14px, color-mix(in srgb, var(--p-accent) 35%, transparent) 14px 14.6px, transparent 14.6px calc(100% - 14.6px), color-mix(in srgb, var(--p-accent) 35%, transparent) calc(100% - 14.6px) calc(100% - 14px), transparent calc(100% - 14px) calc(100% - 11px), color-mix(in srgb, var(--p-accent) 60%, transparent) calc(100% - 11px) calc(100% - 10px), transparent calc(100% - 10px)); --p-bd-size: 100% 100%; --p-bd-rep: no-repeat; --p-bd-pos: 0 0; --p-bd-blend: normal; }
 @media print { .ib-bd { background-image: var(--p-paper, none) !important; background-size: 300px !important; background-repeat: repeat !important; background-position: 0 0 !important; background-blend-mode: multiply !important; } }
 /* ===== 페이지 배경 꾸밈 끝 ===== */
+/* ===== 인트로 스티커 등장 효과 (1018z18o, InviteBlocks.introStkFx) - 자리·회전은 transform 그대로, 움직임은 따로 쓰는 scale·translate·rotate ===== */
+.ib-isk.ib-isk-run { animation: .7s cubic-bezier(.34, 1.56, .64, 1) var(--isk-d, .3s) both; }
+.ib-isk-pop.ib-isk-run { animation-name: ibIskPop; }
+.ib-isk-boing.ib-isk-run { animation-name: ibIskBoing; animation-duration: .9s; animation-timing-function: ease-out; }
+.ib-isk-spin.ib-isk-run { animation-name: ibIskSpin; animation-duration: .8s; animation-timing-function: cubic-bezier(.22, .9, .32, 1); }
+.ib-isk-fade.ib-isk-run { animation-name: ibIskFade; animation-duration: .9s; animation-timing-function: ease; }
+.ib-isk-up.ib-isk-run { animation-name: ibIskUp; animation-timing-function: cubic-bezier(.22, .9, .32, 1); }
+.ib-isk-zoom.ib-isk-run { animation-name: ibIskZoom; animation-timing-function: cubic-bezier(.22, .9, .32, 1); }
+.ib-isk-left.ib-isk-run { animation-name: ibIskLeft; animation-timing-function: cubic-bezier(.22, .9, .32, 1); }
+.ib-isk-right.ib-isk-run { animation-name: ibIskRight; animation-timing-function: cubic-bezier(.22, .9, .32, 1); }
+@keyframes ibIskPop { from { opacity: 0; scale: .35; rotate: -8deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
+@keyframes ibIskBoing { 0% { opacity: 0; scale: .3; } 45% { opacity: 1; scale: 1.18; } 65% { scale: .9; } 82% { scale: 1.05; } 100% { opacity: 1; scale: 1; } }
+@keyframes ibIskSpin { from { opacity: 0; scale: .4; rotate: -200deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
+@keyframes ibIskFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ibIskUp { from { opacity: 0; translate: 0 32px; } to { opacity: 1; translate: 0 0; } }
+@keyframes ibIskZoom { from { opacity: 0; scale: 1.7; } to { opacity: 1; scale: 1; } }
+@keyframes ibIskLeft { from { opacity: 0; translate: -70px 0; } to { opacity: 1; translate: 0 0; } }
+@keyframes ibIskRight { from { opacity: 0; translate: 70px 0; } to { opacity: 1; translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .ib-isk.ib-isk-run { animation: none !important; } }

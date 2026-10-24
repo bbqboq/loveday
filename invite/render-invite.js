@@ -614,6 +614,7 @@ function playIntroAnimation(design, onReveal) {
     textEl.appendChild(typedSpan);
     textEl.appendChild(cursorSpan);
     overlay.appendChild(textEl);
+    let ski = 0;
     (intro.stickers || []).forEach(st => {
         const sk = document.createElement(st.image ? 'img' : 'span');
         sk.style.left = st.x + '%'; sk.style.top = st.y + '%';
@@ -635,6 +636,7 @@ function playIntroAnimation(design, onReveal) {
             sk.textContent = st.emoji;
         }
         overlay.appendChild(sk);
+        if (window.InviteBlocks && InviteBlocks.introStkFx) InviteBlocks.introStkFx(sk, st, ski++, true); // 등장 효과 (에디터 스티커 조작 틀 ✨)
     });
     (intro.customTexts || []).forEach(ct => {
         const el = document.createElement('span');

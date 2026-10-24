@@ -420,15 +420,15 @@ function section_defaults_easy_mview(): string
     return in_array($v, SECTION_EASY_MVIEWS, true) ? $v : 'split';
 }
 
-const SECTION_EASY_INTROS = ['f', 'e', 'b', 'old'];
-/** 간편 만들기 인트로 칸 모양 (기본 'f' = 재생 막대 + 움직이는 효과 카드) */
+const SECTION_EASY_INTROS = ['s', 'f', 'e', 'b', 'old'];
+/** 간편 만들기 인트로 칸 모양 (기본 's' = 쉬운 칸: 분위기 고르기 + 문구 + 더 꾸미기, 1018z18o) */
 function section_defaults_easy_intro(): string
 {
     $f = section_defaults_file();
-    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 'f';
+    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 's';
     $j = json_decode((string) file_get_contents($f), true);
     $v = is_array($j) ? (string) ($j['easy']['introPanel'] ?? '') : '';
-    return in_array($v, SECTION_EASY_INTROS, true) ? $v : 'f';
+    return in_array($v, SECTION_EASY_INTROS, true) ? $v : 's';
 }
 const SECTION_EASY_NBS = ['rows', 'tiles', 'focus', 'old'];
 /** 간편 만들기 ↓ 스크롤 버튼 칸 모양 (기본 'rows' = 1 이름표 줄) */
@@ -511,8 +511,8 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if (!in_array($easyNb, SECTION_EASY_NBS, true)) $easyNb = 'rows';
     $easyNbSet = $easyNb !== 'rows';
     $easyIp = ($easyMore !== null && array_key_exists('introPanel', $easyMore)) ? (string) $easyMore['introPanel'] : section_defaults_easy_intro(); // 인트로 칸 모양
-    if (!in_array($easyIp, SECTION_EASY_INTROS, true)) $easyIp = 'f';
-    $easyIpSet = $easyIp !== 'f';
+    if (!in_array($easyIp, SECTION_EASY_INTROS, true)) $easyIp = 's';
+    $easyIpSet = $easyIp !== 's';
     $easyVideo = ($easyMore !== null && array_key_exists('videoSample', $easyMore)) ? (string) $easyMore['videoSample'] : section_defaults_easy_video(); // 메인 영상 예시
     if (!preg_match(SECTION_YT_ID_RE, $easyVideo)) $easyVideo = '';
     // $easyOff: null = 저장된 값 그대로, [] = 모두 켬, {step:[key]} = 새로 저장

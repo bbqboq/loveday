@@ -161,7 +161,8 @@ $easyNow = section_defaults_easy();
 $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
-$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyNb = function_exists('section_defaults_easy_nb') ? section_defaults_easy_nb() : 'rows'; $easyIntro = function_exists('section_defaults_easy_intro') ? section_defaults_easy_intro() : 'f'; // (section_defaults.php를 같이 안 올렸어도 페이지가 열리게) $easyVideo = section_defaults_easy_video();
+$easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyNb = function_exists('section_defaults_easy_nb') ? section_defaults_easy_nb() : 'rows'; $easyIntro = function_exists('section_defaults_easy_intro') ? section_defaults_easy_intro() : 'f'; // (section_defaults.php를 같이 안 올렸어도 페이지가 열리게)
+$easyVideo = section_defaults_easy_video(); // (1018z18o: 예전엔 이 줄이 위 주석 안에 들어가 메인 영상 예시 칸이 늘 비어 보였음)
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
 $easyInfo = [
@@ -864,11 +865,11 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
                 </div>
             </div>
             <div class="ez-mview" id="ezIp">
-                <div class="ez-mview-h"><b>인트로 칸</b><small>간편 만들기 '인트로' 칸 모양이에요. 넷 다 배경 · 색 투명도 · 글자 효과 · 글꼴 · 작은 스티커를 고를 수 있고, 위 셋은 칸 안에서 진짜 인트로가 되풀이 재생돼요 (바꾸면 바로 처음부터). 누르면 바로 저장돼요.</small></div>
+                <div class="ez-mview-h"><b>인트로 칸</b><small>간편 만들기 '인트로' 칸 모양이에요. 모두 배경 · 색 투명도 · 글자 효과 · 글꼴 · 스티커를 고를 수 있고, 예전 칸 말고는 칸 안에서 진짜 인트로가 되풀이 재생돼요 (바꾸면 바로 처음부터). 누르면 바로 저장돼요.</small></div>
                 <div class="ez-mview-g" role="radiogroup" aria-label="인트로 칸">
-                    <?php foreach ([['f', '재생 막대 + 움직이는 효과 카드', '위 인트로 화면 + ▶/Ⅱ · 진행 막대 · ↻, 글자 효과는 카드마다 실제로 움직여서 보고 골라요.', '추천'], ['e', '재생 막대', '위 인트로 화면 + ▶/Ⅱ · 진행 막대(글자가 나타나요 → 첫 화면으로 넘어가요) · ↻, 고르는 칸은 글자 버튼.', ''], ['b', '인트로 화면 그대로 + 아래 탭', '하객이 보는 휴대폰 화면 그대로 크게 + 아래 [배경 · 색 · 글자 효과 · 글꼴 · 스티커] 탭.', ''], ['old', '예전 칸', '고르는 칸만 있고 [▶ 인트로 보기]를 눌러 완성본으로 봐요.', '']] as [$mk, $mt, $md, $mb]): ?>
+                    <?php foreach ([['s', '쉬운 칸: 분위기 고르기 + 문구', '완성된 분위기 카드(타자기 · 손글씨 · 사진 위에 · 하트 팡 · 별빛 · 꽃길 · 편지)를 누르고 문구만 적으면 끝. 나머지는 [더 꾸미기]에 접혀 있어요.', '추천'], ['f', '재생 막대 + 움직이는 효과 카드', '위 인트로 화면 + ▶/Ⅱ · 진행 막대 · ↻, 글자 효과는 카드마다 실제로 움직여서 보고 골라요.', ''], ['e', '재생 막대', '위 인트로 화면 + ▶/Ⅱ · 진행 막대(글자가 나타나요 → 첫 화면으로 넘어가요) · ↻, 고르는 칸은 글자 버튼.', ''], ['b', '인트로 화면 그대로 + 아래 탭', '하객이 보는 휴대폰 화면 그대로 크게 + 아래 [배경 · 색 · 글자 효과 · 글꼴 · 스티커] 탭.', ''], ['old', '예전 칸', '고르는 칸만 있고 [▶ 인트로 보기]를 눌러 완성본으로 봐요.', '']] as [$mk, $mt, $md, $mb]): ?>
                     <button type="button" class="ez-mview-c<?= $easyIntro === $mk ? ' on' : '' ?>" data-ipp="<?= $mk ?>" role="radio" aria-checked="<?= $easyIntro === $mk ? 'true' : 'false' ?>">
-                        <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk === 'b' ? 'focus' : ($mk === 'old' ? 'old' : 'tiles') ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
+                        <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk === 'b' ? 'focus' : ($mk === 'old' ? 'old' : ($mk === 's' ? 'rows' : 'tiles')) ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
                         <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
                     </button>
                     <?php endforeach; ?>
