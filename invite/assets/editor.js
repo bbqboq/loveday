@@ -12121,13 +12121,17 @@ function spRenderList() {
     const liVis = (st, g) => { const r = spLiState(st, swOf(st), warnOf);
         if (!hideD || r.stt !== 'done' || g === 'deco') { /* (꾸미기 칸은 늘 '다 됨'이라 숨기지 않음 - 채우는 칸만) */ spGone.delete(st.k); shownNow.add(st.k); return true; }
         if (!spGone.has(st.k) && shownBefore && shownBefore.has(st.k)) { spLeaveSoon(st.k, 1100); shownNow.add(st.k); return true; }
-        spGone.add(st.k); doneNames.push(st.k === 'finish' ? '인트로' : st.t); return false; };
+        spGone.add(st.k); if (st.k === 'finish') doneNames.unshift('인트로'); else doneNames.push(st.t); return false; };
     const taskVis = tk => { if (tk.show && !tk.show()) return false; const r = spTaskState(tk);
         if (r.stt !== 'done') { spGone.delete(tk.id); shownNow.add(tk.id); return true; }
         if (!spGone.has(tk.id) && shownBefore && shownBefore.has(tk.id)) { spLeaveSoon(tk.id, 1100); shownNow.add(tk.id); return true; }
         spGone.add(tk.id); doneNames.push(tk.t()); return false; };
     const deskSh = spOpt('flow', 'deskShadow') ? `<section class="spb-li done" data-li="#shadow"><div class="spb-h"><span class="spb-t spb-t-sw"><span class="spb-st spb-done" aria-hidden="true"></span><span class="spb-tx"><b>PC 그림자</b><small>PC로 볼 때 청첩장 양옆에 은은한 그림자</small></span></span><label class="sp-li-sw" title="PC로 볼 때 청첩장 양옆에 그림자"><input type="checkbox" id="spLiShadow" aria-label="PC 그림자 켜고 끄기" ${state.desktopShadow ? 'checked' : ''}><i></i></label></div></section>` : '';
-    const groups = SP_GROUPS.map(([g, t, sub]) => { const base = spSortByBlocks(steps.filter(st => !designOff(st) && (!isOff(st) || coreOff(st)) && spListGroup(st) === g && !(later && g === 'deco' && !warnOf[st.k] && !coreOff(st)))), rows = [];
+    // 인트로를 켰으면 꾸미기 묶음(채우는 동안 접혀 있음)에 숨기지 않고 '채우면 좋은 것' 맨 위 = 다 채운 칸 맨 앞 (1018z18z3, 사용자 요청)
+    const introUp = later && !!(state.intro && state.intro.enabled) && steps.some(x => x.k === 'finish');
+    const grpOf = st => introUp && st.k === 'finish' ? 'more' : spListGroup(st);
+    const groups = SP_GROUPS.map(([g, t, sub]) => { const base0 = spSortByBlocks(steps.filter(st => !designOff(st) && (!isOff(st) || coreOff(st)) && grpOf(st) === g && !(later && g === 'deco' && !warnOf[st.k] && !coreOff(st)))), rows = [];
+        const base = introUp && g === 'more' ? [...base0.filter(st => st.k === 'finish'), ...base0.filter(st => st.k !== 'finish')] : base0;
         base.forEach(st => { if (coreOff(st)) { rows.push(item(st, true)); return; } const tks = taskMode && g !== 'deco' ? spTasksOf(st.k).filter(tk => !tk.extra) : []; if (tks.length) tks.forEach(tk => { if (taskVis(tk)) rows.push(taskItem(tk, st)); }); else if (liVis(st, g)) rows.push(item(st)); }); // (할 일 칸이 있는 섹션은 옵션 하나씩)
         const tail = g === 'deco' && !later ? deskSh : ''; return rows.length || tail ? `<div class="spb-grp spb-${g}${g === 'deco' && spLaterNew ? ' spb-new' : ''}" data-g="${g}"><div class="spb-gh"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${rows.join('')}${tail}</div></div>` : ''; }).join('')
         + (() => { if (!taskMode) return ''; // 다른 테마 (첫 화면 글자 모양 등) - 꼭 필요한 것·채우면 좋은 것과 따로
