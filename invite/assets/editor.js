@@ -14398,55 +14398,61 @@ function spiStkAdd(p) {
 }
 // 글자를 누르면: 전문가 모드 문구 창(spiTxPop, 1018z18z5 - 관리자 finish.introPop) / 끄면 예전 아래 글자 창
 function spiTxOpen(root) { return spOpt('finish', 'introPop') ? spiTxPop(root) : spiTxSheet(root); }
-// 전문가 모드 인트로 문구 창과 같은 칸(크기 · 회전 · 장평 · 자간 · 색 · 테두리 · 위치) + 맨 위 문구 · 멘트 예시 · 글꼴 - 정렬 · 줄 폭은 없음(늘 가운데 · 자동 한 줄)
+// 전문가 모드에서 글자를 누르면 뜨는 문구 창과 같은 창 (1018z18z5 → z18z6: 글자 옆에 떠 있는 창 + 글자 둘레 선택 틀 · A 크기 · ↻ 회전 손잡이)
+// 칸: 문구 멘트 예시(가로 넘기기) · ✎ 글 고치기 · 크기 · 회전 · 장평 · 자간 · 글꼴 · 색 · 테두리 · 위치 - 정렬 · 줄 폭은 없음(늘 가운데 · 자동 한 줄)
 function spiTxPop(root) {
-    document.getElementById('spiTxs')?.remove(); document.getElementById('spiTtp')?.remove();
-    const i = state.intro, fonts = fontOptions.filter(f => f.id === '' || f.cssUrl || f.family);
+    document.getElementById('spiTxs')?.remove(); document.getElementById('spiTtp')?.remove(); document.getElementById('spiTtpFr')?.remove();
+    const i = state.intro;
     const st = () => root.isConnected ? root : document.querySelector('#simplePane .spi');
     const txEl = () => { const r = st(); return r && r.querySelector('.spi-tx'); };
+    const phEl = () => { const r = st(); return r && r.querySelector('.spi-ph'); };
+    spiStkUnsel(st(), true); spiPause(st(), true);
+    { const tx = txEl(), ty = tx && tx.querySelector('.intro-typed'); if (ty) ty.textContent = i.text || ''; }
     const box = document.createElement('div'); box.id = 'spiTtp'; box.className = 'text-toolbar intro-tt spi-ttp';
-    box.innerHTML = `<div class="itt-head"><b class="itt-title"><i>Aa</i>인트로 문구</b><button type="button" class="tt-close" aria-label="닫기">✕</button></div>
-        ${spiRichNote('spiTtpT')}<textarea class="wz-inp spi-ttp-t" id="spiTtpT" rows="2" placeholder="우리 결혼합니다"${spiRich() ? ' readonly' : ''}>${esc(i.text || '')}</textarea>
-        ${spiRich() ? '' : `<div class="spi-txq2">${SPI_TXQ.map(t => `<button type="button" class="${(i.text || '') === t ? 'on' : ''}" data-tq="${esc(t)}">${esc(t)}</button>`).join('')}</div>`}
-        <div class="spi-ttp-f">${fonts.map(f => `<button type="button" class="${(i.font || '') === f.id ? 'on' : ''}" data-f="${esc(f.id)}"${f.family ? ` style="font-family:${esc(f.family.replace(/"/g, "'"))}"` : ''}>${esc(f.id ? f.label.replace(/\s*\(.*\)\s*$/, '') : '청첩장 글꼴')}</button>`).join('')}</div>
+    box.innerHTML = `<div class="itt-head"><b class="itt-title"><i>Aa</i>인트로 문구</b><button type="button" class="itt-edit" data-act="imt-edit">✎ 글 고치기</button><button type="button" class="tt-close" aria-label="닫기">✕</button></div>
+        <div class="spi-ttp-ed" hidden>${spiRichNote('spiTtpT')}<textarea class="wz-inp spi-ttp-t" id="spiTtpT" rows="2" placeholder="우리 결혼합니다"${spiRich() ? ' readonly' : ''}>${esc(i.text || '')}</textarea></div>
+        ${spiRich() ? '' : `<div class="itt-row spi-ttp-q"><small>문구</small><div class="spi-txq2">${SPI_TXQ.map(t => `<button type="button" class="${(i.text || '') === t ? 'on' : ''}" data-tq="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`}
         <div class="itt-grid">${ittCell('크기', 'fs', '')}${ittCell('회전', 'rot', '')}${ittCell('장평', 'sx', '')}${ittCell('자간', 'ls', '')}</div>
+        <div class="itt-row"><small>글꼴</small>${ittFontHtml(i.font)}</div>
         <div class="itt-row"><small>색</small>${ittColorHtml(i.color)}</div>
         <div class="itt-row"><small>테두리</small>${ittEdgeHtml(i)}</div>
         <div class="itt-row tt-pos"><small>위치</small><div class="itt-nudge"><button type="button" data-nudge="left" title="왼쪽">←</button><button type="button" data-nudge="up" title="위">↑</button><button type="button" class="mid" data-act="center-x" title="좌우 가운데로">가운데</button><button type="button" data-nudge="down" title="아래">↓</button><button type="button" data-nudge="right" title="오른쪽">→</button></div></div>`;
-    document.body.appendChild(box);
-    fonts.forEach(f => f.id && loadFontCss(f.id));
-    spiStkUnsel(st(), true); spiPause(st(), true); spiRichBind(box);
-    { const tx = txEl(), ty = tx && tx.querySelector('.intro-typed'); if (ty) ty.textContent = i.text || ''; tx && tx.classList.add('spi-tx-on'); }
-    const mob = () => window.innerWidth <= 860, vv = window.visualViewport;
-    const place = () => { if (!box.isConnected) return;
-        if (mob()) { const off = vv ? Math.max(0, window.innerHeight - (vv.offsetTop + vv.height)) : 0, h = vv ? vv.height : window.innerHeight;
-            box.style.left = '8px'; box.style.right = '8px'; box.style.width = 'auto'; box.style.top = 'auto'; box.style.bottom = (off + 8) + 'px'; box.style.maxHeight = Math.max(200, Math.min(h - 16, window.innerHeight * 0.62)) + 'px'; box.style.overflowY = 'auto'; return; }
-        const tx = txEl(), r = (tx || st() || document.body).getBoundingClientRect(), bw = box.offsetWidth, bh = box.offsetHeight;
-        let left = r.right + 18, top = r.top + r.height / 2 - bh / 2; // (PC: 미리보기 글자 오른쪽, 자리가 없으면 왼쪽)
-        if (left + bw > window.innerWidth - 8) left = Math.max(8, r.left - bw - 18);
-        top = Math.max(8, Math.min(window.innerHeight - bh - 8, top));
-        box.style.left = left + 'px'; box.style.top = top + 'px'; box.style.maxHeight = (window.innerHeight - 16) + 'px'; box.style.overflowY = 'auto'; };
+    document.body.appendChild(box); spiRichBind(box);
+    // 글자 둘레 선택 틀 (전문가 모드와 같은 A 크기 · ↻ 회전 손잡이)
+    const ph = phEl(); ph && ph.classList.add('spi-sel', 'spi-txsel');
+    const frame = document.createElement('div'); frame.className = 'selection-frame spi-ttp-fr'; frame.id = 'spiTtpFr'; frame.style.zIndex = 60;
+    ph && ph.appendChild(frame);
+    const syncFrame = () => { const tx = txEl(), p2 = phEl(); if (!tx || !p2 || !frame.isConnected) return; const c = p2.getBoundingClientRect(), e = tx.getBoundingClientRect();
+        frame.style.left = (e.left - c.left) + 'px'; frame.style.top = (e.top - c.top) + 'px'; frame.style.width = e.width + 'px'; frame.style.height = e.height + 'px'; };
+    const place = () => { if (!box.isConnected) return; const tx = txEl(); if (!tx) return;
+        box.style.maxHeight = ''; const r = tx.getBoundingClientRect(), bw = box.offsetWidth, bh = box.offsetHeight;
+        let left = r.left + r.width / 2 - bw / 2, top = r.bottom + 46; // (전문가 창처럼 글자 아래 · 손잡이에 안 닿게, 자리가 없으면 위)
+        if (top + bh > window.innerHeight - 8 && r.top - bh - 46 >= 8) top = r.top - bh - 46;
+        left = Math.min(window.innerWidth - bw - 8, Math.max(8, left));
+        box.style.left = left + 'px'; box.style.top = Math.max(8, top) + 'px'; fitTT(box); };
+    // 창이 들어갈 자리가 없으면 화면을 옮겨 글자가 위쪽에 오게
+    const bring = () => { const tx = txEl(); if (!tx) return; const r = tx.getBoundingClientRect(), need = r.bottom + 46 + box.offsetHeight - (window.innerHeight - 8);
+        if (need <= 0 || r.top - box.offsetHeight - 46 >= 8) return;
+        let sc = tx.parentElement; while (sc && sc !== document.body && !(sc.scrollHeight > sc.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
+        const d = Math.min(need, r.top - 70); if (d <= 0) return; (sc && sc !== document.body ? sc : window).scrollBy({ top: d }); };
     const vals = () => { const q = k => box.querySelector(`[data-val="${k}"]`);
-        if (q('fs')) q('fs').textContent = Math.round(i.fontSize || 26) + 'px'; if (q('rot')) q('rot').textContent = (i.rotation || 0) + '°';
+        if (q('fs')) q('fs').textContent = Math.round((i.fontSize || 26) * 10) / 10 + 'px'; if (q('rot')) q('rot').textContent = (i.rotation || 0) + '°';
         if (q('sx')) q('sx').textContent = (i.sx || 100) + '%'; if (q('ls')) q('ls').textContent = ittLsText(i.ls); };
     const live = () => { const tx = txEl(); if (tx) {
             tx.style.fontFamily = spiFontFamily(i.font); tx.style.fontSize = fontToCqw(i.fontSize || 26); tx.style.color = spiTextColor(i);
-            tx.style.transform = introTextTransform(i); tx.style.letterSpacing = lsEm(i.ls); tx.style.textShadow = textEdge(i) || '';
+            tx.style.transform = introTextTransform(i); tx.style.letterSpacing = lsEm(i.ls); tx.style.textShadow = textEdge(i) || ''; tx.style.textAlign = 'center';
             tx.style.left = (i.x ?? 50) + '%'; tx.style.top = (i.y ?? 50) + '%'; if (!i.textWidthPct) tx.style.width = '';
             const ty = tx.querySelector('.intro-typed'); if (ty) ty.textContent = i.text || ''; }
-        vals(); scheduleSnapshot(); };
-    const rebake = () => { if (!i.textWidthManual) delete i.textWidthPct; live(); clearTimeout(box._b); box._b = setTimeout(() => { const r = st(); if (r) spiBakeSoon(r); }, 120); };
+        vals(); syncFrame(); place(); scheduleSnapshot(); };
+    const rebake = () => { if (!i.textWidthManual) delete i.textWidthPct; live(); clearTimeout(box._b); box._b = setTimeout(() => { const r = st(); if (r) { spiBakeSoon(r); setTimeout(syncFrame, 200); } }, 120); };
     const mark = (sel, el) => box.querySelectorAll(sel).forEach(x => x.classList.toggle('on', x === el));
-    // 휴대폰: 창이 아래를 덮으니 미리보기 글자가 창 위(보이는 곳 가운데)에 오게 화면을 옮김
-    const bring = () => { const tx = txEl(); if (!tx || !mob()) return; const r = tx.getBoundingClientRect(), bt = box.getBoundingClientRect().top, top = 64;
-        if (r.top >= top && r.bottom <= bt - 12) return;
-        let sc = tx.parentElement; while (sc && sc !== document.body && !(sc.scrollHeight > sc.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
-        const d = (r.top + r.height / 2) - (top + bt) / 2; if (!sc || sc === document.body) window.scrollBy({ top: d, behavior: 'smooth' }); else sc.scrollBy({ top: d, behavior: 'smooth' }); };
-    vals(); place(); requestAnimationFrame(() => { place(); bring(); });
-    const t = box.querySelector('#spiTtpT');
+    if (i.align && i.align !== 'center') delete i.align; // (정렬 고르기는 뺐음 - 늘 가운데)
+    vals(); live(); requestAnimationFrame(() => { place(); bring(); place(); syncFrame(); });
+    const t = box.querySelector('#spiTtpT'), ed = box.querySelector('.spi-ttp-ed');
+    box.querySelector('[data-act="imt-edit"]').addEventListener('click', () => { ed.hidden = !ed.hidden; place(); if (!ed.hidden && !t.readOnly) { t.focus(); t.setSelectionRange(t.value.length, t.value.length); } });
     t.addEventListener('input', () => { i.text = t.value; delete i.html; mark('[data-tq]', null); rebake(); });
     box.querySelectorAll('[data-tq]').forEach(b => b.addEventListener('click', () => { t.value = i.text = b.dataset.tq; delete i.html; mark('[data-tq]', b); rebake(); }));
-    box.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.f; if (v) { i.font = v; loadFontCss(v); } else delete i.font; mark('[data-f]', b); rebake(); }));
+    box.querySelector('select[data-act="font"]').addEventListener('change', e => { const v = e.target.value; if (v) { i.font = v; loadFontCss(v); } else delete i.font; rebake(); });
     const fsSet = v => { i.fontSize = Math.max(14, Math.min(60, Math.round(v * 10) / 10)); };
     box.querySelector('[data-act="fs-dec"]').addEventListener('click', () => { fsSet((i.fontSize || 26) - 1); rebake(); });
     box.querySelector('[data-act="fs-inc"]').addEventListener('click', () => { fsSet((i.fontSize || 26) + 1); rebake(); });
@@ -14466,14 +14472,20 @@ function spiTxPop(root) {
     box.querySelectorAll('[data-nudge]').forEach(b => b.addEventListener('click', () => { const d = b.dataset.nudge, y = i.y ?? 50, x = i.x ?? 50;
         if (d === 'up') i.y = Math.max(2, y - NUDGE); if (d === 'down') i.y = Math.min(98, y + NUDGE); if (d === 'left') i.x = Math.max(2, x - NUDGE); if (d === 'right') i.x = Math.min(98, x + NUDGE); live(); }));
     box.querySelector('[data-act="center-x"]').addEventListener('click', () => { i.x = 50; live(); });
-    const kb = () => place();
+    if (ph) addSizeRotateHandles(frame, { canvas: ph, el: txEl(), minFs: 14, maxFs: 60,
+        getFs: () => i.fontSize || 26, setFs: v => { i.fontSize = v; if (!i.textWidthManual) delete i.textWidthPct; },
+        getRot: () => i.rotation || 0, setRot: v => { i.rotation = v; }, apply: live });
+    window.__ttReposition = () => place();
+    const mo = new MutationObserver(() => requestAnimationFrame(() => { syncFrame(); })); { const tx = txEl(); tx && mo.observe(tx, { attributes: true, attributeFilter: ['style'] }); } // (글자를 끌어 옮겨도 틀이 따라감)
+    const kb = () => { place(); syncFrame(); }, vv = window.visualViewport;
     if (vv) { vv.addEventListener('resize', kb); vv.addEventListener('scroll', kb); }
-    window.addEventListener('resize', kb);
+    window.addEventListener('resize', kb); window.addEventListener('scroll', kb, true);
     const born = Date.now();
     const out = e => { if (!box.isConnected) return done(); if (Date.now() - born < 400) return; const tx = txEl();
-        if (box.contains(e.target) || (tx && tx.contains(e.target)) || (e.target.isConnected === false)) return; done(); };
-    const done = () => { document.removeEventListener('pointerdown', out, true); window.removeEventListener('resize', kb); if (vv) { vv.removeEventListener('resize', kb); vv.removeEventListener('scroll', kb); }
-        if (!box.isConnected) return; box.remove(); txEl()?.classList.remove('spi-tx-on'); try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); SPI.play = true; spRender(); };
+        if (box.contains(e.target) || frame.contains(e.target) || (tx && tx.contains(e.target)) || e.target.isConnected === false) return; done(); };
+    const done = () => { mo.disconnect(); document.removeEventListener('pointerdown', out, true); window.removeEventListener('resize', kb); window.removeEventListener('scroll', kb, true); if (vv) { vv.removeEventListener('resize', kb); vv.removeEventListener('scroll', kb); }
+        if (window.__ttReposition) window.__ttReposition = null;
+        if (!box.isConnected) return; box.remove(); frame.remove(); phEl()?.classList.remove('spi-sel', 'spi-txsel'); try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); SPI.play = true; spRender(); };
     document.addEventListener('pointerdown', out, true);
     box.querySelector('.tt-close').addEventListener('click', done);
 }

@@ -5537,15 +5537,12 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .spi-txs .spi-cols button.def { width: auto; padding: 0 10px; font-size: 12px; }
 .spi-txs .spi-al button { height: 32px; font-size: 13px; }
 .spi-txs-c .sp-range { padding: 4px 8px; }
-/* 인트로 칸 글자 누르면: 전문가 모드 문구 창 (1018z18z5 spiTxPop) */
-.text-toolbar.intro-tt.spi-ttp { z-index: 9600; width: 300px; max-width: calc(100vw - 16px); }
-@media (max-width: 860px) { .text-toolbar.intro-tt.spi-ttp { width: auto; border-radius: 18px 18px 14px 14px; } }
-.spi-ttp .spi-ttp-t { width: 100%; min-height: 0; padding: 7px 10px; font-size: 14px; line-height: 1.4; resize: none; box-sizing: border-box; }
-.spi-ttp .spi-txq2 { margin: -2px 0 0; }
-.spi-ttp-f { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; padding-bottom: 1px; }
-.spi-ttp-f::-webkit-scrollbar { display: none; }
-.spi-ttp-f button { flex: none; height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--ui-line, #E3DED7); background: #fff; color: #2B2320; font-size: 12.5px; white-space: nowrap; cursor: pointer; }
-.spi-ttp-f button.on { background: #2B2320; color: #fff; border-color: #2B2320; }
-.spi-ph .spi-tx.spi-tx-on { outline: 1.5px dashed rgba(255,255,255,.9); outline-offset: 4px; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
-.spi-ttp .spi-ttp-t { background: #fff; border: 1px solid var(--ui-line, #E3DED7); border-radius: 12px; }
-@media (max-width: 860px) { html.simple-mode:has(#spiTtp) body::after { content: ''; display: block; height: 60vh; } }
+/* 인트로 칸 글자 누르면: 전문가 모드 문구 창과 같은 창 (1018z18z6 spiTxPop) */
+.text-toolbar.intro-tt.spi-ttp { z-index: 9600; }
+.spi-ttp .spi-ttp-t { width: 100%; min-height: 0; padding: 7px 10px; font-size: 14px; line-height: 1.4; resize: none; box-sizing: border-box; background: #fff; border: 1px solid var(--ui-line, #E3DED7); border-radius: 12px; }
+.spi-ttp .spi-ttp-q { grid-template-columns: 40px minmax(0, 1fr); }
+.spi-ttp .spi-txq2 { margin: 0; gap: 5px; }
+.spi-ttp .spi-txq2 button { height: 26px; padding: 0 9px; font-size: 11.5px; }
+.spi-ph.spi-txsel .spi-tx { cursor: move; }
+.spi-ph .spi-ttp-fr { pointer-events: none; }
+.spi-ph .spi-ttp-fr .sf-handle { pointer-events: auto; }
