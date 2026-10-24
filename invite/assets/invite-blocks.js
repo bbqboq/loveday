@@ -214,7 +214,8 @@
     const INTRO_STK_LOOP = ['float', 'sway', 'shake', 'beat', 'twinkle', 'turn', 'bounce', 'breathe'];
     const INTRO_STK_NAMES = { pop: '팝', boing: '통통', spin: '빙글', fade: '페이드', up: '위로', zoom: '확대', left: '왼쪽에서', right: '오른쪽에서', drop: '툭 떨어지기', flip: '뒤집히며', swing: '흔들며', jelly: '말랑말랑', bloom: '피어나기', tada: '짜잔', rise: '둥실 떠오르기', swirl: '회오리',
         float: '둥실둥실', sway: '살랑살랑', shake: '흔들흔들', beat: '콩닥콩닥', twinkle: '반짝반짝', turn: '빙글빙글', bounce: '통통 튀기', breathe: '숨쉬듯' };
-    function introStkFx(el, st, i, run) {
+    // dur = 인트로 보이는 시간(초) - 기본 2.5초 대비로 스티커 등장·계속 움직임 시간을 똑같이 늘리고 줄임 (--isk-k, 1018z18z2)
+    function introStkFx(el, st, i, run, dur) {
         if (!el) return;
         el.classList.remove('ib-isk', 'ib-isk-run', 'ib-isk-nofx', ...INTRO_STK_FX.map(k => 'ib-isk-' + k), ...INTRO_STK_LOOP.map(k => 'ib-iskl-' + k));
         const fx = st && INTRO_STK_FX.includes(st.effect) ? st.effect : '', lp = st && INTRO_STK_LOOP.includes(st.loop) ? st.loop : '';
@@ -222,6 +223,7 @@
         el.classList.add('ib-isk', fx ? 'ib-isk-' + fx : 'ib-isk-nofx');
         if (lp) el.classList.add('ib-iskl-' + lp);
         el.style.setProperty('--isk-d', (0.3 + (i || 0) * 0.12).toFixed(2) + 's');
+        const k = Number(dur) > 0 ? Math.max(0.2, Math.min(2, Number(dur) / 2.5)) : 1; if (k !== 1) el.style.setProperty('--isk-k', k.toFixed(3)); else el.style.removeProperty('--isk-k');
         if (run) { void el.offsetWidth; el.classList.add('ib-isk-run'); }
     }
     function introBgRgba(hex, a) { // 인트로 배경색 투명도 (#RGB·#RRGGBB → rgba)

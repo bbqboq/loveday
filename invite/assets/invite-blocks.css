@@ -2432,7 +2432,7 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 /* ===== 페이지 배경 꾸밈 끝 ===== */
 /* ===== 인트로 스티커 움직임 (1018z18o 등장 8 → 1018z18t 등장 16 + 계속 움직임 8, InviteBlocks.introStkFx) - 자리·회전은 transform 그대로, 움직임은 따로 쓰는 scale·translate·rotate
    등장(--isk-a)과 계속 움직임(--isk-l)을 한 animation 목록으로: 계속 움직임은 등장이 끝난 뒤 시작해서 뒤에 쓴 쪽이 이김 (둘 다 쉬는 자리 = scale 1 · translate 0 · rotate 0) ===== */
-.ib-isk.ib-isk-run { animation: var(--isk-a, none) var(--isk-t, .7s) var(--isk-e, cubic-bezier(.34, 1.56, .64, 1)) var(--isk-d, .3s) both, var(--isk-l, none) var(--isk-lt, 2.4s) var(--isk-le, ease-in-out) calc(var(--isk-d, .3s) + var(--isk-t, .7s)) infinite; }
+.ib-isk.ib-isk-run { animation: var(--isk-a, none) calc(var(--isk-t, .7s) * var(--isk-k, 1)) var(--isk-e, cubic-bezier(.34, 1.56, .64, 1)) calc(var(--isk-d, .3s) * var(--isk-k, 1)) both, var(--isk-l, none) calc(var(--isk-lt, 2.4s) * var(--isk-k, 1)) var(--isk-le, ease-in-out) calc((var(--isk-d, .3s) + var(--isk-t, .7s)) * var(--isk-k, 1)) infinite; } /* --isk-k = 인트로 보이는 시간 / 2.5초 */
 .ib-isk-nofx { --isk-t: 0s; }
 .ib-isk-pop { --isk-a: ibIskPop; --isk-t: .7s; --isk-e: cubic-bezier(.34, 1.56, .64, 1); }
 .ib-isk-boing { --isk-a: ibIskBoing; --isk-t: .9s; --isk-e: ease-out; }

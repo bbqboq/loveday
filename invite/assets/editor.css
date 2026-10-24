@@ -5473,3 +5473,45 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .spi-opx .sp-range { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8A7F72; } .spi-opx .sp-range input { flex: 1; min-width: 0; }
 .spi-opx > small { font-size: 12px; color: #8A7F72; }
 .spi-opx .sp-range { border: 0; padding: 0; background: none; box-shadow: none; }
+/* 1018z18z2 인트로 촘촘하게: 보이는 시간 · 배경 투명도 · 배경색 한 칸 + 미리보기·버튼 작게 */
+.spi-set3 { margin: 4px 0 0; padding: 8px 12px; border-radius: 14px; background: #fff; border: 1px solid var(--ui-line, #E6DFD5); display: grid; gap: 6px; }
+.spi-set3 .s3-row { display: flex; align-items: center; gap: 10px; min-height: 34px; }
+.spi-set3 .s3-row > b { flex: none; width: 74px; font-size: 13px; }
+.spi-set3 .s3-dur { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.spi-set3 .s3-dur button { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--ui-line, #E6DFD5); background: #fff; font: inherit; font-size: 17px; line-height: 1; color: #2B2320; cursor: pointer; }
+.spi-set3 .s3-dur button:disabled { opacity: .35; cursor: default; }
+.spi-set3 output { min-width: 40px; text-align: right; font-weight: 700; font-size: 13px; }
+.spi-set3 input[type=range] { flex: 1; min-width: 0; margin: 0; }
+.spi-set3 .s3-sw { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 3px 2px; }
+.spi-set3 .s3-sw::-webkit-scrollbar { display: none; }
+.spi-set3 .s3-sw button, .spi-set3 .s3-cus { flex: none; position: relative; width: 26px; height: 26px; border-radius: 50%; border: 0; padding: 0; background: var(--c, #fff); box-shadow: inset 0 0 0 1px rgba(0,0,0,.14); cursor: pointer; }
+.spi-set3 .s3-sw button.on, .spi-set3 .s3-cus.on { box-shadow: inset 0 0 0 1px rgba(0,0,0,.14), 0 0 0 2px #fff, 0 0 0 3.5px #2B2320; }
+.spi-set3 .s3-cus { display: flex; align-items: center; justify-content: center; background: var(--c, conic-gradient(#F3B3B3, #F5E39B, #A8D8B0, #9CC3E8, #C9A9E3, #F3B3B3)); }
+.spi-set3 .s3-cus input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; padding: 0; border: 0; }
+.spi-set3 .s3-cus i { font-style: normal; font-size: 15px; font-weight: 700; color: #2B2320; text-shadow: 0 0 2px #fff; pointer-events: none; }
+.spi-set3 .s3-cus.on i { display: none; }
+.spi-k-d { gap: 10px; }
+.spi-win.spi-win-d { height: min(40vh, 360px); }
+.spi-k-d .spi-tools { gap: 10px; }
+.spi-k-d .spi-tool { width: 58px; gap: 3px; font-size: 11px; }
+.spi-k-d .spi-tool span { width: 40px; height: 40px; }
+.spi-k-d .spi-tool span svg { width: 19px; height: 19px; }
+.spi-k-d .spi-rec { padding: 7px 8px 7px 12px; }
+.spi-k-d .spi-rec .spi-rnext { height: 34px; padding: 0 12px; font-size: 12.5px; }
+.spi-big { flex-basis: min(46vw, 180px); }
+.spi-bigs { padding: 4px calc(50% - min(23vw, 90px)) 6px; gap: 10px; }
+.spi-d-ask .spi-askpv .spi-big { flex-basis: min(42vw, 165px); }
+.spi-bign b { font-size: 15.5px; }
+/* 1018z18z2 아래 버튼 줄 = 질문 화면 [이전][다음]과 같은 모양 */
+.sp-dock { margin: 12px 0 0; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); gap: 10px; }
+.sp-dock button { height: 54px; }
+.sp-dock .dk-back { flex: 0 0 auto; width: 92px; border: 1px solid var(--ui-line, #E6DFD5); border-radius: 16px; background: #fff; color: var(--wz-ink, #1B1A18); font-weight: 700; }
+.sp-dock .dk-sub { flex: 0 1 30%; min-width: 0; padding: 0 8px; }
+.sp-dock.s3 .dk-back, .sp-dock.s4 .dk-back { width: 64px; }
+.spi-set3 { grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.spi-set3 .s3-row { min-width: 0; }
+.spi-set3 input[type=range] { width: auto; }
+.spi-k-d .spi-tool { width: 66px; white-space: nowrap; }
+.sp-dock { padding-left: 16px; padding-right: 16px; }
+@media (min-width: 861px) { .sp-dock { padding-left: 0; padding-right: 0; } }
+.spi-set3 input[type=range] { accent-color: #2B2320; }

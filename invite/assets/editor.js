@@ -6805,7 +6805,7 @@ function renderIntroStickers() {
             el.textContent = st.emoji;
         }
         canvas.appendChild(el);
-        if (window.InviteBlocks && InviteBlocks.introStkFx) InviteBlocks.introStkFx(el, st, state.intro.stickers.indexOf(st), false); // 등장 효과 (되풀이 재생 때 loopIntroPreview가 틂)
+        if (window.InviteBlocks && InviteBlocks.introStkFx) InviteBlocks.introStkFx(el, st, state.intro.stickers.indexOf(st), false, state.intro.duration || 2.5); // 등장 효과 (되풀이 재생 때 loopIntroPreview가 틂)
         initIntroStickerDrag(el, st.id);
     });
 }
@@ -11893,9 +11893,10 @@ function spSlimHtml(bads, all, nOk) {
 function spDockHtml(bads) {
     if (EASY_READY !== 'slim' || !spOpt('flow', 'summary')) return '';
     const step = spReadyStep(bads), pv = (cls, t) => `<button type="button" class="${cls}" data-nx="pv">${t}</button>`;
-    const btns = step < 3 ? pv('dk-main', '완성본 보기')
+    const back = spOpt('flow', 'ask') && !spInPlace && spAskSteps().length ? '<button type="button" class="dk-back" data-nx="back">이전</button>' : ''; // 질문 화면 마지막 질문으로
+    const btns = back + (step < 3 ? pv('dk-main', '완성본 보기')
         : step === 3 ? pv('dk-sub', '완성본 보기') + '<button type="button" class="dk-main" data-nx="pub"><b>발행하기</b></button>'
-        : pv('dk-sub', '완성본 보기') + '<button type="button" class="dk-main" data-nx="copy"><b>주소 복사하기</b></button>';
+        : pv('dk-sub', '완성본 보기') + '<button type="button" class="dk-main" data-nx="copy"><b>주소 복사하기</b></button>');
     return `<div class="sp-dock s${step}" id="spDock">${btns}</div>`;
 }
 function spNextBind(pane) {
@@ -11903,6 +11904,7 @@ function spNextBind(pane) {
     [...(box ? box.querySelectorAll('[data-nx]') : []), ...(dock ? dock.querySelectorAll('[data-nx]') : [])].forEach(b => b.addEventListener('click', async () => {
         const k = b.dataset.nx;
         if (k === 'pv') pane.querySelector('#spListDone').click();
+        else if (k === 'back') { stopAllBgm(); const L = spAskSteps(); state.spView = 'quick'; spStep = Math.max(0, L.length - 1); spAskLast = -1; pane._spKey = null; spRender(); window.scrollTo(0, 0); spAskAutoSave(); }
         else if (k === 'kk') kkSheetOpen();
         else if (k === 'pub') pubCheckThen(async () => { b.disabled = true; const bb = b.querySelector('b'); if (bb) bb.textContent = '발행 중…'; let ok = false; try { ok = await saveToServer(true); } finally { b.disabled = false; } if (ok || isPublished) spRender(); else if (bb) bb.textContent = '발행하기'; });
         else if (k === 'copy') { const u = spPubUrl(); if (!u) return; let ok = false; try { await navigator.clipboard.writeText(u); ok = true; } catch (e) { try { const ta = document.createElement('textarea'); ta.value = u; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (e2) {} }
@@ -13750,20 +13752,32 @@ const SPI_STK_AT = [[24, 32], [76, 30], [22, 68], [78, 70], [50, 22], [50, 80], 
 const spiStkSrc = ([t, k]) => `/invite/assets/stickers/${t}/${k}.svg`;
 function spiDur() { return Math.max(0.5, Math.min(4, +state.intro.duration || 2.5)); }
 // ② 자세히 꾸미기 '화면이 보이는 시간' - 0.5초씩, 0.5~3초 (1018z18y)
-function spiDurStepHtml() {
+function spiDurStepHtml() { // 1018z18z2: 보이는 시간 · 배경 투명도 · 배경색을 한 칸에 촘촘히 (스크롤 줄이기)
     const d = spiDur();
-    return `<div class="spi-durx"><span><b>화면이 보이는 시간</b><small>0.5초씩 · 최대 3초</small></span>
-        <button type="button" data-spi-dstep="-" aria-label="0.5초 짧게"${d <= 0.5 ? ' disabled' : ''}>−</button><output aria-live="polite">${String(d).replace(/\.0$/, '')}초</output><button type="button" data-spi-dstep="+" aria-label="0.5초 길게"${d >= 3 ? ' disabled' : ''}>+</button></div>${spiOpLvHtml()}`;
+    return `<div class="spi-set3"><div class="s3-row"><b>보이는 시간</b><span class="s3-dur">
+        <button type="button" data-spi-dstep="-" aria-label="0.5초 짧게"${d <= 0.5 ? ' disabled' : ''}>−</button><output aria-live="polite">${String(d).replace(/\.0$/, '')}초</output><button type="button" data-spi-dstep="+" aria-label="0.5초 길게"${d >= 3 ? ' disabled' : ''}>+</button></span></div>${spiOpLvHtml()}${spiBgColHtml()}</div>`;
 }
-// ② '배경 투명도' 막대 (보이는 시간 밑, 1018z18z) = intro.bgOpacity (0 투명 = 뒤 첫 화면이 보임 · 100 진하게) - 하객 화면과 같은 값
+// ② 배경 투명도 (보이는 시간 밑, 1018z18z) = intro.bgOpacity (0 투명 = 뒤 첫 화면이 보임 · 100 진하게) - 하객 화면과 같은 값
 function spiOpLvHtml() {
     if (!spOpt('finish', 'introOp')) return '';
     const op = Math.round(introBgOp(state.intro) * 100);
-    return `<div class="spi-opx"><div class="spi-opx-h"><b>배경 투명도</b><output id="spiOpV">${op}%</output></div>
-        <div class="sp-range"><span>투명</span><input type="range" id="spiOpR" min="0" max="100" step="5" value="${op}" aria-label="배경 투명도"><span>진하게</span></div>
-        <small>낮추면 뒤 첫 화면이 비쳐 보여요</small></div>`;
+    return `<div class="s3-row"><b>배경 투명도</b><input type="range" id="spiOpR" min="0" max="100" step="5" value="${op}" aria-label="배경 투명도 (왼쪽 투명 · 오른쪽 진하게)"><output id="spiOpV">${op}%</output></div>`;
+}
+// ② 배경색: 디자인 색 + 기본 색 + [직접 고르기] (1018z18z2) = intro.bg (사진·영상 배경이면 색 배경으로 바꿈)
+const SPI_BG_PRE = [['#FFFFFF', '흰색'], ['#F5EFE6', '아이보리'], ['#F3E1E1', '연분홍'], ['#E6EDF3', '연하늘'], ['#E9EFE4', '연초록'], ['#151B2E', '밤하늘'], ['#3B2A2A', '와인'], ['#1B1A18', '검정']];
+function spiBgColHtml() {
+    if (!spOpt('finish', 'introBgCol')) return '';
+    const i = state.intro, p = curPalOf(), isCol = !i.bgType || i.bgType === 'color', cur = isCol ? String(i.bg || p.bg || '').toUpperCase() : '', seen = new Set();
+    const list = [[p.bg, '디자인 바탕색'], [p.accent, '디자인 포인트 색'], ...SPI_BG_PRE].filter(([c]) => c && /^#[0-9a-f]{6}$/i.test(c) && !seen.has(c.toUpperCase()) && seen.add(c.toUpperCase()));
+    const custom = isCol && cur && !seen.has(cur);
+    return `<div class="s3-row s3-col"><b>배경색</b><span class="s3-sw"><label class="s3-cus${custom ? ' on' : ''}" title="직접 고르기" style="${custom ? `--c:${cur}` : ''}"><input type="color" id="spiBgCus" value="${/^#[0-9A-F]{6}$/.test(cur) ? cur.toLowerCase() : '#ffffff'}" aria-label="배경색 직접 고르기"><i aria-hidden="true">+</i></label>${list.map(([c, t]) => `<button type="button" class="${c.toUpperCase() === cur ? 'on' : ''}" data-spi-bgc="${c}" style="--c:${c}" title="${t}" aria-label="${t}"></button>`).join('')}</span></div>`;
 }
 function spiOpLvBind(box, root) {
+    const setCol = c => { const i = state.intro; i.bgType = 'color'; i.bg = c; };
+    box.querySelectorAll('[data-spi-bgc]').forEach(b => b.addEventListener('click', () => { setCol(b.dataset.spiBgc); scheduleSnapshot(); spRender(); }));
+    const cu = box.querySelector('#spiBgCus');
+    if (cu) { cu.addEventListener('input', () => { setCol(cu.value.toUpperCase()); root.querySelectorAll('.spi-ov').forEach(ov => { ov.style.background = spiOvBg(state.intro).bg; const im = ov.querySelector('.spi-bgimg'); if (im) im.remove(); }); const l = cu.closest('.s3-cus'); if (l) { l.style.setProperty('--c', cu.value); l.classList.add('on'); } });
+        cu.addEventListener('change', () => { scheduleSnapshot(); spRender(); }); }
     const r = box.querySelector('#spiOpR'); if (!r) return;
     r.addEventListener('input', () => { const v = +r.value; if (v >= 100) delete state.intro.bgOpacity; else state.intro.bgOpacity = v;
         const o = box.querySelector('#spiOpV'); if (o) o.textContent = v + '%';
@@ -13812,7 +13826,7 @@ function spiFill(ov, still) { // still = 멈춘 화면(스티커 고치기 · �
         else if (st.icon) { el.innerHTML = STICKER_ICONS[st.icon] || ''; el.style.width = el.style.height = sz; }
         else { el.textContent = st.emoji || ''; el.style.fontSize = sz; }
         ov.appendChild(el);
-        if (InviteBlocks.introStkFx) InviteBlocks.introStkFx(el, st, (i.stickers || []).indexOf(st), !still); // 등장 효과
+        if (InviteBlocks.introStkFx) InviteBlocks.introStkFx(el, st, (i.stickers || []).indexOf(st), !still, spiDur()); // 등장 효과
     });
     (i.customTexts || []).forEach(ct => { const el = document.createElement('span'); el.className = 'spi-ct'; const ax = { left: '0%', center: '-50%', right: '-100%' }[ct.align || 'center'];
         el.style.cssText = `left:${ct.x}%;top:${ct.y}%;transform:translate(${ax},-50%) scaleX(${(ct.scaleX ?? 100) / 100}) rotate(${ct.rotation || 0}deg);font-size:${fontToCqw(ct.fontSize)};color:${ct.color || 'inherit'};`; el.textContent = ct.text || ''; ov.appendChild(el); });
@@ -14274,7 +14288,7 @@ function spIntroPanel(box, kind) {
 function spiFxPlay(root, st) {
     const el = root && root.querySelector(`.spi-ph .spi-stk[data-sid="${CSS.escape(st.id)}"]`) || document.querySelector(`#simplePane .spi-ph .spi-stk[data-sid="${CSS.escape(st.id)}"]`); if (!el) return;
     el.classList.remove('on'); void el.offsetWidth;
-    if (window.InviteBlocks && typeof InviteBlocks.introStkFx === 'function') InviteBlocks.introStkFx(el, st, 0, true);
+    if (window.InviteBlocks && typeof InviteBlocks.introStkFx === 'function') InviteBlocks.introStkFx(el, st, 0, true, spiDur());
     else { el.classList.add('spi-fxfb'); setTimeout(() => el.classList.remove('spi-fxfb'), 700); }
     clearTimeout(el._fxT); el._fxT = setTimeout(() => { if (SPI.sel === st.id) el.classList.add('on'); }, 1100);
 }
@@ -14945,6 +14959,8 @@ async function bootstrapFromServer() {
         if (typeof data.design === 'string' && data.design.trim()) {
             try { data.design = JSON.parse(data.design); } catch (parseErr) { throw new Error('저장된 디자인을 읽을 수 없습니다'); }
         }
+        let fromDraft = null; // 서버에 아직 디자인이 없으면 이 기기 임시 저장으로 이어서 (새로고침해도 처음으로 안 돌아가게)
+        if (!(data.design && Array.isArray(data.design.blocks)) && !SAMPLE_ID && (fromDraft = spDraftGet())) data.design = JSON.parse(JSON.stringify(fromDraft.design));
         if (data.design && Array.isArray(data.design.blocks)) {
             // 이미 저장된 디자인이 있으면 그대로 불러와서 바로 에디터로 진입
             registerSavedPalette(data.design.skin, data.design.palette);
@@ -14973,7 +14989,8 @@ async function bootstrapFromServer() {
             state.intro = Object.assign({ enabled: false, text: '우리 결혼합니다', font: '', fontSize: 26, duration: 2.5, x: 50, y: 50, rotation: 0, align: 'center', color: '', bg: '', bgType: 'color', bgImage: '', bgYoutubeId: '', stickers: [], customTexts: [] }, data.design.intro || {});
             if (state.intro.font) loadFontCss(state.intro.font);
             state.blocks = data.design.blocks;
-            SAVE_OK = true; // 이미 저장된 청첩장
+            SAVE_OK = !fromDraft; // 이미 저장된 청첩장 (임시 저장으로 이어 가는 중이면 관문 그대로)
+            if (fromDraft) { (fromDraft.ns || []).forEach(k => NAME_SET.add(k)); Object.assign(NAME_DEMO, fromDraft.nd || {}); DATE_SET = !!fromDraft.ds; DATE_DEMO = fromDraft.dd ?? null; TIME_SET = !!fromDraft.ts; }
             state.info = data.design.info && typeof data.design.info === 'object' ? data.design.info : null;
             ['mode', 'sampleId', 'simpleSnap', 'fullSnap', ...SP_KEEP].forEach(k => { if (data.design[k] && !SAMPLE_ID) state[k] = data.design[k]; else delete state[k]; }); // 간편 만들기 상태 (샘플 편집에선 안 씀)
             // 저장된 디자인이 만들어질 당시엔 없었던 섹션(디데이/타임라인/인터뷰 등 나중에 추가된 것)을
@@ -15407,7 +15424,7 @@ async function saveToServer(publish, silent) {
         });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error || '저장 실패');
-        lastSavedBody = same;
+        lastSavedBody = same; spDraftDel(); // (서버에 저장됨 - 이 기기 임시 저장은 지움)
         if (silent) return true; // 미리보기용 조용한 저장은 알림 없이 성공만 알려준다
         if (publish && viewSlug) {
             isPublished = true;
@@ -16472,12 +16489,23 @@ function spPubLiveText() { const { st, at } = spPubLive;
 function spPubLiveSync() { const el = document.querySelector('#spReady .nx-live'); if (!el) return; const [k, t] = spPubLiveText(); el.className = 'nx-live' + (k ? ' ' + k : ''); el.textContent = t; }
 function spPubLiveSet(st) { spPubLive = { st, at: st === 'saved' ? Date.now() : spPubLive.at }; spPubLiveSync(); }
 setInterval(() => { if (spPubLive.st === 'saved') spPubLiveSync(); }, 30000);
+// 저장 전(두 분 이름·날짜를 정하기 전)에도 새로고침하면 하던 자리에서 이어서 (1018z18z2) - 이 기기에만 임시로 (localStorage, 편집 토큰마다)
+//  서버에 처음 저장되면 지움 · 불러올 때 서버에 디자인이 없으면 이것으로 이어 감 (SAVE_OK는 그대로 false - 관문은 그대로)
+const spDraftKey = () => 'ld-draft-' + String(EDIT_TOKEN || '').slice(0, 24);
+function spDraftPut() {
+    try { if (!EDIT_TOKEN || SAMPLE_ID || onboardingActive || (!state.presetId && startTrack !== 'custom')) return;
+        const d = JSON.parse(saveBody(false)).design; if (!d || !Array.isArray(d.blocks)) return;
+        localStorage.setItem(spDraftKey(), JSON.stringify({ at: Date.now(), design: d, ns: [...NAME_SET], nd: NAME_DEMO, ds: DATE_SET, dd: DATE_DEMO, ts: TIME_SET })); } catch (e) {}
+}
+function spDraftGet() { try { const j = JSON.parse(localStorage.getItem(spDraftKey()) || 'null'); return j && j.design && Array.isArray(j.design.blocks) && Date.now() - (j.at || 0) < 30 * 864e5 ? j : null; } catch (e) { return null; } }
+function spDraftDel() { try { localStorage.removeItem(spDraftKey()); } catch (e) {} }
+window.addEventListener('pagehide', () => { try { if (document.documentElement.classList.contains('simple-mode') && !saveGateOk()) spDraftPut(); } catch (e) {} });
 function spAutoSaveSoon(ms) { try { if (!EDIT_TOKEN) return; } catch (e) { return; } if (!document.documentElement.classList.contains('simple-mode')) return; /* (불러오기 전엔 EDIT_TOKEN이 아직 없음) */
     if (isPublished && spPubLive.st !== 'saving' && spUnsaved()) spPubLiveSet('wait');
     spSaveDirty = true; clearTimeout(ldhSaveT); ldhSaveT = setTimeout(spSaveRun, ms == null ? 800 : ms); }
 async function spSaveRun() {
     if (spSaveBusy) { spSaveAgain = true; return; }
-    if (!saveGateOk()) return; // (이름·날짜를 정하기 전 - 정하는 순간 다음 고침에서 저장)
+    if (!saveGateOk()) { spDraftPut(); return; } // (이름·날짜를 정하기 전 - 이 기기에만 임시로, 정하는 순간 다음 고침에서 서버에 저장)
     const live = isPublished && !!spUnsaved(); // (발행한 뒤 고친 것 - 발행 카드에 '반영하는 중 → 바뀌었어요'를 바로 보여 줌)
     if (live) spPubLiveSet('saving');
     spSaveBusy = true; spSaveDirty = false;

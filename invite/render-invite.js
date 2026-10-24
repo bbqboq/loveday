@@ -636,7 +636,7 @@ function playIntroAnimation(design, onReveal) {
             sk.textContent = st.emoji;
         }
         overlay.appendChild(sk);
-        if (window.InviteBlocks && InviteBlocks.introStkFx) InviteBlocks.introStkFx(sk, st, ski++, true); // 등장 효과 (에디터 스티커 조작 틀 ✨)
+        if (window.InviteBlocks && InviteBlocks.introStkFx) InviteBlocks.introStkFx(sk, st, ski++, true, intro.duration || 2.5); // 등장 효과 (에디터 스티커 조작 틀 ✨)
     });
     (intro.customTexts || []).forEach(ct => {
         const el = document.createElement('span');
