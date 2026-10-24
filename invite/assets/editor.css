@@ -5271,3 +5271,67 @@ textarea[readonly].spi-txt, .spi-txs textarea[readonly] { background: #F6F3EE; c
 .spi-rec b, .spi-rec small { word-break: keep-all; }
 .spi-k-d #spiSetsSec > .wz-lab { flex-direction: column; align-items: flex-start; gap: 2px; }
 .spi-k-d #spiSetsSec > .wz-lab small { margin: 0; }
+/* 스크롤 버튼 화면: 위 전·후 그림에 진짜 버튼 (1018z18q) - 버튼 칸 안 따로 미리보기는 숨김 */
+.shz-cmp .shz-nb { position: absolute; left: 50%; bottom: 6%; z-index: 4; width: 0; height: 0; pointer-events: none; transform: scale(.3); transform-origin: 0 100%; }
+.shz-cmp .shz-nb .ib-next { position: absolute; left: 0; bottom: 0; top: auto; right: auto; margin: 0; opacity: var(--next-op, .85); pointer-events: none; }
+.shz-withnb .shz-cmp { box-shadow: 0 0 0 2px var(--ui-point, #B08A5A); }
+.sp-nbx.nbx-nopv .nbx-pv { display: none; }
+.sp-nbx.nbx-nopv .nbx-hd small::after { content: ' · 위 그림에 바로 보여요'; }
+/* 인트로 칸 'd' 두 단계 (1018z18q): ① 큰 카드로 분위기 고르기 → ② 자세히 꾸미기 */
+.spi-pkhd { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.spi-step { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--wz-sub, #8A847C); }
+.spi-step b { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--wz-ink, #2B2320); color: #fff; font-size: 11px; }
+.spi-step b + * { color: var(--wz-ink, #2B2320); }
+.spi-step i { font-style: normal; opacity: .6; }
+.spi-d-pick .spi-step { color: var(--wz-ink, #2B2320); font-weight: 700; } .spi-d-pick .spi-step > span, .spi-d-edit .spi-step > span { font-weight: 400; color: var(--wz-sub, #8A847C); }
+.spi-offn { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--ui-soft, #F6F3EE); font-size: 12.5px; color: var(--wz-sub, #8A847C); text-align: center; }
+.spi-bigw { position: relative; margin: 0 -4px; }
+.spi-bigs { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px calc(50% - min(31vw, 120px)) 10px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.spi-bigs::-webkit-scrollbar { display: none; }
+.spi-big { position: relative; flex: 0 0 min(62vw, 240px); scroll-snap-align: center; padding: 6px; border: 0; border-radius: 26px; background: #2B2320; cursor: pointer; transition: transform .25s ease, opacity .25s ease; transform: scale(.9); opacity: .55; }
+.spi-big.on { transform: none; opacity: 1; box-shadow: 0 10px 26px rgba(0,0,0,.18); }
+.spi-big-ph { position: relative; display: block; aspect-ratio: 9 / 16; border-radius: 20px; overflow: hidden; container-type: inline-size; }
+.spi-big .spi-set-tx { font-size: 17px; }
+.spi-big .spi-set-rec { position: absolute; left: 14px; top: 14px; z-index: 3; font-size: 11px; padding: 2px 8px; }
+.spi-bigw .spi-sarr { top: calc(50% - 15px); }
+.spi-bign { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.spi-bign b { font-size: 17px; } .spi-bign small { font-size: 12.5px; color: var(--wz-sub, #8A847C); } .spi-bign span { font-size: 11px; color: var(--wz-sub, #8A847C); }
+.spi-pks { display: flex; gap: 6px; overflow-x: auto; padding: 2px 1px 4px; scrollbar-width: none; }
+.spi-pks::-webkit-scrollbar { display: none; }
+.spi-pkc { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 34px; padding: 0 12px 0 8px; border: 1px solid var(--wz-line, #E3DED6); border-radius: 17px; background: #fff; font: inherit; font-size: 12.5px; color: var(--wz-ink, #2B2320); cursor: pointer; white-space: nowrap; }
+.spi-pkc i { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); background-color: #fff; }
+.spi-pkc em { font-style: normal; font-size: 10px; font-weight: 700; color: var(--ui-point, #B08A5A); }
+.spi-pkc.on { background: var(--wz-ink, #2B2320); border-color: var(--wz-ink, #2B2320); color: #fff; }
+.spi-pkgo { width: 100%; height: 52px; border: 0; border-radius: 14px; background: var(--wz-ink, #2B2320); color: #fff; font: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; }
+.spi-pkgo span { margin-left: 4px; }
+.spi-detail { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; border-top: 1px solid var(--wz-line, #EEE9E2); }
+.spi-tool span svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* 스티커 아래 막대: 크기 − + · 돌리기 ↺ ↻ · ? · 다 했어요 */
+.spi-edcap.spi-edbar { gap: 6px; padding: 5px; white-space: nowrap; max-width: calc(100% - 16px); }
+.spi-edbar .g { display: inline-flex; align-items: center; gap: 2px; padding: 0 2px; border-radius: 15px; background: rgba(255,255,255,.12); }
+.spi-edbar .g small { font-size: 10.5px; color: rgba(255,255,255,.85); padding: 0 2px; }
+.spi-edbar .g button, .spi-edbar .q { width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #fff; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; touch-action: none; }
+.spi-edbar .g button:active { background: rgba(255,255,255,.25); }
+.spi-edbar .q { font-size: 13px; border: 1px solid rgba(255,255,255,.45); width: 26px; height: 26px; }
+.spi-edbar .ok { height: 30px; padding: 0 11px; }
+/* 스티커 사용법 (처음 한 번) */
+.spi-stip { position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 14px; background: rgba(20,18,16,.55); }
+.spi-stip-c { width: min(100%, 290px); display: flex; flex-direction: column; gap: 8px; padding: 14px 14px 12px; border-radius: 16px; background: #fff; color: #2B2320; box-shadow: 0 12px 30px rgba(0,0,0,.3); }
+.spi-stip-c > b { font-size: 15px; }
+.spi-stip-c ol { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; line-height: 1.5; }
+.spi-stip-c ol b { font-weight: 700; }
+.spi-stip-c > button { height: 40px; border: 0; border-radius: 12px; background: #2B2320; color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.spi-stip-ani { position: relative; height: 64px; border-radius: 12px; background: var(--ui-soft, #F6F3EE); overflow: hidden; }
+.spi-stip-ani .hs { position: absolute; left: 50%; top: 50%; font-size: 26px; color: #D98CA0; translate: -50% -50%; animation: spiTipS 2.4s ease-in-out infinite; }
+.spi-stip-ani i { position: absolute; top: 50%; width: 18px; height: 18px; margin-top: -9px; border-radius: 50%; background: rgba(43,35,32,.18); border: 2px solid rgba(43,35,32,.55); }
+.spi-stip-ani .f1 { left: calc(50% - 30px); animation: spiTipL 2.4s ease-in-out infinite; } .spi-stip-ani .f2 { left: calc(50% + 12px); animation: spiTipR 2.4s ease-in-out infinite; }
+@keyframes spiTipS { 0%, 15% { scale: .8; rotate: 0deg; } 50%, 65% { scale: 1.35; rotate: 18deg; } 100% { scale: .8; rotate: 0deg; } }
+@keyframes spiTipL { 0%, 15% { translate: 0 0; } 50%, 65% { translate: -26px 8px; } 100% { translate: 0 0; } }
+@keyframes spiTipR { 0%, 15% { translate: 0 0; } 50%, 65% { translate: 26px -8px; } 100% { translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .spi-stip-ani * { animation: none !important; } .spi-big { transition: none; } }
+.spi-edbar .g button svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+.spi-edbar > * { flex: none; }
+.spi-edcap.spi-edbar { gap: 4px; padding: 4px; }
+.spi-edbar .g { padding: 0 1px; } .spi-edbar .g small { padding: 0 1px; font-size: 10px; }
+.spi-edbar .g button { width: 28px; height: 28px; }
+.spi-edbar .ok { padding: 0 9px; font-size: 11.5px; }
