@@ -119,6 +119,9 @@ if ($sampleId === '') try {
     if ($wd) $weddingYmd = $wd->format('Y-m-d');
 } catch (Throwable $e) { /* 날짜를 못 구해도 페이지는 그대로 */ }
 $csrfForGuests = csrf_token();
+// 하객 화면 확대 막기 (관리자 옵션, 기본 꺼짐 - 어르신 하객이 글자를 키워 볼 수 있게)
+$guestNoZoom = false;
+try { require_once __DIR__ . '/snap_functions.php'; $guestNoZoom = app_setting('guest_nozoom') === '1'; } catch (Throwable $e) {}
 
 // ---- 링크 미리보기(URL 공유 스타일) - 카카오톡/문자/SNS에 주소를 붙여넣었을 때 보이는 제목·설명·사진 ----
 // 에디터 "화면 설정 → 공유"에서 정한 값(design.share)을 쓰고, 비어 있으면 카카오톡 공유 값 → 기본값 순서로 채운다.
@@ -189,7 +192,7 @@ $customFontUrls = array_values(array_filter(array_map(fn($id) => $fontCssUrls[$i
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1<?= $guestNoZoom ? ', maximum-scale=1, user-scalable=no' : '' ?>">
 <title><?= $title ?></title>
 <meta property="og:type" content="website">
 <meta property="og:url" content="<?= htmlspecialchars($ogUrl, ENT_QUOTES, 'UTF-8') ?>">
@@ -253,6 +256,11 @@ if ($lbZoom > 100): ?>
 .ld-sbar a.o { color: #fff; border: 1px solid rgba(255,255,255,.25); } .ld-sbar a.g { background: #fff; color: #1B1A18; }
 @media (max-width: 420px) { .ld-sbar a.o { display: none; } }
 </style>
+<?php endif; ?>
+<?php if ($guestNoZoom): // 확대 막기: 두 번 톡 · 두 손가락 · 아이폰 제스처 ?>
+<style>html { touch-action: manipulation; }</style>
+<script>(function () { document.addEventListener('touchmove', function (e) { if (e.touches && e.touches.length > 1 && e.cancelable) e.preventDefault(); }, { passive: false });
+['gesturestart', 'gesturechange', 'gestureend'].forEach(function (t) { document.addEventListener(t, function (e) { e.preventDefault(); }, { passive: false }); }); })();</script>
 <?php endif; ?>
 </body>
 </html>

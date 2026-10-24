@@ -208,14 +208,19 @@
     // 인터뷰(둘만의 사랑 이야기) 모양 - 에디터·공개 페이지 둘 다 .blk-interview에 iv-st-* (CSS는 invite-blocks.css '인터뷰 모양')
     const IV_STYLES = [['', '이름표'], ['chat', '채팅 말풍선'], ['card', '질문 카드'], ['mag', '매거진'], ['split', '마주 보기']];
     const ivCls = f => { const v = f && f.style; return IV_STYLES.some(x => x[0] === v && v) ? ' iv-st-' + v : ''; };
-    // 인트로 스티커 등장 효과 (1018z18o) - st.effect = 팝·통통·빙글·페이드·위로·확대·왼쪽에서·오른쪽에서, i = 몇 번째(차례로 0.12초씩 늦게), run = 지금 재생
-    const INTRO_STK_FX = ['pop', 'boing', 'spin', 'fade', 'up', 'zoom', 'left', 'right'];
+    // 인트로 스티커 움직임 - st.effect = 나타날 때 (1018z18o 8가지 → 1018z18t 16가지), st.loop = 계속 움직임 (1018z18t 8가지, 등장이 끝난 뒤 되풀이)
+    //  i = 몇 번째(차례로 0.12초씩 늦게), run = 지금 재생 · CSS invite-blocks.css '인트로 스티커 움직임'
+    const INTRO_STK_FX = ['pop', 'boing', 'spin', 'fade', 'up', 'zoom', 'left', 'right', 'drop', 'flip', 'swing', 'jelly', 'bloom', 'tada', 'rise', 'swirl'];
+    const INTRO_STK_LOOP = ['float', 'sway', 'shake', 'beat', 'twinkle', 'turn', 'bounce', 'breathe'];
+    const INTRO_STK_NAMES = { pop: '팝', boing: '통통', spin: '빙글', fade: '페이드', up: '위로', zoom: '확대', left: '왼쪽에서', right: '오른쪽에서', drop: '툭 떨어지기', flip: '뒤집히며', swing: '흔들며', jelly: '말랑말랑', bloom: '피어나기', tada: '짜잔', rise: '둥실 떠오르기', swirl: '회오리',
+        float: '둥실둥실', sway: '살랑살랑', shake: '흔들흔들', beat: '콩닥콩닥', twinkle: '반짝반짝', turn: '빙글빙글', bounce: '통통 튀기', breathe: '숨쉬듯' };
     function introStkFx(el, st, i, run) {
         if (!el) return;
-        el.classList.remove('ib-isk', 'ib-isk-run', ...INTRO_STK_FX.map(k => 'ib-isk-' + k));
-        const fx = st && INTRO_STK_FX.includes(st.effect) ? st.effect : '';
-        if (!fx) return;
-        el.classList.add('ib-isk', 'ib-isk-' + fx);
+        el.classList.remove('ib-isk', 'ib-isk-run', 'ib-isk-nofx', ...INTRO_STK_FX.map(k => 'ib-isk-' + k), ...INTRO_STK_LOOP.map(k => 'ib-iskl-' + k));
+        const fx = st && INTRO_STK_FX.includes(st.effect) ? st.effect : '', lp = st && INTRO_STK_LOOP.includes(st.loop) ? st.loop : '';
+        if (!fx && !lp) return;
+        el.classList.add('ib-isk', fx ? 'ib-isk-' + fx : 'ib-isk-nofx');
+        if (lp) el.classList.add('ib-iskl-' + lp);
         el.style.setProperty('--isk-d', (0.3 + (i || 0) * 0.12).toFixed(2) + 's');
         if (run) { void el.offsetWidth; el.classList.add('ib-isk-run'); }
     }
@@ -3710,5 +3715,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { INTRO_STK_FX, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

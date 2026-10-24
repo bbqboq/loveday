@@ -48,7 +48,12 @@ $selfUrl = 'admin_extra_settings.php' . ($part !== '' ? '?part=' . $part : '');
 $notice = ''; $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify($_POST['csrf_token'] ?? null);
-    if (($_POST['form'] ?? '') === 'gbfilter') {
+    if (($_POST['form'] ?? '') === 'zoom') {
+        // ---- 하객 화면 확대 막기 (기본 꺼짐) ----
+        save_app_setting($pdo, 'guest_nozoom', !empty($_POST['guest_nozoom']) ? '1' : '0');
+        header('Location: admin_extra_settings.php?' . ($part !== '' ? 'part=' . $part . '&' : '') . 'saved=1#zoom');
+        exit;
+    } elseif (($_POST['form'] ?? '') === 'gbfilter') {
         // ---- 방명록 금지어 ----
         $words = [];
         foreach (preg_split('/[\r\n,]+/u', (string) ($_POST['gb_banned_words'] ?? '')) as $w) {
@@ -130,6 +135,17 @@ $csrf = csrf_token();
                 <label><input type="radio" name="gb_filter_mode" value="mask" <?= $gbMode === 'mask' ? 'checked' : '' ?>> <b>가리기</b> - 글은 받고 금지어만 ***로 가림</label>
             </div>
             <button class="btn" type="submit">금지어 저장</button>
+        </form>
+
+        <h2 class="page-title" id="zoom" style="margin-top:30px;">하객 화면 확대</h2>
+        <form method="post" class="panel" action="<?= snap_h($selfUrl) ?>">
+            <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+            <input type="hidden" name="form" value="zoom">
+            <label style="display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.6;cursor:pointer;">
+                <input type="checkbox" name="guest_nozoom" value="1" <?= app_setting('guest_nozoom') === '1' ? 'checked' : '' ?> style="margin-top:4px;">
+                <span><b>하객 화면 확대 막기</b><br><span style="color:#777;font-size:13px;">켜면 하객이 두 손가락으로 벌리거나 두 번 톡 눌러도 화면이 커지지 않아요. 끄면(기본) 글자가 작게 보이는 하객도 키워서 볼 수 있어요.</span></span>
+            </label>
+            <p style="margin:12px 0 0;"><button class="btn" type="submit">저장</button></p>
         </form>
         <?php endif; ?>
 

@@ -5359,7 +5359,7 @@ function toggleStickerDelayPopup(btn, sticker) {
     }));
     };
     render();
-    placeStickerPopup(popup, btn, 268);
+    placeStickerPopup(popup, btn, popup.classList.contains('sfx-intro') ? 300 : 268);
 }
 // 스티커 클릭 시 뜨는 조작 핸들의 "✨" 버튼을 누르면 뜨는 작은 팝업 - 등장 효과 프리셋을 고른다.
 const STICKER_FX_OPTIONS = [
@@ -5379,6 +5379,7 @@ function toggleStickerFxPopup(btn, sticker, opts) {
     }
     popup._stickerId = sticker.id;
     document.getElementById('stickerDelayPopup')?.classList.remove('open');
+    popup.classList.toggle('sfx-intro', !!(opts.intro && !opts.edgeOnly && window.InviteBlocks && InviteBlocks.INTRO_STK_LOOP && typeof InviteBlocks.introStkFx === 'function'));
     // 버튼을 눌러도 팝업은 그대로 두고 고른 칸에 불만 바꿔 켬 (바깥을 누르거나 ✨를 다시 누르면 닫힘)
     const play = () => { revealedIds.delete(sticker.id); renderPreview(); reselectSticker(sticker.id); replayRevealById(sticker.id, { noVanish: true }); scheduleSnapshot(); render(); };
     const render = () => {
@@ -5388,6 +5389,27 @@ function toggleStickerFxPopup(btn, sticker, opts) {
     const edgeHtml = `<div class="sfx-h"><b>◐ 테두리</b></div>
         <div class="sfx-tiles">${[['', '없음'], ['shadow', '그림자'], ['outline', '흰 테두리']].map(([v, l]) =>
             `<button type="button" class="sfx-tile ${edge === v ? 'on' : ''}" data-edge-val="${v}"><span class="sfx-mini sfx-edge"><i style="filter:${STICKER_EDGE[v] || 'none'}">${mini}</i></span><span>${l}</span></button>`).join('')}</div>`;
+    if (opts.intro && !opts.edgeOnly && window.InviteBlocks && InviteBlocks.INTRO_STK_LOOP && typeof InviteBlocks.introStkFx === 'function') { // 인트로 스티커 (1018z18t): 나타날 때 16 + 계속 움직임 8 - 칸마다 그 움직임을 작게 되풀이
+        const N = InviteBlocks.INTRO_STK_NAMES || {}, lp = sticker.loop || '';
+        const tile = (kind, v, l, on) => `<button type="button" class="sfx-tile ${on ? 'on' : ''}" data-${kind}-val="${v}"><span class="sfx-mini mi" data-mi-${kind}="${v}"><i>${mini}</i></span><span>${l}</span></button>`;
+        popup.innerHTML = STICKER_POPUP_GRIP + `<div class="sfx-h"><b>✨ 나타날 때</b><small>인트로가 시작될 때 한 번</small></div>
+            <div class="sfx-tiles">${tile('fx', 'none', '없음', cur === 'none')}${InviteBlocks.INTRO_STK_FX.map(v => tile('fx', v, N[v] || v, cur === v)).join('')}</div>
+            <div class="sfx-sep"></div><div class="sfx-h"><b>계속 움직임</b><small>나타난 뒤 인트로가 끝날 때까지</small></div>
+            <div class="sfx-tiles">${tile('lp', '', '없음', !lp)}${InviteBlocks.INTRO_STK_LOOP.map(v => tile('lp', v, N[v] || v, lp === v)).join('')}</div>
+            <div class="sfx-sep"></div>${edgeHtml}`;
+        const demo = () => { if (!popup.isConnected || !popup.classList.contains('open') || typeof InviteBlocks.introStkFx !== 'function') return clearInterval(popup._miT);
+            popup.querySelectorAll('[data-mi-fx] i').forEach(el => { InviteBlocks.introStkFx(el, { effect: el.parentNode.dataset.miFx }, 0, true); el.style.setProperty('--isk-d', '.1s'); }); };
+        popup.querySelectorAll('[data-mi-lp] i').forEach(el => { if (el.parentNode.dataset.miLp) { InviteBlocks.introStkFx(el, { loop: el.parentNode.dataset.miLp }, 0, true); el.style.setProperty('--isk-d', '0s'); } });
+        clearInterval(popup._miT); setTimeout(demo, 30); popup._miT = setInterval(demo, 2200); // (처음 그릴 땐 아직 open 전이라 한 틱 뒤)
+        popup.querySelectorAll('[data-fx-val]').forEach(b => b.addEventListener('click', () => { sticker.effect = b.dataset.fxVal; if (sticker.effect === 'none') delete sticker.effect; render(); try { opts.onFx && opts.onFx(); } catch (e) {} scheduleSnapshot(); }));
+        popup.querySelectorAll('[data-lp-val]').forEach(b => b.addEventListener('click', () => { if (b.dataset.lpVal) sticker.loop = b.dataset.lpVal; else delete sticker.loop; render(); try { opts.onFx && opts.onFx(); } catch (e) {} scheduleSnapshot(); }));
+        popup.querySelectorAll('[data-edge-val]').forEach(b => b.addEventListener('click', () => {
+            if (b.dataset.edgeVal) sticker.edge = b.dataset.edgeVal; else delete sticker.edge;
+            if (opts.onEdge) { try { opts.onEdge(); } catch (e) {} } else { renderPreview(); reselectSticker(sticker.id); }
+            scheduleSnapshot(); render();
+        }));
+        return;
+    }
     popup.innerHTML = STICKER_POPUP_GRIP + (opts.edgeOnly ? edgeHtml : `<div class="sfx-h"><b>✨ ${cur === 'none' ? '등장 효과' : label}</b><small>${opts.intro ? '인트로가 시작될 때 움직임' : '화면에 들어올 때 움직임'}</small></div>
         <div class="sfx-tiles">${STICKER_FX_OPTIONS.map(([val, lbl]) =>
             `<button type="button" class="sfx-tile ${cur === val ? 'on' : ''}" data-fx-val="${val}"><span class="sfx-mini m-${val}"><i>${mini}</i></span><span>${lbl}</span></button>`).join('')}</div>
@@ -12507,7 +12529,7 @@ function spHeroLayoutHtml(hb, kind) {
     const res = k => adv || plain ? '' : `<small class="hl-res" data-hl-res="${esc(k)}"${/\{/.test(f[k] || '') ? '' : ' hidden'}>보이는 글자: <b>${esc(InviteBlocks.heroFill(f[k] || '', f).replace(/\n/g, ' '))}</b></small>`; // {신랑} 같은 칸이 실제로 무슨 글자가 되는지
     const lines = keys.map(k => `<div class="hl-line" data-hl-line="${esc(k)}"><textarea${adv ? '' : ' class="hl-tx"'} rows="${rowsOf(shown(k))}" data-hl="${esc(k)}"${plain ? ' data-hl-plain' : ''} spellcheck="false">${wzEsc(shown(k))}</textarea>${res(k)}<button type="button" class="hl-fxb${f.layout[k].anim ? ' on hl-fx-' + esc(f.layout[k].anim) : ''}" data-hl-fxb="${esc(k)}" aria-haspopup="true" title="이 문구가 나타나는 효과"><b>${f.layout[k].anim ? esc(fxName(f.layout[k].anim)) : '효과'}</b><i></i></button></div>`).join('');
     const hlbLay = list.find(l => l.id === cur) || { parts: {} };
-    const all = !adv && EASY_FX !== 'cards' ? hlbHtml(hb, kind, hlbLay, allFx) : adv ? `<div class="hl-all"><span>모두 같게</span>${FX.map(([v, l]) => `<button type="button" class="${allFx === v ? 'on' : ''}" data-hl-all="${esc(v)}">${esc(l)}</button>`).join('')}</div>`
+    const all = !adv && EASY_FX !== 'cards' ? hlbHtml(hb, kind, hlbLay, allFx, anims) : adv ? `<div class="hl-all"><span>모두 같게</span>${FX.map(([v, l]) => `<button type="button" class="${allFx === v ? 'on' : ''}" data-hl-all="${esc(v)}">${esc(l)}</button>`).join('')}</div>`
         : `<div class="hlx-all"><div class="hlx-h"><b>글자가 나타나는 모습</b><small>누르면 모든 글자에 같게</small></div>${hlxCards('data-hl-all', allFx, hlxSample(keys.length ? InviteBlocks.heroFill(f[keys[0]] || '', f) : ''))}</div>`; // (간편: 움직이는 카드 - 글자 줄마다 다르게는 [효과 ▾])
     const tip = plain ? '이름 · 날짜는 앞 질문에서 바꾸면 여기 글자도 저절로 바뀌어요. 직접 고친 글자는 그대로 남아요.' : '{신랑} {신부} {날짜:영문} 처럼 적으면 이름·날짜로 바뀌어요.';
     const replay = anyAnim ? '<button type="button" class="hl-play" data-hl-replay>▶ 다시 보기</button>' : '';
@@ -12528,13 +12550,18 @@ function hlxCards(attr, cur, sample) {
 }
 // 글자 효과 B안 (1018z18p, 목업 45R2pgcau5erNH3qckyu5x): 위 첫 화면 작은 그림 + 효과마다 한 줄 [▶ 미리 보기] 이름 · 설명 [고르기] - ▶는 위 그림에서만 재생(값은 안 바뀜)
 const HLB = { play: '' };
-function hlbHtml(hb, kind, lay, allFx) {
+function hlbHtml(hb, kind, lay, allFx, anims) {
     const show = HLB.play || allFx || '';
     const nm = v => (HLX_TXT[v || ''] || ['', ''])[0];
-    return `<div class="hlb"><div class="hlb-h"><b>글자가 나타나는 모습</b><small>▶를 누르면 아래 그림에서 바로 보여 줘요 · 모든 글자에 같게</small></div>
+    // 위 글자 줄의 [효과 ▾] = 그 줄만 · 이 목록 = 모든 줄 같게 - 몇 줄이 어떤 효과인지 보여 줘서 둘이 이어져 있는 걸 알게 (1018z18t, 사용자: '위 나타나기 · 위로랑 아래 목록이 연동되는 거냐')
+    const cnt = {}; (anims || []).forEach(v => { cnt[v || ''] = (cnt[v || ''] || 0) + 1; });
+    const mixed = allFx === null && (anims || []).length > 1;
+    const note = mixed ? `<p class="hlb-mix"><b>지금은 줄마다 달라요</b> · ${Object.keys(cnt).map(v => esc(nm(v) || '없음') + ' ' + cnt[v] + '줄').join(' · ')}<br>아래에서 고르면 모든 줄이 같게 바뀌어요.</p>`
+        : `<p class="hlb-link">위 글자 줄 오른쪽 <b>[효과 ▾]</b>는 그 줄만 바꿔요 · 아래에서 고르면 모든 줄이 같게 바뀌어요.</p>`;
+    return `<div class="hlb"><div class="hlb-h"><b>글자가 나타나는 모습</b><small>▶를 누르면 아래 그림에서 바로 보여 줘요</small></div>${note}
         <div class="hlb-pv" data-fx="${esc(show || 'none')}">${spHeroLayoutMini(lay, hb, kind === 'video' ? 'video' : 'photo')}<span class="hlb-now">${show ? '▶ 보는 중: ' + esc(nm(show)) : '움직임 없음'}</span></div>
-        <div class="hlb-list">${InviteBlocks.HL_ANIMS.map(([v]) => { const [n, d] = HLX_TXT[v] || [v, '']; const picked = allFx === v, playing = show === v;
-            return `<div class="hlb-row${picked ? ' on' : ''}${playing ? ' play' : ''}"><button type="button" class="hlb-pl" data-hlb-play="${esc(v)}" aria-label="${esc(n)} 미리 보기">${playing && v ? '❚❚' : '▶'}</button><span class="hlb-tx"><b>${esc(n)}</b><small>${esc(d)}</small></span><button type="button" class="hlb-pick" data-hl-all="${esc(v)}" aria-pressed="${picked}">${picked ? '✓ 골랐어요' : '고르기'}</button></div>`; }).join('')}</div></div>`;
+        <div class="hlb-list">${InviteBlocks.HL_ANIMS.map(([v]) => { const [n, d] = HLX_TXT[v] || [v, '']; const picked = allFx === v, playing = show === v, c = mixed ? cnt[v || ''] || 0 : 0;
+            return `<div class="hlb-row${picked ? ' on' : ''}${playing ? ' play' : ''}${c ? ' part' : ''}"><button type="button" class="hlb-pl" data-hlb-play="${esc(v)}" aria-label="${esc(n)} 미리 보기">${playing && v ? '❚❚' : '▶'}</button><span class="hlb-tx"><b>${esc(n)}${c ? `<em>${c}줄 쓰는 중</em>` : ''}</b><small>${esc(d)}</small></span><button type="button" class="hlb-pick" data-hl-all="${esc(v)}" aria-pressed="${picked}">${picked ? '✓ 모든 줄' : '모든 줄에'}</button></div>`; }).join('')}</div></div>`;
 }
 // [효과 ▾] 작은 창 - 고른 줄만 다시 그려도 열린 채 (방향·휘기를 이어서 고를 수 있게)
 let hlPopKey = '';
@@ -13583,7 +13610,16 @@ var EASY_STK = 'bubble'; // 인트로 스티커 고치기 'bubble' 말풍선 메
 const SPI = { tab: 'bg', play: true, more: false };
 const SPI_FX_SEC = 1.6; // 효과 카드 한 번 길이
 // 아주 작은 기본 스티커 (누르면 넣고 다시 누르면 뺌) - 그림은 assets/stickers/<테마>/<이름>.svg
-const SPI_STK = [['romantic', 'heart-bow'], ['romantic', 'rings'], ['romantic', 'rose'], ['classic', 'dove'], ['garden', 'sprig'], ['cosmos', 'sparkles'], ['romantic', 'beat-heart'], ['party', 'popper']];
+const SPI_STK_G = [ // 인트로 빠른 스티커 (1018z18t: 8개 → 묶음 7 × 10 = 70개, 사용자 '너무 작고 적다') - [묶음 id, 이름, [[테마, 그림]…]]
+    ['heart', '하트', [['romantic', 'beat-heart'], ['romantic', 'heart-sparkle'], ['romantic', 'hearts-rise'], ['romantic', 'winged-heart'], ['romantic', 'heart-bow'], ['romantic', 'twin-hearts'], ['romantic', 'arrow-heart'], ['romantic', 'heart-lock'], ['romantic', 'balloons'], ['webtoon', 'hearts-float']]],
+    ['wed', '웨딩', [['romantic', 'rings'], ['classic', 'ring-shine'], ['classic', 'ring-box'], ['classic', 'dress'], ['classic', 'bowtie'], ['classic', 'cake'], ['classic', 'bells'], ['classic', 'cheers'], ['classic', 'dove'], ['romantic', 'love-letter']]],
+    ['flower', '꽃', [['garden', 'flower-sway'], ['romantic', 'rose'], ['romantic', 'bouquet'], ['garden', 'tulip-bunch'], ['garden', 'peony'], ['garden', 'daisy'], ['garden', 'wreath'], ['garden', 'butterfly-flap'], ['garden', 'sprig'], ['season', 'cherry']]],
+    ['star', '별빛', [['cosmos', 'twinkle'], ['cosmos', 'sparkles'], ['cosmos', 'hanging-stars'], ['cosmos', 'meteor-shower'], ['cosmos', 'sleepy-moon'], ['cosmos', 'crescent-star'], ['cosmos', 'constellation'], ['cosmos', 'planet'], ['classic', 'chandelier'], ['classic', 'candles']]],
+    ['party', '축하', [['party', 'confetti-fall'], ['party', 'balloon-float'], ['party', 'burst'], ['party', 'popper'], ['party', 'gift-open'], ['party', 'party-hat'], ['party', 'sparkler'], ['party', 'disco-ball'], ['party', 'cake-candles'], ['party', 'notes']]],
+    ['season', '계절', [['season', 'petal-fall'], ['season', 'snow-fall'], ['season', 'leaves-fall'], ['season', 'wave'], ['season', 'sun'], ['season', 'snowman'], ['season', 'maple'], ['rain', 'umbrella-sway'], ['rain', 'rainbow'], ['season', 'chick']]],
+    ['toon', '웹툰', [['webtoon', 'sfx-dugeun'], ['webtoon', 'bubble-marry'], ['webtoon', 'couple-chibi'], ['webtoon', 'finger-heart'], ['webtoon', 'sparkle-pop'], ['webtoon', 'sfx-jjan'], ['webtoon', 'heart-eyes'], ['webtoon', 'en-love'], ['webtoon', 'happy-end'], ['webtoon', 'blush']]]
+];
+const SPI_STK = SPI_STK_G.flatMap(g => g[2]);
 const SPI_STK_AT = [[24, 32], [76, 30], [22, 68], [78, 70], [50, 22], [50, 80], [30, 50], [70, 50]];
 const spiStkSrc = ([t, k]) => `/invite/assets/stickers/${t}/${k}.svg`;
 function spiDur() { return Math.max(1.5, Math.min(4, +state.intro.duration || 2.5)); }
@@ -13748,11 +13784,17 @@ function spiTextHtml(noText) {
 // 아주 작은 기본 스티커 줄
 function spiStkHtml() {
     const has = new Set((state.intro.stickers || []).map(s => s.image));
-    const list = SPI_STK.filter(x => { try { return typeof stkShown !== 'function' || stkShown('a:' + x[0] + '/' + x[1]); } catch (e) { return true; } });
+    const shown = x => { try { return typeof stkShown !== 'function' || stkShown('a:' + x[0] + '/' + x[1]); } catch (e) { return true; } };
+    const groups = SPI_STK_G.map(g => [g[0], g[1], g[2].filter(shown)]).filter(g => g[2].length);
     const n = (state.intro.stickers || []).length;
-    if (!spOpt('finish', 'introStk')) return '';
-    return `<div class="wz-field spi-sec"><div class="wz-lab"><span>스티커</span><small>누르면 넣고, 다시 누르면 빼요</small></div><div class="spi-stks">${list.map(x => `<button type="button" class="spi-stkb${has.has(spiStkSrc(x)) ? ' on' : ''}" data-spi-stk="${x[0]}/${x[1]}" title="${esc((STK_ART_IX[x[0] + '/' + x[1]] || {}).l || '')}"><img src="${spiStkSrc(x)}" alt=""></button>`).join('')}<button type="button" class="spi-stkm" id="spiStkMore">+ 더 고르기</button>${n ? '<button type="button" class="spi-stkx" id="spiStkX">모두 빼기</button>' : ''}</div>
-        ${n ? `<p class="wz-hint spi-stkh">${EASY_STK === 'gizmo' ? '미리보기에서 스티커를 누르면 테두리가 생겨요. 끌어서 옮기고 · 위 동그라미로 돌리고 · 오른쪽 아래 동그라미로 크기 · ✕로 지워요.' : '미리보기에서 스티커를 누르면 위에 메뉴(움직임 · 뒤집기 · 지우기)가 떠요. 끌어서 옮기고, 아래 [− +] 크기 · 돌리기 버튼이나 두 손가락(미리보기 아무 곳)으로 키우고 돌려요.'}</p>` : ''}</div>`;
+    if (!spOpt('finish', 'introStk') || !groups.length) return '';
+    if (!groups.some(g => g[0] === SPI.stg)) SPI.stg = groups[0][0];
+    const list = groups.find(g => g[0] === SPI.stg)[2];
+    return `<div class="wz-field spi-sec"><div class="wz-lab"><span>스티커</span><small>누르면 넣고, 다시 누르면 빼요</small></div>
+        <div class="sp-chips spi-stg">${groups.map(([k, t]) => `<button type="button" class="${SPI.stg === k ? 'on' : ''}" data-spi-stg="${k}">${esc(t)}</button>`).join('')}</div>
+        <div class="spi-stks">${list.map(x => { const a = STK_ART_IX[x[0] + '/' + x[1]] || {}; return `<button type="button" class="spi-stkb${has.has(spiStkSrc(x)) ? ' on' : ''}" data-spi-stk="${x[0]}/${x[1]}" title="${esc(a.l || '')}"><img src="${spiStkSrc(x)}" alt="" loading="lazy">${a.a ? '<em aria-hidden="true">움직여요</em>' : ''}</button>`; }).join('')}</div>
+        <div class="spi-stkf"><button type="button" class="spi-stkm" id="spiStkMore">+ 더 고르기</button>${n ? '<button type="button" class="spi-stkx" id="spiStkX">모두 빼기</button>' : ''}</div>
+        ${n ? `<p class="wz-hint spi-stkh">${EASY_STK === 'gizmo' ? '미리보기에서 스티커를 누르면 테두리가 생겨요. 끌어서 옮기고 · 위 동그라미로 돌리고 · 오른쪽 아래 동그라미로 크기 · ✕로 지워요.' : '미리보기에서 스티커를 누르면 메뉴가 떠요 (움직임 · 뒤집기 · 지우기). 끌어서 옮기고, 아래 [− +] 버튼으로 크기를 바꿔요.'}</p>` : ''}</div>`;
 }
 function spiBgHtml(ibg) {
     return `<div class="sp-chips">${spIntroBgList().map(([v, l]) => `<button type="button" class="${ibg === v ? 'on' : ''}" data-sp-ibg="${v}">${l}</button>`).join('')}</div>
@@ -13775,24 +13817,24 @@ function spiClearToColor() {
 // ── 쉬운 인트로 칸 's' (1018z18o, 사용자: '인트로 너무 어렵다') ──
 //  ① 분위기 고르기 = 완성된 세트 카드(배경 · 글자 색 · 글자 효과 · 스티커와 그 등장 효과를 한 번에, 카드 안에서 실제로 움직임)
 //  ② 문구 (예시 칩) · [더 꾸미기 ▾] = 예전 칸(글자 크기 · 색 · 글꼴 · 배경 · 효과 · 재생 길이 · 스티커)
-// 분위기 16가지 (1018z18p) - stk = [테마, 그림, 가로%, 세로%, 등장 효과, 크기] · 움직이는 그림(STK_ART 끝 1)을 섞어 분위기마다 다른 움직임
+// 분위기 16가지 (1018z18p) - stk = [테마, 그림, 가로%, 세로%, 등장 효과, 크기(390px 기준), 계속 움직임] (1018z18t: 크게 · 4~5개씩, 사용자 '스티커가 너무 작고 적다') · 움직이는 그림(STK_ART 끝 1)을 섞어 분위기마다 다른 움직임
 const SPI_SETS = [
-    { id: 'type', n: '타자기', d: '한 글자씩 또박또박', anim: 'type', bg: '', stk: [['classic', 'ring-shine', 50, 28, 'pop', 44]] },
-    { id: 'draw', n: '손글씨', d: '펜으로 쓰듯 그려져요', anim: 'draw', bg: '', font: 'nanum-pen', stk: [['garden', 'flower-sway', 50, 74, 'up', 50]] },
-    { id: 'photo', n: '사진 위에', d: '첫 화면 사진 위로', anim: 'fade', bg: 'dim', color: '#FFFFFF', stk: [['romantic', 'hearts-rise', 50, 74, 'fade', 46]] },
-    { id: 'heart', n: '하트 팡', d: '콩닥콩닥 하트가 톡', anim: 'pop', bg: '', stk: [['romantic', 'beat-heart', 50, 28, 'boing', 50], ['romantic', 'heart-sparkle', 74, 72, 'pop', 40]] },
-    { id: 'night', n: '별빛', d: '어둠 속에서 반짝반짝', anim: 'blur', bg: '#151B2E', color: '#F2E3B3', stk: [['cosmos', 'twinkle', 24, 26, 'fade', 40], ['cosmos', 'hanging-stars', 76, 16, 'up', 50], ['cosmos', 'meteor-shower', 70, 76, 'fade', 52]] },
-    { id: 'garden', n: '꽃길', d: '나비가 날아들어요', anim: 'rise', bg: '', stk: [['garden', 'butterfly-flap', 76, 26, 'left', 44], ['garden', 'flower-sway', 24, 74, 'up', 50]] },
-    { id: 'dove', n: '편지', d: '날개 하트가 살랑', anim: 'fade', bg: '', stk: [['romantic', 'love-letter', 50, 28, 'up', 50], ['romantic', 'winged-heart', 72, 74, 'right', 40]] },
-    { id: 'party', n: '축하 파티', d: '꽃가루 · 풍선이 팡팡', anim: 'pop', bg: '', stk: [['party', 'confetti-fall', 50, 16, 'fade', 64], ['party', 'balloon-float', 20, 72, 'up', 50], ['party', 'burst', 80, 30, 'zoom', 44]] },
-    { id: 'champagne', n: '샴페인', d: '보글보글 반짝이는 밤', anim: 'zoom', bg: '#2A2422', color: '#E9D7B4', stk: [['classic', 'bubbles', 50, 74, 'up', 52], ['classic', 'chandelier', 50, 14, 'fade', 56]] },
-    { id: 'spring', n: '벚꽃', d: '꽃잎이 흩날려요', anim: 'rise', bg: '#FFF4F6', color: '#8A4A5A', font: 'gowun-batang', stk: [['season', 'petal-fall', 28, 22, 'fade', 56], ['season', 'petal-fall', 72, 66, 'fade', 56]] },
-    { id: 'snow', n: '첫눈', d: '소복소복 눈이 내려요', anim: 'fade', bg: '#EEF3F8', color: '#3A4A5E', stk: [['season', 'snow-fall', 50, 20, 'fade', 64], ['rain', 'cocoa', 50, 76, 'up', 44]] },
-    { id: 'sea', n: '여름 바다', d: '파도가 출렁 · 햇살 빙글', anim: 'line', bg: '#E8F4F7', color: '#2C5A6B', stk: [['season', 'wave', 50, 80, 'up', 60], ['season', 'sun', 78, 18, 'spin', 42]] },
-    { id: 'rain', n: '비 오는 날', d: '우산이 흔들흔들', anim: 'blur', bg: '#2E3640', color: '#E4ECF2', stk: [['rain', 'rain-anim', 50, 18, 'fade', 56], ['rain', 'umbrella-sway', 50, 76, 'up', 50]] },
-    { id: 'autumn', n: '가을', d: '낙엽이 하나둘', anim: 'fade', bg: '#F6EDE2', color: '#6B3A2A', stk: [['season', 'leaves-fall', 50, 20, 'fade', 60], ['season', 'maple', 24, 76, 'spin', 36]] },
-    { id: 'webtoon', n: '웹툰', d: '두근두근 효과음', anim: 'pop', bg: '#FFFFFF', color: '#1B1B1B', font: 'black-han-sans', stk: [['webtoon', 'sfx-dugeun', 26, 22, 'zoom', 58], ['webtoon', 'hearts-float', 76, 74, 'pop', 50]] },
-    { id: 'candle', n: '촛불', d: '촛불이 일렁이는 밤', anim: 'fade', bg: '#1E1A17', color: '#F1DFC0', stk: [['rain', 'candle', 28, 74, 'fade', 46], ['classic', 'candles', 72, 72, 'fade', 50]] }
+    { id: 'type', n: '타자기', d: '한 글자씩 또박또박', anim: 'type', bg: '', stk: [['classic', 'ring-shine', 50, 24, 'pop', 96, 'beat'], ['classic', 'gold-letter', 20, 76, 'up', 78, 'float'], ['classic', 'dove', 82, 74, 'right', 74, 'sway'], ['romantic', 'bow', 18, 18, 'drop', 56, 'sway'], ['cosmos', 'sparkles', 82, 20, 'zoom', 54, 'twinkle']] },
+    { id: 'draw', n: '손글씨', d: '펜으로 쓰듯 그려져요', anim: 'draw', bg: '', font: 'nanum-pen', stk: [['garden', 'flower-sway', 24, 76, 'up', 96], ['garden', 'butterfly-flap', 78, 24, 'left', 72, 'float'], ['garden', 'sprig', 20, 20, 'bloom', 70, 'sway'], ['garden', 'tulip-bunch', 80, 76, 'rise', 86, 'breathe'], ['garden', 'bee', 54, 16, 'swirl', 48, 'float']] },
+    { id: 'photo', n: '사진 위에', d: '첫 화면 사진 위로', anim: 'fade', bg: 'dim', color: '#FFFFFF', stk: [['romantic', 'hearts-rise', 50, 78, 'fade', 96], ['cosmos', 'sparkles', 20, 22, 'zoom', 60, 'twinkle'], ['cosmos', 'sparkles', 82, 30, 'zoom', 46, 'twinkle'], ['romantic', 'twin-hearts', 80, 80, 'pop', 58, 'beat']] },
+    { id: 'heart', n: '하트 팡', d: '콩닥콩닥 하트가 톡', anim: 'pop', bg: '', stk: [['romantic', 'beat-heart', 50, 22, 'boing', 100], ['romantic', 'heart-sparkle', 80, 74, 'pop', 74, 'float'], ['romantic', 'balloons', 18, 74, 'rise', 88, 'sway'], ['romantic', 'arrow-heart', 20, 18, 'left', 62, 'shake'], ['romantic', 'twin-hearts', 82, 18, 'jelly', 58, 'beat']] },
+    { id: 'night', n: '별빛', d: '어둠 속에서 반짝반짝', anim: 'blur', bg: '#151B2E', color: '#F2E3B3', stk: [['cosmos', 'hanging-stars', 76, 12, 'drop', 96], ['cosmos', 'twinkle', 22, 24, 'fade', 64, 'twinkle'], ['cosmos', 'meteor-shower', 70, 78, 'fade', 100], ['cosmos', 'sleepy-moon', 22, 78, 'rise', 84, 'float'], ['cosmos', 'sparkles', 50, 90, 'zoom', 48, 'twinkle']] },
+    { id: 'garden', n: '꽃길', d: '나비가 날아들어요', anim: 'rise', bg: '', stk: [['garden', 'butterfly-flap', 78, 22, 'left', 78, 'float'], ['garden', 'flower-sway', 22, 76, 'up', 96], ['garden', 'wreath', 22, 20, 'bloom', 76, 'turn'], ['garden', 'daisy', 80, 78, 'bloom', 70, 'sway'], ['garden', 'dandelion', 52, 88, 'rise', 58]] },
+    { id: 'dove', n: '편지', d: '날개 하트가 살랑', anim: 'fade', bg: '', stk: [['romantic', 'love-letter', 50, 22, 'up', 96], ['romantic', 'winged-heart', 76, 76, 'right', 78], ['classic', 'dove', 22, 74, 'left', 82, 'float'], ['classic', 'seal', 80, 22, 'tada', 56], ['romantic', 'rose', 20, 20, 'swing', 60, 'sway']] },
+    { id: 'party', n: '축하 파티', d: '꽃가루 · 풍선이 팡팡', anim: 'pop', bg: '', stk: [['party', 'confetti-fall', 50, 14, 'fade', 120], ['party', 'balloon-float', 18, 72, 'rise', 100], ['party', 'burst', 82, 26, 'zoom', 72], ['party', 'gift-open', 82, 80, 'jelly', 74], ['party', 'party-hat', 18, 20, 'drop', 62, 'shake']] },
+    { id: 'champagne', n: '샴페인', d: '보글보글 반짝이는 밤', anim: 'zoom', bg: '#2A2422', color: '#E9D7B4', stk: [['classic', 'chandelier', 50, 12, 'drop', 104], ['classic', 'bubbles', 50, 78, 'up', 96], ['classic', 'cheers', 20, 74, 'swing', 76, 'sway'], ['party', 'disco-ball', 82, 28, 'spin', 64], ['cosmos', 'sparkles', 20, 26, 'zoom', 52, 'twinkle']] },
+    { id: 'spring', n: '벚꽃', d: '꽃잎이 흩날려요', anim: 'rise', bg: '#FFF4F6', color: '#8A4A5A', font: 'gowun-batang', stk: [['season', 'petal-fall', 28, 22, 'fade', 100], ['season', 'petal-fall', 72, 68, 'fade', 100], ['season', 'cherry', 80, 16, 'bloom', 84, 'sway'], ['season', 'chick', 20, 80, 'jelly', 66, 'bounce'], ['garden', 'butterfly', 80, 82, 'left', 58, 'float']] },
+    { id: 'snow', n: '첫눈', d: '소복소복 눈이 내려요', anim: 'fade', bg: '#EEF3F8', color: '#3A4A5E', stk: [['season', 'snow-fall', 50, 18, 'fade', 120], ['rain', 'cocoa', 22, 78, 'up', 78], ['season', 'snowman', 80, 76, 'drop', 90, 'sway'], ['season', 'snowflake', 20, 20, 'spin', 58, 'turn'], ['season', 'mitten', 82, 22, 'swing', 54, 'sway']] },
+    { id: 'sea', n: '여름 바다', d: '파도가 출렁 · 햇살 빙글', anim: 'line', bg: '#E8F4F7', color: '#2C5A6B', stk: [['season', 'wave', 50, 84, 'up', 120], ['season', 'sun', 80, 16, 'spin', 80, 'turn'], ['season', 'palm', 18, 74, 'rise', 96, 'sway'], ['season', 'shell', 82, 74, 'pop', 56, 'float'], ['season', 'watermelon', 20, 20, 'tada', 56, 'bounce']] },
+    { id: 'rain', n: '비 오는 날', d: '우산이 흔들흔들', anim: 'blur', bg: '#2E3640', color: '#E4ECF2', stk: [['rain', 'rain-anim', 50, 16, 'fade', 104], ['rain', 'umbrella-sway', 22, 76, 'up', 92], ['rain', 'frog', 80, 80, 'jelly', 70, 'bounce'], ['rain', 'snail', 20, 22, 'left', 56, 'float'], ['rain', 'rainbow', 80, 24, 'bloom', 76, 'breathe']] },
+    { id: 'autumn', n: '가을', d: '낙엽이 하나둘', anim: 'fade', bg: '#F6EDE2', color: '#6B3A2A', stk: [['season', 'leaves-fall', 50, 18, 'fade', 110], ['season', 'maple', 22, 76, 'spin', 70, 'sway'], ['season', 'acorn', 80, 78, 'drop', 58, 'bounce'], ['season', 'pumpkin', 80, 22, 'jelly', 66, 'breathe'], ['rain', 'tea', 20, 22, 'up', 60, 'float']] },
+    { id: 'webtoon', n: '웹툰', d: '두근두근 효과음', anim: 'pop', bg: '#FFFFFF', color: '#1B1B1B', font: 'black-han-sans', stk: [['webtoon', 'sfx-dugeun', 26, 20, 'zoom', 100], ['webtoon', 'hearts-float', 78, 76, 'pop', 86], ['webtoon', 'couple-chibi', 24, 80, 'jelly', 96, 'bounce'], ['webtoon', 'sparkle-pop', 80, 22, 'spin', 62, 'twinkle'], ['webtoon', 'finger-heart', 52, 90, 'tada', 56, 'beat']] },
+    { id: 'candle', n: '촛불', d: '촛불이 일렁이는 밤', anim: 'fade', bg: '#1E1A17', color: '#F1DFC0', stk: [['rain', 'candle', 24, 76, 'fade', 84], ['classic', 'candles', 76, 74, 'fade', 92], ['cosmos', 'sparkles', 22, 22, 'zoom', 56, 'twinkle'], ['classic', 'ring-box', 78, 22, 'tada', 64, 'breathe'], ['romantic', 'rose', 50, 88, 'bloom', 54, 'sway']] }
 ];
 const SPI_TXQ = ['우리 결혼합니다', '저희 결혼해요', '소중한 분들을 초대합니다', "We're getting married"];
 function spiSetOf() { const i = state.intro; return SPI_SETS.find(x => x.id === i.preset) ? i.preset : ''; }
@@ -13811,7 +13853,7 @@ function spiSetsHtml(rec) {
     const under = pic ? `center / cover no-repeat url("${InviteBlocks.imgUrl(pic).replace(/"/g, '%22')}")` : 'linear-gradient(160deg, #C9B8A6, #4E4038)';
     return `<div class="spi-sets">${SPI_SETS.map(set => `<button type="button" class="spi-set${cur === set.id ? ' on' : ''}" data-spi-set="${set.id}" aria-pressed="${cur === set.id}">
         <span class="spi-set-ph" style="background:linear-gradient(${spiSetBg(set)}, ${spiSetBg(set)}), ${under}">
-            ${(set.stk || []).map(([t, k, x, y, fx, sz], n) => `<img class="spi-set-stk" data-fx="${fx}" data-n="${n}" src="${spiStkSrc([t, k])}" alt="" style="left:${x}%;top:${y}%;width:${Math.round((sz || 48) / 390 * 100 * 1.15)}%">`).join('')}
+            ${(set.stk || []).map(([t, k, x, y, fx, sz, lp], n) => `<img class="spi-set-stk" data-fx="${fx}" data-lp="${lp || ''}" data-n="${n}" src="${spiStkSrc([t, k])}" alt="" style="left:${x}%;top:${y}%;width:${Math.round((sz || 48) / 390 * 100 * 1.15)}%">`).join('')}
             <span class="spi-set-tx" data-anim="${set.anim}" style="font-family:${esc((set.font ? spiFontFamily(set.font) : fam).replace(/"/g, "'"))};color:${set.color || pal.ink}">${esc(sample)}</span>
         </span><b>${rec === set.id ? '<em class="spi-set-rec">추천</em>' : ''}${esc(set.n)}</b><small>${esc(set.d)}</small></button>`).join('')}</div>`;
 }
@@ -13824,7 +13866,7 @@ function spiSetsRun(box) {
         if (!box.isConnected) return clearInterval(box._setT);
         cards.forEach(c => {
             const tx = c.querySelector('.spi-set-tx'); try { spiAnimate(tx, esc(sample), tx.dataset.anim, 1.6); } catch (e) {}
-            c.querySelectorAll('.spi-set-stk').forEach(im => InviteBlocks.introStkFx && InviteBlocks.introStkFx(im, { effect: im.dataset.fx }, +im.dataset.n, true));
+            c.querySelectorAll('.spi-set-stk').forEach(im => InviteBlocks.introStkFx && InviteBlocks.introStkFx(im, { effect: im.dataset.fx, loop: im.dataset.lp }, +im.dataset.n, true));
         });
     };
     if (SPI_RM()) { cards.forEach(c => { c.querySelector('.spi-set-tx').textContent = sample; }); return; }
@@ -13842,7 +13884,7 @@ function spiBigsHtml(order, rec) {
     const under = pic ? `center / cover no-repeat url("${InviteBlocks.imgUrl(pic).replace(/"/g, '%22')}")` : 'linear-gradient(160deg, #C9B8A6, #4E4038)';
     return `<div class="spi-bigs" role="listbox" aria-label="인트로 분위기">${order.map(id => { const set = SPI_SETS.find(x => x.id === id); if (!set) return ''; const bg = spiSetBg(set);
         return `<button type="button" class="spi-big" data-spi-big="${id}" role="option" aria-selected="false" aria-label="${esc(set.n)}"><span class="spi-big-ph" style="background:linear-gradient(${bg}, ${bg}), ${under}">
-            ${(set.stk || []).map(([t, k, x, y, fx, sz], n) => `<img class="spi-set-stk" data-fx="${fx}" data-n="${n}" src="${spiStkSrc([t, k])}" alt="" style="left:${x}%;top:${y}%;width:${Math.round((sz || 48) / 390 * 100 * 1.1)}%">`).join('')}
+            ${(set.stk || []).map(([t, k, x, y, fx, sz, lp], n) => `<img class="spi-set-stk" data-fx="${fx}" data-lp="${lp || ''}" data-n="${n}" src="${spiStkSrc([t, k])}" alt="" style="left:${x}%;top:${y}%;width:${Math.round((sz || 48) / 390 * 100 * 1.1)}%">`).join('')}
             <span class="spi-set-tx" data-anim="${set.anim}" style="font-family:${esc((set.font ? spiFontFamily(set.font) : fam).replace(/"/g, "'"))};color:${set.color || pal.ink}">${esc(sample)}</span></span>${rec === id ? '<em class="spi-set-rec">추천</em>' : ''}</button>`; }).join('')}</div>`;
 }
 function spiBigPlay(root) {
@@ -13854,7 +13896,7 @@ function spiBigPlay(root) {
         const tx = c.querySelector('.spi-set-tx'), sample = hlxSample(state.intro.text || '우리 결혼합니다');
         if (SPI_RM()) { tx.textContent = sample; return; }
         try { spiAnimate(tx, esc(sample), tx.dataset.anim, 1.6); } catch (e) {}
-        c.querySelectorAll('.spi-set-stk').forEach(im => InviteBlocks.introStkFx && InviteBlocks.introStkFx(im, { effect: im.dataset.fx }, +im.dataset.n, true));
+        c.querySelectorAll('.spi-set-stk').forEach(im => InviteBlocks.introStkFx && InviteBlocks.introStkFx(im, { effect: im.dataset.fx, loop: im.dataset.lp }, +im.dataset.n, true));
     };
     root.querySelectorAll('.spi-big:not(.on) .spi-set-tx').forEach(tx => { if (!tx.textContent.trim() || tx.querySelector('*')) tx.textContent = hlxSample(state.intro.text || '우리 결혼합니다'); });
     once(); if (!SPI_RM()) root._bigT = setInterval(once, 3400);
@@ -13899,7 +13941,7 @@ function spiSetApply(id, quiet) { // quiet = 칸을 그리는 중에 추천을 �
     if (!i.textWidthManual) delete i.textWidthPct;
     if (set.bg === 'dim') { i.bg = '#000000'; i.bgOpacity = 35; } else if (set.bg) { i.bg = set.bg; delete i.bgOpacity; } else { delete i.bg; delete i.bgOpacity; }
     if (set.color) i.color = set.color; else delete i.color;
-    i.stickers = (i.stickers || []).filter(st => !st.spiSet).concat((set.stk || []).map(([t, k, x, y, fx, sz]) => ({ id: 'sk' + Date.now() + Math.random().toString(36).slice(2, 6), image: spiStkSrc([t, k]), x, y, size: sz || 48, rotation: 0, effect: fx, spiSet: 1 })));
+    i.stickers = (i.stickers || []).filter(st => !st.spiSet).concat((set.stk || []).map(([t, k, x, y, fx, sz, lp]) => Object.assign({ id: 'sk' + Date.now() + Math.random().toString(36).slice(2, 6), image: spiStkSrc([t, k]), x, y, size: sz || 48, rotation: 0, effect: fx, spiSet: 1 }, lp ? { loop: lp } : {})));
     if (quiet) return;
     SPI.sel = null; SPI.play = true;
     try { renderIntroStickers(); applyIntroPreviewStyle(); } catch (e) {}
@@ -13925,7 +13967,23 @@ function spIntroPanel(box, kind) {
         const cur = spiSetOf(), recSet = SPI_SETS.find(x => x.id === rec) || SPI_SETS[0], curSet = SPI_SETS.find(x => x.id === cur);
         const order = [rec, ...SPI_SETS.map(x => x.id).filter(x => x !== rec)];
         const two = spOpt('finish', 'introSteps'); // (관리자 인트로 줄 옵션 - 끄면 1018z18p처럼 한 화면에 분위기 카드 + 자세히 꾸미기)
-        if (!two) SPI.dstep = 'edit'; else if (SPI.dstep !== 'pick' && SPI.dstep !== 'edit') SPI.dstep = i.spiPicked ? 'edit' : 'pick';
+        const ask = two && spOpt('finish', 'introAsk'); // (1018z18t, 사용자: '인트로 화면 직전에 인트로 사용하겠습니까? 하고 미리보기를 보여 주고 하겠다 하면 고르는 화면')
+        if (!two) SPI.dstep = 'edit'; else if (!['pick', 'edit', 'ask'].includes(SPI.dstep) || (SPI.dstep === 'ask' && !ask)) SPI.dstep = i.spiPicked && on ? 'edit' : ask && i.spiAsk !== 'yes' ? 'ask' : 'pick';
+        if (SPI.dstep === 'ask') {
+            const pv = cur || rec, no = i.spiAsk === 'no' && !on;
+            box.innerHTML = spH('인트로', '하객이 청첩장을 열면 첫 화면 전에 이런 짧은 화면이 2~3초 나와요.') + `<div class="spi spi-k-d spi-d-ask">
+                <div class="spi-askpv">${spiBigsHtml([pv], rec)}</div>
+                <p class="spi-askq">청첩장을 열 때 이런 <b>인트로</b>를 넣을까요?</p>
+                <div class="spi-askb"><button type="button" class="spi-pkgo" id="spiAskYes">넣을게요 <span aria-hidden="true">›</span></button>
+                    <button type="button" class="spi-askno${no ? ' on' : ''}" id="spiAskNo" aria-pressed="${no}">${no ? '✓ ' : ''}넣지 않을게요</button></div>
+                <p class="spi-askn">${no ? '인트로 없이 바로 첫 화면이 나와요. 마음이 바뀌면 [넣을게요]를 눌러요.' : '넣으면 다음 화면에서 분위기 16가지 중에 골라요.'}</p></div>`;
+            const root = box.querySelector('.spi'), c = root.querySelector('.spi-big');
+            if (c) { c.classList.add('on'); c.addEventListener('click', () => spiBigPlay(root)); }
+            spiBigPlay(root); spiWatch(root);
+            root.querySelector('#spiAskYes').addEventListener('click', () => { i.spiAsk = 'yes'; SPI.dstep = 'pick'; SPI.pk = cur || rec; scheduleSnapshot(); spRender(); setTimeout(() => { const s0 = document.querySelector('#simplePane .spi'); if (s0) s0.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); });
+            root.querySelector('#spiAskNo').addEventListener('click', () => { i.spiAsk = 'no'; i.enabled = false; spChanged && spChanged(); scheduleSnapshot(); spRender(); });
+            return;
+        }
         if (SPI.dstep === 'pick') {
             if (!order.includes(SPI.pk)) SPI.pk = cur || rec;
             const pk = SPI_SETS.find(x => x.id === SPI.pk) || recSet;
@@ -13952,8 +14010,8 @@ function spIntroPanel(box, kind) {
             cards.forEach(c => c.addEventListener('click', () => { if (c.dataset.spiBig === SPI.pk) spiBigPlay(root); else { go(c.dataset.spiBig, true); mark(c.dataset.spiBig); } }));
             root.querySelectorAll('[data-spi-pkc]').forEach(b => b.addEventListener('click', () => { go(b.dataset.spiPkc, true); mark(b.dataset.spiPkc); }));
             root.querySelectorAll('[data-spi-bstep]').forEach(b => b.addEventListener('click', () => { const n = order.indexOf(SPI.pk) + Number(b.dataset.spiBstep); const id = order[(n + order.length) % order.length]; go(id, true); mark(id); }));
-            root.querySelector('#spiPickGo').addEventListener('click', () => { const id = SPI.pk; SPI.dstep = 'edit'; state.intro.spiPicked = 1; spiSetApply(id); setTimeout(() => { const s0 = document.querySelector('#simplePane .spi'); if (s0) s0.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); });
-            root.querySelector('#spiNoIntro')?.addEventListener('click', () => { state.intro.enabled = false; spChanged && spChanged(); scheduleSnapshot(); spRender(); });
+            root.querySelector('#spiPickGo').addEventListener('click', () => { const id = SPI.pk; SPI.dstep = 'edit'; state.intro.spiPicked = 1; state.intro.spiAsk = 'yes'; spiSetApply(id); setTimeout(() => { const s0 = document.querySelector('#simplePane .spi'); if (s0) s0.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); });
+            root.querySelector('#spiNoIntro')?.addEventListener('click', () => { state.intro.enabled = false; if (ask) { state.intro.spiAsk = 'no'; SPI.dstep = 'ask'; } spChanged && spChanged(); scheduleSnapshot(); spRender(); });
             requestAnimationFrame(() => { go(SPI.pk, false); mark(SPI.pk); });
             spiWatch(root);
             // 질문 화면이면 아래 [다음/다 했어요] 버튼 = '이 분위기로 하고 다음' (칸 안 버튼은 숨김 - 버튼이 두 개라 헷갈렸음, 1018z18s)
@@ -13963,7 +14021,7 @@ function spIntroPanel(box, kind) {
             return;
         }
         const tool = (k, ico, t, extra) => `<button type="button" class="spi-tool" data-spi-tool="${k}"${extra || ''}><span aria-hidden="true">${ico}</span>${t}</button>`;
-        box.innerHTML = spH('인트로', '글자 · 스티커를 누르면 바로 고쳐요. 아래에서 문구 · 색 · 효과도 바꿀 수 있어요.') + `<div class="spi spi-k-d spi-d-edit${SPI.play ? '' : ' spi-paused'}">
+        box.innerHTML = spH('인트로', spOpt('finish', 'introSimple') ? '문구만 적으면 끝이에요. 글자 · 스티커는 미리보기에서 누르면 바로 고쳐요.' : '글자 · 스티커를 누르면 바로 고쳐요. 아래에서 문구 · 색 · 효과도 바꿀 수 있어요.') + `<div class="spi spi-k-d spi-d-edit${SPI.play ? '' : ' spi-paused'}">
             ${two ? '<div class="spi-pkhd"><span class="spi-step"><span>1 분위기 고르기</span> <i>›</i> <b>2</b> 자세히 꾸미기</span></div>' : ''}
             <div class="spi-win big spi-win-d">${spiPhoneHtml()}
                 <span class="spi-dbadge">${cur ? (cur === rec ? '추천 · ' : '') + esc(curSet.n) : '직접 꾸민 인트로'}</span>
@@ -13978,7 +14036,7 @@ function spIntroPanel(box, kind) {
                 <div class="wz-field spi-sec"><div class="wz-lab"><span>문구</span><small>미리보기 글자를 눌러도 고칠 수 있어요</small></div>
                     ${spiRichNote('spiText')}<textarea class="wz-inp spi-txt" id="spiText" rows="2" placeholder="우리 결혼합니다"${spiRich() ? ' readonly' : ''}>${esc(i.text || '')}</textarea>
                     <div class="sp-chips spi-txq">${SPI_TXQ.map(t => `<button type="button" class="${(i.text || '') === t ? 'on' : ''}" data-spi-tq="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>
-                ${spiTextHtml(true)}${sections.bg}${sections.col}${fx ? `<div class="wz-field spi-sec"><div class="wz-lab">글자 효과</div>${spiFxChipsHtml()}</div>` : ''}${spiDurHtml()}${sections.stk}</div>` : ''}</div>`;
+                ${spOpt('finish', 'introSimple') ? '' : spiTextHtml(true) + sections.bg + sections.col + (fx ? `<div class="wz-field spi-sec"><div class="wz-lab">글자 효과</div>${spiFxChipsHtml()}</div>` : '') + spiDurHtml()}${sections.stk}</div>` : ''}</div>`;
         const root = box.querySelector('.spi');
         spiBindCommon(box);
         box.querySelector('#spiRepick')?.addEventListener('click', () => { SPI.dstep = 'pick'; SPI.pk = spiSetOf() || rec; spiStkUnsel(root, true); spRender(); setTimeout(() => { const s0 = document.querySelector('#simplePane .spi'); if (s0) s0.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); });
@@ -14148,8 +14206,8 @@ function spiStkPal() {
 function spiStkAdd(p) {
     const i = state.intro; if (!Array.isArray(i.stickers)) i.stickers = [];
     const used = i.stickers.map(s => s.x + ',' + s.y), at = SPI_STK_AT.find(q => !used.includes(q[0] + ',' + q[1])) || [50, 50];
-    const st = Object.assign({ id: 'sk' + Date.now() + Math.random().toString(36).slice(2, 6), x: at[0], y: at[1], size: 44, rotation: 0 }, p);
-    if (st.size > 64) st.size = 64;
+    const st = Object.assign({ id: 'sk' + Date.now() + Math.random().toString(36).slice(2, 6), x: at[0], y: at[1], size: 76, rotation: 0 }, p);
+    if (st.size > 110) st.size = 110; else if (st.size < 60) st.size = 76; // (1018z18t: 44 → 76, 사용자 '너무 작다')
     i.stickers.push(st); SPI.sel = st.id;
     document.getElementById('spiStkPal')?.classList.remove('open');
     try { renderIntroStickers(); } catch (e) {} scheduleSnapshot(); spRender();
@@ -14291,13 +14349,14 @@ function spiBindCommon(box) {
     spIntroOpBind(box);
     box.querySelectorAll('[data-sp-ianim]').forEach(b => b.addEventListener('click', () => { state.intro.anim = b.dataset.spIanim; scheduleSnapshot(); spRender(); }));
     box.querySelectorAll('[data-spi-font]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.spiFont; if (v) { state.intro.font = v; loadFontCss(v); } else delete state.intro.font; if (!state.intro.textWidthManual) delete state.intro.textWidthPct; try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); spRender(); }));
+    box.querySelectorAll('[data-spi-stg]').forEach(b => b.addEventListener('click', () => { SPI.stg = b.dataset.spiStg; spRender(); }));
     box.querySelectorAll('[data-spi-stk]').forEach(b => b.addEventListener('click', () => {
         const [t, k] = b.dataset.spiStk.split('/'), src = spiStkSrc([t, k]), i = state.intro; if (!Array.isArray(i.stickers)) i.stickers = [];
         const at = i.stickers.findIndex(s => s.image === src);
         if (at >= 0) { if (SPI.sel === i.stickers[at].id) SPI.sel = null; i.stickers.splice(at, 1); }
         else { const used = i.stickers.map(s => s.x + ',' + s.y), p = SPI_STK_AT.find(q => !used.includes(q[0] + ',' + q[1])) || [50, 50];
             const nid = 'sk' + Date.now() + Math.random().toString(36).slice(2, 6);
-            i.stickers.push({ id: nid, image: src, x: p[0], y: p[1], size: 44, rotation: [-8, 6, -4, 8][i.stickers.length % 4] }); if (box.querySelector('.spi-ph')) SPI.sel = nid; } // (넣으면 바로 조작 틀)
+            i.stickers.push({ id: nid, image: src, x: p[0], y: p[1], size: 76, rotation: [-8, 6, -4, 8][i.stickers.length % 4] }); if (box.querySelector('.spi-ph')) SPI.sel = nid; } // (넣으면 바로 조작 틀)
         try { renderIntroStickers(); } catch (e) {} scheduleSnapshot(); spRender();
     }));
     const rerun = () => { const r = box.querySelector('.spi'); if (r) { spiRun(r); spiFxRun(r); } };

@@ -2430,16 +2430,35 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-bd-navy { --p-bd: linear-gradient(90deg, transparent 10px, color-mix(in srgb, var(--p-accent) 60%, transparent) 10px 11px, transparent 11px 14px, color-mix(in srgb, var(--p-accent) 35%, transparent) 14px 14.6px, transparent 14.6px calc(100% - 14.6px), color-mix(in srgb, var(--p-accent) 35%, transparent) calc(100% - 14.6px) calc(100% - 14px), transparent calc(100% - 14px) calc(100% - 11px), color-mix(in srgb, var(--p-accent) 60%, transparent) calc(100% - 11px) calc(100% - 10px), transparent calc(100% - 10px)); --p-bd-size: 100% 100%; --p-bd-rep: no-repeat; --p-bd-pos: 0 0; --p-bd-blend: normal; }
 @media print { .ib-bd { background-image: var(--p-paper, none) !important; background-size: 300px !important; background-repeat: repeat !important; background-position: 0 0 !important; background-blend-mode: multiply !important; } }
 /* ===== 페이지 배경 꾸밈 끝 ===== */
-/* ===== 인트로 스티커 등장 효과 (1018z18o, InviteBlocks.introStkFx) - 자리·회전은 transform 그대로, 움직임은 따로 쓰는 scale·translate·rotate ===== */
-.ib-isk.ib-isk-run { animation: .7s cubic-bezier(.34, 1.56, .64, 1) var(--isk-d, .3s) both; }
-.ib-isk-pop.ib-isk-run { animation-name: ibIskPop; }
-.ib-isk-boing.ib-isk-run { animation-name: ibIskBoing; animation-duration: .9s; animation-timing-function: ease-out; }
-.ib-isk-spin.ib-isk-run { animation-name: ibIskSpin; animation-duration: .8s; animation-timing-function: cubic-bezier(.22, .9, .32, 1); }
-.ib-isk-fade.ib-isk-run { animation-name: ibIskFade; animation-duration: .9s; animation-timing-function: ease; }
-.ib-isk-up.ib-isk-run { animation-name: ibIskUp; animation-timing-function: cubic-bezier(.22, .9, .32, 1); }
-.ib-isk-zoom.ib-isk-run { animation-name: ibIskZoom; animation-timing-function: cubic-bezier(.22, .9, .32, 1); }
-.ib-isk-left.ib-isk-run { animation-name: ibIskLeft; animation-timing-function: cubic-bezier(.22, .9, .32, 1); }
-.ib-isk-right.ib-isk-run { animation-name: ibIskRight; animation-timing-function: cubic-bezier(.22, .9, .32, 1); }
+/* ===== 인트로 스티커 움직임 (1018z18o 등장 8 → 1018z18t 등장 16 + 계속 움직임 8, InviteBlocks.introStkFx) - 자리·회전은 transform 그대로, 움직임은 따로 쓰는 scale·translate·rotate
+   등장(--isk-a)과 계속 움직임(--isk-l)을 한 animation 목록으로: 계속 움직임은 등장이 끝난 뒤 시작해서 뒤에 쓴 쪽이 이김 (둘 다 쉬는 자리 = scale 1 · translate 0 · rotate 0) ===== */
+.ib-isk.ib-isk-run { animation: var(--isk-a, none) var(--isk-t, .7s) var(--isk-e, cubic-bezier(.34, 1.56, .64, 1)) var(--isk-d, .3s) both, var(--isk-l, none) var(--isk-lt, 2.4s) var(--isk-le, ease-in-out) calc(var(--isk-d, .3s) + var(--isk-t, .7s)) infinite; }
+.ib-isk-nofx { --isk-t: 0s; }
+.ib-isk-pop { --isk-a: ibIskPop; --isk-t: .7s; --isk-e: cubic-bezier(.34, 1.56, .64, 1); }
+.ib-isk-boing { --isk-a: ibIskBoing; --isk-t: .9s; --isk-e: ease-out; }
+.ib-isk-spin { --isk-a: ibIskSpin; --isk-t: .8s; --isk-e: cubic-bezier(.22, .9, .32, 1); }
+.ib-isk-fade { --isk-a: ibIskFade; --isk-t: .9s; --isk-e: ease; }
+.ib-isk-up { --isk-a: ibIskUp; --isk-t: .7s; --isk-e: cubic-bezier(.22, .9, .32, 1); }
+.ib-isk-zoom { --isk-a: ibIskZoom; --isk-t: .7s; --isk-e: cubic-bezier(.22, .9, .32, 1); }
+.ib-isk-left { --isk-a: ibIskLeft; --isk-t: .7s; --isk-e: cubic-bezier(.22, .9, .32, 1); }
+.ib-isk-right { --isk-a: ibIskRight; --isk-t: .7s; --isk-e: cubic-bezier(.22, .9, .32, 1); }
+.ib-isk-drop { --isk-a: ibIskDrop; --isk-t: .9s; --isk-e: linear; }
+.ib-isk-flip { --isk-a: ibIskFlip; --isk-t: .8s; --isk-e: cubic-bezier(.22, .9, .32, 1); }
+.ib-isk-swing { --isk-a: ibIskSwing; --isk-t: 1s; --isk-e: ease-out; }
+.ib-isk-jelly { --isk-a: ibIskJelly; --isk-t: .9s; --isk-e: ease-out; }
+.ib-isk-bloom { --isk-a: ibIskBloom; --isk-t: 1s; --isk-e: cubic-bezier(.34, 1.56, .64, 1); }
+.ib-isk-tada { --isk-a: ibIskTada; --isk-t: 1s; --isk-e: ease; }
+.ib-isk-rise { --isk-a: ibIskRise; --isk-t: 1.4s; --isk-e: cubic-bezier(.2, .7, .3, 1); }
+.ib-isk-swirl { --isk-a: ibIskSwirl; --isk-t: 1.1s; --isk-e: cubic-bezier(.22, .9, .32, 1); }
+.ib-iskl-float { --isk-l: ibIskLFloat; --isk-lt: 3s; --isk-le: ease-in-out; }
+.ib-iskl-sway { --isk-l: ibIskLSway; --isk-lt: 2.6s; --isk-le: ease-in-out; }
+.ib-iskl-shake { --isk-l: ibIskLShake; --isk-lt: 2.4s; --isk-le: ease-in-out; }
+.ib-iskl-beat { --isk-l: ibIskLBeat; --isk-lt: 1.6s; --isk-le: ease-in-out; }
+.ib-iskl-twinkle { --isk-l: ibIskLTwinkle; --isk-lt: 1.9s; --isk-le: ease-in-out; }
+.ib-iskl-turn { --isk-l: ibIskLTurn; --isk-lt: 7s; --isk-le: linear; }
+.ib-iskl-bounce { --isk-l: ibIskLBounce; --isk-lt: 1.5s; --isk-le: linear; }
+.ib-iskl-breathe { --isk-l: ibIskLBreathe; --isk-lt: 3.2s; --isk-le: ease-in-out; }
+.ib-iskl-turn, .ib-iskl-sway, .ib-iskl-shake { transform-origin: 50% 50%; }
 @keyframes ibIskPop { from { opacity: 0; scale: .35; rotate: -8deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
 @keyframes ibIskBoing { 0% { opacity: 0; scale: .3; } 45% { opacity: 1; scale: 1.18; } 65% { scale: .9; } 82% { scale: 1.05; } 100% { opacity: 1; scale: 1; } }
 @keyframes ibIskSpin { from { opacity: 0; scale: .4; rotate: -200deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
@@ -2448,4 +2467,20 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 @keyframes ibIskZoom { from { opacity: 0; scale: 1.7; } to { opacity: 1; scale: 1; } }
 @keyframes ibIskLeft { from { opacity: 0; translate: -70px 0; } to { opacity: 1; translate: 0 0; } }
 @keyframes ibIskRight { from { opacity: 0; translate: 70px 0; } to { opacity: 1; translate: 0 0; } }
+@keyframes ibIskDrop { 0% { opacity: 0; translate: 0 -90px; animation-timing-function: cubic-bezier(.5, 0, .9, .5); } 55% { opacity: 1; translate: 0 0; scale: 1.08 .9; animation-timing-function: ease-out; } 72% { translate: 0 -14px; scale: 1; animation-timing-function: ease-in; } 86% { translate: 0 0; scale: 1.03 .97; } 100% { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes ibIskFlip { from { opacity: 0; rotate: y 90deg; } 60% { opacity: 1; rotate: y -14deg; } to { opacity: 1; rotate: y 0deg; } }
+@keyframes ibIskSwing { 0% { opacity: 0; rotate: -38deg; translate: 0 -10px; } 35% { opacity: 1; rotate: 20deg; translate: 0 0; } 58% { rotate: -11deg; } 78% { rotate: 5deg; } 100% { opacity: 1; rotate: 0deg; } }
+@keyframes ibIskJelly { 0% { opacity: 0; scale: .2; } 35% { opacity: 1; scale: 1.25 .78; } 52% { scale: .82 1.18; } 68% { scale: 1.1 .92; } 84% { scale: .97 1.04; } 100% { opacity: 1; scale: 1; } }
+@keyframes ibIskBloom { from { opacity: 0; scale: 0; rotate: -60deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
+@keyframes ibIskTada { 0% { opacity: 0; scale: .6; } 20% { opacity: 1; scale: .92; rotate: -4deg; } 40%, 70% { scale: 1.12; rotate: 5deg; } 55%, 85% { scale: 1.12; rotate: -5deg; } 100% { opacity: 1; scale: 1; rotate: 0deg; } }
+@keyframes ibIskRise { from { opacity: 0; translate: 0 70px; scale: .85; } 60% { opacity: 1; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes ibIskSwirl { from { opacity: 0; scale: .15; rotate: 540deg; translate: -40px 30px; } to { opacity: 1; scale: 1; rotate: 0deg; translate: 0 0; } }
+@keyframes ibIskLFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -9px; } }
+@keyframes ibIskLSway { 0%, 100% { rotate: 0deg; } 25% { rotate: 9deg; } 75% { rotate: -9deg; } }
+@keyframes ibIskLShake { 0%, 46%, 100% { rotate: 0deg; } 50% { rotate: -12deg; } 56% { rotate: 11deg; } 62% { rotate: -8deg; } 68% { rotate: 5deg; } 74% { rotate: 0deg; } }
+@keyframes ibIskLBeat { 0%, 40%, 100% { scale: 1; } 12% { scale: 1.16; } 22% { scale: .98; } 30% { scale: 1.1; } }
+@keyframes ibIskLTwinkle { 0%, 100% { opacity: 1; scale: 1; } 50% { opacity: .45; scale: .86; } }
+@keyframes ibIskLTurn { from { rotate: 0deg; } to { rotate: 360deg; } }
+@keyframes ibIskLBounce { 0%, 100% { translate: 0 0; scale: 1.06 .94; animation-timing-function: cubic-bezier(.3, .6, .5, 1); } 45% { translate: 0 -16px; scale: .97 1.04; animation-timing-function: cubic-bezier(.5, 0, .7, .4); } 90% { translate: 0 0; scale: 1; } }
+@keyframes ibIskLBreathe { 0%, 100% { scale: 1; } 50% { scale: 1.09; } }
 @media (prefers-reduced-motion: reduce) { .ib-isk.ib-isk-run { animation: none !important; } }
