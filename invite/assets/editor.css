@@ -5389,7 +5389,6 @@ html { touch-action: manipulation; } /* 두 번 톡 확대 막기 (1018z18s) - �
 .hlb-link, .hlb-mix { margin: 0 0 8px; font-size: 12px; line-height: 1.5; color: var(--wz-sub, #8A8178); word-break: keep-all; }
 .hlb-mix { padding: 7px 10px; border-radius: 10px; background: var(--ui-soft, #F3EEE8); color: var(--wz-ink, #2B2320); }
 .hlb-row .hlb-tx b em { margin-left: 6px; font-style: normal; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 8px; background: var(--ui-soft, #F3EEE8); color: var(--wz-sub, #6F6A63); }
-.hlb-row.part { border-style: dashed; }
 .sticker-fx-popup.sfx-intro .sfx-mini { height: 24px; }
 .sticker-fx-popup.sfx-intro .sfx-mini i img, .sticker-fx-popup.sfx-intro .sfx-mini i svg { width: 18px; height: 18px; }
 @media (max-width: 860px) { .sticker-fx-popup.sfx-intro { max-height: min(62vh, 520px); } }
