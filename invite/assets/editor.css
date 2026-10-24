@@ -5393,3 +5393,6 @@ html { touch-action: manipulation; } /* 두 번 톡 확대 막기 (1018z18s) - �
 .sticker-fx-popup.sfx-intro .sfx-mini { height: 24px; }
 .sticker-fx-popup.sfx-intro .sfx-mini i img, .sticker-fx-popup.sfx-intro .sfx-mini i svg { width: 18px; height: 18px; }
 @media (max-width: 860px) { .sticker-fx-popup.sfx-intro { max-height: min(62vh, 520px); } }
+
+/* 휴대폰 작은 창 속 청첩장은 보기만 (1018z18u) - 창이 숨어 있어도(opacity 0) 안쪽 글자 칸(pointer-events: auto)이 눌려 전문가 글자 창이 떴음 */
+html.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane * { pointer-events: none !important; }
