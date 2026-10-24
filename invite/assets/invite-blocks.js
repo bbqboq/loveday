@@ -936,6 +936,7 @@
     function introAnim(el, html, anim, duration) {
         if (!el) return;
         if (el._typewriterTimer) { clearInterval(el._typewriterTimer); el._typewriterTimer = null; }
+        if (el._ibxOff) { el._ibxOff(); el._ibxOff = null; } // (예전 손글씨 글꼴 감시 끔)
         rtTypeReset(el); introAnimReset(el);
         const host = el.parentElement;
         el.innerHTML = rtSanitize(html || '');
@@ -980,21 +981,29 @@
                 svg.appendChild(t); sp.append(fill, svg);
             });
             // 글자 기준선 높이를 재서 SVG 글자를 HTML 글자에 딱 겹침 - 글꼴이 늦게 받아지면(필기체 등) 받아진 뒤 다시 잼
-            const place = () => units.forEach(sp => {
-                if (!sp.isConnected) return;
-                const t = sp.querySelector('.ibx-stroke text'); if (!t) return;
-                const bl = document.createElement('i'); bl.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline;';
-                sp.insertBefore(bl, sp.firstChild); const y = bl.offsetTop; bl.remove();
-                const fs = parseFloat(getComputedStyle(sp).fontSize) || 20, len = (sp.textContent || '').length || 1;
-                t.setAttribute('y', String(y));
-                sp.style.setProperty('--L', String(Math.round(fs * 14 * Math.max(1, len * 0.6)))); // 윤곽선 길이(넉넉히) - 이만큼을 점선 한 칸으로 두고 밀어서 그려지게
-                sp.style.setProperty('--sw', Math.max(0.8, fs * 0.035).toFixed(2) + 'px');
-            });
+            // (한꺼번에 재기: 표시를 다 넣고 → 위치를 다 읽고 → 다 뺌 = 레이아웃 계산 한 번. 예전엔 글자마다 넣고 읽어서 글꼴 조각이 받아질 때마다
+            //  최근 8초 동안 만든 모든 손글씨 글자가 화면 전체를 글자 수만큼 다시 계산 → 인트로 분위기 카드를 넘길 때 프레임마다 1초씩 멈췄음, 1018z18z8)
+            const place = () => {
+                const live = units.filter(sp => sp.isConnected); if (!live.length) { off(); return; }
+                const marks = live.map(sp => { const bl = document.createElement('i'); bl.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline;'; sp.insertBefore(bl, sp.firstChild); return bl; });
+                const ys = marks.map(bl => bl.offsetTop), fss = live.map(sp => parseFloat(getComputedStyle(sp).fontSize) || 20);
+                marks.forEach(bl => bl.remove());
+                live.forEach((sp, k) => {
+                    const t = sp.querySelector('.ibx-stroke text'); if (!t) return;
+                    const fs = fss[k], len = (sp.textContent || '').length || 1;
+                    t.setAttribute('y', String(ys[k]));
+                    sp.style.setProperty('--L', String(Math.round(fs * 14 * Math.max(1, len * 0.6)))); // 윤곽선 길이(넉넉히) - 이만큼을 점선 한 칸으로 두고 밀어서 그려지게
+                    sp.style.setProperty('--sw', Math.max(0.8, fs * 0.035).toFixed(2) + 'px');
+                });
+            };
+            let raf = 0; const soon = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; place(); }); };
+            const off = () => { if (document.fonts && document.fonts.removeEventListener) document.fonts.removeEventListener('loadingdone', soon); };
+            if (el._ibxOff) el._ibxOff(); el._ibxOff = off; // (같은 칸에 다시 틀면 예전 것의 감시는 끔)
             place();
             if (document.fonts) {
-                if (document.fonts.ready) document.fonts.ready.then(place);
-                const onDone = () => place(); document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', onDone);
-                setTimeout(() => { document.fonts.removeEventListener && document.fonts.removeEventListener('loadingdone', onDone); }, 8000);
+                if (document.fonts.status !== 'loaded' && document.fonts.ready) document.fonts.ready.then(soon); // (다 받아졌으면 기다릴 것 없음 - ready를 부르면 화면을 다시 계산함)
+                document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', soon);
+                setTimeout(off, 8000);
             }
         }
         if (anim === 'draw' && host) { // 재생 길이의 85% 동안: 글자마다 획이 천천히(0.6~1.8초) 그려지고, 앞 글자부터 차례로 이어짐

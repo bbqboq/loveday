@@ -17,18 +17,18 @@ html.ld-late .ld-wait-late { visibility: visible; }
 <title>청첩장 에디터 프로토타입 v3 - 오버레이 드래그 &amp; 라이트박스</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-<link rel="stylesheet" href="assets/editor.min.css?v=6516f39ecf"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
+<link rel="stylesheet" href="assets/editor.min.css?v=e593606c73"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
-<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z18z5">
-<link rel="stylesheet" href="assets/tip-demos.css?v=1018z18z5">
+<link rel="stylesheet" href="assets/invite-blocks.css?v=1018z18z8">
+<link rel="stylesheet" href="assets/tip-demos.css?v=1018z18z8">
 <script>var feFx = { playNext: false, playAnim: false, flashText: false }; /* 편집창·미리보기 효과 대기 표시 (스크롤 버튼 등장 효과 · 글자 자리 자동 변경 깜빡임) */</script>
 <script>window.INVITE_EDITOR = true;</script>
 <link rel="stylesheet" href="site_colors.php"><!-- 관리자가 정한 사이트 화면 색 (바탕·옅은 면·칸·선) -->
-<script src="assets/invite-blocks.js?v=1018z18z5"></script>
-<script src="assets/tip-demos.js?v=1018z18z5"></script>
-<script src="assets/intro-sets.js?v=1018z18z5"></script><!-- 인트로 분위기 기본 16가지 (관리자 → 인트로 분위기와 같이 씀) -->
-<script src="assets/ld-dialog.js?v=1018z18z5"></script>
+<script src="assets/invite-blocks.js?v=1018z18z8"></script>
+<script src="assets/tip-demos.js?v=1018z18z8"></script>
+<script src="assets/intro-sets.js?v=1018z18z8"></script><!-- 인트로 분위기 기본 16가지 (관리자 → 인트로 분위기와 같이 씀) -->
+<script src="assets/ld-dialog.js?v=1018z18z8"></script>
 </head>
 <body>
 
@@ -586,7 +586,7 @@ html.ld-late .ld-wait-late { visibility: visible; }
     </div>
 </div><!-- /screenIntroSettings -->
 
-<script src="assets/editor.min.js?v=3d33035c73" onerror="document.documentElement.classList.remove('ld-boot')"></script><!-- 에디터 기능 (원본 assets/editor.js → node tools/build-editor.js) -->
+<script src="assets/editor.min.js?v=21bb3199c0" onerror="document.documentElement.classList.remove('ld-boot')"></script><!-- 에디터 기능 (원본 assets/editor.js → node tools/build-editor.js) -->
 </body>
 </html>
 <!-- 아래 줄은 지우지 말 것: 서버에 올릴 때 예전(더 큰) 파일 뒷부분이 남아도 화면에 글자로 나오거나 실행되지 않게 숨김 (2026-10-20 실서버에서 CSS가 글자로 보였음) -->

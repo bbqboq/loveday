@@ -605,6 +605,8 @@ function playIntroAnimation(design, onReveal) {
     if (intro.textWidthPct) textEl.style.width = intro.textWidthPct + '%'; // 에디터에서 측정해둔 고정폭 그대로 사용 (기기별 재측정으로 인한 줄바꿈 불일치 방지)
     // 자동으로 잰 폭(직접 정한 폭 아님)은 글자만 잰 값이라 양옆 여백(padding 30px)을 빼고 쓰면 실기에서 두 줄로 바뀌었음 (1018z18z5) - 여백 없이 + 반올림 여유 1%
     if (intro.textWidthPct && !intro.textWidthManual) { textEl.style.padding = '0'; textEl.style.width = Math.min(100, intro.textWidthPct + 1) + '%'; textEl.style.maxWidth = '100%'; }
+    // 에디터에서 한 줄로 들어간다고 잰 글자(textOne)는 줄바꿈 없이 - 글꼴이 늦게 받아지거나 글자 효과가 낱자로 나눌 때 두 줄로 바뀌던 것 (1018z18z8)
+    if (intro.textOne && intro.textWidthPct && !intro.textWidthManual) { textEl.style.whiteSpace = 'pre'; textEl.style.maxWidth = 'none'; }
     textEl.style.transform = `translate(-50%,-50%) scaleX(${(intro.sx || 100) / 100}) rotate(${intro.rotation || 0}deg)`;
     if (intro.ls) textEl.style.letterSpacing = lsEm(intro.ls);
     textEl.style.textAlign = intro.align || 'center';
@@ -666,10 +668,24 @@ function playIntroAnimation(design, onReveal) {
     overlay.style.animationPlayState = 'paused'; // 사라지는 애니메이션 타이머도 준비된 뒤부터 시작
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden'; // 재생 중 스크롤 제한
+    // 휴대폰은 body overflow만으론 화면이 밀림 - html도 막고 손가락 끌기·휠·키보드 스크롤을 인트로 동안 막음 (1018z18z8)
+    const htmlOv = document.documentElement.style.overflow; document.documentElement.style.overflow = 'hidden';
+    overlay.style.touchAction = 'none'; overlay.style.overscrollBehavior = 'contain';
+    const noScroll = e => { if (e.cancelable) e.preventDefault(); };
+    const noKey = e => { if (/^(ArrowUp|ArrowDown|PageUp|PageDown|Home|End| )$/.test(e.key)) e.preventDefault(); };
+    window.addEventListener('touchmove', noScroll, { passive: false }); window.addEventListener('wheel', noScroll, { passive: false }); window.addEventListener('keydown', noKey);
+    const freeScroll = () => { window.removeEventListener('touchmove', noScroll); window.removeEventListener('wheel', noScroll); window.removeEventListener('keydown', noKey); document.documentElement.style.overflow = htmlOv; document.body.style.overflow = ''; };
     let started = false;
     const startIntro = () => {
         if (started) return;
         started = true;
+        // 이 휴대폰에서 직접 재서 한 줄로 들어가면 줄바꿈 없이 (저장된 폭은 에디터 화면에서 잰 값이라 휴대폰 글꼴·글자 효과에 따라 두 줄로 바뀌었음, 1018z18z8)
+        if (!intro.textWidthManual) { try {
+            const m = textEl.cloneNode(true); m.style.visibility = 'hidden'; m.style.width = 'max-content'; m.style.maxWidth = 'none'; m.style.whiteSpace = 'pre'; m.style.padding = '0'; m.style.transform = 'none';
+            const mt = m.querySelector('.intro-typed'); if (mt) mt.innerHTML = (window.InviteBlocks && InviteBlocks.RichText && intro.html) ? InviteBlocks.RichText.sanitize(intro.html) : escHtml(intro.text || '');
+            overlay.appendChild(m); const mw = m.offsetWidth, w = mw * ((intro.sx || 100) / 100), cw = overlay.clientWidth; m.remove();
+            if (w && cw && w <= cw * 0.96) { textEl.style.whiteSpace = 'pre'; textEl.style.width = Math.min(100, (mw + 2) / cw * 100).toFixed(2) + '%'; textEl.style.maxWidth = 'none'; textEl.style.padding = '0'; } // (폭은 고정 - 타자 효과 때 글자가 옆으로 밀리지 않게)
+        } catch (e) {} }
         waitEls.forEach(el => { el.style.visibility = ''; });
         overlay.style.animationPlayState = '';
         const typedEl = overlay.querySelector('.intro-typed');
@@ -681,7 +697,7 @@ function playIntroAnimation(design, onReveal) {
         setTimeout(reveal, (duration + 0.3) * 1000); // 인트로가 반쯤 걷힌 순간 - 이보다 빠르면 효과의 앞부분이 인트로에 가려진다
         setTimeout(() => {
             overlay.remove();
-            document.body.style.overflow = '';
+            freeScroll(); window.scrollTo(0, 0);
             reveal(); // 혹시 위 타이머가 밀렸을 때 대비
         }, (duration + 0.6) * 1000);
     };

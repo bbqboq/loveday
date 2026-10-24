@@ -5546,3 +5546,8 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .spi-ph.spi-txsel .spi-tx { cursor: move; }
 .spi-ph .spi-ttp-fr { pointer-events: none; }
 .spi-ph .spi-ttp-fr .sf-handle { pointer-events: auto; }
+/* 인트로 분위기 큰 카드 넘기기 가볍게 (1018z18z8): 가운데 · 양옆 카드만 스티커, 넘기는 동안 가운데 글자 효과·그림자 멈춤 */
+.spi-bigs.nr .spi-big:not(.near) .spi-set-stk { display: none; }
+.spi-big-ph { contain: layout paint; }
+.spi-bigs.moving .spi-big { box-shadow: none; }
+.spi-bigs.moving .spi-set-stk, .spi-bigs.moving .spi-set-tx * { animation-play-state: paused !important; }

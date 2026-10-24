@@ -5939,6 +5939,7 @@ function applyIntroPreviewStyle() {
 // 폭을 한 번 재서 고정값(cqw)으로 못박아두면, 이후 위치를 옮겨도 줄바꿈이 그대로 유지된다.
 function bakeIntroTextWidth(textEl) {
     // 사용자가 조절 박스에서 줄바꿈 폭을 직접 정했으면 그 값을 그대로 쓴다
+    textEl.style.whiteSpace = '';
     if (state.intro.textWidthManual && state.intro.textWidthPct) { textEl.style.width = state.intro.textWidthPct + '%'; return; }
     // 타이핑 중간(글자가 일부만 보이는 순간)에 재면 폭이 실제보다 좁게 잡혀서 줄바꿈이 어긋난다 -
     // 완성된 문구를 넣은 "보이지 않는 복제본"으로 잰다. (타이핑 중인 원본을 건드리면 꾸민 문구 타자 효과가 끊긴다)
@@ -5962,6 +5963,7 @@ function bakeIntroTextWidth(textEl) {
         const pct = (finalPx / canvasPx * 100);
         textEl.style.width = pct.toFixed(3) + '%';
         state.intro.textWidthPct = Math.round(pct * 10) / 10; // 발행 페이지에서 재측정 없이 그대로 쓰도록 저장
+        if (naturalPx <= capPx) state.intro.textOne = 1; else delete state.intro.textOne; textEl.style.whiteSpace = state.intro.textOne ? 'pre' : ''; // 한 줄(직접 바꾼 줄 그대로)로 들어감 = 저절로 줄을 안 바꿈 (1018z18z8)
     } catch (e) { textEl.style.width = prevWidth; }
 }
 window.__introDebug = () => {
@@ -7258,7 +7260,10 @@ function placePreviewFab() {
     if (left) { pvFabEl.style.left = Math.round(r.left + 14 * sc) + 'px'; pvFabEl.style.right = 'auto'; }
     else { pvFabEl.style.right = Math.round(document.documentElement.clientWidth - r.right + 14 * sc) + 'px'; pvFabEl.style.left = 'auto'; }
 }
-document.addEventListener('scroll', placePreviewFab, { capture: true, passive: true });
+// (페이지·미리보기 칸이 위아래로 넘어갈 때만, 한 프레임에 한 번 - 옆으로 넘기는 고르기 줄까지 받으면 넘길 때마다 화면 전체를 다시 쟀음, 1018z18z8)
+let pvFabRaf = 0;
+document.addEventListener('scroll', e => { const t = e.target; if (t !== document && t !== document.scrollingElement && !(t.classList && t.classList.contains('preview-pane'))) return;
+    if (!pvFabRaf) pvFabRaf = requestAnimationFrame(() => { pvFabRaf = 0; placePreviewFab(); }); }, { capture: true, passive: true });
 window.addEventListener('resize', placePreviewFab);
 document.addEventListener('click', () => { if (pvFabEl && pvFabEl._setOpen) pvFabEl._setOpen(false); });
 setInterval(placePreviewFab, 400); // 화면 전환·확대/축소 애니메이션 뒤에도 자리를 맞춘다 (가벼운 위치 계산만)
@@ -11438,7 +11443,9 @@ function spLensBind() {
     const pr = document.getElementById('previewRoot');
     if (pr && window.ResizeObserver) { let rt = 0; new ResizeObserver(() => { if (spMvMode() !== 'lens' || document.documentElement.classList.contains('sp-lens-drag')) return; clearTimeout(rt); rt = setTimeout(() => spLensPlace(), 120); }).observe(pr); }
     // 질문 칸을 스크롤하는 동안 창은 반투명 → 멈추면 또렷하게 + 보이는 화면 안으로 따라옴
-    document.addEventListener('scroll', e => { if (spMvMode() !== 'lens' || (e.target && e.target.closest && e.target.closest('.preview-pane'))) return; const r = document.documentElement; if (r.classList.contains('sp-lens-bub')) { cancelAnimationFrame(spLensSc.r); spLensSc.r = requestAnimationFrame(() => { spLensSnap(); spLensPlace(); }); } r.classList.add('sp-lens-scrolling'); clearTimeout(spLensSc); spLensSc = setTimeout(() => { r.classList.remove('sp-lens-scrolling'); spLensPlace(); }, 180); }, { passive: true, capture: true });
+    document.addEventListener('scroll', e => { if (spMvMode() !== 'lens' || (e.target && e.target.closest && e.target.closest('.preview-pane'))) return;
+        { const t = e.target; if (t && t !== document && t.nodeType === 1) { const y = t.scrollTop; if (t._lsY === y) return; t._lsY = y; } } // (옆으로만 넘기는 줄(분위기 카드 등)은 작은 창을 흐리게 하지 않음)
+        const r = document.documentElement; if (r.classList.contains('sp-lens-bub')) { cancelAnimationFrame(spLensSc.r); spLensSc.r = requestAnimationFrame(() => { spLensSnap(); spLensPlace(); }); } r.classList.add('sp-lens-scrolling'); clearTimeout(spLensSc); spLensSc = setTimeout(() => { r.classList.remove('sp-lens-scrolling'); spLensPlace(); }, 180); }, { passive: true, capture: true });
     document.addEventListener('focusin', e => { if (spMvMode() === 'lens' && e.target.closest && e.target.closest('#simplePane') && e.target.matches('input, textarea, [contenteditable]')) { spLensKbNeed = Date.now() + 1200; spLensSettle(); } });
     if (window.visualViewport) { let vr = 0; const vf = () => { if (spMvMode() !== 'lens') return; spLensSnap(); cancelAnimationFrame(vr); vr = requestAnimationFrame(() => spLensPlace()); }; visualViewport.addEventListener('resize', vf); visualViewport.addEventListener('scroll', vf); } // (키보드·주소창으로 보이는 화면이 바뀌면 따라감)
 }
@@ -13817,6 +13824,7 @@ function spiFill(ov, still) { // still = 멈춘 화면(스티커 고치기 · �
     if (i.font) loadFontCss(i.font);
     const tx = document.createElement('div'); tx.className = 'spi-tx';
     tx.style.cssText = `font-family:${spiFontFamily(i.font)};font-size:${fontToCqw(i.fontSize || 26)};color:${spiTextColor(i)};left:${i.x ?? 50}%;top:${i.y ?? 50}%;transform:${introTextTransform(i)};text-align:${i.align || 'center'};${i.ls ? `letter-spacing:${lsEm(i.ls)};` : ''}${i.textWidthPct ? `width:${i.textWidthPct}%;` : ''}`;
+    spiOneLine(tx, i);
     if (textEdge(i)) tx.style.textShadow = textEdge(i);
     const typed = document.createElement('span'); typed.className = 'intro-typed'; tx.appendChild(typed); ov.appendChild(tx);
     (i.stickers || []).forEach(st => {
@@ -13899,9 +13907,12 @@ function spiBake(root) {
     const ty = m.querySelector('.intro-typed'); if (ty) ty.innerHTML = i.html && window.InviteBlocks ? InviteBlocks.RichText.sanitize(i.html) : esc(i.text || '');
     tx.parentNode.appendChild(m); const w = m.offsetWidth; m.remove();
     if (!w) return;
+    if (w <= ph.offsetWidth * 0.96) i.textOne = 1; else delete i.textOne; // (한 줄로 들어가면 저절로 줄을 안 바꿈 - 글꼴이 늦게 받아지거나 글자 효과가 낱자로 나눌 때 '틱' 하고 두 줄로 바뀌던 것, 1018z18z8)
     i.textWidthPct = Math.min(98, Math.ceil((Math.min(w, ph.offsetWidth * 0.96) + 1.5) / ph.offsetWidth * 1000) / 10); // (올림 + 여유 - 반올림으로 0.1px 모자라면 글자 효과(낱자 칸)에서 두 줄로 바뀌었음)
-    tx.style.width = i.textWidthPct + '%';
+    tx.style.width = i.textWidthPct + '%'; spiOneLine(tx, i);
 }
+// 한 줄 글자(textOne): 줄 폭 대신 줄바꿈 없이 (하객 화면 render-invite도 같게)
+function spiOneLine(tx, i) { const on = !!(i.textOne && i.textWidthPct && !i.textWidthManual); tx.style.whiteSpace = on ? 'pre' : ''; tx.style.maxWidth = on ? 'none' : ''; }
 function spiBakeSoon(root) { const go = () => setTimeout(() => spiBake(root), 60); try { document.fonts.ready.then(go); } catch (e) { go(); } }
 // 전문가 모드에서 꾸민 글(굵게 · 색 · 글꼴 일부 등)이 있는지 - 간편 칸에서 고치면 글자만 남음
 function spiRich() { const h = state.intro.html; return !!h && /<(?!\/?(?:br|div|p)\b)[a-z]|style\s*=/i.test(h); }
@@ -14170,17 +14181,31 @@ function spIntroPanel(box, kind) {
                 ${!ask && spOpt('finish', 'intro') ? `<button type="button" class="spi-askno spi-noint${!on && i.spiAsk === 'no' ? ' on' : ''}" id="spiNoIntro2" aria-pressed="${!on && i.spiAsk === 'no'}">${!on && i.spiAsk === 'no' ? '✓ ' : ''}인트로 없이 할게요</button>` : ''}</div>`;
             const root = box.querySelector('.spi'), row = root.querySelector('.spi-bigs');
             const cards = [...row.querySelectorAll('.spi-big')];
-            const mark = (id, quiet) => {
+            const mark = (id, quiet, moving) => {
                 if (!id) return; SPI.pk = id; const x = SPI_SETS.find(y => y.id === id) || recSet;
-                cards.forEach(c => { const me = c.dataset.spiBig === id; c.classList.toggle('on', me); c.setAttribute('aria-selected', me); });
+                const ix = cards.findIndex(c => c.dataset.spiBig === id), pv = mark.ix ?? -9; mark.ix = ix;
+                cards.forEach((c, k) => { if (pv >= 0 && Math.abs(k - ix) > 1 && Math.abs(k - pv) > 1) return; // (바뀐 카드만 - 16장을 다 건드리면 넘길 때마다 다시 계산)
+                    const me = k === ix; c.classList.toggle('on', me); c.setAttribute('aria-selected', me); c.classList.toggle('near', Math.abs(k - ix) <= 1); }); // (가운데 · 양옆만 스티커 그림 - 16장 모두 움직이면 넘길 때 버벅였음, 1018z18z8)
                 root.querySelectorAll('.spi-pkc').forEach(c => c.classList.toggle('on', c.dataset.spiPkc === id));
                 root.querySelector('#spiBigN').textContent = x.n; root.querySelector('#spiBigD').textContent = (id === rec ? '이 디자인에 어울리는 추천 · ' : '') + x.d; root.querySelector('#spiBigC').textContent = (order.indexOf(id) + 1) + ' / ' + order.length;
-                if (!quiet) spiBigPlay(root);
+                if (!quiet) { played = id; spiBigPlay(root); }
+                if (moving) return; // (넘기는 중엔 이름 칩 줄을 같이 굴리지 않음 - 멈춘 뒤 한 번)
                 const pc = root.querySelector('.spi-pkc.on'), pr = root.querySelector('.spi-pks'); if (pc && pr) pr.scrollTo({ left: pc.offsetLeft - (pr.clientWidth - pc.offsetWidth) / 2, behavior: 'smooth' });
             };
             const go = (id, smooth) => { const c = cards.find(x => x.dataset.spiBig === id); if (c) row.scrollTo({ left: c.offsetLeft - (row.clientWidth - c.offsetWidth) / 2, behavior: smooth ? 'smooth' : 'auto' }); };
-            const centered = () => { const mid = row.scrollLeft + row.clientWidth / 2; let best = null, bd = 1e9; cards.forEach(c => { const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid); if (d < bd) { bd = d; best = c; } }); return best && best.dataset.spiBig; };
-            let st = 0; row.addEventListener('scroll', () => { const id = centered(); if (id && id !== SPI.pk) mark(id, true); clearTimeout(st); st = setTimeout(() => spiBigPlay(root), 140); }, { passive: true });
+            row.classList.add('nr');
+            let mids = null, rw = 0; // (카드 가운데 자리는 한 번만 잼 - 넘길 때마다 모든 카드를 다시 재면 버벅였음)
+            try { new ResizeObserver(() => { mids = null; }).observe(row); } catch (e) {} // (폭이 바뀔 때만 다시 잼 - 넘길 때마다 폭을 읽으면 화면 전체를 다시 계산했음)
+            const centered = () => { if (!mids) { rw = row.clientWidth; mids = cards.map(c => c.offsetLeft + c.offsetWidth / 2); }
+                const mid = row.scrollLeft + rw / 2; let bi = 0, bd = 1e9; mids.forEach((m, k) => { const d = Math.abs(m - mid); if (d < bd) { bd = d; bi = k; } }); return cards[bi] && cards[bi].dataset.spiBig; };
+            let st = 0, raf = 0;
+            let played = null; // (멈췄을 때 가운데 카드가 바뀌었을 때만 다시 재생 - 같은 카드면 그대로 둠)
+            const settle = () => { clearTimeout(st); row.classList.remove('moving'); const id = centered(); if (!id || id === played) return; played = id; mark(id, true); spiBigPlay(root); };
+            row.addEventListener('scroll', () => {
+                row.classList.add('moving');
+                if (!raf) raf = requestAnimationFrame(() => { raf = 0; const id = centered(); if (id && id !== SPI.pk) mark(id, true, true); });
+                clearTimeout(st); st = setTimeout(settle, 220); }, { passive: true });
+            row.addEventListener('scrollend', settle);
             cards.forEach(c => c.addEventListener('click', () => { if (c.dataset.spiBig === SPI.pk) spiBigPlay(root); else { go(c.dataset.spiBig, true); mark(c.dataset.spiBig); } }));
             root.querySelectorAll('[data-spi-pkc]').forEach(b => b.addEventListener('click', () => { go(b.dataset.spiPkc, true); mark(b.dataset.spiPkc); }));
             root.querySelectorAll('[data-spi-bstep]').forEach(b => b.addEventListener('click', () => { const n = order.indexOf(SPI.pk) + Number(b.dataset.spiBstep); const id = order[(n + order.length) % order.length]; go(id, true); mark(id); }));
@@ -14190,7 +14215,7 @@ function spIntroPanel(box, kind) {
                 state.intro.enabled = false; state.intro.spiAsk = 'no'; spChanged && spChanged(); scheduleSnapshot();
                 const nx = document.querySelector('#simplePane .sp-ask-nav #spNext');
                 if (nx && root.isConnected && root.closest('#simplePane') && spViewNow() === 'quick') { nx.dataset.spiPick = '0'; nx.click(); } else spRender(); });
-            requestAnimationFrame(() => { go(SPI.pk, false); mark(SPI.pk); });
+            requestAnimationFrame(() => { go(SPI.pk, false); mark(SPI.pk); played = SPI.pk; });
             spiWatch(root);
             // 질문 화면이면 아래 [다음/다 했어요] 버튼 = '이 분위기로 하고 다음' (칸 안 버튼은 숨김 - 버튼이 두 개라 헷갈렸음, 1018z18s)
             setTimeout(() => { const nx = document.querySelector('#simplePane .sp-ask-nav #spNext'); if (!nx || !root.isConnected || !root.closest('#simplePane')) return;
@@ -14441,7 +14466,7 @@ function spiTxPop(root) {
     const live = () => { const tx = txEl(); if (tx) {
             tx.style.fontFamily = spiFontFamily(i.font); tx.style.fontSize = fontToCqw(i.fontSize || 26); tx.style.color = spiTextColor(i);
             tx.style.transform = introTextTransform(i); tx.style.letterSpacing = lsEm(i.ls); tx.style.textShadow = textEdge(i) || ''; tx.style.textAlign = 'center';
-            tx.style.left = (i.x ?? 50) + '%'; tx.style.top = (i.y ?? 50) + '%'; if (!i.textWidthPct) tx.style.width = '';
+            tx.style.left = (i.x ?? 50) + '%'; tx.style.top = (i.y ?? 50) + '%'; if (!i.textWidthPct) tx.style.width = ''; spiOneLine(tx, i);
             const ty = tx.querySelector('.intro-typed'); if (ty) ty.textContent = i.text || ''; }
         vals(); syncFrame(); place(); scheduleSnapshot(); };
     const rebake = () => { if (!i.textWidthManual) delete i.textWidthPct; live(); clearTimeout(box._b); box._b = setTimeout(() => { const r = st(); if (r) { spiBakeSoon(r); setTimeout(syncFrame, 200); } }, 120); };
