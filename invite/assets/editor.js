@@ -13899,7 +13899,7 @@ function spiBake(root) {
     const ty = m.querySelector('.intro-typed'); if (ty) ty.innerHTML = i.html && window.InviteBlocks ? InviteBlocks.RichText.sanitize(i.html) : esc(i.text || '');
     tx.parentNode.appendChild(m); const w = m.offsetWidth; m.remove();
     if (!w) return;
-    i.textWidthPct = Math.round(Math.min(w, ph.offsetWidth * 0.96) / ph.offsetWidth * 1000) / 10;
+    i.textWidthPct = Math.min(98, Math.ceil((Math.min(w, ph.offsetWidth * 0.96) + 1.5) / ph.offsetWidth * 1000) / 10); // (올림 + 여유 - 반올림으로 0.1px 모자라면 글자 효과(낱자 칸)에서 두 줄로 바뀌었음)
     tx.style.width = i.textWidthPct + '%';
 }
 function spiBakeSoon(root) { const go = () => setTimeout(() => spiBake(root), 60); try { document.fonts.ready.then(go); } catch (e) { go(); } }
@@ -14462,8 +14462,8 @@ function spiTxPop(root) {
     box.querySelector('[data-act="rot-inc"]').addEventListener('click', () => { rotSet((i.rotation || 0) + 1); live(); });
     bindEditableValue(box, 'rot', -180, 180, v => rotSet(v), () => i.rotation || 0, live);
     const setSx = v => { v = Math.max(50, Math.min(200, Math.round(v))); if (v === 100) delete i.sx; else i.sx = v; };
-    box.querySelector('[data-act="sx-dec"]').addEventListener('click', () => { setSx((i.sx || 100) - 1); rebake(); });
-    box.querySelector('[data-act="sx-inc"]').addEventListener('click', () => { setSx((i.sx || 100) + 1); rebake(); });
+    box.querySelector('[data-act="sx-dec"]').addEventListener('click', () => { setSx(Math.round((i.sx || 100) / 5) * 5 - 5); rebake(); });
+    box.querySelector('[data-act="sx-inc"]').addEventListener('click', () => { setSx(Math.round((i.sx || 100) / 5) * 5 + 5); rebake(); });
     bindEditableValue(box, 'sx', 50, 200, v => setSx(v), () => i.sx || 100, rebake);
     bindIttLs(box, () => i.ls, v => { if (v) i.ls = v; else delete i.ls; }, rebake);
     bindIttColor(box, () => i.color || '', c => { if (c) i.color = c; else delete i.color; live(); });
