@@ -290,7 +290,7 @@ const SECTION_EASY_OPTS = [
     'transport' => ['title' => '제목', 'quick' => '버튼으로 칸 추가'],
     'greet' => ['tones' => '예시 인사말 고르기'],
     'family' => ['family' => '혼주 성함', 'deceased' => '고인 표시', 'contact' => '연락처'],
-    'account' => ['parents' => '혼주(부모님) 계좌', 'display' => '표시 방식 · 카드 디자인', 'kakao' => '카카오페이 송금 링크'],
+    'account' => ['parents' => '혼주(부모님) 계좌', 'display' => '표시 방식 · 카드 디자인', 'kakao' => '카카오페이 송금 링크', 'pics' => '계좌 모양을 그림 카드로 고르기 + 접어 두기 · 카카오페이 스위치 (끄면 예전 글자 버튼 세 줄)'],
     'dday' => ['calendar' => '달력 보여주기', 'calStyle' => '달력 모양', 'counter' => '카운트 보여주기', 'counterStyle' => '카운터 모양', 'label' => '위쪽 작은 글씨'],
     'notice' => ['title' => '제목', 'quick' => '버튼으로 칸 추가', 'style' => '모양 (카드 · 박스 · 슬라이드 · 탭)', 'image' => '안내마다 사진 넣기'],
     'rsvp' => ['deadline' => '마감일', 'headcount' => '참석 인원', 'meal' => '식사 여부', 'phone' => '연락처 받기', 'memo' => '전하는 말', 'popup' => '참석 여부 팝업'],

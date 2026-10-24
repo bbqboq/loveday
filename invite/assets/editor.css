@@ -5396,3 +5396,9 @@ html { touch-action: manipulation; } /* 두 번 톡 확대 막기 (1018z18s) - �
 
 /* 휴대폰 작은 창 속 청첩장은 보기만 (1018z18u) - 창이 숨어 있어도(opacity 0) 안쪽 글자 칸(pointer-events: auto)이 눌려 전문가 글자 창이 떴음 */
 html.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane * { pointer-events: none !important; }
+/* 계좌 칸 A안 (1018z18v): 그림 카드 넘기기 + 스위치 두 줄 */
+.sp-accp .ssk-row { gap: 8px; }
+.sp-accp .sp-accp-c { width: 128px; }
+.sp-accp .sp-accp-c .ssk-th { width: 128px; height: 92px; border-radius: 12px; }
+.sp-accp .sp-accp-c b { font-size: 12px; text-align: center; }
+.sp-accp-sw { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }

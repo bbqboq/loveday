@@ -12884,7 +12884,7 @@ function sskFit(th, iv, keep, pad, fill) {
     x0 = (x0 - o.left) / z; x1 = (x1 - o.left) / z; y0 = (y0 - o.top) / z; y1 = (y1 - o.top) / z;
     pad = pad == null ? 8 : pad;
     // 가로로 긴 부분(계좌 줄 · 버튼)은 양옆을 조금 잘라도(최대 1.6배) 크게 - 너무 가늘면 알아보기 어려움
-    const w = x1 - x0 + pad * 2, h = y1 - y0 + pad * 2, k = fill === 'w' ? th.clientWidth / w : Math.min(th.clientHeight / h, th.clientWidth / w * 1.6);
+    const w = x1 - x0 + pad * 2, h = y1 - y0 + pad * 2, k = fill === 'w' ? th.clientWidth / w : Math.min(th.clientHeight / h, th.clientWidth / w * (typeof fill === 'number' ? fill : 1.6)); // (fill 숫자 = 양옆을 그만큼까지만 잘라 크게)
     const tx = (th.clientWidth - w * k) / 2 - (x0 - pad) * k, ty = fill === 'w' && h * k > th.clientHeight ? -(y0 - pad) * k : (th.clientHeight - h * k) / 2 - (y0 - pad) * k;
     iv.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${k.toFixed(4)})`;
     return true;
@@ -13491,6 +13491,40 @@ function spFamily(box) {
     box.querySelectorAll('[data-ct]').forEach(i => i.addEventListener('input', () => { ct[i.dataset.ct] = i.value.replace(/[^\d-]/g, ''); spChanged(['contact']); }));
 }
 // 6. 마음 전할 곳 (계좌 섹션의 "은행 번호 (예금주)" 칸)
+// 계좌 칸 A안 (시안 5fgXiCRAhiHGahtivSaeKz, 1018z18v): 계좌번호 아래 = '하객에게 이렇게 보여요' 그림 카드 넘기기(진짜로 그린 계좌 섹션) + 스위치 두 줄 (관리자 account.pics - 끄면 예전 글자 버튼 세 줄)
+const SP_ACC_LOOKS = [['theme', '디자인 맞춤'], ['basic', '기본 카드'], ['line', '미니멀'], ['outline', '라인 상자'], ['center', '가운데'], ['vintage', '빈티지'], ['free', '줄글']];
+let spAccKk = false; // 카카오페이 스위치를 켰는데 아직 링크를 안 적은 동안
+function spAccLookOf(f) { return f.display !== 'cards' ? 'free' : (f.accStyle || 'basic'); }
+function spAccPicsHtml(f) {
+    const cur = spAccLookOf(f), O = k => spOpt('account', k), kk = !!(f.groomKakao || f.brideKakao) || spAccKk, cards = f.display === 'cards';
+    const looks = O('display') ? `<div class="wz-field sp-accp"><div class="wz-lab">하객에게 이렇게 보여요 <small>옆으로 넘겨 골라요</small></div>
+        <div class="ssk sp-accp-ssk" data-ssk-for="account"><div class="ssk-row">${SP_ACC_LOOKS.map(([v, l]) => `<div class="ssk-c sp-accp-c${cur === v ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${cur === v}" data-acc-look="${v}" data-ssk="${v === 'free' ? 'l:display:free' : 'l:accStyle:' + v}"><span class="ssk-th"><span class="ssk-ld"></span></span><b>${l}</b></div>`).join('')}</div></div></div>` : '';
+    const fold = O('display') && cards ? `<label class="sp-sw"><span><b>계좌를 접어 두기</b><small>${f.accCollapse ? '하객이 눌러야 계좌번호가 보여요' : '지금은 계좌번호가 바로 보여요'}</small></span><input type="checkbox" id="spAccFold" ${f.accCollapse ? 'checked' : ''}><i></i></label>` : '';
+    const kakao = O('kakao') ? `<label class="sp-sw"><span><b>카카오페이 송금 버튼</b><small>${kk ? (cards ? '송금 링크를 적으면 버튼이 생겨요' : '카드 모양을 고르면 버튼이 보여요') : '카카오페이 송금 링크가 있을 때만 켜요'}</small></span><input type="checkbox" id="spAccKk" ${kk ? 'checked' : ''}><i></i></label>
+        ${kk ? `<div class="wz-field sp-in"><input class="wz-inp" data-sp-f="groomKakao" value="${wzEsc(f.groomKakao || '')}" placeholder="신랑 https://qr.kakaopay.com/..." inputmode="url" style="margin-bottom:6px"><input class="wz-inp" data-sp-f="brideKakao" value="${wzEsc(f.brideKakao || '')}" placeholder="신부 https://qr.kakaopay.com/..." inputmode="url"><p class="wz-hint">카카오페이 앱의 '송금코드' 링크를 복사해 붙여 넣어요.</p></div>` : ''}` : '';
+    return looks + (fold || kakao ? `<div class="sp-accp-sw">${fold}${kakao}</div>` : '');
+}
+// 카드 그림 = 지금 계좌 섹션(고객이 적은 계좌 · 접기 · 카카오페이 그대로)을 그 모양으로 작게 (보이는 카드만 한가할 때)
+function spAccPicFill(card, b) {
+    const th = card.querySelector('.ssk-th'); if (!th || th.dataset.done) return;
+    const r = document.getElementById('previewRoot'); if (!r) return;
+    const rs = (r.getAttribute('style') || '').split(';').filter(d => /^\s*--/.test(d)).join(';'), rc = (r.className || '').split(/\s+/).filter(c => /^(invite-preview|ib-dark|dividers-on)$/.test(c)).join(' ') || 'invite-preview';
+    let html = ''; try { html = sskThumb(b, card.dataset.ssk); } catch (e) { return; }
+    th.innerHTML = `<span class="ssk-iv ${esc(rc)}" style="${esc(rs)};transform:none">${html}</span>`;
+    th.dataset.done = '1'; th.setAttribute('style', rs + ';background:var(--p-bg)');
+    const iv = th.firstElementChild, col = iv.querySelector('.col');
+    const keep = [...iv.querySelectorAll('.ib-acc-side, .ib-acc-row, .ib-acc-fold, details, .ib-acc-free, .acc-free-row')].filter(e => !e.parentElement.closest('.ib-acc-side, .ib-acc-row, .ib-acc-fold, details, .ib-acc-free, .acc-free-row'));
+    if (!sskFit(th, iv, keep.length ? keep : [col && (col.querySelector('.ib-block') || col)], 4, 1.1)) iv.style.transform = '';
+}
+function spAccPicsBind(box, f) {
+    const b = spBlock('account'), redo = () => { spChanged(['account']); scheduleSnapshot(); spRender(); };
+    const pick = c => { const v = c.dataset.accLook; if (v === 'free') f.display = 'free'; else { f.display = 'cards'; if (v === 'basic') delete f.accStyle; else f.accStyle = v; } redo(); };
+    const cards = [...box.querySelectorAll('.sp-accp-c')];
+    cards.forEach(c => { c.addEventListener('click', () => pick(c)); c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(c); } }); });
+    if (cards.length) sskLazy(box, cards, c => spAccPicFill(c, b));
+    box.querySelector('#spAccFold')?.addEventListener('change', e => { f.accCollapse = e.target.checked; redo(); });
+    box.querySelector('#spAccKk')?.addEventListener('change', e => { spAccKk = e.target.checked; if (!e.target.checked) { delete f.groomKakao; delete f.brideKakao; } redo(); if (e.target.checked) setTimeout(() => box.querySelector('[data-sp-f="groomKakao"]')?.focus(), 60); });
+}
 function spAccount(box) {
     if (!spBlock('account').enabled) { box.innerHTML = spH('마음 전하실 곳', '계좌번호는 하객이 [복사]를 눌러야만 보이고, 서버에는 암호화해서 저장돼요.') + spInclHtml('account') + spOffNote(); return; }
     const f = spBlock('account').fields, wi = weddingInfo();
@@ -13512,9 +13546,9 @@ function spAccount(box) {
             <div class="wz-banks">${bankList.map(b => `<button type="button" class="${a.bank === b ? 'on' : ''}" data-pick="${b}">${b}</button>`).join('')}</div></div></div>`; };
     box.innerHTML = spH('마음 전하실 곳', '계좌번호는 하객이 [복사]를 눌러야만 보이고, 서버에는 암호화해서 저장돼요.') + spInclHtml('account') + (window.LD_ACC_TRIAL ? `<div class="sp-acc-trial">${accTrialNote()}</div>` : '') + roles.slice(0, 2).map(r => card(r)).join('') +
         (spOpt('account', 'parents') ? `<button type="button" class="wz-addacc" id="spPar">${parentsOpen ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'}</button><div class="wz-parents${parentsOpen ? ' on' : ''}" id="spParents">${roles.slice(2).map(r => card(r, true)).join('')}</div>` : '') +
-        (spOpt('account', 'display') ? spChoiceRow('표시 방식', 'display', [['free', '자유 배치'], ['cards', '카드형 (복사 버튼)']], f.display === 'cards' ? 'cards' : 'free') +
+        (spOpt('account', 'pics') ? spAccPicsHtml(f) : (spOpt('account', 'display') ? spChoiceRow('표시 방식', 'display', [['free', '자유 배치'], ['cards', '카드형 (복사 버튼)']], f.display === 'cards' ? 'cards' : 'free') +
             (f.display === 'cards' ? spChoiceRow('카드 디자인', 'accStyle', (InviteBlocks.ACC_STYLES || [['basic', '기본 카드']]).map(([v, l]) => [v === 'basic' ? '' : v, l]), f.accStyle || '') + spChoiceRow('보여주기', 'accCollapse', [[false, '펼치기'], [true, '가리기 (눌러서 열기)']], !!f.accCollapse) : '') : '') +
-        (spOpt('account', 'kakao') ? `<div class="wz-field"><div class="wz-lab">카카오페이 송금 링크 <small>선택 · 카드형에서 보여요</small></div><input class="wz-inp" data-sp-f="groomKakao" value="${wzEsc(f.groomKakao || '')}" placeholder="신랑 https://qr.kakaopay.com/..." inputmode="url" style="margin-bottom:6px"><input class="wz-inp" data-sp-f="brideKakao" value="${wzEsc(f.brideKakao || '')}" placeholder="신부 https://qr.kakaopay.com/..." inputmode="url"></div>` : '');
+        (spOpt('account', 'kakao') ? `<div class="wz-field"><div class="wz-lab">카카오페이 송금 링크 <small>선택 · 카드형에서 보여요</small></div><input class="wz-inp" data-sp-f="groomKakao" value="${wzEsc(f.groomKakao || '')}" placeholder="신랑 https://qr.kakaopay.com/..." inputmode="url" style="margin-bottom:6px"><input class="wz-inp" data-sp-f="brideKakao" value="${wzEsc(f.brideKakao || '')}" placeholder="신부 https://qr.kakaopay.com/..." inputmode="url"></div>` : ''));
     box.querySelectorAll('.wz-acc').forEach(c => {
         const k = c.dataset.k, nm = (roles.find(r => r[0] === k) || [])[2] || '';
         const get = () => parts(k);
@@ -13530,6 +13564,7 @@ function spAccount(box) {
         const cl = c.querySelector('[data-clear]'); if (cl) cl.addEventListener('click', clear);
     });
     spBindChoice(box, f, 'account');
+    if (spOpt('account', 'pics')) spAccPicsBind(box, f);
     box.querySelectorAll('[data-sp-f]').forEach(inp => inp.addEventListener('input', () => { f[inp.dataset.spF] = inp.value.trim(); spChanged(['account']); }));
     box.querySelector('#spPar')?.addEventListener('click', e => { const p = box.querySelector('#spParents'), on = !p.classList.contains('on'); p.classList.toggle('on', on); e.currentTarget.textContent = on ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'; });
 }
