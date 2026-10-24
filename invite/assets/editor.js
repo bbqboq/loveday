@@ -5395,13 +5395,13 @@ function toggleStickerFxPopup(btn, sticker, opts) {
         <div class="sfx-sep"></div>${edgeHtml}`);
     popup.querySelectorAll('[data-edge-val]').forEach(b => b.addEventListener('click', () => {
         if (b.dataset.edgeVal) sticker.edge = b.dataset.edgeVal; else delete sticker.edge;
-        if (opts.onEdge) opts.onEdge(); else { renderPreview(); reselectSticker(sticker.id); }
+        if (opts.onEdge) { try { opts.onEdge(); } catch (e) {} } else { renderPreview(); reselectSticker(sticker.id); }
         scheduleSnapshot(); render();
     }));
     // 효과를 고르면(같은 효과를 다시 눌러도) 그 자리에서 한 번 재생해서 보여준다 - renderPreview()가 조작 틀을 지우므로 다시 선택
     popup.querySelectorAll('[data-fx-val]').forEach(b => b.addEventListener('click', () => {
         sticker.effect = b.dataset.fxVal;
-        if (opts.onFx) { if (sticker.effect === 'none') delete sticker.effect; opts.onFx(); scheduleSnapshot(); render(); } // 인트로 스티커 (1018z18o) - 그 자리에서 한 번 재생
+        if (opts.onFx) { if (sticker.effect === 'none') delete sticker.effect; render(); try { opts.onFx(); } catch (e) {} scheduleSnapshot(); } // 인트로 스티커 (1018z18o) - 그 자리에서 한 번 재생 (고른 칸 표시를 먼저 - 재생이 막혀도 고른 건 보이게)
         else play();
     }));
     popup.querySelector('[data-fx-spark]')?.addEventListener('click', () => {
@@ -11387,6 +11387,8 @@ function spLensBind() {
     const inPane = t => t && t.closest && t.closest('#simplePane') && !t.closest('.sp-nav, .sp-head, .sp-ask-top') && !(spCurSt && spCurSt.k === 'music' && !t.closest('[data-ask]')) && !(t.closest('.wz-banks, .wz-bankbtn')) && !(spCurSt && spCurSt.k === 'account' && t.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea')) && !spLensNoType(t); // (계좌 은행 고르기·계좌번호·예금주·송금 링크를 적을 땐 창 없음 - 표시 방식·카드 디자인 같은 옵션은 보여 줌, 사용자 요청) // (배경음악: 곡·자동 재생 등을 눌러도 창은 안 뜸 - 넣을게요·넣지 않을게요만)
     const lensOn = () => spMvMode() === 'lens' && spLensKind() !== 'plain';
     ['pointerdown', 'focusin'].forEach(ev => document.addEventListener(ev, e => { if (lensOn() && inPane(e.target)) spLensAct = e.target; }, true));
+    // 글자 칸에 커서가 남은 채 막대·스위치를 만지면(휴대폰은 막대를 눌러도 글자 칸 포커스가 그대로) '적는 중'으로 보여 창이 안 떴음 → 글자 칸에서 손을 뗌 (1018z18s, 예식장 지도 높이)
+    document.addEventListener('pointerdown', e => { const t = e.target, a = spLensTypingEl(); if (a && t && t.closest && t.closest('#simplePane') && t.closest('input[type="range"], .sp-range, label.sp-sw, .sp-chips button') && !t.closest('input:not([type="range"]):not([type="checkbox"]), textarea')) a.blur(); }, true);
     const isTxt = t => t.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable=""]');
     document.addEventListener('focusin', e => { const t = e.target; if (lensOn() && inPane(t) && isTxt(t)) setTimeout(() => spLensPeek(SP_PEEK_ZOOM), 420); }); // 적는 칸을 누르면 그 섹션 전체 → 글자로 다가감 (글자는 4초 - 다가가는 시간이 있어서 2배)
     let typeT = 0;
@@ -13750,7 +13752,7 @@ function spiStkHtml() {
     const n = (state.intro.stickers || []).length;
     if (!spOpt('finish', 'introStk')) return '';
     return `<div class="wz-field spi-sec"><div class="wz-lab"><span>스티커</span><small>누르면 넣고, 다시 누르면 빼요</small></div><div class="spi-stks">${list.map(x => `<button type="button" class="spi-stkb${has.has(spiStkSrc(x)) ? ' on' : ''}" data-spi-stk="${x[0]}/${x[1]}" title="${esc((STK_ART_IX[x[0] + '/' + x[1]] || {}).l || '')}"><img src="${spiStkSrc(x)}" alt=""></button>`).join('')}<button type="button" class="spi-stkm" id="spiStkMore">+ 더 고르기</button>${n ? '<button type="button" class="spi-stkx" id="spiStkX">모두 빼기</button>' : ''}</div>
-        ${n ? '<p class="wz-hint spi-stkh">미리보기에서 스티커를 누르면 테두리가 생겨요. 끌어서 옮기고 · 위 동그라미로 돌리고 · 오른쪽 아래 동그라미로 크기 · ✕로 지워요.</p>' : ''}</div>`;
+        ${n ? `<p class="wz-hint spi-stkh">${EASY_STK === 'gizmo' ? '미리보기에서 스티커를 누르면 테두리가 생겨요. 끌어서 옮기고 · 위 동그라미로 돌리고 · 오른쪽 아래 동그라미로 크기 · ✕로 지워요.' : '미리보기에서 스티커를 누르면 위에 메뉴(움직임 · 뒤집기 · 지우기)가 떠요. 끌어서 옮기고, 아래 [− +] 크기 · 돌리기 버튼이나 두 손가락(미리보기 아무 곳)으로 키우고 돌려요.'}</p>` : ''}</div>`;
 }
 function spiBgHtml(ibg) {
     return `<div class="sp-chips">${spIntroBgList().map(([v, l]) => `<button type="button" class="${ibg === v ? 'on' : ''}" data-sp-ibg="${v}">${l}</button>`).join('')}</div>
@@ -13954,6 +13956,10 @@ function spIntroPanel(box, kind) {
             root.querySelector('#spiNoIntro')?.addEventListener('click', () => { state.intro.enabled = false; spChanged && spChanged(); scheduleSnapshot(); spRender(); });
             requestAnimationFrame(() => { go(SPI.pk, false); mark(SPI.pk); });
             spiWatch(root);
+            // 질문 화면이면 아래 [다음/다 했어요] 버튼 = '이 분위기로 하고 다음' (칸 안 버튼은 숨김 - 버튼이 두 개라 헷갈렸음, 1018z18s)
+            setTimeout(() => { const nx = document.querySelector('#simplePane .sp-ask-nav #spNext'); if (!nx || !root.isConnected || !root.closest('#simplePane')) return;
+                root.querySelector('#spiPickGo').hidden = true; nx.dataset.spiPick = '1'; nx.textContent = '이 분위기로 하고 다음 ›';
+                nx.addEventListener('click', ev => { if (nx.dataset.spiPick !== '1' || !root.isConnected) return; ev.preventDefault(); ev.stopImmediatePropagation(); root.querySelector('#spiPickGo').click(); }, true); }, 0);
             return;
         }
         const tool = (k, ico, t, extra) => `<button type="button" class="spi-tool" data-spi-tool="${k}"${extra || ''}><span aria-hidden="true">${ico}</span>${t}</button>`;
@@ -14034,6 +14040,19 @@ function spIntroPanel(box, kind) {
     if (on && !i.textWidthPct) spiBakeSoon(root);
 }
 // ── 미리보기 스티커 고치기 (전문가 모드와 같은 조작 틀: 끌기 · 돌리기 · 크기 · 뒤집기 · 앞/뒤 · 테두리 · 지우기) ──
+// 에디터 화면 확대 막기 (1018z18s, 사용자: '두 손가락으로 스티커를 키우면 화면이 확대돼 버림 - 모든 페이지에서 막자'): viewport user-scalable=no(HTML) + 안드로이드 두 손가락 touchmove · 아이폰 gesture 막기 (스티커 두 손가락 조절은 pointer 이벤트라 그대로)
+(function () { if (window.__ldNoZoom) return; window.__ldNoZoom = 1;
+    document.addEventListener('touchmove', e => { if (e.touches && e.touches.length > 1 && e.cancelable) e.preventDefault(); }, { passive: false });
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+})();
+// 인트로 스티커 등장 효과를 그 자리에서 한 번 (그 순간 화면에 있는 스티커를 다시 찾음 - 칸을 다시 그렸으면 예전 요소가 문서에 없음) · 공용 자산이 예전 판이면(introStkFx 없음) 톡 커지기로 대신
+function spiFxPlay(root, st) {
+    const el = root && root.querySelector(`.spi-ph .spi-stk[data-sid="${CSS.escape(st.id)}"]`) || document.querySelector(`#simplePane .spi-ph .spi-stk[data-sid="${CSS.escape(st.id)}"]`); if (!el) return;
+    el.classList.remove('on'); void el.offsetWidth;
+    if (window.InviteBlocks && typeof InviteBlocks.introStkFx === 'function') InviteBlocks.introStkFx(el, st, 0, true);
+    else { el.classList.add('spi-fxfb'); setTimeout(() => el.classList.remove('spi-fxfb'), 700); }
+    clearTimeout(el._fxT); el._fxT = setTimeout(() => { if (SPI.sel === st.id) el.classList.add('on'); }, 1100);
+}
 // 스티커 한 장 모양 다시 칠하기 (크기 · 돌리기 · 뒤집기 · 테두리)
 function spiStkPaint(el, st) { const sz = fontToCqw(st.size || 36); if (st.image || st.icon) el.style.width = el.style.height = sz; else el.style.fontSize = sz; el.style.transform = spiStkTf(st); el.style.filter = STICKER_EDGE[st.edge] || ''; }
 // 스티커 C안 (1018z18p): 누르면 위에 말풍선 메뉴 [✨ 움직임 · 뒤집기 · 지우기], 크기 · 돌리기는 두 손가락 (PC는 마우스 휠, Shift+휠 = 돌리기) + 아래 막대 [− +] [↺ ↻] (1018z18q)
@@ -14051,7 +14070,7 @@ function spiStkSelBub(root, ph, el, st) {
     bub.addEventListener('pointerdown', e => e.stopPropagation());
     bub.querySelectorAll('[data-b]').forEach(b => b.addEventListener('click', e => {
         e.stopPropagation(); const k = b.dataset.b;
-        if (k === 'fx') toggleStickerFxPopup(b, st, { intro: true, onEdge: () => { spiStkPaint(el, st); scheduleSnapshot(); }, onFx: () => { el.classList.remove('on'); InviteBlocks.introStkFx(el, st, 0, true); setTimeout(() => { if (SPI.sel === st.id) el.classList.add('on'); }, 1000); } });
+        if (k === 'fx') toggleStickerFxPopup(b, st, { intro: true, onEdge: () => { const e2 = root.querySelector(`.spi-stk[data-sid="${CSS.escape(st.id)}"]`) || el; spiStkPaint(e2, st); scheduleSnapshot(); }, onFx: () => spiFxPlay(root, st) });
         else if (k === 'flip') { if (st.flipX) delete st.flipX; else st.flipX = true; spiStkPaint(el, st); scheduleSnapshot(); }
         else if (k === 'dn' || k === 'up') { st.size = Math.max(14, Math.min(220, Math.round((st.size || 36) * (k === 'up' ? 1.15 : 0.87)))); spiStkPaint(el, st); scheduleSnapshot(); }
         else if (k === 'del') { i.stickers = i.stickers.filter(s => s !== st); SPI.sel = null; root._sel = false; try { renderIntroStickers(); } catch (er) {} scheduleSnapshot(); spRender(); }
@@ -14072,7 +14091,10 @@ function spiStkSel(root, id) {
         spiStkTip(root);
         const out = e => { if (!root.isConnected) { SPI.sel = null; return document.removeEventListener('pointerdown', out, true); }
             if (e.target.closest('.spi-bub, .spi-stk.on, #stickerFxPopup, .spi-stkb, #spiStkMore, #spiStkPal, .spi-edcap, .spi-stip, [data-spi-tool]')) return;
-            if (SPI.pz && SPI.pz.P.size >= 1 && e.target.closest('.spi-ph')) return; // (두 번째 손가락)
+            if (e.target.closest('.spi-win')) { // 미리보기 판 안: 누를 때가 아니라 손을 뗄 때 (두 손가락으로 벌리는 중이 아니고 거의 안 움직였을 때만) 고치기 끝
+                const sx = e.clientX, sy = e.clientY, inPh = !!e.target.closest('.spi-ph');
+                const up = ev => { window.removeEventListener('pointerup', up, true); if (SPI.pz && SPI.pz.did) return; if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 10) return; if (SPI.sel) spiStkUnsel(root, inPh); };
+                window.addEventListener('pointerup', up, true); return; }
             spiStkUnsel(root, !!e.target.closest('.spi-ph')); };
         SPI.out = out; document.addEventListener('pointerdown', out, true);
         return;
@@ -14090,7 +14112,7 @@ function spiStkSel(root, id) {
         ph.querySelectorAll('.spi-stk[data-sid]').forEach(x => { const o = i.stickers.find(s => s.id === x.dataset.sid); if (o) x.style.zIndex = o.zIndex ?? 10; });
         scheduleSnapshot();
     }, e => toggleStickerFxPopup(e.currentTarget, st, { intro: true, onEdge: () => { el.style.filter = STICKER_EDGE[st.edge] || ''; scheduleSnapshot(); },
-        onFx: () => { el.classList.remove('on'); InviteBlocks.introStkFx(el, st, 0, true); } }), el); // ✨ 등장 효과 · 테두리 (전문가 모드와 같게)
+        onFx: () => spiFxPlay(root, st) }), el); // ✨ 등장 효과 · 테두리 (전문가 모드와 같게)
     const fxB = ph.querySelector('.sticker-gizmo .sg-fx'); if (fxB) fxB.title = '등장 효과 · 테두리';
     let cap = root.querySelector('.spi-edcap');
     if (!cap) { cap = document.createElement('div'); cap.className = 'spi-edcap'; cap.innerHTML = '<span>스티커 고치는 중</span><button type="button">다 했어요 · 다시 재생</button>'; (root.querySelector('.spi-win') || ph).appendChild(cap); cap.querySelector('button').addEventListener('click', () => spiStkUnsel(root)); }
@@ -14232,14 +14254,15 @@ function spiPinchBind(root, ph) {
         const up = e => { if (!z.P.delete(e.pointerId)) return; if (z.pin && z.P.size < 2) { z.pin = null; const p = z.ph; setTimeout(() => { if (p) p._pinch = false; }, 80); try { renderIntroStickers(); } catch (er) {} scheduleSnapshot(); } };
         window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
     }
-    const z = SPI.pz;
-    ph.addEventListener('pointerdown', e => {
-        z.ph = ph; z.P.set(e.pointerId, [e.clientX, e.clientY]);
+    const z = SPI.pz, stage = ph.closest('.spi-win') || ph; // (1018z18s: 스티커가 작으면 두 손가락을 올리기 어려워서 미리보기 판 어디서든 벌리고 비틀면 고른 스티커가 커지고 돌아감)
+    stage.addEventListener('pointerdown', e => {
+        if (e.target.closest && e.target.closest('.spi-edcap, .spi-bub, .spi-stip, .spi-re, .spi-offc')) return;
+        z.ph = ph; z.P.set(e.pointerId, [e.clientX, e.clientY]); if (z.P.size === 1) z.did = false;
         if (z.P.size === 2 && SPI.sel && EASY_STK !== 'gizmo') {
             const st = (state.intro.stickers || []).find(s => s.id === SPI.sel); if (!st) return;
             const [a, b] = [...z.P.values()];
             z.pin = { st, d0: Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, a0: Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI, s0: st.size || 36, r0: st.rotation || 0 };
-            ph._pinch = true; e.preventDefault(); e.stopPropagation();
+            ph._pinch = true; z.did = true; e.preventDefault(); e.stopPropagation();
         }
     }, true);
     ph.addEventListener('wheel', e => {

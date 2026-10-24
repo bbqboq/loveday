@@ -5357,3 +5357,7 @@ textarea[readonly].spi-txt, .spi-txs textarea[readonly] { background: #F6F3EE; c
 .nbs-chip { flex: none; height: 32px; padding: 0 13px; border: 1px solid var(--wz-line, #E3DED6); border-radius: 16px; background: #fff; font: inherit; font-size: 12.5px; color: var(--wz-ink, #2B2320); cursor: pointer; white-space: nowrap; }
 .nbs-chip.on { background: var(--wz-ink, #2B2320); border-color: var(--wz-ink, #2B2320); color: #fff; }
 @media (prefers-reduced-motion: reduce) { .nbs-c { transition: none; } }
+/* 1018z18s: 스티커 고치는 동안 미리보기 판 전체가 두 손가락 벌리기·비틀기 자리 (브라우저 화면 확대 안 되게) · 등장 효과 대신 톡 (공용 자산이 예전 판일 때) */
+.spi-editing .spi-win { touch-action: none; }
+.spi-ph .spi-stk.spi-fxfb { animation: spiStkOn .6s ease 1; }
+html { touch-action: manipulation; } /* 두 번 톡 확대 막기 (1018z18s) - 누름은 그대로 */

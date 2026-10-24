@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <script>/* 편집 링크로 열면 저장된 청첩장을 불러올 때까지 화면을 가림 (예전엔 디자인 고르기 화면이 잠깐 보였다가 에디터로 넘어갔음) */if (/[?&](t|testbed)=/.test(location.search)) document.documentElement.classList.add('ld-boot'); /* 불러오는 중 오류가 나도(끌기 부품 못 받음 등) 화면이 영영 가려지지 않게 - 오류가 나면 바로, 아니어도 12초 뒤 걷음 */ window.addEventListener('error', function () { setTimeout(function () { document.documentElement.classList.remove('ld-boot'); document.documentElement.classList.add('ld-late'); }, 300); }); setTimeout(function () { document.documentElement.classList.remove('ld-boot'); }, 12000); setTimeout(function () { document.documentElement.classList.add('ld-late'); }, 8000);</script>
 <style>/* 불러오는 중 표시 - 만드는 방식 고르기(#startChoice)와 디자인 고르기(#startPick)가 둘 다 숨어 있을 때만 (editor.css를 못 받아도 보이게 여기에) */
 .ld-wait { display: none; min-height: 70vh; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #6B625A; font: 15px/1.5 -apple-system, 'Pretendard', 'Apple SD Gothic Neo', sans-serif; text-align: center; padding: 24px; }
@@ -17,7 +17,7 @@ html.ld-late .ld-wait-late { visibility: visible; }
 <title>청첩장 에디터 프로토타입 v3 - 오버레이 드래그 &amp; 라이트박스</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-<link rel="stylesheet" href="assets/editor.min.css?v=cf0501a80d"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
+<link rel="stylesheet" href="assets/editor.min.css?v=89f35f9a23"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
 <link rel="stylesheet" href="assets/invite-blocks.css?v=1018z18o">
@@ -585,7 +585,7 @@ html.ld-late .ld-wait-late { visibility: visible; }
     </div>
 </div><!-- /screenIntroSettings -->
 
-<script src="assets/editor.min.js?v=ebcfeff7e5" onerror="document.documentElement.classList.remove('ld-boot')"></script><!-- 에디터 기능 (원본 assets/editor.js → node tools/build-editor.js) -->
+<script src="assets/editor.min.js?v=4d980a88a2" onerror="document.documentElement.classList.remove('ld-boot')"></script><!-- 에디터 기능 (원본 assets/editor.js → node tools/build-editor.js) -->
 </body>
 </html>
 <!-- 아래 줄은 지우지 말 것: 서버에 올릴 때 예전(더 큰) 파일 뒷부분이 남아도 화면에 글자로 나오거나 실행되지 않게 숨김 (2026-10-20 실서버에서 CSS가 글자로 보였음) -->
