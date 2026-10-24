@@ -5429,3 +5429,6 @@ html.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane * { pointer-events: none
 .sp-acci-vintage { border: 3px double #B79C72; background: #F7EFE1; } .sp-acci-vintage s { background: #D8C3A0; height: 5px; }
 .sp-acci-free { gap: 3px; } .sp-acci-free s { height: 3px; } .sp-acci-free s:first-child { width: 80%; } .sp-acci-free s + s { width: 60%; box-shadow: 0 6px 0 #D9D2C8; margin-bottom: 6px; }
 .sp-accc-b.on .sp-acci-line s { border-color: var(--wz-ink, #2B2320); }
+
+/* 인트로 두 단계: 분위기 고르기 맨 아래 [인트로 없이 할게요] (1018z18w) */
+.spi-noint { width: 100%; margin-top: 8px; }

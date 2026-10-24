@@ -14022,7 +14022,7 @@ function spIntroPanel(box, kind) {
         const cur = spiSetOf(), recSet = SPI_SETS.find(x => x.id === rec) || SPI_SETS[0], curSet = SPI_SETS.find(x => x.id === cur);
         const order = [rec, ...SPI_SETS.map(x => x.id).filter(x => x !== rec)];
         const two = spOpt('finish', 'introSteps'); // (관리자 인트로 줄 옵션 - 끄면 1018z18p처럼 한 화면에 분위기 카드 + 자세히 꾸미기)
-        const ask = two && spOpt('finish', 'introAsk'); // (1018z18t, 사용자: '인트로 화면 직전에 인트로 사용하겠습니까? 하고 미리보기를 보여 주고 하겠다 하면 고르는 화면')
+        const ask = two && spOpt('finish', 'introAsk') && !spOpt('finish', 'intro2'); // (1018z18w 사용자: '3스텝 어렵다 2스텝으로' - 기본은 묻지 않고 ① 분위기 고르기(맨 아래 [인트로 없이 할게요]) → ② 자세히 꾸미기, 관리자 intro2를 끄면 예전 '넣을까요?' 세 단계) // (1018z18t, 사용자: '인트로 화면 직전에 인트로 사용하겠습니까? 하고 미리보기를 보여 주고 하겠다 하면 고르는 화면')
         if (!two) SPI.dstep = 'edit'; else if (!['pick', 'edit', 'ask'].includes(SPI.dstep) || (SPI.dstep === 'ask' && !ask)) SPI.dstep = i.spiPicked && on ? 'edit' : ask && i.spiAsk !== 'yes' ? 'ask' : 'pick';
         { const nx0 = document.querySelector('#simplePane .sp-ask-nav #spNext'); if (nx0) nx0.style.display = ''; } // ('넣을까요?'에서 숨긴 아래 버튼을 다른 단계에선 다시)
         if (SPI.dstep === 'ask') {
@@ -14048,12 +14048,13 @@ function spIntroPanel(box, kind) {
             if (!order.includes(SPI.pk)) SPI.pk = cur || rec;
             const pk = SPI_SETS.find(x => x.id === SPI.pk) || recSet;
             box.innerHTML = spH('인트로', '하객이 청첩장을 열면 이 짧은 화면이 먼저 나와요. 옆으로 넘겨 마음에 드는 분위기를 골라요.') + `<div class="spi spi-k-d spi-d-pick">
-                <div class="spi-pkhd"><span class="spi-step"><b>1</b> 분위기 고르기 <i>›</i> <span>2 자세히 꾸미기</span></span>${spOpt('finish', 'intro') && on ? '<button type="button" class="sp-link" id="spiNoIntro">인트로 없이 할게요</button>' : ''}</div>
-                ${on ? '' : '<p class="spi-offn">지금은 인트로가 꺼져 있어요 · 고르면 켜져요</p>'}
+                <div class="spi-pkhd"><span class="spi-step"><b>1</b> 분위기 고르기 <i>›</i> <span>2 자세히 꾸미기</span></span>${spOpt('finish', 'intro') && on && ask ? '<button type="button" class="sp-link" id="spiNoIntro">인트로 없이 할게요</button>' : ''}</div>
+                ${on ? '' : !ask && i.spiAsk === 'no' ? '<p class="spi-offn">인트로 없이 바로 첫 화면이 나와요 · 분위기를 고르면 다시 켜져요</p>' : '<p class="spi-offn">지금은 인트로가 꺼져 있어요 · 고르면 켜져요</p>'}
                 <div class="spi-bigw"><button type="button" class="spi-sarr l" data-spi-bstep="-1" aria-label="앞 분위기">‹</button>${spiBigsHtml(order, rec)}<button type="button" class="spi-sarr r" data-spi-bstep="1" aria-label="다음 분위기">›</button></div>
                 <div class="spi-bign" aria-live="polite"><b id="spiBigN">${esc(pk.n)}</b><small id="spiBigD">${pk.id === rec ? '이 디자인에 어울리는 추천 · ' : ''}${esc(pk.d)}</small><span id="spiBigC">${order.indexOf(pk.id) + 1} / ${order.length}</span></div>
                 <div class="spi-pks" role="group" aria-label="분위기 ${order.length}가지">${order.map(id => { const x = SPI_SETS.find(y => y.id === id); return `<button type="button" class="spi-pkc${id === pk.id ? ' on' : ''}" data-spi-pkc="${id}"><i style="background:${esc(spiSetBg(x))}"></i>${id === rec ? '<em>추천</em>' : ''}${esc(x.n)}</button>`; }).join('')}</div>
-                <button type="button" class="spi-pkgo" id="spiPickGo">이 분위기로 하고 다음 <span aria-hidden="true">›</span></button></div>`;
+                <button type="button" class="spi-pkgo" id="spiPickGo">이 분위기로 하고 다음 <span aria-hidden="true">›</span></button>
+                ${!ask && spOpt('finish', 'intro') ? `<button type="button" class="spi-askno spi-noint${!on && i.spiAsk === 'no' ? ' on' : ''}" id="spiNoIntro2" aria-pressed="${!on && i.spiAsk === 'no'}">${!on && i.spiAsk === 'no' ? '✓ ' : ''}인트로 없이 할게요</button>` : ''}</div>`;
             const root = box.querySelector('.spi'), row = root.querySelector('.spi-bigs');
             const cards = [...row.querySelectorAll('.spi-big')];
             const mark = (id, quiet) => {
@@ -14072,6 +14073,10 @@ function spIntroPanel(box, kind) {
             root.querySelectorAll('[data-spi-bstep]').forEach(b => b.addEventListener('click', () => { const n = order.indexOf(SPI.pk) + Number(b.dataset.spiBstep); const id = order[(n + order.length) % order.length]; go(id, true); mark(id); }));
             root.querySelector('#spiPickGo').addEventListener('click', () => { const id = SPI.pk; SPI.dstep = 'edit'; state.intro.spiPicked = 1; state.intro.spiAsk = 'yes'; spiSetApply(id); setTimeout(() => { const s0 = document.querySelector('#simplePane .spi'); if (s0) s0.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); });
             root.querySelector('#spiNoIntro')?.addEventListener('click', () => { state.intro.enabled = false; if (ask) { state.intro.spiAsk = 'no'; SPI.dstep = 'ask'; } spChanged && spChanged(); scheduleSnapshot(); spRender(); });
+            root.querySelector('#spiNoIntro2')?.addEventListener('click', () => { // 두 단계: 인트로 끄고 질문 화면이면 바로 다음으로 (예전 '넣을까요? → 넣지 않을게요'와 같음)
+                state.intro.enabled = false; state.intro.spiAsk = 'no'; spChanged && spChanged(); scheduleSnapshot();
+                const nx = document.querySelector('#simplePane .sp-ask-nav #spNext');
+                if (nx && root.isConnected && root.closest('#simplePane') && spViewNow() === 'quick') { nx.dataset.spiPick = '0'; nx.click(); } else spRender(); });
             requestAnimationFrame(() => { go(SPI.pk, false); mark(SPI.pk); });
             spiWatch(root);
             // 질문 화면이면 아래 [다음/다 했어요] 버튼 = '이 분위기로 하고 다음' (칸 안 버튼은 숨김 - 버튼이 두 개라 헷갈렸음, 1018z18s)
