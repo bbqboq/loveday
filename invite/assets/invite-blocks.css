@@ -2484,3 +2484,6 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 @keyframes ibIskLBounce { 0%, 100% { translate: 0 0; scale: 1.06 .94; animation-timing-function: cubic-bezier(.3, .6, .5, 1); } 45% { translate: 0 -16px; scale: .97 1.04; animation-timing-function: cubic-bezier(.5, 0, .7, .4); } 90% { translate: 0 0; scale: 1; } }
 @keyframes ibIskLBreathe { 0%, 100% { scale: 1; } 50% { scale: 1.09; } }
 @media (prefers-reduced-motion: reduce) { .ib-isk.ib-isk-run { animation: none !important; } }
+/* 자유 배치(줄글) 계좌 아래 카카오페이 송금 버튼 (1018z18z9) */
+.ib-kakao-row { display: flex; flex-direction: column; gap: 8px; padding: 4px 24px 18px; }
+.ib-kakao-row .ib-kakaopay { margin: 0; }

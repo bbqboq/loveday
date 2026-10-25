@@ -1361,7 +1361,7 @@ const templates = {
         ${main('groomBank', '신랑측')}
         ${main('brideBank', '신부측')}
         ${extraSpans}
-        </div></div>`;
+        </div>${window.InviteBlocks && InviteBlocks.kakaoRowHtml ? InviteBlocks.kakaoRowHtml(f) : ''}</div>`;
     },
     dday: f => {
         const dateObj = new Date(f.year, f.month - 1, f.day, f.hour, f.minute);
@@ -13600,8 +13600,8 @@ function spAccPicsHtml(f) {
         : O('display') ? `<div class="wz-field sp-accp"><div class="wz-lab">하객에게 이렇게 보여요 <small>옆으로 넘겨 골라요</small></div>
         <div class="ssk sp-accp-ssk" data-ssk-for="account"><div class="ssk-row">${SP_ACC_LOOKS.map(([v, l]) => `<div class="ssk-c sp-accp-c${cur === v ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${cur === v}" data-acc-look="${v}" data-ssk="${v === 'free' ? 'l:display:free' : 'l:accStyle:' + v}"><span class="ssk-th"><span class="ssk-ld"></span></span><b>${l}</b></div>`).join('')}</div></div></div>` : '';
     const fold = O('display') && cards ? `<label class="sp-sw"><span><b>계좌를 접어 두기</b><small>${f.accCollapse ? '하객이 눌러야 계좌번호가 보여요' : '지금은 계좌번호가 바로 보여요'}</small></span><input type="checkbox" id="spAccFold" ${f.accCollapse ? 'checked' : ''}><i></i></label>` : '';
-    const kakao = O('kakao') ? `<label class="sp-sw"><span><b>카카오페이 송금 버튼</b><small>${kk ? (cards ? '송금 링크를 적으면 버튼이 생겨요' : '카드 모양을 고르면 버튼이 보여요') : '카카오페이 송금 링크가 있을 때만 켜요'}</small></span><input type="checkbox" id="spAccKk" ${kk ? 'checked' : ''}><i></i></label>
-        ${kk ? `<div class="wz-field sp-in"><input class="wz-inp" data-sp-f="groomKakao" value="${wzEsc(f.groomKakao || '')}" placeholder="신랑 https://qr.kakaopay.com/..." inputmode="url" style="margin-bottom:6px"><input class="wz-inp" data-sp-f="brideKakao" value="${wzEsc(f.brideKakao || '')}" placeholder="신부 https://qr.kakaopay.com/..." inputmode="url"><p class="wz-hint">카카오페이 앱의 '송금코드' 링크를 복사해 붙여 넣어요.</p></div>` : ''}` : '';
+    const kakao = O('kakao') ? `<label class="sp-sw"><span><b>카카오페이 송금 버튼</b><small>${kk ? '송금 링크를 적으면 계좌 아래에 노란 버튼이 생겨요' : '카카오페이 송금 링크가 있을 때만 켜요'}</small></span><input type="checkbox" id="spAccKk" ${kk ? 'checked' : ''}><i></i></label>
+        ${kk ? `<div class="wz-field sp-in"><input class="wz-inp" data-sp-f="groomKakao" value="${wzEsc(f.groomKakao || '')}" placeholder="신랑 https://qr.kakaopay.com/..." inputmode="url" style="margin-bottom:6px"><input class="wz-inp" data-sp-f="brideKakao" value="${wzEsc(f.brideKakao || '')}" placeholder="신부 https://qr.kakaopay.com/..." inputmode="url"><p class="wz-hint">카카오페이 앱의 '송금코드' 링크를 복사해 붙여 넣어요.</p><p class="wz-hint sp-kk-bad" hidden>링크를 못 찾았어요 · https://qr.kakaopay.com/… 처럼 생긴 주소를 붙여 넣어 주세요</p></div>` : ''}` : '';
     return looks + (fold || kakao ? `<div class="sp-accp-sw">${fold}${kakao}</div>` : '');
 }
 // 카드 그림 = 지금 계좌 섹션(고객이 적은 계좌 · 접기 · 카카오페이 그대로)을 그 모양으로 작게 (보이는 카드만 한가할 때)
@@ -13624,6 +13624,8 @@ function spAccPicsBind(box, f) {
     cards.forEach(c => { c.addEventListener('click', () => pick(c)); c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(c); } }); });
     if (cards.length) sskLazy(box, cards, c => spAccPicFill(c, b));
     box.querySelector('#spAccFold')?.addEventListener('change', e => { f.accCollapse = e.target.checked; redo(); });
+    { const kkChk = () => { const bad = [...box.querySelectorAll('[data-sp-f$="Kakao"]')].some(i => i.value.trim() && !(window.InviteBlocks && InviteBlocks.kakaoUrl ? InviteBlocks.kakaoUrl(i.value) : /^https?:/.test(i.value))); const h = box.querySelector('.sp-kk-bad'); if (h) h.hidden = !bad; };
+      box.querySelectorAll('[data-sp-f$="Kakao"]').forEach(i => i.addEventListener('input', kkChk)); kkChk(); } // (링크로 못 알아보면 알려 줌 - 1018z18z9)
     box.querySelector('#spAccKk')?.addEventListener('change', e => { spAccKk = e.target.checked; if (!e.target.checked) { delete f.groomKakao; delete f.brideKakao; } redo(); if (e.target.checked) setTimeout(() => box.querySelector('[data-sp-f="groomKakao"]')?.focus(), 60); });
 }
 function spAccount(box) {
@@ -13649,7 +13651,7 @@ function spAccount(box) {
         (spOpt('account', 'parents') ? `<button type="button" class="wz-addacc" id="spPar">${parentsOpen ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'}</button><div class="wz-parents${parentsOpen ? ' on' : ''}" id="spParents">${roles.slice(2).map(r => card(r, true)).join('')}</div>` : '') +
         (spOpt('account', 'pics') ? spAccPicsHtml(f) : (spOpt('account', 'display') ? spChoiceRow('표시 방식', 'display', [['free', '자유 배치'], ['cards', '카드형 (복사 버튼)']], f.display === 'cards' ? 'cards' : 'free') +
             (f.display === 'cards' ? spChoiceRow('카드 디자인', 'accStyle', (InviteBlocks.ACC_STYLES || [['basic', '기본 카드']]).map(([v, l]) => [v === 'basic' ? '' : v, l]), f.accStyle || '') + spChoiceRow('보여주기', 'accCollapse', [[false, '펼치기'], [true, '가리기 (눌러서 열기)']], !!f.accCollapse) : '') : '') +
-        (spOpt('account', 'kakao') ? `<div class="wz-field"><div class="wz-lab">카카오페이 송금 링크 <small>선택 · 카드형에서 보여요</small></div><input class="wz-inp" data-sp-f="groomKakao" value="${wzEsc(f.groomKakao || '')}" placeholder="신랑 https://qr.kakaopay.com/..." inputmode="url" style="margin-bottom:6px"><input class="wz-inp" data-sp-f="brideKakao" value="${wzEsc(f.brideKakao || '')}" placeholder="신부 https://qr.kakaopay.com/..." inputmode="url"></div>` : ''));
+        (spOpt('account', 'kakao') ? `<div class="wz-field"><div class="wz-lab">카카오페이 송금 링크 <small>선택 · 계좌 아래에 버튼이 생겨요</small></div><input class="wz-inp" data-sp-f="groomKakao" value="${wzEsc(f.groomKakao || '')}" placeholder="신랑 https://qr.kakaopay.com/..." inputmode="url" style="margin-bottom:6px"><input class="wz-inp" data-sp-f="brideKakao" value="${wzEsc(f.brideKakao || '')}" placeholder="신부 https://qr.kakaopay.com/..." inputmode="url"></div>` : ''));
     box.querySelectorAll('.wz-acc').forEach(c => {
         const k = c.dataset.k, nm = (roles.find(r => r[0] === k) || [])[2] || '';
         const get = () => parts(k);

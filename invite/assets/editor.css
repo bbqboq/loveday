@@ -5551,3 +5551,4 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .spi-big-ph { contain: layout paint; }
 .spi-bigs.moving .spi-big { box-shadow: none; }
 .spi-bigs.moving .spi-set-stk, .spi-bigs.moving .spi-set-tx * { animation-play-state: paused !important; }
+#simplePane .sp-kk-bad { color: #B4533C; }

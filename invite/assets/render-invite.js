@@ -821,7 +821,7 @@ const templates = {
         ${main('groomBank', '신랑측')}
         ${main('brideBank', '신부측')}
         ${extraSpans}
-        </div></div>`;
+        </div>${window.InviteBlocks && InviteBlocks.kakaoRowHtml ? InviteBlocks.kakaoRowHtml(f) : ''}</div>`;
     },
     dday: f => {
         const dateObj = new Date(f.year, f.month - 1, f.day, f.hour, f.minute);

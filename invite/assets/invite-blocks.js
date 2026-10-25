@@ -2865,18 +2865,27 @@
     ];
     // 카드형 계좌 디자인 (에디터 "마음 전하실 곳" → 카드형 → 디자인). 모양은 invite-blocks.css .ib-as-*
     const ACC_STYLES = [['theme', '테마 모양'], ['basic', '기본 카드'], ['line', '미니멀'], ['outline', '라인 상자'], ['center', '가운데 정렬'], ['vintage', '빈티지 큐피드']];
+    // 카카오페이 송금 링크 다듬기 (1018z18z9): 앱에서 복사하면 '카카오페이 송금 링크: https://…'처럼 글자가 붙거나 https:// 없이 붙여 넣는 경우가 많아서
+    //  - 글 안의 첫 주소만 쓰고, 주소가 없으면 카카오페이 주소(qr.kakaopay.com 등)에 https:// 를 붙임. 아니면 빈 값(버튼 없음)
+    function kakaoUrl(v) {
+        v = String(v || '').trim(); if (!v) return '';
+        const m = v.match(/https?:\/\/[^\s<>"']+/i); if (m) return m[0];
+        const m2 = v.match(/(?:[a-z0-9-]+\.)*kakaopay\.(?:com|me)\/[^\s<>"']*/i); return m2 ? 'https://' + m2[0] : '';
+    }
+    const kakaoBtn = (f, sideKey) => { const u = kakaoUrl(f[sideKey + 'Kakao']); return u ? `<a class="ib-kakaopay" href="${esc(u)}" target="_blank" rel="noopener">카카오페이로 ${esc(L[sideKey])}에게 송금</a>` : ''; };
+    // 자유 배치(줄글) 계좌는 카드가 없어서 버튼을 따로 아래에 (에디터 · 하객 화면 같이)
+    function kakaoRowHtml(f) { const g = kakaoBtn(f, 'groom'), b = kakaoBtn(f, 'bride'); return g || b ? `<div class="ib-kakao-row">${g}${b}</div>` : ''; }
     function accountCardsHtml(f, masked) {
         const MASK = '계좌번호 불러오는 중…';
         const side = (sideKey, sideLabel) => {
             // 카카오페이 송금은 신랑·신부 본인 것만 - 본인 계좌 줄 바로 아래에 "카카오페이로 신랑에게 송금"
-            const kakao = f[sideKey + 'Kakao'] && /^https?:\/\//.test(f[sideKey + 'Kakao'])
-                ? `<a class="ib-kakaopay" href="${esc(f[sideKey + 'Kakao'])}" target="_blank" rel="noopener">카카오페이로 ${esc(L[sideKey])}에게 송금</a>` : '';
+            const kakao = kakaoBtn(f, sideKey);
             const rows = ACCOUNT_ROLES.filter(r => r.side === sideKey && f[r.key]).map(r => `
                 <div class="ib-acc-row">
                     <span class="ib-acc-who">${esc(r.role === 'self' ? L[sideKey] : L[r.role])}</span>
                     <span class="ib-acc-val" ${masked ? `data-masked="1" data-part="${r.key}" data-reveal="value"` : ''}>${masked ? MASK : accHtml(f[r.key])}</span>
                     <button type="button" class="ib-copy-btn" data-ib-copy>복사</button>
-                </div>${r.role === 'self' ? kakao : ''}`).join('');
+                </div>${r.role === 'self' ? kakao : ''}`).join('') + (kakao && !f[sideKey + 'Bank'] ? kakao : ''); // (계좌번호 없이 카카오페이만 넣어도 버튼은 보이게)
             if (!rows) return '';
             const inner = rows;
             return f.accCollapse
@@ -3726,5 +3735,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);
