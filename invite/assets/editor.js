@@ -19211,3 +19211,135 @@ function feDiff(snap) {
     fe.classList.add('pz-host');
     new MutationObserver(() => pzTransform(fe)).observe(fe, { childList: true });
 })();
+
+// ===== 1019c 색 고르기 창 (휴대폰 기본 색상 선택 창 대신) =====
+//  사용자 보고: 안드로이드 기본 색상 창은 빨강·파랑 같은 원색 8개 + 색 코드를 못 적어서 아이보리 같은 색을 고르기 어려움
+//  → 에디터 안 모든 <input type=color>를 누르면 이 창이 뜸: 지금 디자인 색 · 웨딩에 잘 어울리는 색 · 최근 쓴 색 · 색 코드 직접 적기 · 직접 섞어 고르기
+//  고르는 대로 바로 미리보기(input 이벤트), [완료] = change, ✕·바깥·Esc = 원래 색으로 되돌림
+//  끄기: 관리자 손쉬운 제작 → 간편 만들기 전체 '색 고르기 창'(flow.colorSheet) / 칸 하나만 예전 방식: input에 data-native-color
+const CPS_WED = [['#FAF7F0', '아이보리'], ['#FFFFFF', '흰색'], ['#F5EFE6', '크림'], ['#FDF1F0', '블러시'], ['#F3E3E1', '로즈 베이지'], ['#F3F5F0', '세이지 화이트'],
+    ['#DDE5D6', '세이지'], ['#EEF3F8', '스카이'], ['#D9E2EC', '더스티 블루'], ['#F2EEF7', '라벤더'], ['#E8E1D7', '토프'], ['#EDEDED', '라이트 그레이'],
+    ['#7A3B41', '버건디'], ['#BB7273', '로즈'], ['#C8A86B', '골드'], ['#5F8B9B', '블루 그레이'], ['#2F4A3A', '포레스트'], ['#17223A', '네이비'], ['#2B2320', '다크 브라운'], ['#121110', '블랙']];
+const CPS = { el: null, input: null, orig: '', hsv: [0, 0, 1], raf: 0 };
+function cpsOn() { try { return spOpt('flow', 'colorSheet'); } catch (e) { return true; } }
+function cpsHex(v) { v = String(v || '').trim().replace(/^#?/, '#'); if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v.slice(1).split('').map(c => c + c).join(''); return /^#[0-9a-f]{6}$/i.test(v) ? v.toUpperCase() : ''; }
+function cpsToHsv(hex) {
+    const n = parseInt(hex.slice(1), 16), r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    let h = 0; if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return [(h * 60 + 360) % 360, mx ? d / mx : 0, mx];
+}
+function cpsFromHsv(h, s, v) {
+    const f = n => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+    return '#' + [f(5), f(3), f(1)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+function cpsRecent(add) {
+    let r = []; try { r = JSON.parse(localStorage.getItem('ld-cps-recent') || '[]').filter(cpsHex); } catch (e) {}
+    if (add) { r = [add].concat(r.filter(c => c !== add)).slice(0, 10); try { localStorage.setItem('ld-cps-recent', JSON.stringify(r)); } catch (e) {} }
+    return r;
+}
+function cpsWhat(input) {
+    if (input.dataset.cpsLabel) return input.dataset.cpsLabel;
+    if (input.title && !/직접|고르기/.test(input.title)) return input.title;
+    let n = input.closest('.field, .st-group, .cpk-line, .sp-field, .spb-f, .ctl, .row, .tt-row, .spi-set3 > div, label');
+    for (let i = 0; n && i < 4; i++, n = n.parentElement && n.parentElement.closest('.field, .st-group, .sp-field, .ctl, .row')) {
+        const t = n.querySelector(':scope > label, :scope > .lbl, :scope > small, :scope > b, :scope > h4, :scope > .st-title');
+        const s = t && t.textContent.replace(/#[0-9a-f]{3,6}/ig, '').replace(/\s+/g, ' ').trim();
+        if (s && s.length <= 18) return s;
+    }
+    return '색';
+}
+function cpsSw(c, name, cur) { return `<button type="button" class="cps-sw${c === cur ? ' on' : ''}" data-c="${c}" title="${esc(name || c)}" aria-label="${esc(name || c)}" style="--c:${c}"></button>`; }
+function cpsRows() {
+    const box = CPS.el, cur = cpsHex(CPS.input.value);
+    let pal = []; try { const p = curPalOf(); pal = [[p.bg, '디자인 바탕색'], [p.accent, '디자인 포인트 색'], [p.ink, '디자인 글자색'], [p.line, '디자인 선 색'], [p.muted, '디자인 옅은 글자색']]; } catch (e) {}
+    const seen = new Set(), uniq = l => l.map(([c, n]) => [cpsHex(c), n]).filter(([c]) => c && !seen.has(c) && seen.add(c));
+    box.querySelector('[data-g=d]').innerHTML = uniq(pal).map(([c, n]) => cpsSw(c, n, cur)).join('');
+    seen.clear(); box.querySelector('[data-g=w]').innerHTML = uniq(CPS_WED).map(([c, n]) => cpsSw(c, n, cur)).join('');
+    const rc = cpsRecent(); box.querySelector('[data-recent]').hidden = !rc.length;
+    box.querySelector('[data-g=r]').innerHTML = rc.map(c => cpsSw(c, c, cur)).join('');
+}
+function cpsPaint(skipHex) {
+    const b = CPS.el, [h, s, v] = CPS.hsv, c = cpsFromHsv(h, s, v);
+    b.querySelector('.cps-new').style.setProperty('--c', c);
+    if (!skipHex) b.querySelector('.cps-hex input').value = c.slice(1);
+    b.querySelector('.cps-sv').style.setProperty('--h', h);
+    b.querySelector('.cps-svk').style.cssText = `left:${s * 100}%;top:${(1 - v) * 100}%;--c:${c}`;
+    b.querySelector('.cps-huek').style.cssText = `left:${h / 360 * 100}%;--h:${h}`;
+    let nm = ''; b.querySelectorAll('.cps-sw').forEach(x => { const on = x.dataset.c === c; x.classList.toggle('on', on); if (on && !nm && x.title !== c) nm = x.title; });
+    b.querySelector('.cps-nm').textContent = nm; // 고른 색 이름 (아이보리 · 디자인 바탕색 …) - 밝은 색끼리 눈으로 구별하기 어려워서
+    return c;
+}
+function cpsSet(hex, from) {
+    hex = cpsHex(hex); if (!hex) return;
+    if (from !== 'drag') CPS.hsv = cpsToHsv(hex);
+    cpsPaint(from === 'hex');
+    if (CPS.input.value.toUpperCase() === hex) return;
+    CPS.input.value = hex;
+    cancelAnimationFrame(CPS.raf);
+    CPS.raf = requestAnimationFrame(() => CPS.input && CPS.input.dispatchEvent(new Event('input', { bubbles: true }))); // 고르는 대로 바로 미리보기
+}
+function cpsClose(ok) {
+    const inp = CPS.input, el = CPS.el; if (!inp || !el) return;
+    cancelAnimationFrame(CPS.raf);
+    const now = cpsHex(inp.value);
+    if (ok) { if (now) cpsRecent(now); inp.dispatchEvent(new Event('input', { bubbles: true })); if (now !== CPS.orig) inp.dispatchEvent(new Event('change', { bubbles: true })); }
+    else if (now !== CPS.orig && CPS.orig) { inp.value = CPS.orig; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); }
+    el.classList.remove('show'); CPS.input = null; document.documentElement.classList.remove('cps-open');
+    setTimeout(() => { if (!CPS.input) el.hidden = true; }, 220);
+}
+function cpsDrag(area, fn) {
+    area.addEventListener('pointerdown', e => {
+        e.preventDefault(); area.setPointerCapture(e.pointerId);
+        const mv = ev => { const r = area.getBoundingClientRect(); fn(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)), Math.max(0, Math.min(1, (ev.clientY - r.top) / r.height))); };
+        mv(e); area.onpointermove = mv;
+        area.onpointerup = area.onpointercancel = () => { area.onpointermove = area.onpointerup = area.onpointercancel = null; };
+    });
+}
+function cpsBuild() {
+    const el = document.createElement('div'); el.className = 'cps'; el.hidden = true;
+    el.innerHTML = `<div class="cps-bg"></div><div class="cps-box" role="dialog" aria-modal="true" aria-label="색 고르기">
+        <div class="cps-hd"><b>색 고르기</b><span class="cps-what"></span><button type="button" class="cps-x" aria-label="닫기">✕</button></div>
+        <div class="cps-pv"><span class="cps-old" title="원래 색"><small>원래</small></span><span class="cps-new"><small>지금</small></span><span class="cps-nm"></span>
+            <label class="cps-hex" title="색 코드를 알면 바로 적어요 (예: FAF7F0)"><span>#</span><input type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="7" placeholder="FAF7F0"></label></div>
+        <div class="cps-body">
+            <div class="cps-sec"><small>이 디자인 색</small><div class="cps-row" data-g="d"></div></div>
+            <div class="cps-sec"><small>웨딩에 잘 어울리는 색</small><div class="cps-row" data-g="w"></div></div>
+            <div class="cps-sec" data-recent hidden><small>최근 쓴 색</small><div class="cps-row" data-g="r"></div></div>
+            <div class="cps-sec"><small>직접 섞어 고르기 <em>네모 안을 끌면 진하기 · 아래 줄은 색깔</em></small>
+                <div class="cps-sv"><i class="cps-svk"></i></div><div class="cps-hue"><i class="cps-huek"></i></div></div>
+        </div>
+        <div class="cps-ft"><button type="button" class="cps-reset">원래 색으로</button><button type="button" class="cps-ok">완료</button></div></div>`;
+    document.body.appendChild(el);
+    el.querySelector('.cps-bg').addEventListener('click', () => cpsClose(false));
+    el.querySelector('.cps-x').addEventListener('click', () => cpsClose(false));
+    el.querySelector('.cps-ok').addEventListener('click', () => cpsClose(true));
+    el.querySelector('.cps-reset').addEventListener('click', () => cpsSet(CPS.orig));
+    el.querySelector('.cps-old').addEventListener('click', () => cpsSet(CPS.orig));
+    el.querySelector('.cps-body').addEventListener('click', e => { const b = e.target.closest('.cps-sw'); if (b) cpsSet(b.dataset.c); });
+    const hx = el.querySelector('.cps-hex input');
+    hx.addEventListener('input', () => { const c = cpsHex(hx.value); hx.classList.toggle('bad', !!hx.value && !c && hx.value.replace('#', '').length >= 6); if (c) cpsSet(c, 'hex'); });
+    hx.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); hx.blur(); } });
+    cpsDrag(el.querySelector('.cps-sv'), (x, y) => { CPS.hsv = [CPS.hsv[0], x, 1 - y]; cpsSet(cpsPaint(), 'drag'); });
+    cpsDrag(el.querySelector('.cps-hue'), x => { CPS.hsv = [Math.min(359.9, x * 360), CPS.hsv[1] || .5, CPS.hsv[2] || .8]; cpsSet(cpsPaint(), 'drag'); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && CPS.input) { e.stopPropagation(); cpsClose(false); } }, true);
+    return el;
+}
+function cpsOpen(input) {
+    const el = CPS.el || (CPS.el = cpsBuild());
+    CPS.input = input; CPS.orig = cpsHex(input.value) || '#FFFFFF';
+    CPS.hsv = cpsToHsv(CPS.orig);
+    el.querySelector('.cps-what').textContent = cpsWhat(input);
+    el.querySelector('.cps-old').style.setProperty('--c', CPS.orig);
+    el.querySelector('.cps-hex input').classList.remove('bad');
+    cpsRows(); cpsPaint();
+    el.hidden = false; void el.offsetWidth; el.classList.add('show'); document.documentElement.classList.add('cps-open');
+    el.querySelector('.cps-body').scrollTop = 0;
+}
+// 에디터 안 모든 색 칸: 누르면 기본 색상 창 대신 이 창 (나중에 새로 생기는 칸도 - document에서 한 번에 받음)
+document.addEventListener('click', e => {
+    const inp = e.target && e.target.closest && e.target.closest('input[type=color]');
+    if (!inp || inp.disabled || inp.hasAttribute('data-native-color') || inp.closest('.cps') || !cpsOn()) return;
+    e.preventDefault(); e.stopPropagation();
+    cpsOpen(inp);
+}, true);
