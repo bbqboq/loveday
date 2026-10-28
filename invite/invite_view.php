@@ -208,7 +208,16 @@ $customFontUrls = array_values(array_filter(array_map(fn($id) => $fontCssUrls[$i
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="format-detection" content="telephone=no">
-<link rel="stylesheet" href="/invite/assets/render-invite.css?v=<?= @filemtime(__DIR__ . '/assets/render-invite.css') ?: time() ?>">
+<?php
+// 압축본(tools/build-editor.js가 만듦, *.min.*)이 있으면 그것을 - 하객이 받는 크기가 약 40% 줄어듦 (1019). 없으면 원본 그대로
+function ld_asset(string $name): string {
+    $min = preg_replace('/\.(css|js)$/', '.min.$1', $name);
+    $use = is_file(__DIR__ . '/assets/' . $min) ? $min : $name;
+    return '/invite/assets/' . $use . '?v=' . (@filemtime(__DIR__ . '/assets/' . $use) ?: time());
+}
+?>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="<?= ld_asset('render-invite.css') ?>">
 <?php
 // 유튜브 히어로 "레터박스 맞춤"(영상 속 검은 띠 잘라내기) - 스크립트가 캐시돼 있어도 적용되게 서버에서 CSS로도 넣음
 $lbZoom = 0;
@@ -219,7 +228,7 @@ if ($lbZoom > 100): ?>
 <style>.col[data-block-id="heroVideo"] .video-cover-wrap iframe[data-cover] { transform: scale(<?= round($lbZoom / 100, 3) ?>); }</style>
 <?php endif; ?>
 <!-- 에디터와 같이 쓰는 공용 섹션(연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
-<link rel="stylesheet" href="/invite/assets/invite-blocks.css?v=<?= @filemtime(__DIR__ . '/assets/invite-blocks.css') ?: time() ?>">
+<link rel="stylesheet" href="<?= ld_asset('invite-blocks.css') ?>">
 <?php if (($design['lookStyle'] ?? '') === 'old'): ?><link rel="stylesheet" href="/invite/assets/invite-blocks-old.css?v=<?= @filemtime(__DIR__ . '/assets/invite-blocks-old.css') ?: time() ?>" data-ib-old="1"><!-- 꾸밈 스타일 '예전' --><?php endif; ?>
 <?php foreach ($customFontUrls as $url): ?><link rel="stylesheet" href="<?= htmlspecialchars($url, ENT_QUOTES, 'UTF-8') ?>"><?php endforeach; ?>
 </head>
@@ -229,8 +238,8 @@ if ($lbZoom > 100): ?>
 <?php require_once __DIR__ . '/paper_settings.php'; $ldPapers = paper_settings_get(); if ($ldPapers): // 관리자가 올린 종이 질감 그림 ?>
 <script>window.LD_PAPERS = <?= json_encode($ldPapers, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>;</script>
 <?php endif; ?>
-<script src="/invite/assets/invite-blocks.js?v=<?= @filemtime(__DIR__ . '/assets/invite-blocks.js') ?: time() ?>"></script>
-<script src="/invite/assets/render-invite.js?v=<?= @filemtime(__DIR__ . '/assets/render-invite.js') ?: time() ?>"></script>
+<script src="<?= ld_asset('invite-blocks.js') ?>"></script>
+<script src="<?= ld_asset('render-invite.js') ?>"></script>
 <script>
     window.INVITE_SLUG = <?= json_encode($slug) ?>; // 게스트스냅 "사진 올리기" 버튼, 참석여부·방명록 전송 주소용
     window.INVITE_PREVIEW_T = <?= json_encode($previewToken) ?>; // 신랑신부 미리보기일 때만 - 신혼여행 라이브의 공개 전 소식까지 보여줌

@@ -198,9 +198,9 @@
     function oldOf(deco) { if (!lookOld() || !OLD_DECOS.includes(deco)) return false; ensureOldLooks(); return true; }
     function ensureOldLooks() {
         if (typeof document === 'undefined' || document.querySelector('link[data-ib-old]')) return;
-        const main = [...document.querySelectorAll('link[rel="stylesheet"]')].find(l => /invite-blocks\.css/.test(l.getAttribute('href') || ''));
+        const main = [...document.querySelectorAll('link[rel="stylesheet"]')].find(l => /invite-blocks(\.min)?\.css/.test(l.getAttribute('href') || '')); // 1019: 압축본(.min.css)도
         const link = document.createElement('link'); link.rel = 'stylesheet'; link.dataset.ibOld = '1';
-        link.href = main ? main.href.replace('invite-blocks.css', 'invite-blocks-old.css') : '/invite/assets/invite-blocks-old.css';
+        link.href = main ? main.href.replace(/invite-blocks(\.min)?\.css/, 'invite-blocks-old.css') : '/invite/assets/invite-blocks-old.css';
         if (main && main.parentNode) main.after(link); else document.head.appendChild(link); // (모던 공통 규칙 뒤에 와야 같은 세기일 때 예전이 이김)
     }
     function thCls(deco) { return oldOf(deco) ? ' ib-th ib-tho ib-th-o' + deco : ' ib-th ib-th-' + deco; }

@@ -7,7 +7,7 @@
 
 - 답변은 **한국어**, 제목·볼드·표로 정리. "~라고 하셨듯이" 같은 서두 금지. 후속 질문은 최대 1개.
 - 결과물은 **바뀐 파일만** 전달 (`invite/...` 폴더 구조 유지한 zip 또는 커밋).
-- 공용 자산(`assets/invite-blocks.js` 등)을 바꾸면 에디터의 `?v=` 값을 올린다 (현재 `v=1018z19`).
+- 공용 자산(`assets/invite-blocks.js` 등)을 바꾸면 에디터의 `?v=` 값을 올린다 (현재 `v=1018z19`). **1019부터 `invite-blocks.*`·`render-invite.*`도 압축본**(`*.min.*`)을 씀 → 원본을 고치면 꼭 `node tools/build-editor.js` (에디터 HTML의 invite-blocks `?v=`는 지문으로 저절로 바뀜, 하객 화면 `invite_view.php` `ld_asset()`은 압축본이 있으면 압축본 · `?v=filemtime`). zip엔 원본과 압축본 둘 다(관리자 화면·내보내기는 원본을 씀).
 - **에디터 CSS·JS는 `invite/assets/editor.css` · `invite/assets/editor.js`(원본)를 고치고, 커밋 전에 꼭 `node tools/build-editor.js`** (처음 한 번 `cd tools && npm i`) → 압축본 `assets/editor.min.css`·`editor.min.js`를 만들고 에디터 HTML의 `?v=`를 압축본 지문으로 바꿈(직접 안 올려도 됨). `node tools/build-editor.js --check`로 맞는지 확인. 압축본은 손으로 고치지 말 것. zip엔 압축본만(원본 editor.css·editor.js는 빼도 됨 - 서버는 안 씀).
 - 디자인은 **차분하고 세련된(muted)** 톤.
 - 버튼·안내 문구는 왕초보도 알아듣는 쉬운 말.
