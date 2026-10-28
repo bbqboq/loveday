@@ -7,6 +7,10 @@
     "check": "node build-editor.js --check"
   },
   "devDependencies": {
-    "esbuild": "0.24.0"
+    "esbuild": "0.24.0",
+    "postcss": "8.4.38"
+  },
+  "dependencies": {
+    "postcss": "^8.4.38"
   }
 }

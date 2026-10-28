@@ -24,9 +24,11 @@ const FILES = [
     { src: 'assets/render-invite.js', out: 'assets/render-invite.min.js', opt: JS, html: false },
 ];
 const check = process.argv.includes('--check');
+const hoverGate = process.argv.includes('--no-hover-gate') ? null : require('./hover-gate'); // 1019d 휴대폰 sticky hover 막기 (압축본만)
 let html = fs.readFileSync(HTML, 'utf8'), bad = 0;
 for (const f of FILES) {
-    const src = fs.readFileSync(path.join(INV, f.src), 'utf8');
+    let src = fs.readFileSync(path.join(INV, f.src), 'utf8');
+    if (hoverGate && f.opt.loader === 'css') { const g = hoverGate(src); src = g.css; if (!check) console.log(`  ${f.src}: 마우스 효과 ${g.n}곳을 (hover: hover) 안으로`); }
     const { code, warnings } = esbuild.transformSync(src, { ...f.opt, sourcefile: f.src });
     warnings.forEach(w => console.warn(`  주의 ${f.src}: ${w.text}`));
     const v = crypto.createHash('sha1').update(code).digest('hex').slice(0, 10);
