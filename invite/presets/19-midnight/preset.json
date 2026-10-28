@@ -24,6 +24,7 @@
   "sideBg": "#0A0908",
   "shadow": true,
   "ambient": "bokeh",
+  "ambientOpacity": 45,
   "sections": [
     "hero",
     "greeting",

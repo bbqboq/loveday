@@ -620,7 +620,7 @@ let state = {
             layout: { text: { x:50, y:50, fontSize:15, scaleX:100, widthAuto:true, width:78 } } } },
         { id:'location', enabled:true, width:100, scrollEffect:'bounce', fields:{ venue:'라움아트센터', address:'서울 강남구 테헤란로 000', addressBase:'서울 강남구 테헤란로 000', addressDetail:'', phone:'', showMap:true, mapFullWidth:false, mapHeight:190, gapCallMap:14, gapMapLinks:14,
             layout: {
-                title:   { x:50, y:14, fontSize:12, scaleX:100, widthAuto:true, width:80 },
+                title:   { x:50, y:14, fontSize:17, scaleX:100, widthAuto:true, width:80, ltUp:1 },
                 venue:   { x:50, y:46, fontSize:16, scaleX:100, widthAuto:true, width:80 },
                 address: { x:50, y:74, fontSize:13, scaleX:100, widthAuto:true, width:80 }
             } } },
@@ -1295,6 +1295,7 @@ const templates = {
         </div></div>`;
     },
     location: f => {
+        if (window.InviteBlocks && InviteBlocks.locTitleUp) InviteBlocks.locTitleUp(f); // 제목 12 → 17 (1019)
         const L = f.layout, s = k => partStyle(L, k);
         // 예전엔 주소 뒤에 예식장 이름을 또 붙였는데(주소 검색 결과에 건물명이 이미 포함돼 있는
         // 경우가 많아서) 네이버맵/카카오맵/티맵에 "...웨딩홀 웨딩홀"처럼 이름이 두 번 뜨는 문제가

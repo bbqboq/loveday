@@ -194,6 +194,13 @@
     //  · 테마 부품 직접 고르기 't:<꾸밈>'도 ib-tp-o<꾸밈>. CSS는 assets/invite-blocks-old.css (예전일 때만 ensureOldLooks가 불러옴, 공개 페이지는 invite_view가 미리)
     //  예전 모습이 있는 꾸밈만 (새로 만든 디자인 10개·웹툰은 한 벌)
     const OLD_DECOS = ['rule', 'bold', 'soft', 'mono', 'leaf', 'gold', 'kraft', 'lace', 'film', 'cinema', 'polaroid', 'note', 'typo', 'board', 'tape', 'deco', 'sky', 'cupid', 'stars', 'drops', 'angel'];
+    // 오시는 길 제목 '오시는 길'이 12px 흐린 글씨라 다른 섹션 제목(18px)보다 작고 머리글 LOCATION과 겹쳐 보이던 것 (1019)
+    //  → 예전 기본 크기(12)인 채로 둔 것만 17로 올림(직접 다른 크기를 고른 건 그대로), 한 번 올리면 ltUp 표시로 다시 안 건드림
+    function locTitleUp(f) {
+        const t = f && f.layout && f.layout.title;
+        if (t && !t.ltUp && t.fontSize === 12) { t.fontSize = 17; t.ltUp = 1; }
+        return f;
+    }
     function lookOld(d) { d = d || CUR_DESIGN; return !!(d && d.lookStyle === 'old'); }
     function oldOf(deco) { if (!lookOld() || !OLD_DECOS.includes(deco)) return false; ensureOldLooks(); return true; }
     function ensureOldLooks() {
@@ -2205,14 +2212,17 @@
             const markType = f.deceasedMark || L.deceasedMark;
             const mark = markType === 'hanja' ? '<span class="ib-deceased">故</span>' : '<span class="ib-deceased ib-flower" aria-label="고인">🌼</span>';
             const person = (name, dead) => name ? `${dead ? mark : ''}${esc(name)}` : '';
-            const line = (father, fd, mother, md, rel, child) => {
+            const line = (father, fd, mother, md, rel, child, role) => {
                 const parents = [person(father, fd), person(mother, md)].filter(Boolean).join(' · ');
                 if (!parents && !child) return '';
-                return `<p class="ib-family-line">${parents ? `<span class="ib-family-parents">${parents}</span><span class="ib-family-rel">의 ${esc(rel || '')}</span>` : ''}<strong>${esc(child)}</strong></p>`;
+                // 부모님 성함이 없으면 이름만 덩그러니 남던 것 → '신랑 민준'처럼 호칭을 앞에 (1019)
+                const lead = parents ? `<span class="ib-family-parents">${parents}</span><span class="ib-family-rel">의 ${esc(rel || '')}</span>`
+                    : `<span class="ib-family-role">${esc(role || '')}</span>`;
+                return `<p class="ib-family-line${parents ? '' : ' ib-family-solo'}">${lead}<strong>${esc(child)}</strong></p>`;
             // (신랑/신부 이름 앞 호칭은 표시하지 않음 - "OOO의 아들 민준" 형식)
             };
-            const g = line(f.groomFather, f.groomFatherDeceased, f.groomMother, f.groomMotherDeceased, f.groomRelation, f.groomName);
-            const b = line(f.brideFather, f.brideFatherDeceased, f.brideMother, f.brideMotherDeceased, f.brideRelation, f.brideName);
+            const g = line(f.groomFather, f.groomFatherDeceased, f.groomMother, f.groomMotherDeceased, f.groomRelation, f.groomName, L.groom);
+            const b = line(f.brideFather, f.brideFatherDeceased, f.brideMother, f.brideMotherDeceased, f.brideRelation, f.brideName, L.bride);
             if (!g && !b) return `<div class="ib-block ib-family">${emptyHint('부모님 성함을 입력해주세요')}</div>`;
             const bf = (f.order || L.order) === 'bride-first';
             // 두 줄을 자유 배치 (끌어서 위치, 눌러서 크기·정렬) - 예전 "정렬" 옵션 대신
@@ -3761,5 +3771,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { locTitleUp, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

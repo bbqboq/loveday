@@ -206,6 +206,7 @@ body {
 .drag-part.op-heart { color: var(--p-accent); }
 .drag-part.on-dark.op-heart { color: #fff; }
 .drag-part.op-title { font-weight: 600; letter-spacing: .02em; color: var(--p-muted); }
+.blk-location .drag-part.op-title { color: var(--p-ink); font-family: var(--p-head-font); font-weight: var(--p-head-weight, 600); } /* 오시는 길 제목 = 다른 섹션 제목처럼 (1019) */
 
 .sticker-el { position: absolute; transform: translate(-50%,-50%); line-height: 1; z-index: 7; user-select: none; }
 .sticker-el.sticker-icon { color: var(--p-accent, #7A3B41); }

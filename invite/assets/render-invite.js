@@ -773,6 +773,7 @@ const templates = {
         </div></div>`;
     },
     location: f => {
+        if (window.InviteBlocks && InviteBlocks.locTitleUp) InviteBlocks.locTitleUp(f); // 제목 12 → 17 (1019)
         const L = f.layout, s = k => partStyle(L, k);
         // 예전엔 주소 뒤에 예식장 이름을 또 붙였는데(주소 검색 결과에 건물명이 이미 포함돼 있는
         // 경우가 많아서) 네이버맵/카카오맵/티맵에 이름이 두 번 뜨는 문제가 있었다 - 주소만 그대로 쓴다.

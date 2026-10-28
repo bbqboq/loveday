@@ -3144,6 +3144,7 @@ body.marquee-on, body.marquee-on * { user-select: none !important; -webkit-user-
 .drag-part.op-heart { color: var(--p-accent); }
 .drag-part.on-dark.op-heart { color: #fff; }
 .drag-part.op-title { font-weight: 600; letter-spacing: .02em; color: var(--p-muted); }
+.blk-location .drag-part.op-title { color: var(--p-ink); font-family: var(--p-head-font); font-weight: var(--p-head-weight, 600); } /* 오시는 길 제목 = 다른 섹션 제목처럼 (1019) */
 
 /* 선택된 파츠 주변 드래그 핸들(포토샵 자유 변형 느낌) */
 .selection-frame { position: absolute; z-index: 10; border: 1px dashed #24339B; pointer-events: none; }

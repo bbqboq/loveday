@@ -173,6 +173,7 @@
 .ib-family-line { margin: 8px 0; font-size: 14.5px; line-height: 1.8; }
 .ib-family-parents { color: var(--p-ink); }
 .ib-family-rel { color: var(--p-muted); font-size: 13px; margin: 0 6px 0 2px; }
+.ib-family-role { color: var(--p-muted); font-size: .8em; letter-spacing: .12em; margin-right: .7em; vertical-align: .08em; } /* 부모님 성함 없을 때 '신랑 민준' (1019) */
 .ib-family-line strong { font-family: var(--p-head-font); font-size: 16px; font-weight: 700; }
 .ib-deceased { font-size: .82em; margin-right: 2px; color: var(--p-muted); }
 .ib-deceased.ib-flower { filter: grayscale(1); opacity: .75; }
