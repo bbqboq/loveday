@@ -2487,3 +2487,23 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 /* 자유 배치(줄글) 계좌 아래 카카오페이 송금 버튼 (1018z18z9) */
 .ib-kakao-row { display: flex; flex-direction: column; gap: 8px; padding: 4px 24px 18px; }
 .ib-kakao-row .ib-kakaopay { margin: 0; }
+
+/* ===== 1019 손맛 다듬기 (Emil Kowalski 기준 · 하객 화면 버튼) =====
+   누르면 살짝 눌리는 반응(0.97배, 0.16초) - 휴대폰의 회색 깜빡임 대신. transform 대신 따로 쓰는 scale이라
+   테마 부품이 넣은 transform(먹선 그림자 밀기 등)과 안 겹침. 계좌 펼치기는 내용이 살짝 내려오며 나타남.
+   팝업 창은 바로 반응하는 곡선으로. 되돌리려면 이 블록('손맛 다듬기 끝'까지)을 지우면 됨 */
+:where(.ib-rsvp-btn, .ib-gb-write, .ib-gb-more, .loc-applink, .loc-phone-btn, .ib-fab-btn, .ib-copy-btn, .ib-f-submit, .ib-kakaopay, .ib-share-btn) {
+    transition: scale .16s cubic-bezier(.23,1,.32,1); -webkit-tap-highlight-color: transparent; }
+:where(.ib-rsvp-btn, .ib-gb-write, .ib-gb-more, .loc-applink, .loc-phone-btn, .ib-fab-btn, .ib-copy-btn, .ib-f-submit, .ib-kakaopay, .ib-share-btn):active:not(:disabled):not(.is-closed) { scale: .97; }
+.ib-acc-side summary { -webkit-tap-highlight-color: transparent; }
+.ib-acc-side summary::after { transition: transform .24s cubic-bezier(.23,1,.32,1); }
+.ib-acc-side[open] > :not(summary) { animation: ibAccIn .26s cubic-bezier(.23,1,.32,1); }
+@keyframes ibAccIn { from { opacity: 0; translate: 0 -6px; } }
+.ib-modal-box { transition: transform .26s cubic-bezier(.23,1,.32,1), opacity .2s cubic-bezier(.23,1,.32,1); }
+@media (prefers-reduced-motion: reduce) {
+    :where(.ib-rsvp-btn, .ib-gb-write, .ib-gb-more, .loc-applink, .loc-phone-btn, .ib-fab-btn, .ib-copy-btn, .ib-f-submit, .ib-kakaopay, .ib-share-btn) { transition: none; }
+    :where(.ib-rsvp-btn, .ib-gb-write, .ib-gb-more, .loc-applink, .loc-phone-btn, .ib-fab-btn, .ib-copy-btn, .ib-f-submit, .ib-kakaopay, .ib-share-btn):active { scale: none; }
+    .ib-acc-side[open] > :not(summary) { animation: none; }
+    .ib-modal-box { transform: none; transition: opacity .2s; }
+}
+/* ===== 손맛 다듬기 끝 ===== */
