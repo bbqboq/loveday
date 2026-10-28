@@ -382,17 +382,39 @@
         const wave = st === 'wave' ? '<span class="ib-wv" aria-hidden="true"><i></i><i></i><i></i></span>' : ''; // 음악 웨이브: 배경음악 박자에 맞춰 물결이 퍼짐 (음악이 없으면 잔잔하게)
         return `<button type="button" class="${cls}" data-ib-next${fx !== 'none' ? ` data-fx="${fx}"` : ''} aria-label="다음 내용 보기" style="${css}">${wave}<svg viewBox="0 0 24 24" aria-hidden="true">${NEXT_ICON_PATHS[icon]}</svg></button>`;
     }
-    // ---- 배경음악 박자 읽기 (스크롤 버튼 "음악 웨이브"용): --ib-beat(0~1)를 문서에 계속 넣어 줌 ----
+    // ---- 배경음악 박자 읽기 (스크롤 버튼 "음악 웨이브"용): --ib-beat(0~1)를 웨이브 버튼에만 넣어 줌 ----
     //  같은 사이트 음악만 (다른 사이트 음악을 분석기에 물리면 소리가 안 나서). 소리 장치(AudioContext)가 켜진 경우에만 연결
-    let beatCtx = null, beatRaf = 0;
+    //  [가볍게 1019] 예전엔 <html>에 1초 60번 넣어서 청첩장 전체 스타일을 매 프레임 다시 계산했음 (저사양 휴대폰 버벅임)
+    //   → 값은 웨이브 버튼(.ib-next-wave)에만, 버튼이 화면 밖이거나 탭이 숨으면 계산 쉼, '동작 줄이기'면 안 돌림
+    let beatCtx = null, beatRaf = 0, beatIo = null;
     const beatNodes = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+    const beatSeen = typeof Set !== 'undefined' ? new Set() : null; // 화면에 보이는 웨이브 버튼
+    function beatSet(v) {
+        if (typeof document === 'undefined') return;
+        const ws = document.getElementsByClassName('ib-next-wave');
+        for (let i = 0; i < ws.length; i++) ws[i].style.setProperty('--ib-beat', v);
+    }
+    function beatWatchVis() {
+        if (!beatSeen || typeof IntersectionObserver === 'undefined') return;
+        if (!beatIo) beatIo = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) beatSeen.add(e.target); else beatSeen.delete(e.target); }));
+        const ws = document.getElementsByClassName('ib-next-wave');
+        for (let i = 0; i < ws.length; i++) if (!ws[i]._ibBeatIo) { ws[i]._ibBeatIo = 1; beatIo.observe(ws[i]); }
+    }
+    function beatVisible() {
+        if (document.hidden) return false;
+        if (!beatSeen || !beatIo) return true; // 감시를 못 하는 브라우저는 예전처럼 늘
+        for (const el of beatSeen) if (el.isConnected) return true;
+        return false;
+    }
     function beatWatch(audio) {
         try {
             if (!audio || !beatNodes || typeof document === 'undefined' || !document.querySelector('.ib-next-wave')) return;
+            if (global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             if (new URL(audio.currentSrc || audio.src, location.href).origin !== location.origin) return;
             const AC = global.AudioContext || global.webkitAudioContext; if (!AC) return;
             beatCtx = beatCtx || new AC();
             const de = document.documentElement;
+            beatWatchVis();
             const start = () => {
                 if (beatCtx.state !== 'running') return;
                 let nd = beatNodes.get(audio);
@@ -402,15 +424,19 @@
                     nd = { an, buf: new Uint8Array(an.frequencyBinCount) }; beatNodes.set(audio, nd);
                 }
                 cancelAnimationFrame(beatRaf);
-                let avg = 0;
+                let avg = 0, last = '', rest = false;
                 const tick = () => {
-                    if (audio.paused) { de.style.setProperty('--ib-beat', '0'); de.classList.remove('ib-beat-on'); return; }
+                    if (audio.paused) { beatSet('0'); last = ''; de.classList.remove('ib-beat-on'); return; }
+                    beatRaf = requestAnimationFrame(tick);
+                    beatWatchVis(); // 다시 그려져 새로 생긴 버튼도 감시
+                    if (!beatVisible()) { if (!rest) { rest = true; beatSet('0'); last = ''; } return; } // 안 보이면 쉼
+                    rest = false;
                     nd.an.getByteFrequencyData(nd.buf);
                     let sum = 0; for (let i = 1; i <= 24; i++) sum += nd.buf[i];
                     const lv = sum / 24 / 255; avg = avg * .93 + lv * .07;
-                    de.style.setProperty('--ib-beat', Math.max(0, Math.min(1, (lv - avg * .8) * 3.2 + lv * .35)).toFixed(3));
-                    de.classList.add('ib-beat-on');
-                    beatRaf = requestAnimationFrame(tick);
+                    const v = Math.max(0, Math.min(1, (lv - avg * .8) * 3.2 + lv * .35)).toFixed(2);
+                    if (v !== last) { last = v; beatSet(v); } // 같은 값이면 안 씀
+                    if (!de.classList.contains('ib-beat-on')) de.classList.add('ib-beat-on');
                 };
                 tick();
             };
@@ -3031,7 +3057,7 @@
         }
         try { global.__ibBgmAudio = audio; } catch (e) {} // 스크롤 버튼 "음악 웨이브"가 이 음악의 박자를 읽음
         audio.addEventListener('play', () => { document.documentElement.classList.add('ib-music-on'); if (global.InviteBlocks && global.InviteBlocks.beatWatch) global.InviteBlocks.beatWatch(audio); });
-        audio.addEventListener('pause', () => { document.documentElement.classList.remove('ib-music-on', 'ib-beat-on'); document.documentElement.style.setProperty('--ib-beat', '0'); }); // 음악을 끄면 스크롤 버튼 웨이브도 멈춤
+        audio.addEventListener('pause', () => { document.documentElement.classList.remove('ib-music-on', 'ib-beat-on'); beatSet('0'); }); // 음악을 끄면 스크롤 버튼 웨이브도 멈춤
         const sync = () => btn.classList.toggle('is-playing', !audio.paused);
         audio.addEventListener('play', sync); audio.addEventListener('pause', sync);
         audio.addEventListener('error', () => { btn.remove(); }); // 음악 파일을 못 불러오면 버튼 자체를 숨김

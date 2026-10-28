@@ -318,22 +318,23 @@ html.lbx-lock, html.lbx-lock body { overflow: hidden !important; overscroll-beha
     opacity:0; --rv-tx:0px; --rv-ty:0px; --rv-rot:0deg; --rv-scale:1;
     transition:opacity .25s ease, transform .25s ease;
 }
-.reveal-up{ --rv-ty:56px; }
-.reveal-zoom{ --rv-scale:.86; }
-.reveal-pop{ --rv-scale:.35; --rv-rot:-8deg; }
-.reveal-left{ --rv-tx:-60px; }
-.reveal-right{ --rv-tx:60px; }
-.reveal-bounce{ --rv-ty:26px; --rv-scale:.94; }
+/* [1019 등장 효과 다듬기] 이동 거리 56~60px → 16~24px, 0.8~0.9초 → 0.5~0.7초, 튕기는 곡선(1을 넘는 값) 대신 부드럽게 멈추는 곡선 하나로 (Emil Kowalski·Impeccable 기준 - 차분한 톤) */
+.reveal-up{ --rv-ty:24px; }
+.reveal-zoom{ --rv-scale:.94; }
+.reveal-pop{ --rv-scale:.9; --rv-rot:-2deg; }
+.reveal-left{ --rv-tx:-24px; }
+.reveal-right{ --rv-tx:24px; }
+.reveal-bounce{ --rv-ty:16px; --rv-scale:.97; }
 .reveal-up.in-view,.reveal-zoom.in-view,.reveal-pop.in-view,.reveal-left.in-view,.reveal-right.in-view,.reveal-fade.in-view,.reveal-bounce.in-view{
     opacity:1; --rv-tx:0px; --rv-ty:0px; --rv-rot:0deg; --rv-scale:1;
 }
-.reveal-up.in-view{ transition:opacity .85s cubic-bezier(.22,.9,.32,1), transform .85s cubic-bezier(.22,.9,.32,1); }
-.reveal-zoom.in-view{ transition:opacity .9s ease, transform .9s cubic-bezier(.22,.9,.32,1); }
-.reveal-pop.in-view{ transition:opacity .6s ease, transform .6s cubic-bezier(.34,1.56,.64,1); }
-.reveal-left.in-view{ transition:opacity .8s ease, transform .8s cubic-bezier(.22,.9,.32,1); }
-.reveal-right.in-view{ transition:opacity .8s ease, transform .8s cubic-bezier(.22,.9,.32,1); }
-.reveal-fade.in-view{ transition:opacity .85s ease; }
-.reveal-bounce.in-view{ transition:opacity .7s ease, transform .7s cubic-bezier(.16,1.36,.42,1); }
+.reveal-up.in-view{ transition:opacity .7s cubic-bezier(.23,1,.32,1), transform .7s cubic-bezier(.23,1,.32,1); }
+.reveal-zoom.in-view{ transition:opacity .7s cubic-bezier(.23,1,.32,1), transform .7s cubic-bezier(.23,1,.32,1); }
+.reveal-pop.in-view{ transition:opacity .5s cubic-bezier(.23,1,.32,1), transform .55s cubic-bezier(.23,1,.32,1); }
+.reveal-left.in-view{ transition:opacity .7s cubic-bezier(.23,1,.32,1), transform .7s cubic-bezier(.23,1,.32,1); }
+.reveal-right.in-view{ transition:opacity .7s cubic-bezier(.23,1,.32,1), transform .7s cubic-bezier(.23,1,.32,1); }
+.reveal-fade.in-view{ transition:opacity .7s cubic-bezier(.23,1,.32,1); }
+.reveal-bounce.in-view{ transition:opacity .6s cubic-bezier(.23,1,.32,1), transform .6s cubic-bezier(.23,1,.32,1); }
 /* 스티커 등장 딜레이 - 화면에 들어온 뒤 --rv-delay만큼 기다렸다가 등장 (숨겨질 때는 바로) */
 .reveal-up.in-view,.reveal-zoom.in-view,.reveal-pop.in-view,.reveal-left.in-view,.reveal-right.in-view,.reveal-fade.in-view,.reveal-bounce.in-view{ transition-delay:var(--rv-delay,0s); }
 /* 나타난 뒤 몇 초 뒤 다시 뿅 사라지기 (스티커 ⏱ 팝업의 "사라지기").

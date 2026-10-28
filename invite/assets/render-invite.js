@@ -472,6 +472,8 @@ function initScrollReveal(root) {
     if (!root) return;
     const targets = root.querySelectorAll('.reveal-up,.reveal-zoom,.reveal-pop,.reveal-left,.reveal-right,.reveal-fade,.reveal-bounce,.reveal-boing,.reveal-spin');
     if (!targets.length) return;
+    // 화면 감시(IntersectionObserver)가 없는 옛 브라우저면 효과 없이 바로 다 보이게 (예전엔 오류로 멈춰 섹션이 투명한 채 남았음, 1019)
+    if (typeof IntersectionObserver === 'undefined') { targets.forEach(el => el.classList.add('in-view')); return; }
     // 스크롤해 들어오면 재생, 다시 올려서 화면 "아래쪽"으로 완전히 나가면 숨김으로 되돌려 다음에 또 재생.
     // 예전엔 들어오고/나갈 때마다 단순 토글했는데, 숨김 상태의 효과(아래로 40px 내림·축소 등)가 섹션 위치를 바꾸다 보니
     // 화면 맨 위 경계에 걸친 섹션은 "나감→숨김(위치 이동)→다시 들어옴→재생→나감…"이 끝없이 반복됐다.
@@ -562,7 +564,9 @@ function playIntroAnimation(design, onReveal) {
     const s = resolveSkin(design);
     const overlay = document.createElement('div');
     overlay.className = 'intro-overlay';
-    const duration = intro.duration || 2.5;
+    // 휴대폰 '동작 줄이기'면 글자를 움직이지 않고 짧게 보여 줌 (1019)
+    const rmIntro = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const duration = rmIntro ? Math.min(intro.duration || 2.5, 1.5) : (intro.duration || 2.5);
     overlay.style.setProperty('--intro-duration', duration + 's');
     const bgType = intro.bgType || 'color';
     if (bgType === 'image' && intro.bgImage) {
@@ -691,15 +695,31 @@ function playIntroAnimation(design, onReveal) {
         const typedEl = overlay.querySelector('.intro-typed');
         // 에디터에서 글꾸미기(굵게·색·글꼴 등)를 했으면 꾸민 모양 그대로 타자 효과, 아니면 예전처럼 글자만
         const RT = window.InviteBlocks && InviteBlocks.RichText, anim = intro.anim || 'type';
-        if (anim !== 'type' && RT && RT.animate) RT.animate(typedEl, intro.html || escHtml(intro.text || ''), anim, duration); // 글자 효과 (천천히·한 글자씩·흐림·크게서 작게·톡톡·한 줄씩·손글씨)
+        if (rmIntro) { typedEl.innerHTML = (RT && intro.html) ? RT.sanitize(intro.html) : escHtml(intro.text || ''); const cur = overlay.querySelector('.intro-cursor'); if (cur) cur.remove(); } // 동작 줄이기: 글자를 바로 다 보여 줌
+        else if (anim !== 'type' && RT && RT.animate) RT.animate(typedEl, intro.html || escHtml(intro.text || ''), anim, duration); // 글자 효과 (천천히·한 글자씩·흐림·크게서 작게·톡톡·한 줄씩·손글씨)
         else if (intro.html && RT) RT.type(typedEl, intro.html, duration);
         else { if (RT) RT.resetCursor(typedEl); typewriterInto(typedEl, intro.text || '', duration); }
-        setTimeout(reveal, (duration + 0.3) * 1000); // 인트로가 반쯤 걷힌 순간 - 이보다 빠르면 효과의 앞부분이 인트로에 가려진다
-        setTimeout(() => {
+        let done = false;
+        const finish = () => {
+            if (done) return; done = true;
             overlay.remove();
             freeScroll(); window.scrollTo(0, 0);
             reveal(); // 혹시 위 타이머가 밀렸을 때 대비
-        }, (duration + 0.6) * 1000);
+        };
+        const tReveal = setTimeout(reveal, (duration + 0.3) * 1000); // 인트로가 반쯤 걷힌 순간 - 이보다 빠르면 효과의 앞부분이 인트로에 가려진다
+        const tEnd = setTimeout(finish, (duration + 0.6) * 1000);
+        // 화면을 톡 누르면(또는 Enter·Esc) 바로 넘어가기 - 다시 여는 하객은 기다리지 않게 (1019). 실수로 닿는 걸 막으려고 0.4초 뒤부터
+        const t0 = Date.now();
+        const skip = () => {
+            if (done || Date.now() - t0 < 400) return;
+            clearTimeout(tReveal); clearTimeout(tEnd);
+            overlay.removeEventListener('click', skip); window.removeEventListener('keydown', skipKey);
+            overlay.style.animation = 'none'; overlay.style.transition = 'opacity .28s cubic-bezier(.23,1,.32,1)'; overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none';
+            reveal(); setTimeout(finish, 300);
+        };
+        const skipKey = e => { if (e.key === 'Enter' || e.key === 'Escape') skip(); };
+        overlay.addEventListener('click', skip); window.addEventListener('keydown', skipKey);
+        setTimeout(() => window.removeEventListener('keydown', skipKey), (duration + 0.7) * 1000);
     };
     const waitFontFamily = (fontOpt && fontOpt.family) || defaultFontFamily;
     const introSampleText = [intro.text || '', ...(intro.customTexts || []).map(c => c.text || '')].join('');

@@ -2853,25 +2853,25 @@ body.tippick-on, body.tippick-on * { cursor: crosshair !important; }
     opacity:0; --rv-tx:0px; --rv-ty:0px; --rv-rot:0deg; --rv-scale:1;
     transition:opacity .25s ease, transform .25s ease;
 }
-.reveal-up{ --rv-ty:56px; }
-.reveal-zoom{ --rv-scale:.86; }
-.reveal-pop{ --rv-scale:.35; --rv-rot:-8deg; }
-.reveal-left{ --rv-tx:-60px; }
-.reveal-right{ --rv-tx:60px; }
-/* "바운스" - 애플 제품 페이지처럼 은은하게 튀어오르며 자리를 잡는 등장 효과. 회전 없이 위로
-   살짝 올라오면서 아주 약간만 작아졌다가, 스프링처럼 목표 크기를 살짝 지나쳤다 되돌아오며 멈춘다
-   (아래 .in-view의 cubic-bezier 4번째 구간 값이 1을 넘는 게 그 "지나쳤다 돌아오는" 부분). */
-.reveal-bounce{ --rv-ty:26px; --rv-scale:.94; }
+/* [1019 등장 효과 다듬기] 이동 거리 56~60px → 16~24px, 0.8~0.9초 → 0.5~0.7초, 튕기는 곡선(1을 넘는 값) 대신 부드럽게 멈추는 곡선 하나로 (Emil Kowalski·Impeccable 기준 - 차분한 톤) */
+.reveal-up{ --rv-ty:24px; }
+.reveal-zoom{ --rv-scale:.94; }
+.reveal-pop{ --rv-scale:.9; --rv-rot:-2deg; }
+.reveal-left{ --rv-tx:-24px; }
+.reveal-right{ --rv-tx:24px; }
+/* "바운스" - 회전 없이 위로 살짝 올라오며 아주 약간 작았다가 제 크기로 부드럽게 멈춤
+   (1019부터 지나쳤다 되돌아오는 튕김은 뺌 - 하객 화면 render-invite.css와 같게) */
+.reveal-bounce{ --rv-ty:16px; --rv-scale:.97; }
 .reveal-up.in-view,.reveal-zoom.in-view,.reveal-pop.in-view,.reveal-left.in-view,.reveal-right.in-view,.reveal-fade.in-view,.reveal-bounce.in-view{
     opacity:1; --rv-tx:0px; --rv-ty:0px; --rv-rot:0deg; --rv-scale:1;
 }
-.reveal-up.in-view{ transition:opacity .85s cubic-bezier(.22,.9,.32,1), transform .85s cubic-bezier(.22,.9,.32,1); }
-.reveal-zoom.in-view{ transition:opacity .9s ease, transform .9s cubic-bezier(.22,.9,.32,1); }
-.reveal-pop.in-view{ transition:opacity .6s ease, transform .6s cubic-bezier(.34,1.56,.64,1); }
-.reveal-left.in-view{ transition:opacity .8s ease, transform .8s cubic-bezier(.22,.9,.32,1); }
-.reveal-right.in-view{ transition:opacity .8s ease, transform .8s cubic-bezier(.22,.9,.32,1); }
-.reveal-fade.in-view{ transition:opacity .85s ease; }
-.reveal-bounce.in-view{ transition:opacity .7s ease, transform .7s cubic-bezier(.16,1.36,.42,1); }
+.reveal-up.in-view{ transition:opacity .7s cubic-bezier(.23,1,.32,1), transform .7s cubic-bezier(.23,1,.32,1); }
+.reveal-zoom.in-view{ transition:opacity .7s cubic-bezier(.23,1,.32,1), transform .7s cubic-bezier(.23,1,.32,1); }
+.reveal-pop.in-view{ transition:opacity .5s cubic-bezier(.23,1,.32,1), transform .55s cubic-bezier(.23,1,.32,1); }
+.reveal-left.in-view{ transition:opacity .7s cubic-bezier(.23,1,.32,1), transform .7s cubic-bezier(.23,1,.32,1); }
+.reveal-right.in-view{ transition:opacity .7s cubic-bezier(.23,1,.32,1), transform .7s cubic-bezier(.23,1,.32,1); }
+.reveal-fade.in-view{ transition:opacity .7s cubic-bezier(.23,1,.32,1); }
+.reveal-bounce.in-view{ transition:opacity .6s cubic-bezier(.23,1,.32,1), transform .6s cubic-bezier(.23,1,.32,1); }
 /* 스티커 등장 딜레이 (스티커 조작 틀 왼쪽 위 ⏱ - 0.5초 단위). 화면에 들어온 뒤 이만큼 기다렸다가 등장.
    숨겨질 때(.in-view가 빠질 때)는 기다리지 않도록 in-view 상태에만 건다. */
 .reveal-up.in-view,.reveal-zoom.in-view,.reveal-pop.in-view,.reveal-left.in-view,.reveal-right.in-view,.reveal-fade.in-view,.reveal-bounce.in-view{ transition-delay:var(--rv-delay,0s); }
