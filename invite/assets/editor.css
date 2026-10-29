@@ -5680,3 +5680,18 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .sp-pvpin:active { scale: .95; }
 @keyframes spPinIn { from { opacity: 0; transform: translateY(4px) scale(.96); } }
 @media (prefers-reduced-motion: reduce) { .sp-pvpin { animation: none; } .spb-td .td-bar i { transition: none; } }
+/* ===== 1019h 정리 화면 '메인 화면' 칸 옆으로 넘기는 장 (.hsl - editor.js spHeroSlides) ===== */
+.hsl { margin: 0 -16px; }
+.hsl-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 16px 12px; }
+.hsl-tabs::-webkit-scrollbar { display: none; }
+.hsl-tabs button { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 13px 0 6px; border: 1px solid var(--wz-line2, #DED8CF); border-radius: 99px; background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: var(--wz-ink, #1B1A18); cursor: pointer; transition-property: background, color, border-color, scale; transition-duration: .15s; transition-timing-function: cubic-bezier(.23,1,.32,1); -webkit-tap-highlight-color: transparent; }
+.hsl-tabs button i { width: 22px; height: 22px; border-radius: 50%; background: var(--ui-soft, #F1ECE4); display: inline-grid; place-items: center; font-style: normal; font-size: 11.5px; font-weight: 800; }
+.hsl-tabs button.on { background: var(--wz-ink, #1B1A18); border-color: var(--wz-ink, #1B1A18); color: #fff; } .hsl-tabs button.on i { background: rgba(255,255,255,.18); }
+.hsl-tabs button:active { scale: .97; }
+.hsl-tabs button:focus-visible { outline: 2px solid var(--wz-ink, #1B1A18); outline-offset: 2px; }
+.hsl-track { display: flex; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; transition: height .26s cubic-bezier(.23,1,.32,1); }
+.hsl-track::-webkit-scrollbar { display: none; }
+.hsl-pg { flex: 0 0 100%; min-width: 0; box-sizing: border-box; padding: 0 16px 4px; scroll-snap-align: start; scroll-snap-stop: always; }
+.hsl-pg > :first-child { margin-top: 0; }
+.hsl-pg .hl-row { overscroll-behavior-x: contain; }
+@media (prefers-reduced-motion: reduce) { .hsl-track { transition: none; } }

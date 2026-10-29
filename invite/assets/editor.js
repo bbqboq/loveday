@@ -11014,7 +11014,14 @@ function spPvTargetRaw(st) {
     }
     const nm = fk === 'bride' ? ['brideName', wi.bride, 'groomName', wi.groom] : ['groomName', wi.groom, 'brideName', wi.bride];
     const p1 = col.querySelector(`.drag-part[data-part="${nm[0]}"]`), p2 = col.querySelector(`.drag-part[data-part="${nm[2]}"]`);
-    return (vis(p1) && p1) || parts.find(p => nm[1] && p.textContent.includes(nm[1])) || (vis(p2) && p2) || parts.find(p => nm[3] && p.textContent.includes(nm[3])) || col;
+    const inHero = (vis(p1) && p1) || parts.find(p => nm[1] && p.textContent.includes(nm[1])) || (vis(p2) && p2) || parts.find(p => nm[3] && p.textContent.includes(nm[3]));
+    if (inHero) return inHero;
+    // 첫 화면에 이름이 안 나오는 디자인(our wedding day 등 - 이름 글자를 숨김)이면 이름이 보이는 다른 섹션으로 (1019h: 예전엔 첫 화면 통째만 보여서 적는 이름이 안 보였음)
+    for (const c of root.querySelectorAll('.col[data-block-id]')) { if (c === col) continue;
+        const q = c.querySelector(`.drag-part[data-part="${nm[0]}"]`); if (vis(q) && (!nm[1] || q.textContent.includes(nm[1]))) return q;
+        const t = nm[1] && spPvTextEl(c, nm[1]); if (vis(t)) return t; }
+    { const h = '이 디자인은 첫 화면에 이름이 안 나와요'; const l1 = document.getElementById('spShL'); if (l1) l1.textContent = '이름 · ' + h; const l2 = document.getElementById('spLensT'); if (l2) l2.textContent = h; } // (보여 줄 이름 글자가 아무 데도 없으면 까닭을 창 이름표에)
+    return col;
 }
 function spCaretOf(el) { try { const s = getSelection(); if (!s.rangeCount || !el.contains(s.focusNode)) return undefined; const r = document.createRange(); r.selectNodeContents(el); r.setEnd(s.focusNode, s.focusOffset); return r.toString().length; } catch (e) { return undefined; } }
 // 적고 있는 글이 청첩장에서 들어간 자리 (그 글이 든 가장 안쪽 글자 칸 - 자유 배치 글자 칸이면 그 칸)
@@ -12210,7 +12217,7 @@ function spRenderList() {
         const tail = g === 'deco' && !later ? deskSh : ''; return rows.length || tail ? `<div class="spb-grp spb-${g}${g === 'deco' && spLaterNew ? ' spb-new' : ''}" data-g="${g}"><div class="spb-gh"><b>${EASY_READY === 'todo' && g === 'must' && fill.length ? '남은 것' : t}</b>${EASY_READY === 'todo' && g === 'must' && fill.length ? '<small>누르면 바로 채워요</small>' : sub ? `<small>${sub}</small>` : ''}</div><div class="spb-card">${rows.join('')}${tail}</div></div>` : ''; }).join('')
         + (() => { if (!taskMode) return ''; // 다른 테마 (첫 화면 글자 모양 등) - 꼭 필요한 것·채우면 좋은 것과 따로
             const ex = SP_TASKS.filter(tk => tk.extra && (!tk.show || tk.show())).map(tk => [tk, steps.find(x => x.k === tk.k)]).filter(([, st]) => st && !designOff(st) && !isOff(st));
-            return ex.length ? `<div class="spb-grp spb-themes" data-g="themes"><div class="spb-gh"><b>다른 테마가 더 있어요</b><small>마음에 들면 바꿔요 · 안 바꿔도 돼요</small></div><div class="spb-card">${ex.map(([tk, st]) => taskItem(tk, st)).join('')}</div></div>` : ''; })()
+            return ex.length && !spOpt('flow', 'noThemes') ? `<div class="spb-grp spb-themes" data-g="themes"><div class="spb-gh"><b>다른 테마가 더 있어요</b><small>마음에 들면 바꿔요 · 안 바꿔도 돼요</small></div><div class="spb-card">${ex.map(([tk, st]) => taskItem(tk, st)).join('')}</div></div>` : ''; })()
         + spDoneRowHtml(doneNames, fill) + (later ? `<div class="spb-later" id="spLater"><i aria-hidden="true">✦</i><span><b>꾸미기 · 칸 더 넣기</b><small>섹션 순서 바꾸기도 · 위 칸을 다 채우면 나와요</small></span><button type="button" id="spLaterOpen">더 보기</button></div>` : '');
     // 더 넣을 수 있는 칸 (꺼진 칸 + 디자인에서 꺼 둔 칸 · 스위치를 켜면 제 묶음으로 가서 펼쳐짐) - 예전 정리 화면 '기능 더 넣기'
     const adds = steps.filter(st => isOff(st) && !coreOff(st)), stkAdd = spOpt('flow', 'stkset') && !stkSetCur() && steps.some(x => x.k === 'theme') && stkSetList().length > 0;
@@ -12268,6 +12275,7 @@ function spRenderList() {
         if (st.k === 'finish') body.querySelectorAll('.wz-hint').forEach(x => x.remove());
         body.querySelectorAll('.sp-in').forEach(x => { x.style.animation = 'none'; });
         last = st;
+        if (st.k === 'hero') try { spHeroSlides(body); } catch (e) { console.warn(e); } // 1019h 옆으로 넘기는 장
     });
     SP_TASKS.forEach(tk => { // 할 일 칸: 그 섹션 편집 칸을 그린 뒤 그 옵션만 남김
         const body = pane.querySelector(`[data-li-body="${tk.id}"]`), st = steps.find(x => x.k === tk.k); if (!body || !st) return;
@@ -12282,6 +12290,45 @@ function spRenderList() {
     if (again) { pane.scrollTop = keepPane; window.scrollTo(0, keepWin); requestAnimationFrame(() => { pane.style.minHeight = ''; pane.scrollTop = keepPane; window.scrollTo(0, keepWin); }); }
     else { pane.style.minHeight = ''; pane.scrollTop = 0; }
     pane._spKey = 'list';
+}
+// ===== 1019h 정리 화면 '메인 화면' 칸 = 옆으로 넘기는 장 (세로로 너무 길던 것 - 사용자 요청) · 끄기: 관리자 간편 flow.heroSlide =====
+//  칸 안의 줄들을 [사진 · 레이아웃 · 글자 · 보일 부분 · 잘 보이게] 장으로 옮겨 담음 (노드를 옮기는 것이라 묶인 동작은 그대로)
+//  칸이 스스로 다시 그리면(사진↔영상 등) 다시 나눔 · 보던 장은 기억
+let spHslPage = 0;
+const SP_HSL = [['media', '사진', /무엇을 보여줄까요|대표 사진|유튜브 주소|영상 주소/], ['layout', '레이아웃', /레이아웃/], ['text', '글자', /글자\s*·\s*효과|나타나는 모습/], ['crop', '보일 부분', /보일 부분/], ['shade', '잘 보이게', /잘 보이게/]];
+function spHeroSlides(body) {
+    if (!body || !spOpt('flow', 'heroSlide')) return;
+    const kids = [...body.children].filter(c => !c.classList.contains('hsl') && !c.hasAttribute('data-hsl-rest'));
+    if (!kids.length) return;
+    body.querySelector(':scope > .hsl')?.remove();
+    const pages = {}, order = [], rest = []; let cur = null;
+    kids.forEach((c, i) => {
+        const txt = ((c.querySelector('.wz-lab') || c).textContent || '').slice(0, 80);
+        let k = c.classList.contains('hl-row') ? 'layout' : c.classList.contains('sp-shade') ? 'shade' : (SP_HSL.find(([, , re]) => re.test(txt)) || [])[0];
+        if (!k && c.tagName === 'LABEL' && kids[i + 1] && kids[i + 1].classList.contains('hl-row')) k = 'layout';
+        if (!k && (c.classList.contains('sp-link') || c.classList.contains('wz-hint'))) { rest.push(c); return; }
+        k = k || cur || 'media'; cur = k;
+        if (!pages[k]) { pages[k] = []; order.push(k); }
+        pages[k].push(c);
+    });
+    const ks = SP_HSL.map(x => x[0]).filter(k => pages[k]); if (ks.length < 2) return;
+    const box = document.createElement('div'); box.className = 'hsl';
+    box.innerHTML = `<div class="hsl-tabs" role="tablist">${ks.map((k, i) => `<button type="button" role="tab" data-hsl="${i}"><i>${i + 1}</i>${SP_HSL.find(x => x[0] === k)[1]}</button>`).join('')}</div><div class="hsl-track"></div>`;
+    const track = box.querySelector('.hsl-track');
+    ks.forEach(k => { const pg = document.createElement('div'); pg.className = 'hsl-pg'; pg.dataset.k = k; pages[k].forEach(c => pg.appendChild(c)); track.appendChild(pg); });
+    body.prepend(box); rest.forEach(c => { c.setAttribute('data-hsl-rest', ''); body.appendChild(c); });
+    const tabs = [...box.querySelectorAll('[data-hsl]')], pgs = [...track.children];
+    let ro = null, on = -1;
+    const fitH = () => { const p = pgs[on]; if (p) track.style.height = p.offsetHeight + 'px'; };
+    const mark = i => { if (i === on) return; on = i; spHslPage = i; tabs.forEach((t, j) => { t.classList.toggle('on', j === i); t.setAttribute('aria-selected', j === i); }); fitH();
+        if (ro) { ro.disconnect(); ro.observe(pgs[i]); } const t = tabs[i], tb = box.querySelector('.hsl-tabs'); if (t && tb) { const r = t.getBoundingClientRect(), R = tb.getBoundingClientRect(); if (r.left < R.left + 8 || r.right > R.right - 8) tb.scrollTo({ left: tb.scrollLeft + r.left - R.left - 16, behavior: 'smooth' }); } };
+    if ('ResizeObserver' in window) ro = new ResizeObserver(fitH);
+    tabs.forEach((t, i) => t.addEventListener('click', () => { track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' }); mark(i); }));
+    let raf = 0; track.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => mark(Math.round(track.scrollLeft / Math.max(1, track.clientWidth)))); }, { passive: true });
+    const start = Math.min(spHslPage, pgs.length - 1);
+    requestAnimationFrame(() => { track.scrollLeft = start * track.clientWidth; mark(start); });
+    // 칸이 스스로 다시 그리면(body.innerHTML) 다시 나눔
+    if (!body._hslObs) { body._hslObs = new MutationObserver(() => { if ([...body.children].some(c => !c.classList.contains('hsl') && !c.hasAttribute('data-hsl-rest'))) { clearTimeout(body._hslT); body._hslT = setTimeout(() => spHeroSlides(body), 0); } }); body._hslObs.observe(body, { childList: true }); }
 }
 const spH = (h, lead) => `<h2 class="wz-h">${h}</h2><p class="wz-lead">${lead}</p>`;
 // 전문가 모드 섹션 (타임라인·인터뷰·손편지·엔딩 …): 전문가 모드 편집창과 같은 칸을 그대로 넣음
