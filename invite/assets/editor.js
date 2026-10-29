@@ -826,6 +826,29 @@ let wizardData = {
     }
 };
 const bankList = ['국민','신한','우리','하나','농협','기업','카카오뱅크','토스뱅크','케이뱅크','우체국','새마을금고','신협','SC제일','씨티','부산','대구','광주','경남'];
+// 1019l 계좌번호 '-' 자동 (은행마다 자리 나눔이 달라서 - 숫자만 적어도 은행 모양대로). 자리 수가 어느 모양과도 안 맞으면 숫자 그대로
+//  [모양들] 앞의 것이 기본(적는 동안 이 모양으로 나눔), 다 적은 자리 수가 다른 모양과 맞으면 그 모양
+const BANK_ACCT_FMT = {
+    '국민': [[6, 2, 6], [3, 2, 4, 3]], '신한': [[3, 3, 6], [3, 2, 6]], '우리': [[4, 3, 6], [3, 6, 2, 3]], '하나': [[3, 6, 5], [3, 6, 6]],
+    '농협': [[3, 4, 4, 2], [6, 2, 6], [3, 2, 6]], '기업': [[3, 6, 2, 3], [3, 2, 6]], '카카오뱅크': [[4, 2, 7]], '토스뱅크': [[4, 4, 4]],
+    '케이뱅크': [[3, 3, 6]], '우체국': [[6, 2, 6]], '새마을금고': [[4, 2, 6, 1], [3, 2, 6, 1]], '신협': [[3, 3, 6]], 'SC제일': [[3, 2, 6]],
+    '씨티': [[3, 6, 3]], '부산': [[3, 4, 4, 2]], '대구': [[3, 2, 6, 1]], '광주': [[3, 3, 6]], '경남': [[3, 2, 7]],
+};
+function acctFmt(bank, v) {
+    const raw = String(v || ''), d = raw.replace(/\D/g, ''), L = BANK_ACCT_FMT[String(bank || '').replace(/은행$/, '')];
+    if (!L || !d) return raw.replace(/[^\d-]/g, '');
+    const sum = p => p.reduce((a, b) => a + b, 0), pat = L.find(p => sum(p) === d.length) || L.find(p => sum(p) > d.length) || null;
+    if (!pat) return d; // (모양보다 길면 숫자 그대로)
+    const out = []; let i = 0; for (const n of pat) { if (i >= d.length) break; out.push(d.slice(i, i + n)); i += n; }
+    return out.join('-');
+}
+// 적는 칸에 바로 (커서는 같은 숫자 뒤에 그대로)
+function acctFmtInput(inp, bank) {
+    const v = inp.value, pos = inp.selectionStart ?? v.length, nd = v.slice(0, pos).replace(/\D/g, '').length, nv = acctFmt(bank, v);
+    if (nv === v) return;
+    inp.value = nv; let k = 0, p = 0; while (p < nv.length && k < nd) { if (/\d/.test(nv[p])) k++; p++; }
+    try { if (document.activeElement === inp) inp.setSelectionRange(p, p); } catch (e) {}
+}
 
 // yyyy-mm-dd + HH:mm → "2026년 11월 14일 (토) 오후 2:00" 형식으로 변환
 function formatKoreanDateTime(dateStr, timeStr) {
@@ -4166,6 +4189,7 @@ function renderAccountEditor(wrap, block) {
         const key = input.dataset.acct;
         const body = wrap.querySelector(`[data-acct-body="${key}"]`);
         const bank = body.querySelector('[data-acctfield="bank"]').value;
+        { const ni = body.querySelector('[data-acctfield="number"]'); if (input === ni) acctFmtInput(ni, bank); else if (input.dataset.acctfield === 'bank' && ni.value) ni.value = acctFmt(bank, ni.value); } // 1019l '-' 자동
         const number = body.querySelector('[data-acctfield="number"]').value;
         const holder = body.querySelector('[data-acctfield="holder"]').value;
         f[key] = composeAccountParts({ bank, number, holder });
@@ -5643,6 +5667,7 @@ function showCustomTextGizmo(el, ctId) {
         box.style.left = left + 'px'; box.style.top = top + 'px'; fitTT(box);
     };
     positionToolbar();
+    box._ctEl = el; box._ctId = ctId; box._ctPos = positionToolbar; // 1019l: 다시 고르기(reselect)가 잇달아 불려도 창을 새로 만들지 않고 자리만 (깜빡임)
 
     const anchorX = () => ({ left: '0%', center: '-50%', right: '-100%' }[ct.align || 'center']);
     const apply = () => {
@@ -5726,6 +5751,10 @@ function reselectCustomText(ctId) {
     if (!el) return;
     el.classList.add('selected');
     selectedCtId = ctId;
+    // 1019l (사용자 보고: 자유 텍스트 고치는 창이 끝없이 깜빡임) - 미리보기 크기 변화(ResizeObserver)·등장 효과 동안(매 프레임) 이 함수가 잇달아 불리는데
+    //  예전엔 그때마다 창을 지우고 새로 만들어서(안의 스크롤·눌림도 처음으로) 깜빡였음 → 같은 글자 칸이면 창은 그대로 두고 자리만 다시 맞춤
+    const tb = document.getElementById('ctToolbar');
+    if (tb && tb._ctId === ctId && tb._ctEl === el && tb._ctPos) { const a = document.activeElement; if (!(a && tb.contains(a) && a.matches('input, textarea'))) tb._ctPos(); return; }
     showCustomTextGizmo(el, ctId);
 }
 function initCustomTextDragging() {
@@ -10561,7 +10590,7 @@ function wzAccCard(k, mini) {
         <div class="wz-acc-g">
             <button type="button" class="wz-bankbtn" data-bank>${r.bank ? wzEsc(r.bank) : '<span class="ph">은행</span>'}${WZ_DOWN_SVG}</button>
             <input class="wz-inp" data-af="holder" placeholder="${wzEsc(nm || '예금주')}" value="${wzEsc(r.holder)}" autocomplete="off">
-            <input class="wz-inp full" data-af="number" inputmode="numeric" placeholder="계좌번호 (- 없이 숫자만)" value="${wzEsc(r.number)}" autocomplete="off">
+            <input class="wz-inp full" data-af="number" inputmode="numeric" placeholder="계좌번호 (숫자만 적으면 - 는 저절로)" value="${wzEsc(r.number)}" autocomplete="off">
             <div class="wz-banks">${bankList.map(b => `<button type="button" class="${r.bank === b ? 'on' : ''}" data-pick="${b}">${b}</button>`).join('')}</div>
         </div></div>`;
 }
@@ -10579,13 +10608,14 @@ function wzBindAcc(box) {
         card.querySelector('[data-bank]').addEventListener('click', () => { const g = card.querySelector('.wz-banks'), on = !g.classList.contains('on'); box.querySelectorAll('.wz-banks.on').forEach(x => x.classList.remove('on')); g.classList.toggle('on', on); });
         card.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => {
             r.bank = b.dataset.pick;
+            { const ni = card.querySelector('[data-af="number"]'); if (ni && ni.value) { ni.value = acctFmt(r.bank, ni.value); r.number = ni.value; } }
             card.querySelector('[data-bank]').innerHTML = wzEsc(r.bank) + WZ_DOWN_SVG;
             card.querySelectorAll('[data-pick]').forEach(x => x.classList.toggle('on', x === b));
             card.querySelector('.wz-banks').classList.remove('on');
             card.querySelector('[data-af="number"]').focus(); touch();
         }));
         card.querySelectorAll('[data-af]').forEach(inp => inp.addEventListener('input', () => {
-            if (inp.dataset.af === 'number') inp.value = inp.value.replace(/[^\d-]/g, '');
+            if (inp.dataset.af === 'number') { inp.value = inp.value.replace(/[^\d-]/g, ''); acctFmtInput(inp, r.bank); }
             r[inp.dataset.af] = inp.value.trim(); touch();
         }));
         const c = card.querySelector('[data-clear]');
@@ -13839,7 +13869,7 @@ function spAccount(box) {
     const card = ([k, label, nm], mini) => { const a = parts(k);
         return `<div class="wz-acc${k.startsWith('bride') ? ' bride' : ''}${mini ? ' mini' : ''}" data-k="${k}"><div class="wz-acc-h"><b><i></i>${label}</b>${f[k] && !isEx(f[k]) ? '<button type="button" data-clear>비우기</button>' : ''}${f[k] && isEx(f[k]) ? '<small class="sp-acc-ex">지금은 디자인 예시가 보여요 · 적으면 바뀌어요</small>' : ''}</div>
             <div class="wz-acc-g"><button type="button" class="wz-bankbtn" data-bank>${a.bank ? wzEsc(a.bank) : '<span class="ph">은행</span>'}${WZ_DOWN_SVG}</button>
-            <input class="wz-inp" data-af="holder" value="${wzEsc(a.holder)}" placeholder="${wzEsc(nm || '예금주')}"><input class="wz-inp full" data-af="number" inputmode="numeric" value="${wzEsc(a.number)}" placeholder="계좌번호 (- 없이 숫자만)">
+            <input class="wz-inp" data-af="holder" value="${wzEsc(a.holder)}" placeholder="${wzEsc(nm || '예금주')}"><input class="wz-inp full" data-af="number" inputmode="numeric" value="${wzEsc(a.number)}" placeholder="계좌번호 (숫자만 적으면 - 는 저절로)">
             <div class="wz-banks">${bankList.map(b => `<button type="button" class="${a.bank === b ? 'on' : ''}" data-pick="${b}">${b}</button>`).join('')}</div></div></div>`; };
     box.innerHTML = spH('마음 전하실 곳', '계좌번호는 하객이 [복사]를 눌러야만 보이고, 서버에는 암호화해서 저장돼요.') + spInclHtml('account') + (window.LD_ACC_TRIAL ? `<div class="sp-acc-trial">${accTrialNote()}</div>` : '') + roles.slice(0, 2).map(r => card(r)).join('') +
         (spOpt('account', 'parents') ? `<button type="button" class="wz-addacc" id="spPar">${parentsOpen ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'}</button><div class="wz-parents${parentsOpen ? ' on' : ''}" id="spParents">${roles.slice(2).map(r => card(r, true)).join('')}</div>` : '') +
@@ -13856,8 +13886,8 @@ function spAccount(box) {
             if (!c.querySelector('[data-clear]')) { const btn = document.createElement('button'); btn.type = 'button'; btn.dataset.clear = ''; btn.textContent = '비우기'; c.querySelector('.wz-acc-h').appendChild(btn); btn.addEventListener('click', clear); } };
         const clear = () => { f[k] = ''; delete spAccCache[k]; spChanged(['account']); spRender(); };
         c.querySelector('[data-bank]').addEventListener('click', () => { const g = c.querySelector('.wz-banks'), on = !g.classList.contains('on'); box.querySelectorAll('.wz-banks.on').forEach(x => x.classList.remove('on')); g.classList.toggle('on', on); });
-        c.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => { const a = get(); a.bank = b.dataset.pick; put(a); c.querySelector('[data-bank]').innerHTML = wzEsc(a.bank) + WZ_DOWN_SVG; c.querySelectorAll('[data-pick]').forEach(x => x.classList.toggle('on', x === b)); c.querySelector('.wz-banks').classList.remove('on'); c.querySelector('[data-af="number"]').focus(); }));
-        c.querySelectorAll('[data-af]').forEach(i => i.addEventListener('input', () => { if (i.dataset.af === 'number') i.value = i.value.replace(/[^\d-]/g, ''); const a = get(); a[i.dataset.af] = i.value.trim(); put(a); }));
+        c.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => { const a = get(); a.bank = b.dataset.pick; { const ni = c.querySelector('[data-af="number"]'); if (ni && ni.value) { ni.value = acctFmt(a.bank, ni.value); a.number = ni.value; } } put(a); c.querySelector('[data-bank]').innerHTML = wzEsc(a.bank) + WZ_DOWN_SVG; c.querySelectorAll('[data-pick]').forEach(x => x.classList.toggle('on', x === b)); c.querySelector('.wz-banks').classList.remove('on'); c.querySelector('[data-af="number"]').focus(); }));
+        c.querySelectorAll('[data-af]').forEach(i => i.addEventListener('input', () => { if (i.dataset.af === 'number') { i.value = i.value.replace(/[^\d-]/g, ''); acctFmtInput(i, get().bank); } const a = get(); a[i.dataset.af] = i.value.trim(); put(a); }));
         const cl = c.querySelector('[data-clear]'); if (cl) cl.addEventListener('click', clear);
     });
     spBindChoice(box, f, 'account');

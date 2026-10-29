@@ -5726,3 +5726,9 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .hsl-nav button:focus-visible { outline: 2px solid var(--wz-ink, #1B1A18); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .hsl-nav button { transition: none; } }
 .hsl-pg .nbs, .hsl-pg .nbs-chips { overscroll-behavior-x: contain; } /* (스크롤 버튼 장 안 큰 그림 넘기기가 장 넘기기로 번지지 않게) */
+/* ===== 1019l 완성본 화면에서 내리다 보면 뒤의 편집 목록이 잠깐 보이던 것 =====
+   완성본(고정 창) 끝에서 손가락이 계속 밀면 스크롤이 뒤 페이지로 번져 뒤 목록이 움직이고, 휴대폰 주소창이 접히며 창 크기가 바뀌는 사이 뒤가 비쳤음
+   → 완성본 동안 뒤 페이지는 안 움직이게 + 스크롤은 완성본 안에서만 + 뒤를 화면 위아래 넉넉히 덮는 바탕 */
+html.simple-mode.sp-pv, html.simple-mode.sp-pv body { overflow: hidden !important; overscroll-behavior: none; }
+.simple-mode.sp-pv .preview-pane, .simple-mode.sp-pv.sp-pv-real .sp-pvreal { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+html.simple-mode.sp-pv body::before { content: ''; position: fixed; left: 0; right: 0; top: -120px; bottom: -120px; z-index: 745; background: var(--ui-soft, #EDE9E3); pointer-events: none; }
