@@ -5650,7 +5650,7 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .spb-td .td-t b { font-size: 30px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1; }
 .spb-td .td-t span { font-size: 15.5px; font-weight: 700; }
 .spb-td .td-bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,.18); overflow: hidden; }
-.spb-td .td-bar i { display: block; height: 100%; border-radius: 99px; background: #E9C98F; transition: width .32s cubic-bezier(.23,1,.32,1); }
+.spb-td .td-bar i { display: block; height: 100%; border-radius: 99px; background: #E9C98F; transform-origin: 0 50%; transition: transform .32s cubic-bezier(.23,1,.32,1); }
 .spb-ready.spb-td .td-s { margin: 0; font-size: 12.5px; color: rgba(255,255,255,.72); word-break: break-all; }
 .spb-td.s2, .spb-td.s3 { background: #3E5A3B; } .spb-td.s4 { background: #7C4650; }
 .spb-ready.spb-td .nx-live { margin: 0; color: rgba(255,255,255,.8); }
@@ -5678,6 +5678,7 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .sp-pvpin { position: absolute; z-index: 30; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px 0 4px; border: 0; border-radius: 99px; background: #fff; color: #1B1A18; font: 800 12.5px/1 'Pretendard Variable', Pretendard, sans-serif; box-shadow: 0 3px 10px rgba(0,0,0,.22); cursor: pointer; pointer-events: auto; white-space: nowrap; animation: spPinIn .26s cubic-bezier(.23,1,.32,1) both; -webkit-tap-highlight-color: transparent; }
 .sp-pvpin span { width: 24px; height: 24px; border-radius: 50%; background: #C2553F; color: #fff; display: inline-grid; place-items: center; font-size: 12px; }
 .sp-pvpin:active { scale: .95; }
+.sp-pvpin.still { animation: none; }
 @keyframes spPinIn { from { opacity: 0; transform: translateY(4px) scale(.96); } }
 @media (prefers-reduced-motion: reduce) { .sp-pvpin { animation: none; } .spb-td .td-bar i { transition: none; } }
 /* ===== 1019h 정리 화면 '메인 화면' 칸 옆으로 넘기는 장 (.hsl - editor.js spHeroSlides) ===== */
@@ -5689,12 +5690,12 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .hsl-tabs button.on { background: var(--wz-ink, #1B1A18); border-color: var(--wz-ink, #1B1A18); color: #fff; } .hsl-tabs button.on i { background: rgba(255,255,255,.18); }
 .hsl-tabs button:active { scale: .97; }
 .hsl-tabs button:focus-visible { outline: 2px solid var(--wz-ink, #1B1A18); outline-offset: 2px; }
-.hsl-track { display: flex; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; transition: height .26s cubic-bezier(.23,1,.32,1); }
+.hsl-track { display: flex; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; } /* (1019j: 높이 움직임 뺌 - 높이는 레이아웃 속성이라 장을 넘길 때마다 아래 목록이 0.26초 끌려 다녔음 · 바로 맞춤) */
 .hsl-track::-webkit-scrollbar { display: none; }
 .hsl-pg { flex: 0 0 100%; min-width: 0; box-sizing: border-box; padding: 0 16px 4px; scroll-snap-align: start; scroll-snap-stop: always; }
 .hsl-pg > :first-child { margin-top: 0; }
 .hsl-pg .hl-row { overscroll-behavior-x: contain; }
-@media (prefers-reduced-motion: reduce) { .hsl-track { transition: none; } }
+
 /* ===== 1019i 첫 화면 레이아웃 묶음 칩 + 3칸 격자 (editor.js hlGridHtml) ===== */
 .hl-cats { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 2px 0 10px; }
 .hl-cats::-webkit-scrollbar { display: none; }
@@ -5707,5 +5708,9 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .hl-grid .hl-c b { font-size: 11.5px; }
 .hl-more { display: block; width: 100%; margin-top: 8px; height: 40px; border: 1px dashed var(--wz-line2, #DED8CF); border-radius: 12px; background: transparent; font: inherit; font-size: 13px; font-weight: 700; color: var(--wz-sub, #6E665E); cursor: pointer; }
 .hl-more[hidden] { display: none; }
-@media (min-width: 861px) { .hl-row.hl-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
 @media (prefers-reduced-motion: reduce) { .hl-cats button, .hl-grid .hl-c { transition: none; } }
+/* ===== 1019j impeccable 점검 고침 (이 덩어리만 지우면 원래대로) ===== */
+.simple-mode .simple-pane, .hl-ex, #screenInfo { --wz-mute: #746D65; } /* 옅은 글자 #A39D95 = 흰 바탕 2.6:1 → 4.9:1 (WCAG AA) */
+.spb-rd-todo .spb-li.spb-now .spb-tx small { color: #8E4F2C; } /* 밝힌 칸 위 주황 글자 4.3:1 → 5.9:1 */
+.spb-nowtag { font-size: 11.5px; }

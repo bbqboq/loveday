@@ -2565,3 +2565,4 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-navs-ic.loc-app-naver { background: #03C75A; } .ib-navs-ic.loc-app-kakao { background: #FEE500; color: #3C1E1E; } .ib-navs-ic.loc-app-tmap { background: #1C2FA0; }
 .ib-navs-cpi { background: #F1ECE5; } .ib-navs-cpi svg { width: 16px; height: 16px; fill: none; stroke: #6E655B; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 @media (prefers-reduced-motion: reduce) { .ib-navs-bg, .ib-navs-card, .ib-nav-ic, .ib-nav-one { transition: none; } }
+.ib-navs:not(.on) .ib-navs-card { transition-duration: .18s; } .ib-navs:not(.on) .ib-navs-bg { transition-duration: .16s; } /* (1019j: 닫힐 땐 더 빨리 - 고른 뒤 기다리지 않게) */

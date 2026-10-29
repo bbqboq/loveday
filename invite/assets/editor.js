@@ -11929,7 +11929,7 @@ function spRdText(step) {
 function spTodoHtml(bads, all, nOk) {
     const step = spReadyStep(bads), pct = Math.round(nOk / Math.max(1, all) * 100);
     const live = step === 4 ? (([k, tx]) => `<p class="nx-live${k ? ' ' + k : ''}" aria-live="polite">${esc(tx)}</p>`)(spPubLiveText()) : '';
-    if (step === 1) return `<div class="spb-ready spb-td s1" id="spReady"><p class="td-t"><b>${bads.length}개</b><span>만 채우면 발행할 수 있어요</span></p><div class="td-bar" aria-hidden="true"><i style="width:${pct}%"></i></div><p class="td-s">${nOk ? `${nOk}개는 채웠어요 · ` : ''}아래 번호 순서대로 채우면 돼요</p></div>`;
+    if (step === 1) return `<div class="spb-ready spb-td s1" id="spReady"><p class="td-t"><b>${bads.length}개</b><span>만 채우면 발행할 수 있어요</span></p><div class="td-bar" aria-hidden="true"><i style="transform:scaleX(${(pct / 100).toFixed(3)})"></i></div><p class="td-s">${nOk ? `${nOk}개는 채웠어요 · ` : ''}아래 번호 순서대로 채우면 돼요</p></div>`;
     const [t, sub] = spRdText(step);
     return `<div class="spb-ready spb-td s${step}" id="spReady"><p class="td-t"><span>${esc(t)}</span></p><p class="td-s">${esc(sub)}</p>${live}</div>`;
 }
@@ -11946,7 +11946,7 @@ function spPvcHtml(bads, all, nOk, short) {
         <div class="pc-links"><button type="button" data-pcl="all">${spPvAll ? '채울 곳만 보기' : '칸 켜고 끄기 · 전체 보기'}</button></div></div>`;
 }
 // 3안: 위 청첩장 미리보기에 채울 곳 번호 (누르면 그 칸이 열림) - 미리보기를 다시 그리면 다시 붙음
-let spPvPinObs = null, spPvPinT = 0;
+let spPvPinObs = null, spPvPinT = 0; const spPvPinSeen = new Set();
 function spPvPins() {
     document.querySelectorAll('.sp-pvpin').forEach(x => x.remove());
     const R = document.documentElement;
@@ -11964,7 +11964,7 @@ function spPvPins() {
         if (!el && (c.id === 'names' || c.id === 'hero' || c.id === 'date' || c.id === 'time')) el = root.querySelector('.col[data-block-id="hero"], .col[data-block-id="heroVideo"]');
         if (!el) return;
         const r = el.getBoundingClientRect(), n = seen.get(el) || 0; seen.set(el, n + 1);
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'sp-pvpin'; b.setAttribute('aria-label', `${i + 1}번 ${c.t}`);
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'sp-pvpin' + (spPvPinSeen.has(c.id) ? ' still' : ''); spPvPinSeen.add(c.id); b.setAttribute('aria-label', `${i + 1}번 ${c.t}`); // (미리보기를 다시 그릴 때마다 = 글자 칠 때마다 다시 튀어나오지 않게 처음 한 번만 등장 효과)
         b.innerHTML = `<span>${i + 1}</span>${esc(short[c.id] || c.t)}`;
         b.style.left = Math.round((r.left - fr.left) / sc + 12) + 'px'; b.style.top = Math.round((r.top - fr.top) / sc + 12 + n * 40) + 'px';
         b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); spPvCur = c.id; pubGo(c.id); });
@@ -12313,20 +12313,22 @@ function spHeroSlides(body) {
     });
     const ks = SP_HSL.map(x => x[0]).filter(k => pages[k]); if (ks.length < 2) return;
     const box = document.createElement('div'); box.className = 'hsl';
-    box.innerHTML = `<div class="hsl-tabs" role="tablist">${ks.map((k, i) => `<button type="button" role="tab" data-hsl="${i}"><i>${i + 1}</i>${SP_HSL.find(x => x[0] === k)[1]}</button>`).join('')}</div><div class="hsl-track"></div>`;
+    box.innerHTML = `<div class="hsl-tabs" role="tablist">${ks.map((k, i) => `<button type="button" role="tab" id="hslT${i}" aria-controls="hslP${i}" data-hsl="${i}"><i>${i + 1}</i>${SP_HSL.find(x => x[0] === k)[1]}</button>`).join('')}</div><div class="hsl-track"></div>`;
     const track = box.querySelector('.hsl-track');
-    ks.forEach(k => { const pg = document.createElement('div'); pg.className = 'hsl-pg'; pg.dataset.k = k; pages[k].forEach(c => pg.appendChild(c)); track.appendChild(pg); });
+    ks.forEach((k, i) => { const pg = document.createElement('div'); pg.className = 'hsl-pg'; pg.dataset.k = k; pg.setAttribute('role', 'tabpanel'); pg.id = 'hslP' + i; pg.setAttribute('aria-labelledby', 'hslT' + i); pages[k].forEach(c => pg.appendChild(c)); track.appendChild(pg); });
     body.prepend(box); rest.forEach(c => { c.setAttribute('data-hsl-rest', ''); body.appendChild(c); });
     const tabs = [...box.querySelectorAll('[data-hsl]')], pgs = [...track.children];
     let ro = null, on = -1;
     const fitH = () => { const p = pgs[on]; if (p) track.style.height = p.offsetHeight + 'px'; };
+    const settle = () => pgs.forEach((p, j) => { p.inert = j !== on; }); // (안 보이는 장 칸으로 Tab·읽기 프로그램이 들어가지 않게 - 멈춘 뒤에만, 밀어 넘기는 동안은 풀어 둠)
+    let st = 0; const settleSoon = () => { pgs.forEach(p => { p.inert = false; }); clearTimeout(st); st = setTimeout(settle, 160); };
     const mark = i => { if (i === on) return; on = i; spHslPage = i; tabs.forEach((t, j) => { t.classList.toggle('on', j === i); t.setAttribute('aria-selected', j === i); }); fitH();
         if (ro) { ro.disconnect(); ro.observe(pgs[i]); } const t = tabs[i], tb = box.querySelector('.hsl-tabs'); if (t && tb) { const r = t.getBoundingClientRect(), R = tb.getBoundingClientRect(); if (r.left < R.left + 8 || r.right > R.right - 8) tb.scrollTo({ left: tb.scrollLeft + r.left - R.left - 16, behavior: 'smooth' }); } };
     if ('ResizeObserver' in window) ro = new ResizeObserver(fitH);
     tabs.forEach((t, i) => t.addEventListener('click', () => { track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' }); mark(i); }));
-    let raf = 0; track.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => mark(Math.round(track.scrollLeft / Math.max(1, track.clientWidth)))); }, { passive: true });
+    let raf = 0; track.addEventListener('scroll', () => { settleSoon(); cancelAnimationFrame(raf); raf = requestAnimationFrame(() => mark(Math.round(track.scrollLeft / Math.max(1, track.clientWidth)))); }, { passive: true });
     const start = Math.min(spHslPage, pgs.length - 1);
-    requestAnimationFrame(() => { track.scrollLeft = start * track.clientWidth; mark(start); });
+    requestAnimationFrame(() => { track.scrollLeft = start * track.clientWidth; mark(start); settle(); });
     // 칸이 스스로 다시 그리면(body.innerHTML) 다시 나눔
     if (!body._hslObs) { body._hslObs = new MutationObserver(() => { if ([...body.children].some(c => !c.classList.contains('hsl') && !c.hasAttribute('data-hsl-rest'))) { clearTimeout(body._hslT); body._hslT = setTimeout(() => spHeroSlides(body), 0); } }); body._hslObs.observe(body, { childList: true }); }
 }
@@ -12641,9 +12643,9 @@ function spHeroLayoutMini(lay, hb, kind) {
     if (box) {
         const fr = box.frame || 'none', fade = Number(box.fade) || 0;
         const mask = fade ? `-webkit-mask-image:linear-gradient(#000 ${100 - fade}%,transparent);mask-image:linear-gradient(#000 ${100 - fade}%,transparent);` : '';
-        return `<span class="hl-m hl-m-box" style="background:${box.bg || sk.bg}"><i class="hl-mb hb-fr-${esc(fr)}" style="left:${box.x}%;top:${box.y}%;width:${box.w}%;height:${box.h}%;${mask}"><em style="background-image:${ph};${img ? posCss : ''}"></em></i>${parts}${layers}</span>`;
+        return `<span class="hl-m hl-m-box" aria-hidden="true" style="background:${box.bg || sk.bg}"><i class="hl-mb hb-fr-${esc(fr)}" style="left:${box.x}%;top:${box.y}%;width:${box.w}%;height:${box.h}%;${mask}"><em style="background-image:${ph};${img ? posCss : ''}"></em></i>${parts}${layers}</span>`;
     }
-    return `<span class="hl-m" style="background-image:${ph};">${img && posCss ? `<i class="hl-mi" style="background-image:${ph};${posCss}"></i>` : ''}<i class="hl-sh"></i>${parts}${layers}</span>`;
+    return `<span class="hl-m" aria-hidden="true" style="background-image:${ph};">${img && posCss ? `<i class="hl-mi" style="background-image:${ph};${posCss}"></i>` : ''}<i class="hl-sh"></i>${parts}${layers}</span>`;
 }
 // 첫 화면 문구 칸 = 보이는 글자 그대로 (1018z18q, 사용자: '{신랑} 같은 기호는 고객이 어렵고 헷갈려 함'): 칸에는 실제 글자(민준 & 서연 · 2026.10.31)를 보여 주고,
 //  고친 곳만 글자로 바꿈 - 손대지 않은 이름·날짜는 속으로 그대로 {신랑}·{날짜:점}으로 남아서 나중에 이름·날짜를 바꾸면 같이 바뀜 (관리자 메인 화면 옵션 hlPlain을 끄면 예전처럼 기호가 보임)
@@ -12682,29 +12684,33 @@ function hlSegEdit(segs, oldS, newS) {
     return out;
 }
 // ===== 1019i 첫 화면 레이아웃 정리 (사용자: '비슷한 것도 많고 다 똑같아 보인다') - 간편 만들기만, 끄기: 관리자 간편 hero 옵션 layGrid =====
-//  27개 → 4묶음 13개(대표) + 묶음마다 '비슷한 모양 더 보기'(나머지 14개, 지우지 않음 - 이미 고른 청첩장은 그대로)
+//  27개 → 4묶음 11개(대표 - 묶음마다 한 줄 3개 이하) + 묶음마다 '비슷한 모양 더 보기'(나머지 16개, 지우지 않음 - 이미 고른 청첩장은 그대로)
 //  옆으로 긴 한 줄 → 묶음 칩 + 3칸 격자 (메인 화면 칸 '옆으로 넘기기' 장 안에서 옆으로 밀기와 안 겹치게)
 const HL_CATS = [
-    ['full', '사진 가득', ['our-wedding-day', 'getting-married', 'magazine', 'names-vertical'], ['happily-ever-after', 'happy-wedding-day', 'minimal-line', 'arc-top', 'wine-vows', 'winter-snow']],
+    ['full', '사진 가득', ['our-wedding-day', 'getting-married', 'magazine'], ['names-vertical', 'happily-ever-after', 'happy-wedding-day', 'minimal-line', 'arc-top', 'wine-vows', 'winter-snow']],
     ['date', '큰 날짜', ['save-the-date', 'fade-date'], ['big-date', 'sea-wave']],
-    ['box', '사진 칸', ['polaroid', 'arch', 'split-top', 'hanji-seal'], ['picnic-day', 'olive-arch', 'boarding-pass', 'spring-bloom', 'retro-groovy']],
+    ['box', '사진 칸', ['polaroid', 'arch', 'split-top'], ['hanji-seal', 'picnic-day', 'olive-arch', 'boarding-pass', 'spring-bloom', 'retro-groovy']],
     ['concept', '컨셉', ['webtoon-cover', 'press-front', 'angel-letter'], ['webtoon-bubble']],
 ];
-let spHlCat = '', spHlMore = false;
+let spHlCat = '', spHlMore = false, spHlMini = null; // spHlMini = 숨은 카드 그림을 보일 때 그림 (숨은 레이아웃 글꼴까지 미리 받지 않게)
 function hlCatOf(l) { for (const [c, , core, more] of HL_CATS) { if (core.includes(l.id)) return [c, false]; if (more.includes(l.id)) return [c, true]; } return [l.box ? 'box' : 'full', true]; } // (나중에 새로 넣은 레이아웃 = 그 모양 묶음의 '더 보기')
-function hlGridHtml(list, cur, card) {
+function hlGridHtml(list, cur, card, mini) {
+    spHlMini = mini;
     const items = list.map(l => [l, ...hlCatOf(l)]), curCat = (items.find(([l]) => l.id === cur) || [])[1];
     const cats = HL_CATS.filter(([c]) => items.some(x => x[1] === c));
     const sel = cats.some(([c]) => c === spHlCat) ? spHlCat : curCat || (cats[0] || [])[0];
     const chips = cats.map(([c, t]) => `<button type="button" class="${c === sel ? 'on' : ''}" data-hlcat="${c}" aria-pressed="${c === sel}">${t}</button>`).join('');
-    const cards = items.map(([l, c, ex]) => card(l).replace('<button type="button" class="hl-c', `<button type="button"${c === sel && (!ex || spHlMore || l.id === cur) ? '' : ' hidden'} data-cat="${c}"${ex ? ' data-ex' : ''} class="hl-c`)).join('');
+    const cards = items.map(([l, c, ex]) => { const vis = c === sel && (!ex || spHlMore || l.id === cur);
+        return card(l, vis ? mini(l) : '<span class="hl-m hl-m-lazy" data-lazy></span>').replace('<button type="button" class="hl-c', `<button type="button"${vis ? '' : ' hidden'} data-cat="${c}"${ex ? ' data-ex' : ''} class="hl-c`); }).join('');
     const nMore = items.filter(([l, c, ex]) => c === sel && ex && l.id !== cur).length;
     return `<div class="hl-cats" role="group" aria-label="레이아웃 묶음">${chips}</div><div class="hl-row hl-grid">${cards}</div><button type="button" class="hl-more" data-hlmore${nMore ? '' : ' hidden'}>${spHlMore ? '비슷한 모양 접기' : `비슷한 모양 ${nMore}개 더 보기`}</button>`;
 }
 function hlGridBind(root) {
     const grid = root.querySelector('.hl-grid'); if (!grid) return;
     const cur = (grid.querySelector('.hl-c.on') || {}).dataset || {};
-    const show = () => { let n = 0; grid.querySelectorAll('.hl-c').forEach(b => { const ok = b.dataset.cat === spHlCat && (!b.hasAttribute('data-ex') || spHlMore || b.classList.contains('on')); b.hidden = !ok; if (b.dataset.cat === spHlCat && b.hasAttribute('data-ex') && !b.classList.contains('on')) n++; });
+    const show = () => { let n = 0; grid.querySelectorAll('.hl-c').forEach(b => { const ok = b.dataset.cat === spHlCat && (!b.hasAttribute('data-ex') || spHlMore || b.classList.contains('on')); b.hidden = !ok;
+            const lz = ok && b.querySelector('[data-lazy]'); if (lz && spHlMini) { const l = spHeroLayouts().find(x => x.id === b.dataset.hlPick); if (l) lz.outerHTML = spHlMini(l); }
+            if (b.dataset.cat === spHlCat && b.hasAttribute('data-ex') && !b.classList.contains('on')) n++; });
         root.querySelectorAll('[data-hlcat]').forEach(x => { const on = x.dataset.hlcat === spHlCat; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
         const m = root.querySelector('[data-hlmore]'); if (m) { m.hidden = !n; m.textContent = spHlMore ? '비슷한 모양 접기' : `비슷한 모양 ${n}개 더 보기`; } };
     if (!spHlCat) spHlCat = (root.querySelector('[data-hlcat].on') || {}).dataset?.hlcat || '';
@@ -12716,7 +12722,7 @@ function spHeroLayoutHtml(hb, kind) {
     const f = hb.fields, list = spHeroLayouts(), adv = !document.documentElement.classList.contains('simple-mode'); // 사진 칸 레이아웃은 사진에만
     if (!list.length) return '';
     const cur = f.heroLayout || '';
-    const cards = list.map(l => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${spHeroLayoutMini(l, hb, kind)}<b>${esc(l.label)}</b></button>`).join('');
+    const cardsOf = () => list.map(l => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${spHeroLayoutMini(l, hb, kind)}<b>${esc(l.label)}</b></button>`).join(''); // (1019j: 격자면 안 그림 - 27개 글꼴을 한꺼번에 받지 않게)
     const keys = (f.heroLayers || []).filter(k => f.layout && f.layout[k]);
     // 문구 칸 (A안): 글 칸 오른쪽 끝에 [효과 ▾] - 누르면 작은 창 (효과 · 전문가 모드는 방향·휘기도) / 맨 아래 "모두 같게" 한 줄
     const FX = InviteBlocks.HL_ANIMS.map(([v, l]) => [v, { '': '없음', write: '써지듯', fade: '나타나기', up: '위로', zoom: '커지며' }[v] || l]);
@@ -12734,11 +12740,11 @@ function spHeroLayoutHtml(hb, kind) {
     if (adv) { // 전문가 모드: 편집창의 다른 칸과 같은 모양 (label · mini-label · field-hint)
         const fr = f.heroBox && typeof f.heroBox === 'object' ? (f.heroBox.frame || 'none') : null; // 사진 칸 레이아웃이면 칸 테두리 고르기 (금테 액자 · 폴라로이드 · 웹툰 컷 …)
         const frRow = fr !== null && InviteBlocks.HERO_BOX_FRAMES ? `<div class="hl-all hl-frs"><span>사진 칸 테두리</span>${InviteBlocks.HERO_BOX_FRAMES.map(([v, l]) => `<button type="button" class="${fr === v ? 'on' : ''}" data-hb-fr="${esc(v)}">${esc(l)}</button>`).join('')}</div>` : '';
-        return `<label>메인 레이아웃 <small style="font-weight:400;opacity:.7">(글자 모양·자리를 한 번에)</small></label><div class="hl-row">${cards}</div>${frRow}
+        return `<label>메인 레이아웃 <small style="font-weight:400;opacity:.7">(글자 모양·자리를 한 번에)</small></label><div class="hl-row">${cardsOf()}</div>${frRow}
             ${keys.length ? `<div class="hl-xh"><div class="mini-label hl-xl">글자 · 효과</div>${replay}</div><div class="hl-lines">${lines}</div>${all}<p class="field-hint" style="margin-top:6px">${tip}</p>` : ''}`;
     }
-    const grid = spOpt('hero', 'layGrid') ? hlGridHtml(list, cur, l => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${spHeroLayoutMini(l, hb, kind)}<b>${esc(l.label)}</b></button>`) : ''; // 1019i
-    return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div>${grid || `<div class="hl-row">${cards}</div>`}</div>
+    const grid = spOpt('hero', 'layGrid') ? hlGridHtml(list, cur, (l, m) => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${m}<b>${esc(l.label)}</b></button>`, l => spHeroLayoutMini(l, hb, kind)) : ''; // 1019i
+    return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div>${grid || `<div class="hl-row">${cardsOf()}</div>`}</div>
         ${keys.length && spOpt('hero', 'lines') ? `<div class="wz-field"><div class="wz-lab"><span>글자 · 효과</span>${replay}</div><div class="hl-lines">${lines}</div>${all}${plain ? '' : `<p class="wz-hint" style="margin:6px 0 0">${tip}</p>`}</div>` : ''}`; // (간편: 아래 긴 설명 뺌 - 세로 줄이기, 1018z18z3)
 }
 // 글자 효과 카드 (1018z18o, 사용자: '써지듯·나타나기가 뭔지 초보는 모름') - 카드마다 그 문구가 실제로 그 효과로 되풀이해 나타남
