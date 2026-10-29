@@ -787,8 +787,10 @@ const templates = {
         const mapHeight = f.mapHeight ?? 200;
         const phoneHtml = f.phone ? `<div class="loc-phone-wrap" style="padding-bottom:${gapCallMap}px;"><a href="tel:${esc(f.phone)}" class="loc-phone-btn">안내 전화</a></div>` : '';
         const mapCls = f.mapFullWidth ? 'full-width' : '';
-        const mapHtml = f.showMap ? `<div class="location-map ${mapCls}" style="height:${mapHeight}px;"${f.mapLock === false ? ' data-lock="0"' : ''} data-address="${esc(f.addressBase || f.address)}"></div>` : '';
-        const appLinksHtml = f.showMap ? `<div class="loc-applinks" style="padding-top:${gapMapLinks}px;">
+        let mapHtml = f.showMap ? `<div class="location-map ${mapCls}" style="height:${mapHeight}px;"${f.mapLock === false ? ' data-lock="0"' : ''} data-address="${esc(f.addressBase || f.address)}"></div>` : '';
+        const navOver = window.InviteBlocks && InviteBlocks.locNavOver ? InviteBlocks.locNavOver(f) : ''; // 길찾기 버튼 자리 B·C·D (1019g) - 지도 안에
+        if (navOver) { InviteBlocks.navSheetBind(); mapHtml = `<div class="loc-map-box ib-navp-${InviteBlocks.navPosOf(f)}${f.mapFullWidth ? ' full-width' : ''}">${mapHtml.replace('location-map full-width', 'location-map')}${navOver}</div>`; }
+        const appLinksHtml = f.showMap && !navOver ? `<div class="loc-applinks" style="padding-top:${gapMapLinks}px;">
             <a href="https://map.naver.com/p/search/${q}" target="_blank" rel="noopener" class="loc-applink"><span class="loc-app-badge loc-app-naver">N</span>네이버맵</a>
             <a href="https://map.kakao.com/link/search/${q}" target="_blank" rel="noopener" class="loc-applink"><span class="loc-app-badge loc-app-kakao">K</span>카카오맵</a>
             <a href="tmap://search?name=${q}" class="loc-applink"><span class="loc-app-badge loc-app-tmap">T</span>티맵</a>

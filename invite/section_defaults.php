@@ -286,7 +286,7 @@ const SECTION_EASY_OPTS = [
                'scroll' => '↓ 스크롤 버튼', 'scrollSize' => '스크롤 버튼 크기', 'scrollCustom' => '스크롤 버튼 직접 꾸미기', 'scrollMotion' => '스크롤 버튼 움직임', 'scrollFx' => '스크롤 버튼 등장 효과', 'scrollOpacity' => '스크롤 버튼 진하기', 'scrollMini' => '스크롤 버튼 고를 때 위 전·후 그림에 바로 보여 주기 (끄면 버튼 칸 안에 따로 미리보기)'],
     'theme' => ['design' => '디자인 바꾸기', 'skin' => '색 묶음', 'font' => '글꼴', 'accent' => '포인트 색', 'paper' => '종이 질감', 'lookStyle' => '꾸밈 스타일 (예전 · 모던)', 'sskin' => '섹션 꾸밈 (빈티지·밤하늘·안개 유리·다른 디자인 색)', 'colorLink' => '색 바꾸면 꾸밈도 같이 (달력·계좌 같은 꾸밈 색)', 'backdrop' => '배경 꾸밈 켜고 끄기 (배경 무늬·종이 질감)', 'reset' => '따로 바꾼 값 되돌리기'],
     'gallery' => ['type' => '갤러리 모양', 'full' => '가로 꽉 채우기 (좌우 여백 없이)', 'reveal' => '사진 나타나는 방식 (차례로 · 무작위로 차라락)', 'clearEx' => '예시 사진 모두 빼기'],
-    'venue' => ['detail' => '층 · 홀 이름', 'phone' => '예식장 전화', 'map' => '지도 보여주기', 'mapWide' => '지도 가로 꽉 채우기', 'mapHeight' => '지도 높이', 'mapDemo' => '지도 예시 (휴대폰)'],
+    'venue' => ['detail' => '층 · 홀 이름', 'phone' => '예식장 전화', 'map' => '지도 보여주기', 'mapWide' => '지도 가로 꽉 채우기', 'mapHeight' => '지도 높이', 'mapDemo' => '지도 예시 (휴대폰)', 'navPos' => '길찾기 버튼 자리 고르기 (휴대폰 질문 화면에선 늘 지도 아래 · 정리 화면·PC에서 고름)'],
     'transport' => ['title' => '제목', 'quick' => '버튼으로 칸 추가'],
     'greet' => ['tones' => '예시 인사말 고르기'],
     'family' => ['family' => '혼주 성함', 'deceased' => '고인 표시', 'contact' => '연락처'],
@@ -458,15 +458,15 @@ function section_defaults_easy_nb(): string
     return in_array($v, SECTION_EASY_NBS, true) ? $v : 'swipe';
 }
 
-const SECTION_EASY_READYS = ['slim', 'next', 'bar']; // slim = 1018z18y 단순 (위 진행 한 줄 + 아래 고정 [완성본 보기])
+const SECTION_EASY_READYS = ['todo', 'pv', 'slim', 'next', 'bar']; // todo = 1019g 1안 남은 것만 크게(기본) · pv = 1019g 3안 미리보기에서 바로 · slim = 1018z18y 단순 (위 진행 한 줄 + 아래 고정 [완성본 보기])
 /** 목록 화면 발행 준비 카드 모양 (기본 'next' = C안 큰 버튼 하나) */
 function section_defaults_easy_ready(): string
 {
     $f = section_defaults_file();
-    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 'next';
+    if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 'todo';
     $j = json_decode((string) file_get_contents($f), true);
     $v = is_array($j) ? (string) ($j['easy']['readyStyle'] ?? '') : '';
-    return in_array($v, SECTION_EASY_READYS, true) ? $v : 'slim';
+    return in_array($v, SECTION_EASY_READYS, true) ? $v : 'todo';
 }
 
 const SECTION_EASY_PCPICKS = ['grid', 'film', 'car'];
@@ -522,8 +522,8 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if (!in_array($easyPc, SECTION_EASY_PCPICKS, true)) $easyPc = 'grid';
     $easyPcSet = $easyPc !== 'grid';
     $easyRd = ($easyMore !== null && array_key_exists('readyStyle', $easyMore)) ? (string) $easyMore['readyStyle'] : section_defaults_easy_ready(); // 발행 준비 카드 모양
-    if (!in_array($easyRd, SECTION_EASY_READYS, true)) $easyRd = 'slim';
-    $easyRdSet = $easyRd !== 'slim';
+    if (!in_array($easyRd, SECTION_EASY_READYS, true)) $easyRd = 'todo';
+    $easyRdSet = $easyRd !== 'todo'; // (1019g 기본이 'todo'로 바뀜 - 예전 기본 'slim'도 이제 고르면 저장됨)
     $easyNb = ($easyMore !== null && array_key_exists('nbPanel', $easyMore)) ? (string) $easyMore['nbPanel'] : section_defaults_easy_nb(); // 스크롤 버튼 칸 모양
     if (!in_array($easyNb, SECTION_EASY_NBS, true)) $easyNb = 'swipe';
     $easyNbSet = $easyNb !== 'swipe';

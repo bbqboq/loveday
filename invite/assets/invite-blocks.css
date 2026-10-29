@@ -2522,3 +2522,46 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-ml-open .ib-ml-done { opacity: 1; pointer-events: auto; translate: 0 0; }
 .ib-ml-done:active { scale: .96; }
 @media (prefers-reduced-motion: reduce) { .ib-ml-hint, .ib-ml-done { transition: none; } }
+
+/* ===== 길찾기 버튼 자리 (1019g) - 오시는 길 fields.navPos · 이 덩어리 + invite-blocks.js locNavOver 만 지우면 원래대로(A) ===== */
+.loc-map-box { position: relative; }
+.loc-map-box.full-width { margin-left: -24px; margin-right: -24px; width: calc(100% + 48px); }
+.loc-map-box.full-width .location-map { border-radius: 0; }
+.ib-nav { position: absolute; z-index: 12; font-family: inherit; }
+.ib-nav a, .ib-nav { -webkit-tap-highlight-color: transparent; }
+/* B 지도 안 오른쪽 위 아이콘 3개 */
+.ib-nav-top { right: 8px; top: 8px; display: flex; gap: 5px; padding: 4px; border-radius: 99px; background: rgba(255,255,255,.95); box-shadow: 0 2px 10px rgba(0,0,0,.14); }
+.ib-nav-ic { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; line-height: 1; color: #fff; text-decoration: none; transition: scale .16s cubic-bezier(.23,1,.32,1); }
+.ib-nav-ic.loc-app-naver { background: #03C75A; } .ib-nav-ic.loc-app-kakao { background: #FEE500; color: #3C1E1E; } .ib-nav-ic.loc-app-tmap { background: #1C2FA0; }
+.ib-nav-ic:active { scale: .92; }
+/* C 지도 안 아래 띠 */
+.ib-nav-band { left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: rgba(255,255,255,.96); border-top: 1px solid rgba(0,0,0,.06); border-radius: 0 0 10px 10px; overflow: hidden; }
+.loc-map-box.full-width .ib-nav-band { border-radius: 0; }
+.ib-nav-bd { display: flex; align-items: center; justify-content: center; gap: 6px; height: 46px; font-size: 12.5px; font-weight: 700; color: #2B2320; text-decoration: none; white-space: nowrap; transition: background .15s cubic-bezier(.23,1,.32,1); }
+.ib-nav-bd + .ib-nav-bd { border-left: 1px solid #ECE6DC; }
+.ib-nav-bd:active { background: #F3EFE8; }
+/* D 길찾기 버튼 하나 */
+.ib-nav-one { right: 10px; bottom: 10px; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 15px 0 12px; margin: 0; border: 0; border-radius: 99px; background: #2B2320; color: #fff; font-size: 13.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.22); transition: scale .16s cubic-bezier(.23,1,.32,1); }
+.ib-nav-one svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ib-nav-one:active { scale: .96; }
+.ib-nav-one:focus-visible, .ib-nav-ic:focus-visible, .ib-nav-bd:focus-visible { outline: 2px solid #2B2320; outline-offset: 2px; }
+/* 지도 잠금 안내 알약: 아래 띠·아래 버튼과 겹치지 않게 위로 */
+.ib-navp-band .ib-ml-cover, .ib-navp-one .ib-ml-cover { align-items: flex-start; padding: 10px 0 0; }
+.ib-navp-top .ib-ml-done { top: 8px; }
+/* D 앱 고르기 창 */
+.ib-navs { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; font-family: inherit; }
+.ib-navs.on { pointer-events: auto; }
+.ib-navs-bg { position: absolute; inset: 0; background: rgba(20,16,12,.42); opacity: 0; transition: opacity .22s cubic-bezier(.23,1,.32,1); }
+.ib-navs.on .ib-navs-bg { opacity: 1; }
+.ib-navs-card { position: absolute; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto; box-sizing: border-box; padding: 10px 20px calc(22px + env(safe-area-inset-bottom)); border-radius: 22px 22px 0 0; background: #fff; color: #2B2320; display: flex; flex-direction: column; translate: 0 100%; transition: translate .26s cubic-bezier(.23,1,.32,1); }
+.ib-navs.on .ib-navs-card { translate: 0 0; }
+.ib-navs-hd { align-self: center; width: 40px; height: 4px; border-radius: 99px; background: #DDD6CC; margin-bottom: 14px; }
+.ib-navs-t { margin: 0 0 2px; font-size: 17px; font-weight: 800; }
+.ib-navs-s { margin: 0 0 8px; font-size: 13px; color: #6E655B; }
+.ib-navs-r { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 4px; margin: 0; border: 0; border-bottom: 1px solid #F0EBE4; background: none; font: inherit; font-size: 15px; font-weight: 700; color: #2B2320; text-decoration: none; text-align: left; cursor: pointer; }
+.ib-navs-r:last-child { border-bottom: 0; }
+.ib-navs-r:active { background: #FAF7F2; }
+.ib-navs-ic { width: 32px; height: 32px; border-radius: 9px; flex: none; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; }
+.ib-navs-ic.loc-app-naver { background: #03C75A; } .ib-navs-ic.loc-app-kakao { background: #FEE500; color: #3C1E1E; } .ib-navs-ic.loc-app-tmap { background: #1C2FA0; }
+.ib-navs-cpi { background: #F1ECE5; } .ib-navs-cpi svg { width: 16px; height: 16px; fill: none; stroke: #6E655B; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-reduced-motion: reduce) { .ib-navs-bg, .ib-navs-card, .ib-nav-ic, .ib-nav-one { transition: none; } }

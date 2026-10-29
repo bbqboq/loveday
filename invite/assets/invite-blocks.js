@@ -230,6 +230,49 @@
         mapEl.appendChild(cover); mapEl.appendChild(done);
         set(true);
     }
+    // 길찾기 버튼 자리 (1019g) - 오시는 길 fields.navPos: 'below'(A 지도 아래 3버튼, 기본) | 'top'(B 지도 안 오른쪽 위 아이콘) | 'band'(C 지도 안 아래 띠) | 'one'(D 길찾기 버튼 하나 → 앱 고르기 창)
+    //  지도 안(B·C·D)은 지도를 .loc-map-box로 감싸고 그 안에 띄움 (카카오맵이 지도 칸 안을 다시 그려도 안 지워지게 형제로) · 지도를 끄면 늘 A
+    const NAV_POS = ['below', 'top', 'band', 'one'];
+    const navPosOf = f => (f && f.showMap && NAV_POS.includes(f.navPos)) ? f.navPos : 'below';
+    function locNavLinks(f) {
+        const q = encodeURIComponent(String((f && f.address) || '').trim());
+        return [['naver', 'N', '네이버맵', `https://map.naver.com/p/search/${q}`, ' target="_blank" rel="noopener"'], ['kakao', 'K', '카카오맵', `https://map.kakao.com/link/search/${q}`, ' target="_blank" rel="noopener"'], ['tmap', 'T', '티맵', `tmap://search?name=${q}`, '']];
+    }
+    function locNavOver(f) { // 지도 안에 띄울 것 (A면 '')
+        const pos = navPosOf(f), L = locNavLinks(f);
+        if (pos === 'top') return `<div class="ib-nav ib-nav-top">${L.map(([k, b, t, u, tg]) => `<a href="${u}"${tg} class="ib-nav-ic loc-app-${k}" aria-label="${t}으로 길찾기">${b}</a>`).join('')}</div>`;
+        if (pos === 'band') return `<div class="ib-nav ib-nav-band">${L.map(([k, b, t, u, tg]) => `<a href="${u}"${tg} class="ib-nav-bd"><span class="loc-app-badge loc-app-${k}">${b}</span>${t}</a>`).join('')}</div>`;
+        if (pos === 'one') return `<button type="button" class="ib-nav ib-nav-one" data-nav-addr="${esc((f && f.address) || '')}" data-nav-venue="${esc((f && f.venue) || '')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8z"/></svg>길찾기</button>`;
+        return '';
+    }
+    // D안 앱 고르기 창 (하객 화면·에디터 미리보기 같이 - 문서에 한 번만 걸어 둠)
+    let navSheetOn = false;
+    function navSheetBind() {
+        if (navSheetOn || typeof document === 'undefined') return; navSheetOn = true;
+        document.addEventListener('click', e => {
+            const b = e.target.closest && e.target.closest('.ib-nav-one'); if (!b) return;
+            e.preventDefault(); e.stopPropagation();
+            const f = { address: b.dataset.navAddr || '', venue: b.dataset.navVenue || '' }, L = locNavLinks(f);
+            document.querySelector('.ib-navs')?.remove();
+            const w = document.createElement('div'); w.className = 'ib-navs';
+            w.innerHTML = `<div class="ib-navs-bg"></div><div class="ib-navs-card" role="dialog" aria-modal="true" aria-label="길찾기 앱 고르기"><i class="ib-navs-hd" aria-hidden="true"></i>
+                <p class="ib-navs-t">어떤 앱으로 길을 찾을까요?</p>${f.venue || f.address ? `<p class="ib-navs-s">${esc([f.venue, f.address].filter(Boolean).join(' · '))}</p>` : ''}
+                ${L.map(([k, bb, t, u, tg]) => `<a href="${u}"${tg} class="ib-navs-r"><span class="ib-navs-ic loc-app-${k}">${bb}</span>${t === '네이버맵' ? '네이버 지도' : t}</a>`).join('')}
+                ${f.address ? '<button type="button" class="ib-navs-r ib-navs-cp"><span class="ib-navs-ic ib-navs-cpi"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg></span>주소 복사하기</button>' : ''}</div>`;
+            const close = () => { w.classList.remove('on'); document.removeEventListener('keydown', esc1); setTimeout(() => w.remove(), 220); b.focus && b.focus({ preventScroll: true }); };
+            const esc1 = ev => { if (ev.key === 'Escape') close(); };
+            w.querySelector('.ib-navs-bg').addEventListener('click', close);
+            w.querySelectorAll('a.ib-navs-r').forEach(a => a.addEventListener('click', () => setTimeout(close, 300)));
+            w.querySelector('.ib-navs-cp')?.addEventListener('click', async () => {
+                let ok = false; try { await navigator.clipboard.writeText(f.address); ok = true; } catch (er) { try { const ta = document.createElement('textarea'); ta.value = f.address; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (er2) {} }
+                const sp = w.querySelector('.ib-navs-cp'); if (sp) sp.lastChild.textContent = ok ? '주소를 복사했어요 ✓' : '복사하지 못했어요';
+                if (ok) setTimeout(close, 700);
+            });
+            document.addEventListener('keydown', esc1);
+            (document.querySelector('.invite-frame') || document.body).appendChild(w);
+            requestAnimationFrame(() => { w.classList.add('on'); w.querySelector('.ib-navs-r')?.focus({ preventScroll: true }); });
+        }, true);
+    }
     function lookOld(d) { d = d || CUR_DESIGN; return !!(d && d.lookStyle === 'old'); }
     function oldOf(deco) { if (!lookOld() || !OLD_DECOS.includes(deco)) return false; ensureOldLooks(); return true; }
     function ensureOldLooks() {
@@ -3800,5 +3843,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { locTitleUp, mapLock, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { locTitleUp, mapLock, NAV_POS, navPosOf, locNavOver, navSheetBind, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);
