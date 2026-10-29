@@ -4200,9 +4200,9 @@ function renderAccountEditor(wrap, block) {
     const disp = document.createElement('div');
     disp.innerHTML = `
         <div class="mini-label" style="margin:18px 0 6px;">표시 방식</div>
-        <div class="width-row">
-            <button type="button" class="width-btn ${f.display !== 'cards' ? 'active' : ''}" data-acc-disp="free">자유 배치 (드래그)</button>
-            <button type="button" class="width-btn ${f.display === 'cards' ? 'active' : ''}" data-acc-disp="cards">카드형 (복사 버튼)</button>
+        <div class="width-row opt-pics accd-row">
+            <button type="button" class="width-btn opt-pic-btn ${f.display !== 'cards' ? 'active' : ''}" data-acc-disp="free" aria-pressed="${f.display !== 'cards'}"><span class="opt-pic accd accd-free" aria-hidden="true"><i class="t"></i><i class="l"></i><i class="l s"></i><i class="l"></i><i class="l s"></i></span><b>자유 배치</b><small>글자를 끌어서 놓기</small></button>
+            <button type="button" class="width-btn opt-pic-btn ${f.display === 'cards' ? 'active' : ''}" data-acc-disp="cards" aria-pressed="${f.display === 'cards'}"><span class="opt-pic accd accd-cards" aria-hidden="true"><i class="c"><em></em></i><i class="c"><em></em></i></span><b>카드형</b><small>[복사] 버튼 · 추천</small></button>
         </div>
         ${f.display === 'cards' ? `
         <div class="mini-label" style="margin:14px 0 6px;">디자인</div>
@@ -4210,9 +4210,9 @@ function renderAccountEditor(wrap, block) {
         <div class="field" style="margin-top:12px;"><label>타이틀</label><input type="text" data-acc-opt="accTitle" value="${esc(f.accTitle || '마음 전하실 곳')}"></div>
         <div class="field"><label>안내문구 (선택)</label><textarea rows="3" data-acc-opt="accNote" placeholder="멀리서도 축하의 마음을 전하고 싶으신 분들을 위해 계좌번호를 안내드립니다.">${esc(f.accNote || '')}</textarea></div>
         <div class="mini-label" style="margin:6px 0;">보여주기 방식</div>
-        <div class="width-row">
-            <button type="button" class="width-btn ${!f.accCollapse ? 'active' : ''}" data-acc-collapse="0">펼치기</button>
-            <button type="button" class="width-btn ${f.accCollapse ? 'active' : ''}" data-acc-collapse="1">가리기 (눌러서 열기)</button>
+        <div class="width-row opt-pics accd-row">
+            <button type="button" class="width-btn opt-pic-btn ${!f.accCollapse ? 'active' : ''}" data-acc-collapse="0" aria-pressed="${!f.accCollapse}"><span class="opt-pic accd accd-open" aria-hidden="true"><i class="h"></i><i class="r"><em></em></i><i class="r"><em></em></i></span><b>펼치기</b><small>계좌번호가 바로 보여요</small></button>
+            <button type="button" class="width-btn opt-pic-btn ${f.accCollapse ? 'active' : ''}" data-acc-collapse="1" aria-pressed="${!!f.accCollapse}"><span class="opt-pic accd accd-fold" aria-hidden="true"><i class="h"><s></s></i><i class="h"><s></s></i></span><b>가리기</b><small>눌러야 열려요</small></button>
         </div>
         <div class="field" style="margin-top:12px;"><label>신랑 카카오페이 송금 링크 (선택)</label><input type="url" data-acc-opt="groomKakao" value="${esc(f.groomKakao || '')}" placeholder="https://qr.kakaopay.com/..."></div>
         <div class="field"><label>신부 카카오페이 송금 링크 (선택)</label><input type="url" data-acc-opt="brideKakao" value="${esc(f.brideKakao || '')}" placeholder="https://qr.kakaopay.com/..."></div>
@@ -8748,6 +8748,7 @@ if (window.innerWidth <= 860) {
     // 모바일에서는 예전처럼 테두리 없이 시작 - 이 스위치로 언제든 다시 켤 수 있다
     document.getElementById('phoneBezelToggle').checked = false;
     document.getElementById('phoneFrame').classList.add('hide-bezel');
+    setTimeout(() => { if (!spSetMode._done && !document.documentElement.classList.contains('simple-mode')) { spSetMode._done = true; mobViewFor(false); } }, 1500); // 1019m (전문가 모드로 바로 연 경우)
 }
 document.getElementById('multiSelectToggle').addEventListener('click', () => {
     multiSelectMode = !multiSelectMode;
@@ -10816,8 +10817,20 @@ function spBindIncl(box) {
     }));
 }
 const spOffNote = t => `<p class="sp-off">${t || '이 섹션은 지금 꺼져 있어요. 위 스위치를 켜면 적을 칸이 나와요.'}</p>`;
+// 1019m 휴대폰 보는 모습: 전문가 모드 = 좁게 + 테두리 (실제 휴대폰 틀 안에서 보는 느낌), 간편 만들기 = 표준 · 테두리 없음 (반반 화면·작은 창은 꽉 차게)
+//  모드가 바뀔 때만 맞춤 (그 안에서 고객이 바꾼 건 그대로) · 끄기: 관리자 간편 flow.expNarrow
+function mobViewFor(simple) {
+    if (window.innerWidth > 860 || (typeof spOpt === 'function' && !spOpt('flow', 'expNarrow'))) return;
+    const frame = document.getElementById('phoneFrame'), bez = document.getElementById('phoneBezelToggle'); if (!frame || !bez) return;
+    const wantBezel = !simple, wantNarrow = !simple;
+    if (frame.classList.contains('narrow') !== wantNarrow) document.getElementById(wantNarrow ? 'widthNarrow' : 'widthNormal')?.click();
+    if (bez.checked !== wantBezel) bez.click();
+    try { syncWidthFabs(); } catch (e) {}
+}
 function spSetMode(on) {
+    const was = document.documentElement.classList.contains('simple-mode');
     document.documentElement.classList.toggle('simple-mode', !!on);
+    if (was !== !!on || !spSetMode._done) { spSetMode._done = true; setTimeout(() => mobViewFor(!!on), 0); }
     try { spMvApply(); } catch (e) {}
     try { if (typeof ldhPlaceBtn === 'function') { ldhPlaceBtn(); ldhMaybeIntro(); } } catch (e) {}
     if (!on) { document.documentElement.classList.remove('sp-pv', 'sp-pv-real'); const bx = document.getElementById('spPvReal'); if (bx) bx.innerHTML = ''; }
@@ -16655,7 +16668,7 @@ const LDH_EXPERT = [
     { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },
     { t: '저장 · 발행하기', d: '저장하고 하객에게 보이게 해요', steps: ['[임시저장]은 지금까지 고친 걸 저장해요. 발행 전이면 하객에게는 안 보여요.', '[발행하기]를 눌러야 하객이 볼 수 있어요. 예시 사진·빈 계좌처럼 빠진 것이 있으면 먼저 \'발행 전에 확인해요\' 창이 떠요 (줄을 누르면 그 칸이 열려요).', '이미 발행했다면 저장할 때마다 하객 화면도 바로 바뀌어요.'], show: () => [{ el: () => ldhFirst('#saveDraftBtn'), t: '임시저장', x: '고친 걸 저장해요.' }, { el: () => ldhFirst('#publishBtn'), t: '발행하기', x: '이걸 눌러야 하객이 청첩장을 볼 수 있어요.' }] },
     { t: '하객 화면으로 보기', d: '실제로 어떻게 보이는지 봐요', steps: ['[미리보기]를 누르면 하객이 보는 화면이 떠요.'], show: () => [{ el: () => ldhFirst('#previewBtn'), t: '미리보기', x: '하객이 보는 모습 그대로 봐요.' }] },
-    { t: '화면이 너무 작아요 / 커요', d: '보는 크기만 바꿔요', steps: ['[표준] [좁게] [확대] 버튼은 보는 크기만 바꿔요. 청첩장 모양은 그대로예요.', '[테두리]는 휴대폰 테두리를 보이거나 숨겨요.'], show: () => [{ el: () => ldhFirst('#pWidthNormal', '#mWidthNormal'), t: '화면 크기', x: '보는 크기만 바뀌어요. 하객 화면엔 영향이 없어요.' }] },
+    { t: '보는 모습 바꾸기 (좁게 · 표준 · 테두리)', d: '작은 휴대폰 · 지금 휴대폰 · 휴대폰 틀', steps: ['휴대폰에서는 처음에 [좁게] + [테두리]로 보여요 - 작은 휴대폰에서도 잘 보이는지 같이 확인돼요.', '[표준]은 지금 휴대폰 크기 그대로, [좁게]는 작은 휴대폰(320px) 크기예요. PC는 [꽉채움] [확대]도 있어요.', '[테두리]는 휴대폰 틀을 보이거나 숨겨요. 어느 것을 눌러도 청첩장 모양은 그대로예요.'], show: () => [{ el: () => ldhFirst('#pWidthNormal', '#mWidthNormal'), t: '화면 크기', x: '보는 크기만 바뀌어요. 하객 화면엔 영향이 없어요.' }] },
     { t: '간편 만들기로 돌아가기', d: '질문에 답하는 쉬운 화면으로', when: () => { const b = ldh$('#tbToSimple'); return !!(b && !b.hidden); }, steps: ['아래 버튼을 누르면 간편 만들기로 돌아가요.', '이름·날짜·사진·글·계좌는 그대로 옮겨져요.'], go: ['간편 만들기로', () => { closeLdh(); fullToSimple(); }] },
 ];
 // '칸별로 바로 가기' - 손으로 쓴 목록이 아니라 지금 고객에게 보이는 칸(간편: 목록 화면 칸 spSteps / 전문가: 섹션 목록)으로 저절로 만듦
@@ -16706,6 +16719,7 @@ function ldhIntroSteps(kind) {
     if (kind === 'expert') return [
         { el: ldhTextEl, t: '글자 고치기', x: '청첩장 글자를 두 번 톡톡 누르면 바로 고쳐요. 한 번 누르면 크기·색을 바꿔요.' },
         { el: () => ldhFirst('#sectionsFabBtn', '#sectionsSheet'), t: '섹션 목록', x: '사진·계좌·인사말 같은 칸은 여기서 열어서 고쳐요. 스위치로 넣고 빼요.' },
+        { el: () => ldhFirst('#widthFabRow .width-fab-btn', '#pcWidthIcons', '.mm-b[data-sheet="tools"]', '#controlsFab'), t: '보는 모습 바꾸기', x: window.innerWidth <= 860 ? '[좁게]는 작은 휴대폰, [표준]은 지금 휴대폰 크기, [테두리]는 휴대폰 틀을 보이거나 숨겨요. 보는 모습만 바뀌고 청첩장은 그대로예요.' : '[표준] [좁게] [꽉채움] [확대]로 보는 크기를, [테두리]로 휴대폰 틀을 바꿔요. 청첩장 모양은 그대로예요.' }, // 1019m
         { el: () => ldhFirst('.action-bar'), t: '저장 · 발행', x: '[임시저장]으로 저장하고, [발행하기]를 눌러야 하객이 볼 수 있어요.' }, help];
     return [help];
 }
@@ -17253,7 +17267,7 @@ const MM_TOOLS = [ // [아이콘, 이름, 설명, 원래 버튼 id]
 const mmPc = () => window.innerWidth > 860;
 // PC는 마우스로 끌면 바로 여러 개가 골라지므로 '여러 개' 켜고 끄기는 모바일에서만 보인다
 const mmTools = () => MM_TOOLS.filter(t => !(mmPc() && t[3] === 'qtMultiSelect'));
-const MM_VIEW_M = [['표준', '#mWidthNormal'], ['좁게', '#mWidthNarrow'], ['테두리', '#mBezelToggle'], ['🎯 포커스', '#widthFabRow [data-autofocus-toggle]']];
+const MM_VIEW_M = [['좁게', '#mWidthNarrow'], ['표준', '#mWidthNormal'], ['테두리', '#mBezelToggle'], ['🎯 포커스', '#widthFabRow [data-autofocus-toggle]']];
 const MM_VIEW_P = [['표준', '#pWidthNormal'], ['좁게', '#pWidthNarrow'], ['꽉채움', '#pWidthFill'], ['확대', '#pZoomToggle'], ['그림자', '#pShadowToggle'], ['테두리', '#pBezelToggle'], ['🎯 포커스', '#pcWidthIcons [data-autofocus-toggle]']];
 const mmView = () => mmPc() ? MM_VIEW_P : MM_VIEW_M;
 const mmAct = {

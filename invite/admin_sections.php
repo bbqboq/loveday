@@ -1934,7 +1934,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
     const STEP_ORDER = <?= json_encode(array_map(fn($x) => [$x['id'], !empty($x['on'])], section_defaults_easy()), JSON_UNESCAPED_UNICODE) ?>;
     const EOPTS = <?= json_encode(SECTION_EASY_OPTS, JSON_UNESCAPED_UNICODE) ?>;
     const HIDDEN = <?= json_encode(section_defaults_hidden(), JSON_UNESCAPED_UNICODE) ?>;
-    const EXP_FLOW = ['help', 'helpIntro', 'precheck', 'sskin', 'stkset', 'colorSheet']; // 전문가 모드에도 있는 '전체 기능'
+    const EXP_FLOW = ['help', 'helpIntro', 'precheck', 'sskin', 'stkset', 'colorSheet', 'expNarrow']; // 전문가 모드에도 있는 '전체 기능'
     const readonly = !!document.getElementById('admRo');
     const toast = m => window.LD ? LD.toast(m) : null, say = m => window.LD ? LD.alert(m) : alert(m);
     const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
