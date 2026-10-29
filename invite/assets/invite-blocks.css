@@ -2508,3 +2508,17 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
     .ib-modal-box { transform: none; transition: opacity .2s; }
 }
 /* ===== 손맛 다듬기 끝 ===== */
+
+/* ===== 지도 잠금 (1019f) - 이 덩어리 + invite-blocks.js mapLock 만 지우면 원래대로 ===== */
+.location-map { position: relative; }
+.ib-ml-cover { position: absolute; inset: 0; z-index: 10; display: flex; align-items: flex-end; justify-content: center; padding: 0 0 10px; margin: 0; border: 0; background: transparent; cursor: pointer; font: inherit; -webkit-tap-highlight-color: transparent; }
+.ib-ml-hint { display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px 6px 9px; border-radius: 99px; background: rgba(20, 18, 16, .62); color: #fff; font-size: 11.5px; font-weight: 600; letter-spacing: -.01em; line-height: 1; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: opacity .2s cubic-bezier(.23,1,.32,1), scale .16s cubic-bezier(.23,1,.32,1); }
+.ib-ml-hint svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ib-ml-cover:active .ib-ml-hint { scale: .96; }
+.ib-ml-cover:focus-visible .ib-ml-hint { outline: 2px solid #fff; outline-offset: 2px; }
+.ib-ml-done { position: absolute; left: 8px; top: 8px; z-index: 10; min-height: 32px; padding: 0 12px; border: 0; border-radius: 99px; background: rgba(20, 18, 16, .72); color: #fff; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; opacity: 0; pointer-events: none; translate: 0 -4px; transition: opacity .18s cubic-bezier(.23,1,.32,1), translate .18s cubic-bezier(.23,1,.32,1); -webkit-tap-highlight-color: transparent; }
+.ib-ml-open .ib-ml-cover { pointer-events: none; }
+.ib-ml-open .ib-ml-hint { opacity: 0; }
+.ib-ml-open .ib-ml-done { opacity: 1; pointer-events: auto; translate: 0 0; }
+.ib-ml-done:active { scale: .96; }
+@media (prefers-reduced-motion: reduce) { .ib-ml-hint, .ib-ml-done { transition: none; } }

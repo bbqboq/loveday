@@ -473,7 +473,7 @@ function initLocationMaps(root) {
                     const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
                     const map = new kakao.maps.Map(mapEl, { center: coords, level: 3 });
                     new kakao.maps.Marker({ map, position: coords });
-                    map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT); // 확대/축소 슬라이드 - 카카오맵 기본 제공 컨트롤
+                    if (window.InviteBlocks && InviteBlocks.mapLock && mapEl.dataset.lock !== '0' && !window.LD_MAP_LOCK_OFF) InviteBlocks.mapLock(mapEl, map, { center: coords }); else map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT); // 지도 잠금 (1019f) - 확대 버튼은 풀었을 때만 // 확대/축소 슬라이드 - 카카오맵 기본 제공 컨트롤
                     // 카카오맵은 생성 시점 컨테이너 크기를 기준으로 내부 캔버스를 그리고, 그 뒤로
                     // 컨테이너 폭이 바뀌어도(표준/좁게/꽉채움 등 화면모드 전환 시) 스스로 다시 맞추지
                     // 않는다 - relayout()을 직접 호출해줘야 한다. 안 해주면 지도가 처음 그렸던
@@ -1320,7 +1320,7 @@ const templates = {
         // 지도(.location-map)는 overflow:hidden이라 그 안에 손잡이를 넣으면 카카오맵 자체 드래그와
         // 겹치기도 하고 잘려서 안 보일 수 있다 - 바깥 wrap을 하나 더 두고 손잡이는 그 wrap의 형제로 둔다.
         const mapHtml = f.showMap ? `<div class="loc-map-wrap ${mapCls}">
-            <div class="location-map" style="height:${mapHeight}px;" data-address="${vd.a ? '' : esc(f.addressBase || f.address)}"></div>
+            <div class="location-map" style="height:${mapHeight}px;"${f.mapLock === false ? ' data-lock="0"' : ''} data-address="${vd.a ? '' : esc(f.addressBase || f.address)}"></div>
             <div class="loc-map-resize-handle" title="드래그해서 지도 높이 조절">${locStep('mapHeight', mapHeight)}</div>
         </div>` : '';
         const appLinksHtml = f.showMap ? `${gapHandleHtml('gapMapLinks')}<div class="loc-applinks">
@@ -2913,6 +2913,10 @@ function renderFieldEditorRaw() {
             <p class="field-hint">주소를 기준으로 지도가 자동으로 뜹니다. 주소가 정확해야 위치가 맞게 나옵니다.</p>
         </div>
         <div class="field">
+            <label class="account-toggle"><input type="checkbox" id="mapLockToggle" ${block.fields.mapLock !== false ? 'checked' : ''}> 지도 잠금 (스크롤할 때 지도 안 밀리게)</label>
+            <p class="field-hint">평소엔 지도가 고정돼 있고, 하객이 지도를 한 번 누르면 움직이고 확대할 수 있어요. 끄면 예전처럼 항상 움직여요.</p>
+        </div>
+        <div class="field">
             <label class="account-toggle"><input type="checkbox" id="mapFullWidthToggle" ${block.fields.mapFullWidth ? 'checked' : ''}> 지도 가로 100%로 꽉 채우기</label>
             <p class="field-hint">꺼두면 좌우 여백 있는 카드 형태(88%)로 보입니다.</p>
         </div>
@@ -2971,6 +2975,7 @@ function renderFieldEditorRaw() {
             block.fields.showMap = e.target.checked;
             renderPreview();
         });
+        document.getElementById('mapLockToggle')?.addEventListener('change', e => { block.fields.mapLock = e.target.checked; renderPreview(); }); // 지도 잠금 (1019f)
         document.getElementById('mapFullWidthToggle').addEventListener('change', e => {
             block.fields.mapFullWidth = e.target.checked;
             renderPreview();

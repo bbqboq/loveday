@@ -201,6 +201,35 @@
         if (t && !t.ltUp && t.fontSize === 12) { t.fontSize = 17; t.ltUp = 1; }
         return f;
     }
+    // 지도 잠금 (1019f) - 스크롤하다 손가락이 지도에 닿으면 페이지 대신 지도가 밀리던 것
+    //  평소엔 그림처럼 고정(끌기·확대 꺼짐) → 지도를 누르면 풀림(확대 버튼도 그때만) → [잠그기]·지도 밖 누르기·지도가 화면 밖으로 나가면 다시 잠김
+    //  끄기: 오시는 길 칸 fields.mapLock === false (에디터 '지도 잠금' 체크 해제) / 사이트 전체: window.LD_MAP_LOCK_OFF = true
+    function mapLock(mapEl, map, opt) {
+        opt = opt || {};
+        if (!mapEl || !map || mapEl.dataset.lock === '0' || global.LD_MAP_LOCK_OFF || mapEl.querySelector('.ib-ml-cover')) return;
+        const K = global.kakao && kakao.maps; if (!K) return;
+        let zc = null, locked = true, io = null;
+        const cover = document.createElement('button');
+        cover.type = 'button'; cover.className = 'ib-ml-cover';
+        cover.setAttribute('aria-label', '지도 움직이기 - 누르면 지도를 끌고 확대할 수 있어요');
+        cover.innerHTML = '<span class="ib-ml-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11V6a1.5 1.5 0 0 1 3 0v4m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5A5.5 5.5 0 0 1 12.5 20h-1a5.5 5.5 0 0 1-4.3-2.1L4.6 14.6a1.5 1.5 0 0 1 2.2-2L9 14.5"/></svg>눌러서 지도 움직이기</span>';
+        const done = document.createElement('button');
+        done.type = 'button'; done.className = 'ib-ml-done'; done.textContent = '지도 잠그기';
+        const set = on => {
+            locked = on;
+            map.setDraggable(!on); map.setZoomable(!on);
+            mapEl.classList.toggle('ib-ml-open', !on);
+            if (!on && !zc && opt.zoom !== false) { zc = new K.ZoomControl(); map.addControl(zc, K.ControlPosition.RIGHT); }
+            if (on && zc) { map.removeControl(zc); zc = null; }
+        };
+        cover.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); set(false); });
+        done.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); set(true); if (opt.center) map.panTo(opt.center); });
+        const outside = e => { if (!mapEl.isConnected) { document.removeEventListener('pointerdown', outside, true); if (io) io.disconnect(); return; } if (!locked && !mapEl.contains(e.target)) set(true); }; // (에디터는 다시 그릴 때 지도가 새로 생겨서 - 떨어진 지도는 정리)
+        document.addEventListener('pointerdown', outside, true);
+        if ('IntersectionObserver' in global) { io = new IntersectionObserver(es => es.forEach(en => { if (!en.isIntersecting && !locked) set(true); })); io.observe(mapEl); }
+        mapEl.appendChild(cover); mapEl.appendChild(done);
+        set(true);
+    }
     function lookOld(d) { d = d || CUR_DESIGN; return !!(d && d.lookStyle === 'old'); }
     function oldOf(deco) { if (!lookOld() || !OLD_DECOS.includes(deco)) return false; ensureOldLooks(); return true; }
     function ensureOldLooks() {
@@ -3771,5 +3800,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { locTitleUp, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { locTitleUp, mapLock, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

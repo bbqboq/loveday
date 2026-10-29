@@ -179,7 +179,7 @@ function initOneLocationMap(mapEl) {
                     const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
                     const map = new kakao.maps.Map(mapEl, { center: coords, level: 3 });
                     new kakao.maps.Marker({ map, position: coords });
-                    map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
+                    if (window.InviteBlocks && InviteBlocks.mapLock && mapEl.dataset.lock !== '0' && !window.LD_MAP_LOCK_OFF) InviteBlocks.mapLock(mapEl, map, { center: coords }); else map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT); // 지도 잠금 (1019f) - 확대 버튼은 풀었을 때만
                     // 카카오맵은 생성 시점 컨테이너 크기를 기준으로 내부 캔버스를 그리고, 그 뒤로
                     // 컨테이너 폭이 바뀌어도(PC 창을 모바일 폭으로 줄이는 경우 등) 스스로 다시 맞추지
                     // 않는다 - relayout()을 직접 호출해줘야 한다. 안 해주면 지도가 원래 그렸던
@@ -787,7 +787,7 @@ const templates = {
         const mapHeight = f.mapHeight ?? 200;
         const phoneHtml = f.phone ? `<div class="loc-phone-wrap" style="padding-bottom:${gapCallMap}px;"><a href="tel:${esc(f.phone)}" class="loc-phone-btn">안내 전화</a></div>` : '';
         const mapCls = f.mapFullWidth ? 'full-width' : '';
-        const mapHtml = f.showMap ? `<div class="location-map ${mapCls}" style="height:${mapHeight}px;" data-address="${esc(f.addressBase || f.address)}"></div>` : '';
+        const mapHtml = f.showMap ? `<div class="location-map ${mapCls}" style="height:${mapHeight}px;"${f.mapLock === false ? ' data-lock="0"' : ''} data-address="${esc(f.addressBase || f.address)}"></div>` : '';
         const appLinksHtml = f.showMap ? `<div class="loc-applinks" style="padding-top:${gapMapLinks}px;">
             <a href="https://map.naver.com/p/search/${q}" target="_blank" rel="noopener" class="loc-applink"><span class="loc-app-badge loc-app-naver">N</span>네이버맵</a>
             <a href="https://map.kakao.com/link/search/${q}" target="_blank" rel="noopener" class="loc-applink"><span class="loc-app-badge loc-app-kakao">K</span>카카오맵</a>

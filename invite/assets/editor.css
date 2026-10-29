@@ -5617,3 +5617,9 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .sp-ask-o:active, .sp-seg button:active, .wz-back:active { scale: .98; }
 .sp-ask-o:focus-visible, .sp-seg button:focus-visible, .sp-ask-skip:focus-visible { outline: 2px solid var(--wz-ink, #1B1A18); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .sp-body, .wz-pop.on, .wz-pv.on, .spb-grp.spb-new, .spb-ready.flash { animation: none; } .sp-ask-o:active, .sp-seg button:active, .wz-back:active { scale: none; } .sp-ask-nav .wz-back { transition: none; } }
+/* ===== 1019f 반반 화면 미리보기 (Emil 기준 - 이 덩어리만 지우면 원래대로) ===== */
+@media (max-width: 860px) {
+    html.sp-mv-split:not(.sp-pv) #screenEditor .preview-pane { transition: height .26s cubic-bezier(.23,1,.32,1); }
+    .sp-sh-g b::before { content: '↕ '; font-weight: 400; color: var(--wz-sub, #7A7067); } /* (가운데 '반' 글자가 끌어서 크기 바꾸는 손잡이인 걸 알게) */
+}
+@media (max-width: 860px) and (prefers-reduced-motion: reduce) { html.sp-mv-split:not(.sp-pv) #screenEditor .preview-pane { transition: none; } }
