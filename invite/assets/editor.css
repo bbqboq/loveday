@@ -5695,3 +5695,17 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .hsl-pg > :first-child { margin-top: 0; }
 .hsl-pg .hl-row { overscroll-behavior-x: contain; }
 @media (prefers-reduced-motion: reduce) { .hsl-track { transition: none; } }
+/* ===== 1019i 첫 화면 레이아웃 묶음 칩 + 3칸 격자 (editor.js hlGridHtml) ===== */
+.hl-cats { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 2px 0 10px; }
+.hl-cats::-webkit-scrollbar { display: none; }
+.hl-cats button { flex: none; height: 34px; padding: 0 13px; border: 1px solid var(--wz-line2, #DED8CF); border-radius: 99px; background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: var(--wz-sub, #6E665E); cursor: pointer; transition-property: background, color, border-color, scale; transition-duration: .15s; transition-timing-function: cubic-bezier(.23,1,.32,1); -webkit-tap-highlight-color: transparent; }
+.hl-cats button.on { background: var(--wz-ink, #1B1A18); border-color: var(--wz-ink, #1B1A18); color: #fff; }
+.hl-cats button:active, .hl-grid .hl-c:active { scale: .97; }
+.hl-row.hl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; overflow: visible; padding: 0; }
+.hl-grid .hl-c { width: auto; min-width: 0; transition-property: border-color, box-shadow, scale; transition-duration: .15s; transition-timing-function: cubic-bezier(.23,1,.32,1); }
+.hl-grid .hl-c[hidden] { display: none; }
+.hl-grid .hl-c b { font-size: 11.5px; }
+.hl-more { display: block; width: 100%; margin-top: 8px; height: 40px; border: 1px dashed var(--wz-line2, #DED8CF); border-radius: 12px; background: transparent; font: inherit; font-size: 13px; font-weight: 700; color: var(--wz-sub, #6E665E); cursor: pointer; }
+.hl-more[hidden] { display: none; }
+@media (min-width: 861px) { .hl-row.hl-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { .hl-cats button, .hl-grid .hl-c { transition: none; } }

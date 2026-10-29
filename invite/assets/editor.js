@@ -12681,6 +12681,37 @@ function hlSegEdit(segs, oldS, newS) {
     putIns();
     return out;
 }
+// ===== 1019i 첫 화면 레이아웃 정리 (사용자: '비슷한 것도 많고 다 똑같아 보인다') - 간편 만들기만, 끄기: 관리자 간편 hero 옵션 layGrid =====
+//  27개 → 4묶음 13개(대표) + 묶음마다 '비슷한 모양 더 보기'(나머지 14개, 지우지 않음 - 이미 고른 청첩장은 그대로)
+//  옆으로 긴 한 줄 → 묶음 칩 + 3칸 격자 (메인 화면 칸 '옆으로 넘기기' 장 안에서 옆으로 밀기와 안 겹치게)
+const HL_CATS = [
+    ['full', '사진 가득', ['our-wedding-day', 'getting-married', 'magazine', 'names-vertical'], ['happily-ever-after', 'happy-wedding-day', 'minimal-line', 'arc-top', 'wine-vows', 'winter-snow']],
+    ['date', '큰 날짜', ['save-the-date', 'fade-date'], ['big-date', 'sea-wave']],
+    ['box', '사진 칸', ['polaroid', 'arch', 'split-top', 'hanji-seal'], ['picnic-day', 'olive-arch', 'boarding-pass', 'spring-bloom', 'retro-groovy']],
+    ['concept', '컨셉', ['webtoon-cover', 'press-front', 'angel-letter'], ['webtoon-bubble']],
+];
+let spHlCat = '', spHlMore = false;
+function hlCatOf(l) { for (const [c, , core, more] of HL_CATS) { if (core.includes(l.id)) return [c, false]; if (more.includes(l.id)) return [c, true]; } return [l.box ? 'box' : 'full', true]; } // (나중에 새로 넣은 레이아웃 = 그 모양 묶음의 '더 보기')
+function hlGridHtml(list, cur, card) {
+    const items = list.map(l => [l, ...hlCatOf(l)]), curCat = (items.find(([l]) => l.id === cur) || [])[1];
+    const cats = HL_CATS.filter(([c]) => items.some(x => x[1] === c));
+    const sel = cats.some(([c]) => c === spHlCat) ? spHlCat : curCat || (cats[0] || [])[0];
+    const chips = cats.map(([c, t]) => `<button type="button" class="${c === sel ? 'on' : ''}" data-hlcat="${c}" aria-pressed="${c === sel}">${t}</button>`).join('');
+    const cards = items.map(([l, c, ex]) => card(l).replace('<button type="button" class="hl-c', `<button type="button"${c === sel && (!ex || spHlMore || l.id === cur) ? '' : ' hidden'} data-cat="${c}"${ex ? ' data-ex' : ''} class="hl-c`)).join('');
+    const nMore = items.filter(([l, c, ex]) => c === sel && ex && l.id !== cur).length;
+    return `<div class="hl-cats" role="group" aria-label="레이아웃 묶음">${chips}</div><div class="hl-row hl-grid">${cards}</div><button type="button" class="hl-more" data-hlmore${nMore ? '' : ' hidden'}>${spHlMore ? '비슷한 모양 접기' : `비슷한 모양 ${nMore}개 더 보기`}</button>`;
+}
+function hlGridBind(root) {
+    const grid = root.querySelector('.hl-grid'); if (!grid) return;
+    const cur = (grid.querySelector('.hl-c.on') || {}).dataset || {};
+    const show = () => { let n = 0; grid.querySelectorAll('.hl-c').forEach(b => { const ok = b.dataset.cat === spHlCat && (!b.hasAttribute('data-ex') || spHlMore || b.classList.contains('on')); b.hidden = !ok; if (b.dataset.cat === spHlCat && b.hasAttribute('data-ex') && !b.classList.contains('on')) n++; });
+        root.querySelectorAll('[data-hlcat]').forEach(x => { const on = x.dataset.hlcat === spHlCat; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+        const m = root.querySelector('[data-hlmore]'); if (m) { m.hidden = !n; m.textContent = spHlMore ? '비슷한 모양 접기' : `비슷한 모양 ${n}개 더 보기`; } };
+    if (!spHlCat) spHlCat = (root.querySelector('[data-hlcat].on') || {}).dataset?.hlcat || '';
+    root.querySelectorAll('[data-hlcat]').forEach(x => x.addEventListener('click', () => { spHlCat = x.dataset.hlcat; spHlMore = false; show(); }));
+    root.querySelector('[data-hlmore]')?.addEventListener('click', () => { spHlMore = !spHlMore; show(); });
+    void cur;
+}
 function spHeroLayoutHtml(hb, kind) {
     const f = hb.fields, list = spHeroLayouts(), adv = !document.documentElement.classList.contains('simple-mode'); // 사진 칸 레이아웃은 사진에만
     if (!list.length) return '';
@@ -12706,7 +12737,8 @@ function spHeroLayoutHtml(hb, kind) {
         return `<label>메인 레이아웃 <small style="font-weight:400;opacity:.7">(글자 모양·자리를 한 번에)</small></label><div class="hl-row">${cards}</div>${frRow}
             ${keys.length ? `<div class="hl-xh"><div class="mini-label hl-xl">글자 · 효과</div>${replay}</div><div class="hl-lines">${lines}</div>${all}<p class="field-hint" style="margin-top:6px">${tip}</p>` : ''}`;
     }
-    return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div><div class="hl-row">${cards}</div></div>
+    const grid = spOpt('hero', 'layGrid') ? hlGridHtml(list, cur, l => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${spHeroLayoutMini(l, hb, kind)}<b>${esc(l.label)}</b></button>`) : ''; // 1019i
+    return `<div class="wz-field"><div class="wz-lab"><span>레이아웃</span><small>글자 모양·자리를 한 번에 바꿔요</small></div>${grid || `<div class="hl-row">${cards}</div>`}</div>
         ${keys.length && spOpt('hero', 'lines') ? `<div class="wz-field"><div class="wz-lab"><span>글자 · 효과</span>${replay}</div><div class="hl-lines">${lines}</div>${all}${plain ? '' : `<p class="wz-hint" style="margin:6px 0 0">${tip}</p>`}</div>` : ''}`; // (간편: 아래 긴 설명 뺌 - 세로 줄이기, 1018z18z3)
 }
 // 글자 효과 카드 (1018z18o, 사용자: '써지듯·나타나기가 뭔지 초보는 모름') - 카드마다 그 문구가 실제로 그 효과로 되풀이해 나타남
@@ -12787,6 +12819,7 @@ function spBindHeroLayout(box, hb, after) {
         ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(ev => row.addEventListener(ev, () => { user = true; }, { passive: true }));
         row.addEventListener('scroll', () => { if (row._dead || !row.isConnected) return; if (user) hlRowLeft = row.scrollLeft; else put(); }, { passive: true });
     }
+    try { hlGridBind(box); } catch (e) {} // 1019i 묶음 칩
     box.querySelectorAll('[data-hl-pick]').forEach(b => b.addEventListener('click', () => {
         const lay = spHeroLayouts().find(l => l.id === b.dataset.hlPick); if (!lay) return;
         if (row) { hlRowLeft = row.scrollLeft; row._dead = true; } // 이 줄은 곧 다시 그려짐 (사라질 때 생기는 스크롤 0은 무시)
