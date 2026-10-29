@@ -210,7 +210,7 @@ function initOneLocationMap(mapEl) {
 const skins = {
     classic: { bg:'#FAF7F0', ink:'#2B2320', accent:'#7A3B41', line:'#E1D6C6', muted:'#8A7F72',
         headFont:'"Noto Serif KR", serif', bodyFont:'"Pretendard Variable", Pretendard, sans-serif', headWeight:'500', radius:'2px' },
-    modern: { bg:'#FFFFFF', ink:'#15151A', accent:'#24339B', line:'#E7E7E9', muted:'#7A7A82',
+    modern: { bg:'#FFFFFF', ink:'#15151A', accent:'#24339B', line:'#E7E7E9', muted:'#717179',
         headFont:'"Pretendard Variable", Pretendard, sans-serif', bodyFont:'"Pretendard Variable", Pretendard, sans-serif', headWeight:'800', radius:'0px' },
     pastel: { bg:'#FBF8F2', ink:'#4A443C', accent:'#C97A82', line:'#EEF1E7', muted:'#93897A',
         headFont:'"Gowun Batang", serif', bodyFont:'"Pretendard Variable", Pretendard, sans-serif', headWeight:'700', radius:'16px' }

@@ -2530,7 +2530,7 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-nav { position: absolute; z-index: 12; font-family: inherit; }
 .ib-nav a, .ib-nav { -webkit-tap-highlight-color: transparent; }
 /* B 지도 안 오른쪽 위 아이콘 3개 */
-.ib-nav-top { right: 8px; top: 8px; display: flex; gap: 5px; padding: 4px; border-radius: 99px; background: rgba(255,255,255,.95); box-shadow: 0 2px 10px rgba(0,0,0,.14); }
+.ib-nav-top { right: 8px; top: 8px; display: flex; gap: 5px; padding: 4px; border-radius: 99px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.14); }
 .ib-nav-ic { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; line-height: 1; color: #fff; text-decoration: none; transition: scale .16s cubic-bezier(.23,1,.32,1); }
 .ib-nav-ic.loc-app-naver { background: #03C75A; } .ib-nav-ic.loc-app-kakao { background: #FEE500; color: #3C1E1E; } .ib-nav-ic.loc-app-tmap { background: #1C2FA0; }
 .ib-nav-ic:active { scale: .92; }
@@ -2566,3 +2566,9 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-navs-cpi { background: #F1ECE5; } .ib-navs-cpi svg { width: 16px; height: 16px; fill: none; stroke: #6E655B; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 @media (prefers-reduced-motion: reduce) { .ib-navs-bg, .ib-navs-card, .ib-nav-ic, .ib-nav-one { transition: none; } }
 .ib-navs:not(.on) .ib-navs-card { transition-duration: .18s; } .ib-navs:not(.on) .ib-navs-bg { transition-duration: .16s; } /* (1019j: 닫힐 땐 더 빨리 - 고른 뒤 기다리지 않게) */
+
+/* 1019k: C 아래 띠가 반투명이라 지도 글자가 비쳐 보이고 카카오 로고를 가리던 것 → 띠를 지도 아래에 붙인 불투명 줄로 (지도는 그대로 다 보임) */
+.ib-navp-band .ib-nav-band { position: relative; left: auto; right: auto; bottom: auto; background: #fff; border: 1px solid var(--p-line, #E7E1D8); border-top: 0; }
+.ib-navp-band .location-map { border-radius: 10px 10px 0 0; }
+.loc-map-box.full-width.ib-navp-band .ib-nav-band { border-left: 0; border-right: 0; }
+.ib-navp-band .ib-ml-cover { align-items: flex-end; padding: 0 0 10px; }

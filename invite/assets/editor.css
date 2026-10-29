@@ -5714,3 +5714,15 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .simple-mode .simple-pane, .hl-ex, #screenInfo { --wz-mute: #746D65; } /* 옅은 글자 #A39D95 = 흰 바탕 2.6:1 → 4.9:1 (WCAG AA) */
 .spb-rd-todo .spb-li.spb-now .spb-tx small { color: #8E4F2C; } /* 밝힌 칸 위 주황 글자 4.3:1 → 5.9:1 */
 .spb-nowtag { font-size: 11.5px; }
+/* ===== 1019k 같은 질문 안에서 고를 때 등장 효과 다시 안 함 · 넘기는 장 아래 [이전]/[다음] ===== */
+#simplePane.sp-same .sp-body, #simplePane.sp-same .sp-in { animation: none !important; }
+.hsl-nav { display: flex; gap: 8px; padding: 10px 16px 2px; }
+.hsl-nav button { height: 44px; border-radius: 12px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: scale .15s cubic-bezier(.23,1,.32,1); -webkit-tap-highlight-color: transparent; }
+.hsl-nav button[hidden] { display: none; }
+.hsl-prev { flex: 0 0 auto; padding: 0 16px; border: 1px solid var(--wz-line2, #DED8CF); background: #fff; color: var(--wz-ink, #1B1A18); }
+.hsl-next { flex: 1; border: 1px solid var(--wz-ink, #1B1A18); background: #fff; color: var(--wz-ink, #1B1A18); }
+.hsl-next.last { background: var(--wz-ink, #1B1A18); color: #fff; }
+.hsl-nav button:active { scale: .97; }
+.hsl-nav button:focus-visible { outline: 2px solid var(--wz-ink, #1B1A18); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .hsl-nav button { transition: none; } }
+.hsl-pg .nbs, .hsl-pg .nbs-chips { overscroll-behavior-x: contain; } /* (스크롤 버튼 장 안 큰 그림 넘기기가 장 넘기기로 번지지 않게) */

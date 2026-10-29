@@ -3,7 +3,7 @@
 const skins = {
     classic: { bg:'#FAF7F0', ink:'#2B2320', accent:'#7A3B41', line:'#E1D6C6', muted:'#8A7F72',
         headFont:'"Noto Serif KR", serif', bodyFont:'"Pretendard Variable", Pretendard, sans-serif', headWeight:'500', radius:'2px', label:'클래식' },
-    modern: { bg:'#FFFFFF', ink:'#15151A', accent:'#24339B', line:'#E7E7E9', muted:'#7A7A82',
+    modern: { bg:'#FFFFFF', ink:'#15151A', accent:'#24339B', line:'#E7E7E9', muted:'#717179',
         headFont:'"Pretendard Variable", Pretendard, sans-serif', bodyFont:'"Pretendard Variable", Pretendard, sans-serif', headWeight:'800', radius:'0px', label:'모던' },
     pastel: { bg:'#FBF8F2', ink:'#4A443C', accent:'#C97A82', line:'#EEF1E7', muted:'#93897A',
         headFont:'"Gowun Batang", serif', bodyFont:'"Pretendard Variable", Pretendard, sans-serif', headWeight:'700', radius:'16px', label:'파스텔' }
@@ -21,7 +21,7 @@ const PRESETS = [
       palette:{ bg:'#FAF7F0', ink:'#2B2320', accent:'#7A3B41', line:'#E1D6C6', muted:'#8A7F72', radius:'2px' },
       font:null, hero:'video', sections:['heroVideo','greeting','location','gallery','account'], fx:{ default:'bounce' } },
     { id:'modern', no:2, group:'mood', label:'모던 화이트', desc:'화이트 + 인디고, 굵은 고딕. 매거진 같은 느낌', tags:['깔끔','고딕'],
-      palette:{ bg:'#FFFFFF', ink:'#15151A', accent:'#24339B', line:'#E7E7E9', muted:'#7A7A82', headFont:'"Pretendard Variable", Pretendard, sans-serif', headWeight:'800', radius:'0px' },
+      palette:{ bg:'#FFFFFF', ink:'#15151A', accent:'#24339B', line:'#E7E7E9', muted:'#717179', headFont:'"Pretendard Variable", Pretendard, sans-serif', headWeight:'800', radius:'0px' },
       font:null, hero:'photo', heroFrame:'none', sections:['hero','greeting','dday','location','gallery','account'], fx:{ default:'up' } },
     { id:'pastel', no:3, group:'mood', label:'파스텔 세이지', desc:'세이지 + 블러쉬, 부드러운 세리프', tags:['부드러움'],
       palette:{ bg:'#FBF8F2', ink:'#4A443C', accent:'#C97A82', line:'#EEF1E7', muted:'#93897A', headFont:'"Gowun Batang", serif', headWeight:'700', radius:'16px' },
@@ -11705,6 +11705,7 @@ function spRenderAsk(pane) {
     if (st && st.k === 'hero' && !scrollPh) spHeroPhase = 'pick';
     const spKey = 'ask' + spStep + (scrollPh ? 's' : ''), same = pane._spKey === spKey, keepPane = pane.scrollTop, keepWin = window.scrollY;
     if (same) pane.style.minHeight = pane.offsetHeight + 'px';
+    pane.classList.toggle('sp-same', same); // 1019k: 같은 질문 안에서 고를 때마다 칸들이 다시 떠오르던 것(등장 효과 재생 = 화면 전체가 새로고침되는 느낌) 끔
     try { same ? stopBgmPreview() : stopAllBgm(); } catch (e) {}
     if (st && (!same || spAskId(st) === 'names:date')) spAskReveal(st); // (날짜 질문은 같은 질문 안에서 날짜를 고르면 디데이를 켬)
     const pick = st ? ask[st.k] || '' : '', opt = st && st.opts ? st.opts.find(o => o[0] === pick) : null;
@@ -12032,6 +12033,8 @@ function spLeaveSoon(k, ms) {
         const pane = document.getElementById('simplePane'), li = pane && [...pane.querySelectorAll('.spb-grp:not(.spb-add) .spb-li[data-li]')].find(x => x.dataset.li === k);
         delete spLeaveT[k];
         if (!li || !li.classList.contains('done') || spGone.has(k) || state.spView !== 'list') return;
+        if (li.classList.contains('open') && li.querySelector('.hsl') && !spHslDone.has(k)) return; // (1019k: 넘기는 장 칸은 사진 하나만 넣어도 다음으로 넘어가던 것 - 장을 다 보고 [다 했어요]를 눌러야)
+        spHslDone.delete(k);
         if (document.querySelector('#addrModal.active')) return spLeaveSoon(k, 600); // (주소 찾기 창이 떠 있는 동안은 기다림)
         if (spTypingIn(li)) { spLeaveWait.add(k); // 적는 중 → 칸에서 손을 뗀 뒤
             li.addEventListener('focusout', () => setTimeout(() => { spLeaveWait.delete(k); spLeaveSoon(k, spTypingIn(li) ? 300 : 700); }, 0), { once: true }); return; }
@@ -12270,6 +12273,7 @@ function spRenderList() {
     let last = null;
     steps.forEach(st => {
         const body = pane.querySelector(`[data-li-body="${st.k}"]`); if (!body) return;
+        if (st.k === 'hero' && spOpt('flow', 'heroSlide') && spOpt('flow', 'heroSlideScroll')) spHeroPhase = 'pick'; // (1019k: 스크롤 버튼은 이제 넘기는 장 안에 - 따로 화면으로 바뀌지 않게)
         try { st.fn(body); } catch (e) { console.warn(e); }
         spBindIncl(body); spTrimBody(body, swOf(st));
         if (st.k === 'finish') body.querySelectorAll('.wz-hint').forEach(x => x.remove());
@@ -12294,8 +12298,8 @@ function spRenderList() {
 // ===== 1019h 정리 화면 '메인 화면' 칸 = 옆으로 넘기는 장 (세로로 너무 길던 것 - 사용자 요청) · 끄기: 관리자 간편 flow.heroSlide =====
 //  칸 안의 줄들을 [사진 · 레이아웃 · 글자 · 보일 부분 · 잘 보이게] 장으로 옮겨 담음 (노드를 옮기는 것이라 묶인 동작은 그대로)
 //  칸이 스스로 다시 그리면(사진↔영상 등) 다시 나눔 · 보던 장은 기억
-let spHslPage = 0;
-const SP_HSL = [['media', '사진', /무엇을 보여줄까요|대표 사진|유튜브 주소|영상 주소/], ['layout', '레이아웃', /레이아웃/], ['text', '글자', /글자\s*·\s*효과|나타나는 모습/], ['crop', '보일 부분', /보일 부분/], ['shade', '잘 보이게', /잘 보이게/]];
+let spHslPage = 0; const spHslDone = new Set(); // 1019k: 메인 화면 칸은 [다 했어요]를 누를 때까지 '다 채움 → 다음 할 일로' 넘어가지 않음
+const SP_HSL = [['media', '사진', /무엇을 보여줄까요|대표 사진|유튜브 주소|영상 주소/], ['layout', '레이아웃', /레이아웃/], ['text', '글자', /글자\s*·\s*효과|나타나는 모습/], ['crop', '보일 부분', /보일 부분/], ['shade', '잘 보이게', /잘 보이게/], ['scroll', '스크롤 버튼', /^\b$/]];
 function spHeroSlides(body) {
     if (!body || !spOpt('flow', 'heroSlide')) return;
     const kids = [...body.children].filter(c => !c.classList.contains('hsl') && !c.hasAttribute('data-hsl-rest'));
@@ -12311,9 +12315,17 @@ function spHeroSlides(body) {
         if (!pages[k]) { pages[k] = []; order.push(k); }
         pages[k].push(c);
     });
+    // 1019k: ↓ 스크롤 버튼도 한 장으로 (예전엔 맨 아래 '스크롤 버튼 모양 바꾸기' 글자 링크로 다른 화면에 가야 했음)
+    const toScroll = rest.find(c => c.id === 'spToScroll');
+    if (toScroll && spOpt('flow', 'heroSlideScroll')) { try {
+        const tmp = document.createElement('div'); spHeroScroll(tmp);
+        tmp.querySelectorAll(':scope > .wz-h, :scope > .wz-lead, :scope > .sp-sum, :scope > .sp-shade, :scope > .wz-hint').forEach(x => x.remove());
+        tmp.querySelectorAll('.nbx-nopv').forEach(x => x.classList.remove('nbx-nopv'));
+        if (tmp.children.length) { pages.scroll = [...tmp.children]; rest.splice(rest.indexOf(toScroll), 1); toScroll.remove(); }
+    } catch (e) { console.warn(e); } }
     const ks = SP_HSL.map(x => x[0]).filter(k => pages[k]); if (ks.length < 2) return;
     const box = document.createElement('div'); box.className = 'hsl';
-    box.innerHTML = `<div class="hsl-tabs" role="tablist">${ks.map((k, i) => `<button type="button" role="tab" id="hslT${i}" aria-controls="hslP${i}" data-hsl="${i}"><i>${i + 1}</i>${SP_HSL.find(x => x[0] === k)[1]}</button>`).join('')}</div><div class="hsl-track"></div>`;
+    box.innerHTML = `<div class="hsl-tabs" role="tablist">${ks.map((k, i) => `<button type="button" role="tab" id="hslT${i}" aria-controls="hslP${i}" data-hsl="${i}"><i>${i + 1}</i>${SP_HSL.find(x => x[0] === k)[1]}</button>`).join('')}</div><div class="hsl-track"></div><div class="hsl-nav"><button type="button" class="hsl-prev" data-hsl-go="-1">이전</button><button type="button" class="hsl-next" data-hsl-go="1">다음</button></div>`;
     const track = box.querySelector('.hsl-track');
     ks.forEach((k, i) => { const pg = document.createElement('div'); pg.className = 'hsl-pg'; pg.dataset.k = k; pg.setAttribute('role', 'tabpanel'); pg.id = 'hslP' + i; pg.setAttribute('aria-labelledby', 'hslT' + i); pages[k].forEach(c => pg.appendChild(c)); track.appendChild(pg); });
     body.prepend(box); rest.forEach(c => { c.setAttribute('data-hsl-rest', ''); body.appendChild(c); });
@@ -12322,10 +12334,23 @@ function spHeroSlides(body) {
     const fitH = () => { const p = pgs[on]; if (p) track.style.height = p.offsetHeight + 'px'; };
     const settle = () => pgs.forEach((p, j) => { p.inert = j !== on; }); // (안 보이는 장 칸으로 Tab·읽기 프로그램이 들어가지 않게 - 멈춘 뒤에만, 밀어 넘기는 동안은 풀어 둠)
     let st = 0; const settleSoon = () => { pgs.forEach(p => { p.inert = false; }); clearTimeout(st); st = setTimeout(settle, 160); };
-    const mark = i => { if (i === on) return; on = i; spHslPage = i; tabs.forEach((t, j) => { t.classList.toggle('on', j === i); t.setAttribute('aria-selected', j === i); }); fitH();
+    const nmOf = j => (SP_HSL.find(x => x[0] === ks[j]) || [])[1] || '';
+    const navUp = () => { const pv = box.querySelector('.hsl-prev'), nx = box.querySelector('.hsl-next'); if (pv) pv.hidden = on <= 0; if (nx) { const last = on >= pgs.length - 1; nx.classList.toggle('last', last); nx.textContent = last ? '다 했어요 · 다음 할 일로' : `다음 · ${nmOf(on + 1)}`; } };
+    const mark = i => { if (i === on) return; on = i; spHslPage = i; tabs.forEach((t, j) => { t.classList.toggle('on', j === i); t.setAttribute('aria-selected', j === i); }); fitH(); navUp();
         if (ro) { ro.disconnect(); ro.observe(pgs[i]); } const t = tabs[i], tb = box.querySelector('.hsl-tabs'); if (t && tb) { const r = t.getBoundingClientRect(), R = tb.getBoundingClientRect(); if (r.left < R.left + 8 || r.right > R.right - 8) tb.scrollTo({ left: tb.scrollLeft + r.left - R.left - 16, behavior: 'smooth' }); } };
     if ('ResizeObserver' in window) ro = new ResizeObserver(fitH);
-    tabs.forEach((t, i) => t.addEventListener('click', () => { track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' }); mark(i); }));
+    const goPg = i => { i = Math.max(0, Math.min(pgs.length - 1, i)); track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' }); mark(i); const li = box.closest('.spb-li'); if (li) { const r = li.getBoundingClientRect(), P = document.getElementById('simplePane'); if (P && r.top < P.getBoundingClientRect().top) li.scrollIntoView({ block: 'start', behavior: 'smooth' }); } };
+    tabs.forEach((t, i) => t.addEventListener('click', () => goPg(i)));
+    box.querySelector('.hsl-prev')?.addEventListener('click', () => goPg(on - 1));
+    box.querySelector('.hsl-next')?.addEventListener('click', () => {
+        if (on < pgs.length - 1) { goPg(on + 1); return; }
+        const li = box.closest('.spb-li'), k = li && li.dataset.li; if (!k) return; // 마지막 장: 칸을 닫고 다음 할 일로 (다 채웠으면 접히며 사라짐 → 다음 칸이 열림)
+        spHslPage = 0;
+        if (li.classList.contains('done') && spHideDone(spLastChecks.filter(c => !c.ok && !c.info))) { spHslDone.add(k); spLeaveSoon(k, 0); return; }
+        const nx = [...document.querySelectorAll('#simplePane .spb-grp:not(.spb-add) .spb-li[data-li].warn')].find(x => x.dataset.li !== k);
+        spOpenSet = nx ? new Set([nx.dataset.li]) : new Set(); spRender();
+        if (nx) setTimeout(() => { const el = document.querySelector(`#simplePane .spb-li[data-li="${CSS.escape(nx.dataset.li)}"]`); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60);
+    });
     let raf = 0; track.addEventListener('scroll', () => { settleSoon(); cancelAnimationFrame(raf); raf = requestAnimationFrame(() => mark(Math.round(track.scrollLeft / Math.max(1, track.clientWidth)))); }, { passive: true });
     const start = Math.min(spHslPage, pgs.length - 1);
     requestAnimationFrame(() => { track.scrollLeft = start * track.clientWidth; mark(start); settle(); });
@@ -12535,7 +12560,7 @@ function spHeroScroll(box) {
     const after = () => { spChanged(); scheduleSnapshot(); spHeroScroll.play = true; spRender(); setTimeout(spScrollToNextBtn, 60); };
     box.querySelector('#spHeroBack').addEventListener('click', () => { spHeroPhase = 'pick'; spRender(); });
     box.querySelectorAll('.sp-nbx').forEach(nx => nbxBind(nx, f, ch => ch ? after() : spRender()));
-    box.querySelectorAll('.sp-shade').forEach(sh => { bindShadeField(sh, b); sh.addEventListener('click', ev => { if (ev.target.closest('[data-shade], [data-shade-lv]')) setTimeout(() => spRender(), 0); }); });
+    box.querySelectorAll('.sp-shade').forEach(sh => { bindShadeField(sh, b); }); // (1019k: 여기서 또 spRender 하던 것 뺌 - bindShadeField가 이미 다시 그림 → 한 번 누르면 두 번 다시 그렸음)
     box.querySelectorAll('[data-sp-nb]').forEach(c => c.addEventListener('click', () => {
         const v = c.dataset.spNb;
         if (v === 'none') f.nextBtn = false; else { feFx.playNext = true; f.nextBtn = true; f.nextStyle = v; } // 모양을 누를 때마다 등장 효과 재생 → 1.3초 → 한 번 더
@@ -12953,7 +12978,7 @@ function spHero(box) {
         box.querySelectorAll('.sp-n').forEach(x => x.remove());
     }
     const cropBox = box.querySelector('#spCropBox'); if (cropBox) spPhotoCrop(cropBox, hp);
-    box.querySelectorAll('.sp-shade').forEach(sh => { const blk = spBlock(sh.dataset.blk); bindShadeField(sh, blk); sh.addEventListener('click', e => { if (e.target.closest('[data-shade], [data-shade-lv]')) setTimeout(() => spRender(), 0); }); });
+    box.querySelectorAll('.sp-shade').forEach(sh => { const blk = spBlock(sh.dataset.blk); bindShadeField(sh, blk); });
     const vfpBox = box.querySelector('#spVfpBox'); if (vfpBox) { try { appendVideoFocusControls(vfpBox, hv); const lb = vfpBox.querySelector('[data-vfp-lb]'); if (lb) lb.textContent = '확대 (꽉 채우기)'; } catch (e) { console.warn(e); } }
     box.querySelectorAll('[data-sp-kind]').forEach(b => b.addEventListener('click', () => { if (b.dataset.spKind !== spHeroKind()) { spSetHeroKind(b.dataset.spKind); spForceFull(spHeroCur().b); spChanged(); spRender(); } }));
     const yt = box.querySelector('#spYt'); if (yt) yt.addEventListener('change', () => { hv.fields.youtubeId = extractYoutubeId(yt.value); spChanged(['heroVideo']); scheduleSnapshot(); });
