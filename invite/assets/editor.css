@@ -5748,3 +5748,22 @@ html.simple-mode.sp-pv body::before { content: ''; position: fixed; left: 0; rig
 .accd-fold .h s { position: absolute; right: 6px; top: 4px; width: 5px; height: 5px; border-right: 1.5px solid #6E655B; border-bottom: 1.5px solid #6E655B; transform: rotate(45deg); }
 .accd-row .width-btn.opt-pic-btn { width: auto !important; max-width: none !important; flex: none !important; opacity: 1 !important; color: var(--ink, #2B2320) !important; }
 .accd-row .opt-pic-btn small { white-space: normal; line-height: 1.3; text-align: center; }
+/* ===== 1019n 휴대폰 전문가 모드 처음 1회: 보는 모습 버튼 손가락 안내 (editor.js mobViewDemo) ===== */
+.mvd { position: fixed; inset: 0; z-index: 3000; pointer-events: none; opacity: 0; transition: opacity .22s cubic-bezier(.23,1,.32,1); }
+.mvd.on { opacity: 1; } .mvd.out { opacity: 0; transition-duration: .18s; }
+.mvd-cap { position: absolute; left: 16px; right: 16px; top: calc(env(safe-area-inset-top) + 86px); padding: 11px 14px; border-radius: 14px; background: rgba(43,35,32,.92); color: #fff; font-size: 13.5px; font-weight: 700; line-height: 1.45; text-align: center; box-shadow: 0 8px 22px rgba(0,0,0,.2); }
+.mvd-lab { position: absolute; left: 16px; bottom: 150px; padding: 9px 13px; border-radius: 12px; background: #fff; color: #2B2320; font-size: 13px; font-weight: 800; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.mvd-lab.in { animation: mvdIn .24s cubic-bezier(.23,1,.32,1); }
+@keyframes mvdIn { from { opacity: 0; transform: translateY(6px); } }
+.mvd-fg { position: absolute; left: 0; top: 0; width: 34px; height: 40px; fill: #fff; stroke: #2B2320; stroke-width: 1.5; stroke-linejoin: round; filter: drop-shadow(0 4px 8px rgba(0,0,0,.3)); transform-origin: 8px 4px; }
+@media (prefers-reduced-motion: reduce) { .mvd, .mvd-lab.in { transition: none; animation: none; } }
+/* ===== 1019n 계좌 A안: 왼쪽 작은 미리보기 + 오른쪽 모양 2줄 (작은 청첩장 창 대신) ===== */
+.sp-accc-wrap { display: flex; gap: 10px; align-items: flex-start; }
+.sp-accmini { flex: none; width: 128px; min-height: 90px; position: sticky !important; top: 8px; align-self: flex-start; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 0 0 1.5px var(--wz-ink, #1B1A18), 0 6px 16px rgba(0,0,0,.08); position: relative; pointer-events: none; transition: height .2s cubic-bezier(.23,1,.32,1); }
+.sp-accmini-in { transform-origin: 0 0; position: absolute; left: 0; top: 0; }
+.sp-accmini-in .col { margin: 0 !important; }
+.sp-accmini-none { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-size: 11px; color: var(--wz-sub, #6E665E); line-height: 1.5; }
+.sp-accmini.flash { animation: spAccFlash .5s cubic-bezier(.23,1,.32,1); }
+@keyframes spAccFlash { 40% { box-shadow: 0 0 0 1.5px var(--wz-ink, #1B1A18), 0 0 0 6px rgba(233, 201, 143, .55); } }
+.sp-accc-wrap .sp-accc-g { flex: 1; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+@media (prefers-reduced-motion: reduce) { .sp-accmini { transition: none; } .sp-accmini.flash { animation: none; } }
