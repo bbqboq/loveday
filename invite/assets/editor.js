@@ -13957,7 +13957,13 @@ function spAccMiniFill() {
     box.innerHTML = `<div class="sp-accmini-in" style="width:${W}px;transform:scale(${k.toFixed(4)})"><div class="${esc(rc)}" style="${esc(rs)};background:var(--p-bg)"></div></div>`; // (청첩장 틀 class는 transform을 막아서 바깥 칸에서 줄임)
     const inn = box.firstElementChild; inn.firstElementChild.appendChild(cl);
     { const top = cl.getBoundingClientRect().top; let bot = 0; cl.querySelectorAll('*').forEach(e => { if (!e.childElementCount && e.getClientRects().length) bot = Math.max(bot, e.getBoundingClientRect().bottom - top); }); // (섹션 아래 빈 여백은 빼고 내용 끝까지만)
-      box.style.height = Math.max(90, Math.min(380, Math.round((bot || inn.offsetHeight * k) + 14 * k))) + 'px'; }
+      const want = (bot || inn.offsetHeight * k) + 14 * k, H = box.parentElement?.querySelector('.sp-accc-g')?.offsetHeight || 0; // 1019o: 오른쪽 모양 버튼 줄과 같은 높이
+      if (H >= 90) { // 내용이 더 길면 통째로 들어가게 더 줄이고 가운데로, 짧으면 위아래 가운데
+          const k2 = Math.min(k, k * H / want), w = box.clientWidth || 128;
+          inn.style.transform = `translate(${((w - W * k2) / 2).toFixed(1)}px, ${Math.max(0, (H - want * k2 / k) / 2).toFixed(1)}px) scale(${k2.toFixed(4)})`;
+          box.style.height = H + 'px';
+          try { box.style.background = getComputedStyle(inn.firstElementChild).backgroundColor; } catch (e) {}
+      } else box.style.height = Math.max(90, Math.min(380, Math.round(want))) + 'px'; }
     if (!spAccMiniObs && 'MutationObserver' in window) { spAccMiniObs = new MutationObserver(() => { if (!document.getElementById('spAccMini')) return; clearTimeout(spAccMiniT); spAccMiniT = setTimeout(spAccMiniFill, 160); }); spAccMiniObs.observe(root, { childList: true, subtree: true, characterData: true }); }
 }
 function spAccPicsBind(box, f) {
