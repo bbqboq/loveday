@@ -2738,7 +2738,7 @@ function renderExtraSettings() {
             let input;
             if (d.type === 'scrollbar') {
                 // 실제로 스크롤되는 작은 칸에 각 모양을 입혀서 보여준다 (PC 크롬·엣지·사파리 기준 모양 그대로)
-                const cur = (!val || val === 'default') ? (window.InviteBlocks && InviteBlocks.sbDefault ? InviteBlocks.sbDefault() : 'default') : val; // (고른 적 없으면 그레이 페이드 - 1019p)
+                const cur = (!val || val === 'default') ? (window.InviteBlocks && InviteBlocks.sbDefault ? InviteBlocks.sbDefault() : 'default') : ((window.InviteBlocks && InviteBlocks.SB_OLD && InviteBlocks.SB_OLD[val]) || val); // (고른 적 없으면 그레이 페이드 - 1019p)
                 input = `<div class="sbp-grid">${(window.InviteBlocks ? InviteBlocks.SCROLLBARS : [['default', '기본']]).map(([n, l]) =>
                     `<button type="button" class="sbp-opt ${cur === n ? 'active' : ''}" data-xs-sb="${n}"><span class="sbp-demo sb-${n}"><i></i></span><span>${esc(l)}</span></button>`).join('')}</div>`;
             } else if (d.type === 'sbcolor') {
