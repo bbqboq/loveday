@@ -796,6 +796,40 @@ window.__historyDebug = () => console.log({
 let selectedParts = new Set(); // "blockId::partKey" 형태로 저장
 let gridSnapEnabled = true;
 let touchDragMode = true; // 터치로도 바로 드래그 가능(끄면 스크롤이 우선되고, 탭으로만 선택/편집)
+// ===== 1019o 스크롤 잠금: 휴대폰으로 미리보기를 스크롤하다 손가락이 글자·스티커에 닿아 밀어 버리는 것 막기 =====
+// 손가락(touch)일 때만: ① 스크롤 중이거나 멈춘 지 0.45초 안이면 끌기를 아예 시작 안 함(그대로 스크롤)
+// ② 그 밖엔 0.2초 꾹 누르고 있어야 끌기가 켜짐(톡 진동 + 들어 올린 표시) - 그 전에 8px 넘게 움직이면 스크롤로 보고 놓아 줌
+// ③ 이미 골라 둔 것(선택 표시가 있는 것)은 바로 끌림. 탭(선택)은 예전 그대로.
+// CSS: html.ld-slock이면 글자·스티커 touch-action을 pan-y로 (세로 스크롤은 브라우저가, 끌기가 켜진 뒤엔 touchmove를 막음)
+// 끄기: 관리자 간편 만들기 전체 flow.scrollLock (전문가 모드에도 - EXP_FLOW) · 되돌리기: 이 덩어리 + slock* 부르는 곳 + editor.css '1019o'
+const SLOCK = { at: 0, hold: null };
+function slockOn() { try { return typeof spOpt !== 'function' || spOpt('flow', 'scrollLock'); } catch (e) { return true; } }
+function slockSync() { document.documentElement.classList.toggle('ld-slock', slockOn()); }
+document.addEventListener('scroll', () => { SLOCK.at = performance.now(); }, { capture: true, passive: true });
+document.addEventListener('touchmove', e => { if (SLOCK.hold && SLOCK.hold.armed && e.cancelable) e.preventDefault(); }, { passive: false });
+// pointerdown에서: null = 잠금 안 씀(마우스 등) · 'skip' = 스크롤 중이라 무시 · 객체 = 꾹 누르기 기다림
+function slockGate(e, el, ready) {
+    if (e.pointerType !== 'touch' || !slockOn()) return null;
+    if (performance.now() - SLOCK.at < 450) return 'skip';
+    const g = { x: e.clientX, y: e.clientY, armed: false, dead: false, el };
+    const arm = () => { if (g.dead) return; g.armed = true; el.classList.add('slk-armed'); try { navigator.vibrate && navigator.vibrate(8); } catch (err) {} };
+    if (ready) arm(); else g.t = setTimeout(arm, 200);
+    SLOCK.hold = g;
+    return g;
+}
+// pointermove에서: true = 움직여도 됨 · false = 아직(또는 스크롤이라 놓아 줌)
+function slockMove(g, e) {
+    if (!g || typeof g !== 'object') return true;
+    if (g.armed) return true;
+    if (g.dead) return false;
+    if (Math.abs(e.clientX - g.x) > 8 || Math.abs(e.clientY - g.y) > 8 || performance.now() - SLOCK.at < 120) { slockEnd(g); g.dead = true; }
+    return false;
+}
+function slockEnd(g) {
+    if (!g || typeof g !== 'object') return;
+    clearTimeout(g.t); g.el.classList.remove('slk-armed');
+    if (SLOCK.hold === g) SLOCK.hold = null;
+}
 const GRID_STEP = 2; // % 단위 - 촘촘한 그리드(50칸)
 function snapToGrid(v) { return gridSnapEnabled ? Math.round(v / GRID_STEP) * GRID_STEP : v; }
 
@@ -5510,15 +5544,19 @@ function initStickerDragging() {
     // (#globalStickerLayer는 드래그 도중에만 잠깐 쓰는 빈 "비행 레이어").
     document.querySelectorAll('#previewRoot .sticker-el').forEach(el => {
         el.addEventListener('dragstart', e => e.preventDefault()); // 이미지 태그의 기본 드래그가 커스텀 드래그와 충돌하는 것 방지
-        let dragging = false, moved = false, startX = 0, startY = 0, startLeftPx = 0, startTopPx = 0;
+        let dragging = false, moved = false, startX = 0, startY = 0, startLeftPx = 0, startTopPx = 0, slk = null;
         el.addEventListener('pointerdown', e => {
+            slockEnd(slk); slk = slockGate(e, el, el.classList.contains('selected')); // 1019o 스크롤 잠금
+            if (slk === 'skip') { slk = null; return; }
             dragging = true; moved = false;
             el.setPointerCapture(e.pointerId);
             startX = e.clientX; startY = e.clientY;
             e.stopPropagation();
         });
+        el.addEventListener('pointercancel', () => { if (slk) slk.dead = true; });
         el.addEventListener('pointermove', e => {
             if (!dragging) return;
+            if (!slockMove(slk, e)) { if (slk && slk.dead) { try { el.releasePointerCapture(e.pointerId); } catch (err) {} } return; }
             const dx = e.clientX - startX, dy = e.clientY - startY;
             if (!moved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
                 // 드래그가 실제로 시작되는 순간에만 "비행 레이어"(#globalStickerLayer)로 옮긴다 - 그래야
@@ -5549,6 +5587,8 @@ function initStickerDragging() {
         const finishDrag = () => {
             if (!dragging) return;
             dragging = false; el.classList.remove('stk-lift');
+            const slkDead = slk && slk.dead; slockEnd(slk); slk = null;
+            if (slkDead) return; // 1019o: 스크롤로 보고 놓아 준 손가락 - 선택도 안 함
             const stickerId = el.dataset.stickerId;
             const sticker = findSticker(stickerId);
             if (moved && sticker) {
@@ -5764,16 +5804,20 @@ function initCustomTextDragging() {
     const root = document.getElementById('previewRoot');
     // 스티커와 마찬가지로 평소엔 자기 섹션(.col)의 자식으로 %에 그려져 있으므로 #previewRoot 안에서 찾는다.
     document.querySelectorAll('#previewRoot .custom-text-el').forEach(el => {
-        let dragging = false, moved = false, startX = 0, startY = 0, startLeftPx = 0, startTopPx = 0;
+        let dragging = false, moved = false, startX = 0, startY = 0, startLeftPx = 0, startTopPx = 0, slk = null;
         el.addEventListener('pointerdown', e => {
             if (el.isContentEditable) return;
+            slockEnd(slk); slk = slockGate(e, el, el.classList.contains('selected')); // 1019o 스크롤 잠금
+            if (slk === 'skip') { slk = null; return; }
             dragging = true; moved = false;
             el.setPointerCapture(e.pointerId);
             startX = e.clientX; startY = e.clientY;
             e.stopPropagation();
         });
+        el.addEventListener('pointercancel', () => { if (slk) slk.dead = true; });
         el.addEventListener('pointermove', e => {
             if (!dragging) return;
+            if (!slockMove(slk, e)) { if (slk && slk.dead) { try { el.releasePointerCapture(e.pointerId); } catch (err) {} } return; }
             const dx = e.clientX - startX, dy = e.clientY - startY;
             if (!moved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
                 // 드래그가 실제로 시작되는 순간에만 "비행 레이어"(#globalStickerLayer)로 옮긴다 - 스티커와
@@ -5800,6 +5844,8 @@ function initCustomTextDragging() {
         const finishDrag = () => {
             if (!dragging) return;
             dragging = false;
+            const slkDead = slk && slk.dead; slockEnd(slk); slk = null;
+            if (slkDead) return; // 1019o: 스크롤로 보고 놓아 준 손가락 - 선택도 안 함
             const ctId = el.dataset.ctId;
             const ct = findCustomText(ctId);
             if (moved && ct) {
@@ -7557,9 +7603,11 @@ function dragRange(blockId, start) {
     return isFinite(v) ? [Math.min(lo, v), Math.max(hi, v)] : [lo, hi];
 }
 function initDraggableOverlays() {
+    slockSync(); // 1019o 스크롤 잠금 (관리자 flow.scrollLock)
     const CLICK_THRESHOLD = 4; // 이 픽셀 이하로 움직이면 드래그가 아니라 클릭으로 간주
     document.querySelectorAll('#previewRoot [data-drag-el]').forEach(el => {
         let dragging = false, moved = false, startX = 0, startY = 0, startLeft = 0, startTop = 0, rect = null, groupItems = null, dragCanvasEl = null;
+        let slk = null; // 1019o 스크롤 잠금 (slockGate)
         let dragCapable = false; // 이번 제스처가 드래그로 처리될지(마우스는 항상, 터치는 '터치 드래그'가 켜져 있을 때만)
         const myKey = () => {
             const blockId = el.closest('[data-block-id]')?.dataset.blockId;
@@ -7578,6 +7626,8 @@ function initDraggableOverlays() {
             if (el.dataset.part === 'photos') return; // 갤러리 사진은 위치 이동이 없고 크기만 조절 - 탭으로만 선택, 리사이즈는 선택 후 핸들로
             dragCapable = (e.pointerType !== 'touch') || touchDragMode;
             if (!dragCapable) return; // 터치 드래그가 꺼져 있으면 아무 것도 하지 않음 → 스크롤은 브라우저가 정상 처리, 탭은 아래 'click'이 처리
+            slockEnd(slk); slk = slockGate(e, el, el.classList.contains('multi-selected') || window._activeSelection?.el === el); // 1019o 스크롤 잠금
+            if (slk === 'skip') { dragCapable = false; slk = null; return; } // 스크롤 중 - 끌기·선택 안 함
             dragging = true; moved = false;
             el.setPointerCapture(e.pointerId);
             startX = e.clientX; startY = e.clientY;
@@ -7602,6 +7652,7 @@ function initDraggableOverlays() {
         });
         el.addEventListener('pointermove', e => {
             if (!dragging || !dragCapable) return;
+            if (!slockMove(slk, e)) { if (slk && slk.dead) { dragging = false; try { el.releasePointerCapture(e.pointerId); } catch (err) {} } return; }
             if (Math.abs(e.clientX - startX) > CLICK_THRESHOLD || Math.abs(e.clientY - startY) > CLICK_THRESHOLD) moved = true;
             if (!moved) return;
             deselectPart();
@@ -7627,6 +7678,7 @@ function initDraggableOverlays() {
         });
         el.addEventListener('pointerup', e => {
             if (!dragCapable) return; // 이 경우는 네이티브 'click'이 탭을 처리함
+            slockEnd(slk); slk = null;
             if (!dragging) return;
             dragging = false;
             hideGridLines();
@@ -7660,7 +7712,7 @@ function initDraggableOverlays() {
                 selectPart(el, block, part);
             }
         });
-        el.addEventListener('pointercancel', () => { dragging = false; hideGridLines(); });
+        el.addEventListener('pointercancel', () => { dragging = false; slockEnd(slk); slk = null; hideGridLines(); });
         // 터치 드래그가 꺼져 있을 때는 pointerdown에서 아무 것도 안 하므로, 탭 선택은 브라우저의 네이티브 click에 맡김
         // (스크롤로 판단되면 브라우저가 애초에 click을 발생시키지 않기 때문에 훨씬 안정적)
         el.addEventListener('click', () => { if (!dragCapable) handleTap(); });
@@ -13905,7 +13957,7 @@ function spAccMiniFill() {
     box.innerHTML = `<div class="sp-accmini-in" style="width:${W}px;transform:scale(${k.toFixed(4)})"><div class="${esc(rc)}" style="${esc(rs)};background:var(--p-bg)"></div></div>`; // (청첩장 틀 class는 transform을 막아서 바깥 칸에서 줄임)
     const inn = box.firstElementChild; inn.firstElementChild.appendChild(cl);
     { const top = cl.getBoundingClientRect().top; let bot = 0; cl.querySelectorAll('*').forEach(e => { if (!e.childElementCount && e.getClientRects().length) bot = Math.max(bot, e.getBoundingClientRect().bottom - top); }); // (섹션 아래 빈 여백은 빼고 내용 끝까지만)
-      box.style.height = Math.max(90, Math.min(280, Math.round((bot || inn.offsetHeight * k) + 14 * k))) + 'px'; }
+      box.style.height = Math.max(90, Math.min(380, Math.round((bot || inn.offsetHeight * k) + 14 * k))) + 'px'; }
     if (!spAccMiniObs && 'MutationObserver' in window) { spAccMiniObs = new MutationObserver(() => { if (!document.getElementById('spAccMini')) return; clearTimeout(spAccMiniT); spAccMiniT = setTimeout(spAccMiniFill, 160); }); spAccMiniObs.observe(root, { childList: true, subtree: true, characterData: true }); }
 }
 function spAccPicsBind(box, f) {
@@ -16030,9 +16082,22 @@ function pubCheckThen(go) {
     el.querySelector('[data-pc-pub]').focus({ preventScroll: true });
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('pubChk')) { e.stopPropagation(); pubClose(); } }, true);
-document.getElementById('previewBtn')?.addEventListener('click', () => {
-    // 새 탭 이동(기본 링크 동작)은 그대로 두고, 최신 상태 반영을 위해 조용히 임시저장도 같이 보냄
-    if (EDIT_TOKEN) saveToServer(false, true);
+// 1019o: [미리보기] = 지금 고친 디자인을 그대로 보내서 하객 화면으로 그림 (저장 안 됨 · 새 탭)
+//  예전엔 링크(preview_t / 짧은 주소)를 바로 열고 저장은 같이 보내서 - 저장이 끝나기 전에 열리거나(늦음)
+//  처음 저장 관문(이름·날짜) 전이면 아예 저장이 안 돼서 서버에 남은 예전 디자인(섹션 몇 개만)이 보였음
+function pvOpenNow() {
+    if (!EDIT_TOKEN || SAMPLE_ID) return false;
+    let design = ''; try { design = JSON.stringify(JSON.parse(saveBody(false)).design); } catch (e) { return false; }
+    if (!design || design.length > 3000000) return false;
+    const fm = document.createElement('form'); fm.method = 'post'; fm.target = '_blank'; fm.hidden = true;
+    fm.action = `invite_view.php?preview_t=${encodeURIComponent(EDIT_TOKEN)}&_=${Date.now()}`;
+    const inp = document.createElement('input'); inp.type = 'hidden'; inp.name = 'design'; inp.value = design;
+    fm.appendChild(inp); document.body.appendChild(fm); fm.submit(); fm.remove();
+    return true;
+}
+document.getElementById('previewBtn')?.addEventListener('click', e => {
+    if (pvOpenNow()) e.preventDefault(); // (못 보내면 예전처럼 링크)
+    if (EDIT_TOKEN && saveGateOk()) saveToServer(false, true); // 최신 상태 저장도 같이 (예전 그대로)
 });
 
 // ============ PC: 방향키로 미세 이동 ============
@@ -17333,7 +17398,7 @@ const mmAct = {
     settings: () => document.getElementById(mmPc() ? 'pcSettingsBtn' : 'controlsFab')?.click(),
     text: () => document.getElementById('addTextTopBtn')?.click(),
     intro: () => document.getElementById('introSettingsBtn')?.click(),
-    preview: () => { const a = document.getElementById('previewBtn'); if (a && a.getAttribute('href') && a.getAttribute('href') !== '#') window.open(a.href, '_blank', 'noopener'); else a?.click(); },
+    preview: () => { if (pvOpenNow()) return; const a = document.getElementById('previewBtn'); if (a && a.getAttribute('href') && a.getAttribute('href') !== '#') window.open(a.href, '_blank', 'noopener'); else a?.click(); },
     home: () => { const a = document.getElementById('mainHomeBtnTop'); if (a && a.style.display !== 'none' && a.getAttribute('href')) location.href = a.href; else document.getElementById('backToInfo')?.click(); },
     sticker: anchor => setTimeout(() => { // 원래 버튼(숨김)으로 팔레트를 열고, 누른 버튼 옆으로 옮김
         const pal = document.getElementById('stickerPalette'); if (!pal) return;

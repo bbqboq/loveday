@@ -5767,3 +5767,24 @@ html.simple-mode.sp-pv body::before { content: ''; position: fixed; left: 0; rig
 @keyframes spAccFlash { 40% { box-shadow: 0 0 0 1.5px var(--wz-ink, #1B1A18), 0 0 0 6px rgba(233, 201, 143, .55); } }
 .sp-accc-wrap .sp-accc-g { flex: 1; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 @media (prefers-reduced-motion: reduce) { .sp-accmini { transition: none; } .sp-accmini.flash { animation: none; } }
+
+/* ===== 1019o 스크롤 잠금 (휴대폰 전문가 모드: 스크롤하다 글자·스티커를 밀지 않게 · editor.js slockGate) =====
+   세로 스크롤은 브라우저에 맡기고, 0.2초 꾹 눌러 끌기가 켜지면(slk-armed) 테두리로 알림. 되돌리기 = 이 덩어리 지우기 */
+html.ld-slock .preview-pane.touch-drag-on .drag-part,
+html.ld-slock #previewRoot .sticker-el,
+html.ld-slock #previewRoot .custom-text-el { touch-action: pan-y; }
+html.ld-slock .drag-part.selected, html.ld-slock .drag-part.multi-selected,
+html.ld-slock #previewRoot .sticker-el.selected, html.ld-slock #previewRoot .custom-text-el.selected { touch-action: none; }
+.drag-part.slk-armed, .custom-text-el.slk-armed { outline: 2px solid var(--ui-point, #E0A72E); outline-offset: 3px; transition: outline-offset .12s cubic-bezier(.23,1,.32,1); }
+.sticker-el.slk-armed { filter: drop-shadow(0 6px 10px rgba(0,0,0,.28)); }
+
+/* 1019o 계좌 A안: 왼쪽 미리보기 크게 (칸의 54%) · 오른쪽 모양 버튼 작게 (아이콘 + 이름 한 줄) - 되돌리기 = 이 덩어리 지우기 */
+.sp-accc-wrap { gap: 8px; }
+.sp-accc-wrap .sp-accmini { width: 54%; max-width: 260px; }
+.sp-accc-wrap .sp-accc-g { gap: 3px; grid-template-columns: minmax(0, 1fr) !important; }
+.sp-accc-wrap .sp-accc-b { flex-direction: row; justify-content: flex-start; gap: 7px; min-height: 30px; padding: 3px 8px 3px 6px; border-radius: 9px; border-width: 1px; }
+.sp-accc-wrap .sp-accc-b b { font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.sp-accc-wrap .sp-acci { flex: none; width: 22px; height: 18px; padding: 0 2px; gap: 2px; border-radius: 4px; }
+.sp-accc-wrap .sp-acci s { height: 4px; }
+.sp-accc-wrap .sp-acci-basic s { height: 5px; } .sp-accc-wrap .sp-acci-outline s { height: 5px; border-width: 1px; } .sp-accc-wrap .sp-acci-vintage { border-width: 2px; } .sp-accc-wrap .sp-acci-vintage s { height: 3px; }
+.sp-accc-wrap .sp-acci-line { gap: 4px; } .sp-accc-wrap .sp-acci-free s { height: 2px; } .sp-accc-wrap .sp-acci-free s + s { box-shadow: 0 4px 0 #D9D2C8; margin-bottom: 4px; }
