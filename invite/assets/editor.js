@@ -5325,7 +5325,7 @@ function makeStickerPopupDraggable(popup) {
         const move = ev => {
             const dx = ev.clientX - sx, dy = ev.clientY - sy;
             if (!moved && Math.abs(dx) + Math.abs(dy) < 3) return;
-            if (!moved) { moved = true; popup.classList.add('dragging'); }
+            if (!moved) { moved = true; popup.style.animation = 'none'; popup.classList.add('dragging'); } // (1019o: 등장 효과는 한 번만 - 끌기를 끝내며 다시 재생돼 팝업이 튀던 것)
             clampStickerPopup(popup, r.left + dx, r.top + dy);
         };
         const up = () => {
@@ -19154,7 +19154,7 @@ function lpClampLater(pop) { clearTimeout(lpClampLater.t); lpClampLater.t = setT
         e.preventDefault();
         const [lo, hi] = lpRange(pop);
         d = { pop, id: e.pointerId, y0: e.clientY, s0: lpY, lo, hi, moved: false };
-        pop.classList.add('lp-drag');
+        pop.style.animation = 'none'; pop.classList.add('lp-drag'); // (1019o: 손을 뗄 때 등장 효과가 다시 재생되지 않게)
         try { h.setPointerCapture(e.pointerId); } catch (er) {}
     }, true);
     document.addEventListener('pointermove', e => {
