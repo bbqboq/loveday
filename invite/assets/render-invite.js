@@ -1231,6 +1231,13 @@ function renderInviteReadOnly(rootEl, design, masked) {
     anchoredGroups.forEach(({ stickers, customTexts }, containerEl) => {
         containerEl.insertAdjacentHTML('beforeend', renderStickersHtml(stickers) + renderCustomTextsHtml(customTexts));
     });
+    anchoredGroups.forEach(({ stickers, customTexts }, containerEl) => { // 1019p: 첫 화면 사진에 붙은 것 (InviteBlocks.pinPhotoItems)
+        [...stickers.map(it => ['data-sticker-id', it]), ...customTexts.map(it => ['data-ct-id', it])].forEach(([a, it]) => {
+            if (it.pu == null || it.pv == null) return;
+            const el = containerEl.querySelector(`[${a}="${String(it.id).replace(/"/g, '')}"]`); if (el) { el.dataset.pu = it.pu; el.dataset.pv = it.pv; }
+        });
+    });
+    if (window.InviteBlocks && InviteBlocks.pinPhotoItems) InviteBlocks.pinPhotoItems(rootEl);
 
     rootEl.querySelectorAll('.blk-gallery .grid:not(.no-lightbox) img').forEach(img => {
         img.addEventListener('click', () => openLightbox(img));

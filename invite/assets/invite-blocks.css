@@ -628,6 +628,30 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-ghost-bar.mist { border: 0; background: var(--sb-mist, rgba(128,128,128,.3)); box-shadow: none; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
 .ib-ghost-bar.mist.on:hover, .ib-ghost-bar.mist.drag { background: rgba(128,128,128,.45); }
 @media (prefers-reduced-motion: reduce) { .ib-ghost-bar, .ib-ghost-bar.on { transition: none; } }
+/* 1019p: 모든 꾸민 스크롤바 = 직접 그리는 막대 (.sb-ov: 기기 스크롤바는 숨김 · 스크롤할 때만 막대가 나타남) - 되돌리기 = 이 덩어리 지우고 invite-blocks.js SB_OVERLAY 비우기 */
+.sb-ov { scrollbar-width: none !important; }
+.sb-ov::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
+.ib-ghost-bar.v-thin { width: 4px; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--sb-muted, #8A7F72) 60%, transparent); }
+.ib-ghost-bar.v-slim { width: 6px; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--sb-ink, #2B2320) 62%, transparent); }
+.ib-ghost-bar.v-soft { width: 8px; border: 0; box-shadow: 0 0 0 3px color-mix(in srgb, var(--sb-line, #E1D6C6) 45%, transparent); -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--sb-muted, #8A7F72) 45%, transparent); }
+.ib-ghost-bar.v-accent { width: 7px; border: 0; box-shadow: 0 0 0 2px color-mix(in srgb, var(--sb-bg, #fff) 70%, transparent); -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--sb-accent, #7A3B41); }
+.ib-ghost-bar.v-gradient { width: 7px; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(180deg, var(--sb-accent, #7A3B41), color-mix(in srgb, var(--sb-accent, #7A3B41) 35%, #fff)); }
+.ib-ghost-bar.v-outline { width: 8px; border: 2px solid var(--sb-accent, #7A3B41); box-shadow: none; background: color-mix(in srgb, var(--sb-accent, #7A3B41) 10%, transparent); }
+.ib-ghost-bar.v-dot { width: 6px; border: 0; -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--sb-accent, #7A3B41); box-shadow: 0 -10px 0 -1px color-mix(in srgb, var(--sb-accent, #7A3B41) 35%, transparent), 0 10px 0 -1px color-mix(in srgb, var(--sb-accent, #7A3B41) 35%, transparent); }
+.ib-ghost-bar.on:is(.v-thin, .v-slim, .v-soft, .v-accent, .v-gradient, .v-dot):hover, .ib-ghost-bar.drag:is(.v-thin, .v-slim, .v-soft, .v-accent, .v-gradient, .v-dot) { width: 10px; margin-left: -3px; }
+/* 고르기 카드 미리보기도 막대가 나타났다 사라지는 모습으로 */
+.sbp-demo:is(.sb-thin, .sb-slim, .sb-soft, .sb-accent, .sb-gradient, .sb-outline, .sb-dot) { position: relative; overflow: hidden; }
+.sbp-demo:is(.sb-thin, .sb-slim, .sb-soft, .sb-accent, .sb-gradient, .sb-outline, .sb-dot)::after { content: ''; position: absolute; right: 3px; top: 6px; width: 6px; height: 18px; box-sizing: border-box; border-radius: 999px; animation: ibGhostDemo 2.6s ease-in-out infinite; }
+.sbp-demo.sb-thin::after { width: 4px; background: color-mix(in srgb, var(--sb-muted, #8A7F72) 60%, transparent); }
+.sbp-demo.sb-slim::after { background: color-mix(in srgb, var(--sb-ink, #2B2320) 62%, transparent); }
+.sbp-demo.sb-soft::after { width: 7px; background: color-mix(in srgb, var(--sb-muted, #8A7F72) 45%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--sb-line, #E1D6C6) 60%, transparent); }
+.sbp-demo.sb-accent::after { background: var(--sb-accent, #7A3B41); }
+.sbp-demo.sb-gradient::after { background: linear-gradient(180deg, var(--sb-accent, #7A3B41), color-mix(in srgb, var(--sb-accent, #7A3B41) 35%, #fff)); }
+.sbp-demo.sb-outline::after { width: 7px; border: 2px solid var(--sb-accent, #7A3B41); }
+.sbp-demo.sb-dot::after { width: 5px; background: var(--sb-accent, #7A3B41); }
+.sbp-demo:is(.sb-thin, .sb-slim, .sb-soft, .sb-accent, .sb-gradient, .sb-outline, .sb-dot) { scrollbar-width: none; }
+.sbp-demo:is(.sb-thin, .sb-slim, .sb-soft, .sb-accent, .sb-gradient, .sb-outline, .sb-dot)::-webkit-scrollbar { width: 0; }
+@media (prefers-reduced-motion: reduce) { .sbp-demo::after { animation: none !important; opacity: 1; } }
 /* 파이어폭스 (크롬은 이 속성이 있으면 위의 꾸민 모양을 무시하므로 파이어폭스에만) */
 @supports (-moz-appearance: none) {
     .sb-thin { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--sb-muted) 55%, transparent) transparent; }

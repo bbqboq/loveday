@@ -5788,3 +5788,7 @@ html.ld-slock #previewRoot .sticker-el.selected, html.ld-slock #previewRoot .cus
 .sp-accc-wrap .sp-acci s { height: 4px; }
 .sp-accc-wrap .sp-acci-basic s { height: 5px; } .sp-accc-wrap .sp-acci-outline s { height: 5px; border-width: 1px; } .sp-accc-wrap .sp-acci-vintage { border-width: 2px; } .sp-accc-wrap .sp-acci-vintage s { height: 3px; }
 .sp-accc-wrap .sp-acci-line { gap: 4px; } .sp-accc-wrap .sp-acci-free s { height: 2px; } .sp-accc-wrap .sp-acci-free s + s { box-shadow: 0 4px 0 #D9D2C8; margin-bottom: 4px; }
+
+/* 1019p: 휴대폰 전문가 모드 - 화면 설정 · 섹션 창이 떠 있으면 오른쪽 [도움말] 둥근 버튼 숨김 (창 안 칸을 가렸음) */
+body:has(#controlsFabBackdrop.active, #desktopFullscreenBackdrop.active, #topControls.mobile-open) .ldh-btn.fab { opacity: 0; pointer-events: none; transform: translateY(6px); }
+.ldh-btn.fab { transition: opacity .18s cubic-bezier(.23,1,.32,1), transform .18s cubic-bezier(.23,1,.32,1); }

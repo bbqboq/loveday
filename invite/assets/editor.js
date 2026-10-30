@@ -1030,10 +1030,31 @@ function scheduleEdgeAnchorMigration() {
         if (n) renderPreview();
     }, 300));
 }
+// 1019p: 첫 화면 사진 위 스티커·자유 텍스트인데 사진 속 자리(pu/pv)가 없는 예전 저장분 → 지금 에디터에 보이는 자리 그대로 한 번 바꿔 둠
+function pinMigrateSoon(root) {
+    if (!root || !window.InviteBlocks || !InviteBlocks.photoPinOf) return;
+    const todo = [...(state.stickers || []), ...(state.customTexts || [])].filter(it => it.sectionId && it.pu == null && !it._pinTried && root.querySelector(`.col[data-block-id="${it.sectionId}"] img.hero-photo`));
+    if (!todo.length) return;
+    clearTimeout(pinMigrateSoon.t);
+    pinMigrateSoon.t = setTimeout(() => {
+        let n = 0;
+        todo.forEach(it => {
+            const col = findSectionEl(root, it.sectionId), img = col && col.querySelector('img.hero-photo'); if (!img) return;
+            if (!img.naturalWidth) { img.addEventListener('load', () => pinMigrateSoon(root), { once: true }); return; }
+            Object.defineProperty(it, '_pinTried', { value: true, enumerable: false, configurable: true }); // (저장 안 됨)
+            const pt = pixelsFromAnchor(root, it), rr = root.getBoundingClientRect();
+            const pin = InviteBlocks.photoPinOf(col, rr.left + pt.x, rr.top + pt.y);
+            if (pin.pu != null) { it.pu = pin.pu; it.pv = pin.pv; n++; }
+        });
+        if (n) renderPreview();
+    }, 600);
+}
 function applyAnchorPos(el, item) { // 이미 그려진 요소의 위치만 바로 바꿀 때 (anchorTopCss와 같은 규칙)
+    if (item.pu != null && item.pv != null) { el.dataset.pu = item.pu; el.dataset.pv = item.pv; } else { delete el.dataset.pu; delete el.dataset.pv; }
     el.style.left = ((item.relX ?? 0.5) * 100) + '%';
     if (item.offY != null && (item.edgeY === 't' || item.edgeY === 'b')) { el.style.top = item.edgeY === 'b' ? '100%' : '0'; el.style.marginTop = (item.offY * 100) + '%'; }
     else { el.style.top = ((item.relY ?? 0.5) * 100) + '%'; el.style.marginTop = ''; }
+    if (item.pu != null && window.InviteBlocks && InviteBlocks.pinPhotoItems) InviteBlocks.pinPhotoItems(el.closest('#previewRoot') || document);
 }
 function findSectionEl(root, sectionId) {
     return root.querySelector(`.col[data-block-id="${sectionId}"]`);
@@ -1076,7 +1097,8 @@ function anchorFromPixels(root, xPx, yPx) {
     const box = sectionBoxRelativeToRoot(root, sectionEl);
     const relX = box.width ? (xPx - box.left) / box.width : 0.5;
     const relY = box.height ? (yPx - box.top) / box.height : 0.5;
-    return Object.assign({ sectionId: sectionEl.dataset.blockId, relX, relY }, edgeAnchor(box, yPx));
+    const rr = root.getBoundingClientRect(), pin = (window.InviteBlocks && InviteBlocks.photoPinOf) ? InviteBlocks.photoPinOf(sectionEl, rr.left + xPx, rr.top + yPx) : {};
+    return Object.assign({ sectionId: sectionEl.dataset.blockId, relX, relY, pu: pin.pu, pv: pin.pv }, edgeAnchor(box, yPx)); // (pu/pv = 첫 화면 사진 속 자리 - 1019p)
 }
 
 // 저장된 앵커(또는 예전 형식의 x/y %)를 root 기준 절대 픽셀 좌표로 되돌린다.
@@ -1087,6 +1109,8 @@ function pixelsFromAnchor(root, item) {
         const sectionEl = findSectionEl(root, item.sectionId);
         if (sectionEl) {
             const box = sectionBoxRelativeToRoot(root, sectionEl);
+            const pr = item.pu != null && window.InviteBlocks && InviteBlocks.photoRect ? InviteBlocks.photoRect(sectionEl) : null;
+            if (pr) { const rr = root.getBoundingClientRect(); return { x: pr.left + item.pu * pr.width - rr.left, y: pr.top + item.pv * pr.height - rr.top }; }
             return { x: box.left + (item.relX ?? 0.5) * box.width, y: anchorYPx(box, item) };
         }
     }
@@ -2421,7 +2445,7 @@ const EXTRA_SCHEMA = {
     // (예식 후 감사 인사는 섹션 목록의 "예식 후 감사 인사" 섹션으로 옮김 - invite-blocks.js BLOCKS.thanks)
     scrollbarCard: { title: '스크롤', fields: [
         { key: 'extras.scrollbar', label: '스크롤바', type: 'scrollbar', desc: '오른쪽 스크롤바 모양',
-          hint: 'PC 화면에서 청첩장 오른쪽에 보이는 스크롤바예요. 휴대폰은 투명 페이드·그레이 페이드만 똑같이 보이고, 나머지는 기기 기본 스크롤바예요. 미리보기 칸 스크롤바에도 바로 적용돼요.' },
+          hint: '스크롤할 때만 오른쪽에 스르르 나타났다 사라지는 막대예요. PC·휴대폰 모두 같은 모양이고, 지금 화면 오른쪽에서도 바로 보여요. \'기기 기본\'은 휴대폰·PC 원래 스크롤바예요.' },
         { key: 'extras.scrollbarColor', label: '스크롤바 색상', type: 'sbcolor', desc: '색과 진하기', showIf: st => st.extras.scrollbar !== 'hidden' }
     ] },
     // 더보기: 제목만 봐도 무슨 기능인지 알게 짧게 + 한 줄 설명 (예전 "스크롤 효과 한 번에 바꾸기" + "위 효과를 모든 섹션에 적용" 두 칸은 하나로 합침)
@@ -2714,7 +2738,7 @@ function renderExtraSettings() {
             let input;
             if (d.type === 'scrollbar') {
                 // 실제로 스크롤되는 작은 칸에 각 모양을 입혀서 보여준다 (PC 크롬·엣지·사파리 기준 모양 그대로)
-                const cur = val || 'default';
+                const cur = (!val || val === 'default') ? (window.InviteBlocks && InviteBlocks.sbDefault ? InviteBlocks.sbDefault() : 'default') : val; // (고른 적 없으면 그레이 페이드 - 1019p)
                 input = `<div class="sbp-grid">${(window.InviteBlocks ? InviteBlocks.SCROLLBARS : [['default', '기본']]).map(([n, l]) =>
                     `<button type="button" class="sbp-opt ${cur === n ? 'active' : ''}" data-xs-sb="${n}"><span class="sbp-demo sb-${n}"><i></i></span><span>${esc(l)}</span></button>`).join('')}</div>`;
             } else if (d.type === 'sbcolor') {
@@ -4908,7 +4932,7 @@ function addStickerToBlock(payload) {
         const yPx = (y / 100) * rootRect.height;
         anchor = anchorFromPixels(root, xPx, yPx);
     }
-    const posFields = anchor ? { sectionId: anchor.sectionId, relX: anchor.relX, relY: anchor.relY, edgeY: anchor.edgeY, offY: anchor.offY } : { x: 50, y };
+    const posFields = anchor ? { sectionId: anchor.sectionId, relX: anchor.relX, relY: anchor.relY, edgeY: anchor.edgeY, offY: anchor.offY, pu: anchor.pu, pv: anchor.pv } : { x: 50, y };
     const nid = 'sk' + Date.now() + Math.random().toString(36).slice(2, 6);
     state.stickers.push(Object.assign({ id: nid, size: 40, rotation: 0 }, posFields, payload));
     document.getElementById('stickerPalette').classList.remove('open');
@@ -5598,7 +5622,7 @@ function initStickerDragging() {
                 if (anchor) {
                     sticker.sectionId = anchor.sectionId;
                     sticker.relX = anchor.relX;
-                    sticker.relY = anchor.relY; sticker.edgeY = anchor.edgeY; sticker.offY = anchor.offY;
+                    sticker.relY = anchor.relY; sticker.edgeY = anchor.edgeY; sticker.offY = anchor.offY; sticker.pu = anchor.pu; sticker.pv = anchor.pv;
                 } else {
                     // 안전망(섹션이 하나도 없는 등 이례적인 경우) - 예전 방식인 카드 전체 %로 대체
                     sticker.x = Math.round((pt.x / pt.w) * 1000) / 10;
@@ -5647,7 +5671,7 @@ function addCustomText() {
         const midY = (visBot > visTop ? (visTop + visBot) / 2 : rootRect.top + rootRect.height / 2) - rootRect.top;
         anchor = anchorFromPixels(root, rootRect.width * 0.5, midY);
     }
-    const posFields = anchor ? { sectionId: anchor.sectionId, relX: anchor.relX, relY: anchor.relY, edgeY: anchor.edgeY, offY: anchor.offY } : { x: 50, y: 50 };
+    const posFields = anchor ? { sectionId: anchor.sectionId, relX: anchor.relX, relY: anchor.relY, edgeY: anchor.edgeY, offY: anchor.offY, pu: anchor.pu, pv: anchor.pv } : { x: 50, y: 50 };
     const ct = Object.assign({ id: 'ct' + Date.now() + Math.random().toString(36).slice(2, 6), text: '텍스트를 입력하세요', fontSize: 20, scaleX: 100, rotation: 0, color: '', align: 'center' }, posFields);
     state.customTexts.push(ct);
     renderPreview();
@@ -5773,7 +5797,7 @@ function showCustomTextGizmo(el, ctId) {
         if (dir === 'left') x -= NUDGE_STEP_PX;
         if (dir === 'right') x += NUDGE_STEP_PX;
         const anchor = anchorFromPixels(nudgeRoot, x, y);
-        if (anchor) { ct.sectionId = anchor.sectionId; ct.relX = anchor.relX; ct.relY = anchor.relY; ct.edgeY = anchor.edgeY; ct.offY = anchor.offY; }
+        if (anchor) { ct.sectionId = anchor.sectionId; ct.relX = anchor.relX; ct.relY = anchor.relY; ct.edgeY = anchor.edgeY; ct.offY = anchor.offY; ct.pu = anchor.pu; ct.pv = anchor.pv; }
         if (anchor && anchor.sectionId === prevSectionId) {
             // 미세 이동으로 섹션이 안 바뀐 흔한 경우 - el은 여전히 같은 섹션(.col)의 자식이므로
             // 그 섹션 기준 %만 직접 갱신하면 된다(무거운 전체 재렌더 불필요).
@@ -5855,7 +5879,7 @@ function initCustomTextDragging() {
                 if (anchor) {
                     ct.sectionId = anchor.sectionId;
                     ct.relX = anchor.relX;
-                    ct.relY = anchor.relY; ct.edgeY = anchor.edgeY; ct.offY = anchor.offY;
+                    ct.relY = anchor.relY; ct.edgeY = anchor.edgeY; ct.offY = anchor.offY; ct.pu = anchor.pu; ct.pv = anchor.pv;
                 } else {
                     ct.x = Math.round((pt.x / pt.w) * 1000) / 10;
                     ct.y = Math.round((pt.y / pt.h) * 1000) / 10;
@@ -7275,6 +7299,14 @@ function renderPreviewNow() {
     anchoredGroups.forEach(({ stickers, customTexts }, containerEl) => {
         containerEl.insertAdjacentHTML('beforeend', renderStickersHtml(stickers) + renderCustomTextsHtml(customTexts));
     });
+    anchoredGroups.forEach(({ stickers, customTexts }, containerEl) => { // 1019p: 첫 화면 사진에 붙은 것 (InviteBlocks.pinPhotoItems)
+        [...stickers.map(it => ['data-sticker-id', it]), ...customTexts.map(it => ['data-ct-id', it])].forEach(([a, it]) => {
+            if (it.pu == null || it.pv == null) return;
+            const el = containerEl.querySelector(`[${a}="${String(it.id).replace(/"/g, '')}"]`); if (el) { el.dataset.pu = it.pu; el.dataset.pv = it.pv; }
+        });
+    });
+    if (window.InviteBlocks && InviteBlocks.pinPhotoItems) InviteBlocks.pinPhotoItems(root);
+    pinMigrateSoon(root); // (예전에 첫 화면 사진 위에 붙인 것도 지금 보이는 자리 그대로 사진 속 자리로 - 한 번)
     initStickerDragging();
     initCustomTextDragging();
     initMarqueeSelect();
@@ -7305,7 +7337,12 @@ function renderPreviewNow() {
     try { spLiveSync(root); } catch (e) {} // 간편 만들기: 지금 단계 섹션만 손으로 조절 가능
     heroUnifyText(); // 예전 "글자 사진 아래" 청첩장 → 사진 + 아래 글자 칸 하나로 (보이던 자리 그대로)
     // 스크롤바 모양 - 미리보기 칸(PC)의 스크롤바에 바로 입혀서 보여준다
-    if (window.InviteBlocks && InviteBlocks.applyScrollbar) InviteBlocks.applyScrollbar(document.querySelector('.preview-pane'), state.extras && state.extras.scrollbar, root, { color: state.extras && state.extras.scrollbarColor, opacity: state.extras && state.extras.scrollbarOpacity });
+    if (window.InviteBlocks && InviteBlocks.applyScrollbar) { // 1019p: 미리보기 칸이 스크롤되면 그 칸에, 아니면(휴대폰 전문가 모드 = 화면 전체가 스크롤) 화면 전체에
+        const pane = document.querySelector('.preview-pane'), html = document.documentElement;
+        const t = pane && pane.scrollHeight > pane.clientHeight + 2 && /(auto|scroll)/.test(getComputedStyle(pane).overflowY) ? pane : html;
+        if (InviteBlocks.clearScrollbar) InviteBlocks.clearScrollbar(t === pane ? html : pane);
+        InviteBlocks.applyScrollbar(t, state.extras && state.extras.scrollbar, root, { color: state.extras && state.extras.scrollbarColor, opacity: state.extras && state.extras.scrollbarOpacity });
+    }
 }
 
 // ============ 떠 있는 공유 버튼 미리보기 ============
@@ -14063,7 +14100,7 @@ function spFinishMoreHtml() {
     if (O('ambient')) h += `<div class="wz-field"><div class="wz-lab">장식 효과 <small>청첩장 위에 꽃잎·눈·별이 흩날려요</small></div>${chips([['none', '없음'], ...Object.entries(A).map(([k, v]) => [k, v.label])], eff.ambient || 'none', 'data-sp-amb')}</div>`;
     if (O('scrollFx')) h += sw('spFxOn', ex.scrollFx !== false, '섹션 나타나는 효과', '내려가면 섹션이 하나씩 부드럽게 나타나요')
         + (ex.scrollFx !== false ? `<div class="wz-field sp-in">${chips(SECTION_FX_OPTIONS.filter(([v]) => v !== 'none'), ex.fxType || 'bounce', 'data-sp-fx')}</div>` : '');
-    if (O('scrollbar') && window.InviteBlocks && InviteBlocks.SCROLLBARS) h += `<div class="wz-field"><div class="wz-lab">스크롤바 <small>PC 화면 오른쪽 스크롤 막대 모양</small></div>${chips(InviteBlocks.SCROLLBARS, ex.scrollbar || 'default', 'data-sp-sb')}</div>`;
+    if (O('scrollbar') && window.InviteBlocks && InviteBlocks.SCROLLBARS) h += `<div class="wz-field"><div class="wz-lab">스크롤바 <small>스크롤할 때만 오른쪽에 나타나는 막대 모양</small></div>${chips(InviteBlocks.SCROLLBARS, (ex.scrollbar && ex.scrollbar !== 'default' ? ex.scrollbar : (InviteBlocks.sbDefault ? InviteBlocks.sbDefault() : 'default')), 'data-sp-sb')}</div>`;
     if (O('share') && sh) h += sw('spFabOn', fabOn, '떠 있는 공유 버튼', '화면 구석에서 카카오톡 공유 · 링크 복사')
         + (fabOn ? `<div class="wz-field sp-in"><div class="wz-lab">위치</div>${chips([['right', '오른쪽 아래'], ['left', '왼쪽 아래']], sf.fabPos || 'right', 'data-sp-fabpos')}<div class="wz-lab" style="margin-top:10px">색</div>${chips([['dark', '어두운 반투명'], ['light', '밝은 반투명'], ['accent', '포인트색']], sf.fabStyle || 'dark', 'data-sp-fabst')}</div>` : '');
     if (O('shadow') && !spOpt('flow', 'deskShadow')) h += sw('spShadow', !!state.desktopShadow, 'PC 그림자', 'PC로 볼 때 청첩장 양옆 경계에 은은한 그림자');
@@ -15529,7 +15566,7 @@ async function bootstrapFromServer() {
                         const xPx = ((item.x ?? 50) / 100) * rootRect.width;
                         const yPx = ((item.y ?? 50) / 100) * rootRect.height;
                         const anchor = anchorFromPixels(migRoot, xPx, yPx);
-                        if (anchor) { item.sectionId = anchor.sectionId; item.relX = anchor.relX; item.relY = anchor.relY; item.edgeY = anchor.edgeY; item.offY = anchor.offY; }
+                        if (anchor) { item.sectionId = anchor.sectionId; item.relX = anchor.relX; item.relY = anchor.relY; item.edgeY = anchor.edgeY; item.offY = anchor.offY; item.pu = anchor.pu; item.pv = anchor.pv; }
                     });
                 });
             })();
@@ -16146,7 +16183,7 @@ document.getElementById('previewBtn')?.addEventListener('click', e => {
         const p = pixelsFromAnchor(r, item);
         const a = anchorFromPixels(r, p.x + dx, p.y + dy);
         if (!a) return false;
-        item.sectionId = a.sectionId; item.relX = a.relX; item.relY = a.relY; item.edgeY = a.edgeY; item.offY = a.offY;
+        item.sectionId = a.sectionId; item.relX = a.relX; item.relY = a.relY; item.edgeY = a.edgeY; item.offY = a.offY; item.pu = a.pu; item.pv = a.pv;
         return a.sectionId === prev ? 'same' : 'moved';
     }
     // live = 꾹 누르는 중 (도구 상자는 잠깐 숨기고 위치만 빠르게 갱신, 손을 떼면 다시 띄움)

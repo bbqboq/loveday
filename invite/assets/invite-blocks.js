@@ -1129,17 +1129,65 @@
     // 모양은 invite-blocks.css의 .sb-이름 클래스, 색은 청첩장 색(포인트색·선색 등)을 --sb-* 변수로 복사해서 쓴다.
     // =====================================================================
     const SCROLLBARS = [
-        ['default', '기본'], ['thin', '얇은 선'], ['slim', '먹색 슬림'], ['soft', '소프트'],
+        ['native', '기기 기본'], ['thin', '얇은 선'], ['slim', '먹색 슬림'], ['soft', '소프트'],
         ['accent', '포인트 캡슐'], ['gradient', '그라데이션'], ['outline', '라인 캡슐'], ['dot', '도트 트랙'], ['ghost', '투명 페이드'], ['mist', '그레이 페이드'], ['hidden', '숨김']
     ];
     const SB_VARS = [['--p-accent', '--sb-accent'], ['--p-line', '--sb-line'], ['--p-muted', '--sb-muted'], ['--p-bg', '--sb-bg'], ['--p-ink', '--sb-ink']];
     // opts.color: 스크롤바 색(#RRGGBB, 없으면 청첩장 포인트색·글자색) / opts.opacity: 진하기 10~100 (에디터 화면 설정 > 스크롤)
+    // 1019p: 첫 화면 사진에 붙은 스티커·자유 텍스트 (item.pu/pv = 사진 원본 안 자리 0~1)
+    //  첫 화면 사진은 화면 비율에 맞춰 잘려서(object-fit cover) 창 크기가 바뀌면 사진 속 같은 곳이 다른 자리에 옴 →
+    //  섹션 % 대신 사진 속 자리를 따라가게 (요소에 data-pu/pv, 사진·창 크기가 바뀌면 다시 맞춤). 사진이 없으면 원래 % 자리.
+    function photoRect(col) {
+        const img = col && col.querySelector('img.hero-photo'); if (!img || !img.naturalWidth) return null;
+        const b = img.getBoundingClientRect(); if (!b.width || !b.height) return null;
+        const cs = getComputedStyle(img), fit = cs.objectFit, nw = img.naturalWidth, nh = img.naturalHeight;
+        if (fit === 'fill') return { left: b.left, top: b.top, width: b.width, height: b.height };
+        const k = fit === 'contain' ? Math.min(b.width / nw, b.height / nh) : fit === 'cover' ? Math.max(b.width / nw, b.height / nh) : 0;
+        if (!k) return null;
+        const w = nw * k, h = nh * k, pos = (cs.objectPosition || '50% 50%').split(/\s+/);
+        const at = (v, free) => /%$/.test(v || '') ? parseFloat(v) / 100 * free : (parseFloat(v) || 0);
+        return { left: b.left + at(pos[0] || '50%', b.width - w), top: b.top + at(pos[1] || '50%', b.height - h), width: w, height: h };
+    }
+    function photoPinOf(col, cx, cy) { // 화면 좌표 → {pu, pv} (사진 밖이면 {})
+        const r = photoRect(col); if (!r) return {};
+        const pu = (cx - r.left) / r.width, pv = (cy - r.top) / r.height;
+        return pu >= 0 && pu <= 1 && pv >= 0 && pv <= 1 ? { pu: Math.round(pu * 10000) / 10000, pv: Math.round(pv * 10000) / 10000 } : {};
+    }
+    function pinPhotoItems(root) {
+        if (!root || typeof document === 'undefined') return;
+        root.querySelectorAll('[data-pu]').forEach(el => {
+            const col = el.parentElement && el.parentElement.closest('.col'); if (!col || !col.contains(el)) return;
+            const img = col.querySelector('img.hero-photo');
+            if (img && !img.naturalWidth) { if (!img._pinWait) { img._pinWait = 1; img.addEventListener('load', () => pinPhotoItems(root), { once: true }); } return; }
+            const r = photoRect(col); if (!r) return;
+            const cb = col.getBoundingClientRect(), k = col.offsetWidth ? cb.width / col.offsetWidth : 1; if (!cb.width || !k) return;
+            const x = (r.left + Number(el.dataset.pu) * r.width - cb.left) / k, y = (r.top + Number(el.dataset.pv) * r.height - cb.top) / k;
+            el.style.left = (x / col.offsetWidth * 100).toFixed(3) + '%'; el.style.top = y.toFixed(1) + 'px'; el.style.marginTop = '0';
+        });
+        if (!root._pinRO && typeof ResizeObserver !== 'undefined') {
+            let t = 0; const again = () => { cancelAnimationFrame(t); t = requestAnimationFrame(() => pinPhotoItems(root)); };
+            root._pinRO = new ResizeObserver(again); root._pinRO.observe(root); window.addEventListener('resize', again);
+        }
+    }
+    // 1019p: 기기 기본·숨김 말고는 모두 직접 그리는 막대(스크롤할 때만 스르르 나타났다 사라짐) - 휴대폰에서도 같은 모양,
+    //  인트로가 끝나며 기본 스크롤바가 '딱' 생기던 것도 없음. 고른 적 없는 청첩장(값 없음)은 그레이 페이드(mist).
+    //  예전처럼 기기 스크롤바로: window.LD_SB_NATIVE = true (사이트 전체)
+    const SB_OVERLAY = ['thin', 'slim', 'soft', 'accent', 'gradient', 'outline', 'dot', 'ghost', 'mist'];
+    function sbDefault() { return (typeof window !== 'undefined' && window.LD_SB_NATIVE) ? 'native' : 'mist'; }
+    function clearScrollbar(target) {
+        if (!target) return;
+        SCROLLBARS.forEach(([n]) => target.classList.remove('sb-' + n));
+        target.classList.remove('sb-ov');
+        ghostBarOff(target);
+    }
     function applyScrollbar(target, name, varsFrom, opts) {
         if (!target || typeof document === 'undefined') return;
+        if (!name || name === 'default') name = sbDefault(); // ('default' = 고른 적 없음 · 기본 틀 값 → 그레이 페이드, 기기 스크롤바는 'native')
+        target.classList.remove('sb-ov');
         SCROLLBARS.forEach(([n]) => target.classList.remove('sb-' + n));
         ['--sb-mist'].forEach(v => target.style.removeProperty(v));
         target.style.removeProperty('scrollbar-color');
-        if (!name || name === 'default' || !SCROLLBARS.some(([n]) => n === name)) {
+        if (name === 'native' || !SCROLLBARS.some(([n]) => n === name)) {
             ghostBarOff(target);
             // 기본 모양이어도 색을 고르면 브라우저 기본 스크롤바에 색만 입힘 (scrollbar-color)
             const c0 = opts && /^#[0-9a-f]{6}$/i.test(opts.color || '') ? opts.color : '';
@@ -1165,7 +1213,7 @@
             });
             target.style.setProperty('--sb-mist', `color-mix(in srgb, ${col || '#808080'} ${Math.round(op * .32)}%, transparent)`);
         }
-        if (name === 'ghost' || name === 'mist') ghostBarOn(target, name); else ghostBarOff(target);
+        if (SB_OVERLAY.includes(name) && !(typeof window !== 'undefined' && window.LD_SB_NATIVE)) { target.classList.add('sb-ov'); ghostBarOn(target, name); } else ghostBarOff(target);
     }
 
     // ---- "투명 페이드"(ghost, 속이 빈 라인) / "그레이 페이드"(mist, 연한 회색 반투명으로 꽉 찬 막대) 스크롤바 ----
@@ -1184,7 +1232,7 @@
         const scroller = isRoot ? (document.scrollingElement || document.documentElement) : target;
         const evTarget = isRoot ? window : target;
         const bar = document.createElement('div');
-        bar.className = 'ib-ghost-bar' + (variant === 'mist' ? ' mist' : '');
+        bar.className = 'ib-ghost-bar v-' + variant + (variant === 'mist' ? ' mist' : '');
         bar.setAttribute('aria-hidden', 'true');
         document.body.appendChild(bar);
         const PAD = 6, MIN_H = 36;
@@ -1249,7 +1297,7 @@
         syncVars(); update();
         ghostBars.set(target, {
             update, syncVars,
-            setVariant(v) { bar.classList.toggle('mist', v === 'mist'); },
+            setVariant(v) { [...bar.classList].filter(c => /^v-/.test(c)).forEach(c => bar.classList.remove(c)); bar.classList.add('v-' + v); bar.classList.toggle('mist', v === 'mist'); },
             destroy() {
                 evTarget.removeEventListener('scroll', show);
                 window.removeEventListener('resize', schedule);
@@ -3843,5 +3891,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { locTitleUp, mapLock, NAV_POS, navPosOf, locNavOver, navSheetBind, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, SCROLLBARS, applyScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { locTitleUp, mapLock, NAV_POS, navPosOf, locNavOver, navSheetBind, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, photoRect, photoPinOf, pinPhotoItems, SCROLLBARS, SB_OVERLAY, sbDefault, applyScrollbar, clearScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);
