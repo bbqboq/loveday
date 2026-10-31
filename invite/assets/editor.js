@@ -15454,7 +15454,7 @@ async function bootstrapFromServer() {
         renderPersonalStickerSections();
         serverCsrfToken = data.csrf_token || null;
         viewSlug = data.view_slug || null;
-        isPublished = data.status === 'published';
+        isPublished = data.status === 'published'; setTimeout(() => { try { footSlotSync(); } catch (e) {} }, 0);
         if (viewSlug) {
             const previewBtn = document.getElementById('previewBtn');
             // 이미 발행된 청첩장이면 손님이 실제로 보는 것과 똑같은 짧은 공개주소로 미리보기.
@@ -15940,7 +15940,7 @@ async function saveToServer(publish, silent) {
         lastSavedBody = same; spDraftDel(); // (서버에 저장됨 - 이 기기 임시 저장은 지움)
         if (silent) return true; // 미리보기용 조용한 저장은 알림 없이 성공만 알려준다
         if (publish && viewSlug) {
-            isPublished = true;
+            isPublished = true; setTimeout(() => { try { footSlotSync(); } catch (e) {} }, 0);
             // 새로고침 없이 지금 바로 미리보기 버튼도 짧은 공개주소를 가리키도록 갱신
             const previewBtn = document.getElementById('previewBtn');
             if (previewBtn) previewBtn.href = `${location.origin}/${encodeURIComponent(viewSlug)}`;
@@ -16100,20 +16100,20 @@ function kkSheetOpen() {
     kkEasyMount(el.querySelector('.pc-kk'));
     el.addEventListener('click', e => { if (e.target.closest('[data-pc-x]')) { pubClose(); try { if (state.mode === 'simple') spAutoSaveSoon(); } catch (er) {} } });
 }
-function pubCheckThen(go) {
-    if (SAMPLE_ID || !spOpt('flow', 'precheck')) return go();
+function pubCheckThen(go, always) { // always: 아래 줄 [점검] 버튼 - 다 괜찮아도 목록을 보여 줌 (1019r)
+    if (!always && (SAMPLE_ID || !spOpt('flow', 'precheck'))) return go();
     let list; try { list = pubChecks(); } catch (e) { return go(); }
     const bad = list.filter(c => !c.ok && !c.info);
-    if (!bad.length) return go(); // 다 괜찮으면 바로 발행
+    if (!bad.length && !always) return go(); // 다 괜찮으면 바로 발행
     pubClose();
     const n = list.filter(c => c.ok).length, all = list.filter(c => !c.info).length;
     const el = document.createElement('div'); el.id = 'pubChk'; el.className = 'pubchk';
     el.innerHTML = `<div class="pc-dim" data-pc-x></div><div class="pc-box" role="dialog" aria-modal="true" aria-labelledby="pcTitle"><div class="pc-grab"></div>
         <div class="pc-h"><b id="pcTitle">발행 전에 확인해요</b><button type="button" class="pc-x" data-pc-x aria-label="닫기">✕</button></div>
-        <p class="pc-sum">${all}개 중 ${n}개는 괜찮아요 · <em>${bad.length}개</em>를 보면 좋아요</p><div class="pc-prog"><i style="width:${Math.round(n / all * 100)}%"></i></div>
+        <p class="pc-sum">${bad.length ? `${all}개 중 ${n}개는 괜찮아요 · <em>${bad.length}개</em>를 보면 좋아요` : `${all}개 모두 괜찮아요`}</p><div class="pc-prog"><i style="width:${Math.round(n / all * 100)}%"></i></div>
         <div class="pc-list">${list.sort((a, b) => (a.ok ? 2 : a.info ? 1 : 0) - (b.ok ? 2 : b.info ? 1 : 0)).map(c => `<button type="button" class="pc-row ${c.ok ? 'ok' : c.info ? 'info' : 'bad'}" data-pc-go="${c.id}"><span class="pc-ic">${c.ok ? '✓' : c.info ? 'i' : '!'}</span><span class="pc-tx">${esc(c.t)}<small>${esc(c.s || '')}</small></span><span class="pc-go">${c.ok ? '확인' : esc(c.go || '보기') + ' ›'}</span></button>`).join('')}</div>
         <div class="pc-kk" hidden></div>
-        <div class="pc-foot"><button type="button" class="pc-b" data-pc-kk>카톡 미리보기</button><button type="button" class="pc-b pri" data-pc-pub>그래도 발행하기</button></div></div>`;
+        <div class="pc-foot"><button type="button" class="pc-b" data-pc-kk>카톡 미리보기</button><button type="button" class="pc-b pri" data-pc-pub>${bad.length ? '그래도 발행하기' : isPublished ? '고친 내용 저장하기' : '발행하기'}</button></div></div>`;
     document.body.appendChild(el);
     kkEasyMount(el.querySelector('.pc-kk')); // [카톡 미리보기] = 보면서 바로 고치기
     el.addEventListener('click', e => {
@@ -16125,6 +16125,52 @@ function pubCheckThen(go) {
     el.querySelector('[data-pc-pub]').focus({ preventScroll: true });
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('pubChk')) { e.stopPropagation(); pubClose(); } }, true);
+// ===== 1019r 휴대폰 전문가 모드 아래 줄 두 번째 버튼 (관리자 → 전문가 모드 → 세부 모양 '휴대폰 아래 줄 두 번째 버튼' footSlot) =====
+//  text = 예전 + 텍스트 추가 · kakao = 카톡 미리보기(kkSheetOpen) · section = + 섹션 넣기(fsSecSheet) · check = 발행 전 점검 + 남은 개수(pubCheckThen always)
+//  auto = 발행 전엔 점검 · 발행 뒤엔 카톡 미리보기. 860px 넘는 PC는 늘 + 텍스트 추가. 되돌리기 = 관리자에서 '예전 모양'
+function footSlotKind() {
+    let k = 'text'; try { k = uip('footSlot'); } catch (e) {}
+    if (window.innerWidth > 860) return 'text';
+    return k === 'auto' ? (isPublished ? 'kakao' : 'check') : k;
+}
+function footSlotBad() { try { return pubChecks().filter(c => !c.ok && !c.info).length; } catch (e) { return 0; } }
+function footSlotSync() {
+    const b = document.getElementById('footSlotBtn'); if (!b) return;
+    const k = footSlotKind(), on = k !== 'text';
+    document.body.classList.toggle('fslot-on', on); b.hidden = !on; b.dataset.k = k;
+    if (!on) return;
+    if (k === 'kakao') b.innerHTML = '<span aria-hidden="true">💬</span> 카톡 미리보기';
+    else if (k === 'section') b.innerHTML = '＋ 섹션 넣기';
+    else { const n = footSlotBad(); b.innerHTML = `점검 <span class="fs-dot${n ? '' : ' ok'}">${n || '✓'}</span>`; b.setAttribute('aria-label', n ? `발행 전 점검 · ${n}개 남았어요` : '발행 전 점검 · 다 괜찮아요'); }
+    b.classList.toggle('fs-kk', k === 'kakao');
+}
+function fsSecSheet() { // 아직 안 넣은 섹션을 그림 카드로 → 누르면 넣고 그 자리로
+    pubClose();
+    const D = { greeting: 'greet', location: 'venue', heroVideo: 'video' };
+    const rows = [...document.querySelectorAll('#blockList li.block-row')].filter(li => !li.hidden && !li.classList.contains('bs-hide')).map(li => [li, state.blocks.find(b => b.id === li.dataset.id)]).filter(([, b]) => b && !b.enabled && b.id !== 'hero' && b.id !== 'heroVideo');
+    const name = li => (li.querySelector('.row-top .label')?.childNodes[0]?.textContent || li.querySelector('.label')?.textContent || '').trim();
+    const el = document.createElement('div'); el.id = 'pubChk'; el.className = 'pubchk fs-sec';
+    el.innerHTML = `<div class="pc-dim" data-pc-x></div><div class="pc-box" role="dialog" aria-modal="true" aria-labelledby="pcTitle"><div class="pc-grab"></div>
+        <div class="pc-h"><b id="pcTitle">어떤 섹션을 넣을까요?</b><button type="button" class="pc-x" data-pc-x aria-label="닫기">✕</button></div>
+        ${rows.length ? `<div class="fs-grid">${rows.map(([li, b]) => `<button type="button" class="fs-card" data-fs-on="${esc(b.id)}"><span class="fs-ic">${typeof bsSvg === 'function' ? bsSvg(BS_ICON_OF(b.id)) : ''}</span><b>${esc(name(li) || blockLabels[b.id] || b.id)}</b><small>${esc(SP_ADD_DESC[D[b.id] || b.id] || '')}</small></button>`).join('')}</div>
+        <p class="fs-n">누르면 청첩장에 들어가고 그 자리로 가요. 순서는 오른쪽 ☰ 섹션 목록에서 바꿔요.</p>` : '<p class="fs-n">넣을 수 있는 섹션은 모두 넣었어요.</p>'}</div>`;
+    document.body.appendChild(el);
+    el.addEventListener('click', e => {
+        if (e.target.closest('[data-pc-x]')) { pubClose(); return; }
+        const c = e.target.closest('[data-fs-on]'); if (!c) return;
+        const id = c.dataset.fsOn; c.classList.add('on'); c.disabled = true;
+        bsToggle(id);
+        setTimeout(() => { pubClose(); try { autoFocusSection(id, true); } catch (er) {} const col = document.querySelector(`#previewRoot .col[data-block-id="${CSS.escape(id)}"]`); if (col) { col.classList.remove('fs-new'); void col.offsetWidth; col.classList.add('fs-new'); setTimeout(() => col.classList.remove('fs-new'), 1600); } footSlotSync(); }, 380);
+    });
+}
+document.getElementById('footSlotBtn')?.addEventListener('click', () => {
+    const k = footSlotKind();
+    if (k === 'kakao') kkSheetOpen();
+    else if (k === 'section') fsSecSheet();
+    else if (k === 'check') pubCheckThen(() => saveToServer(true), true);
+});
+window.addEventListener('resize', () => { clearTimeout(footSlotSync.t); footSlotSync.t = setTimeout(footSlotSync, 200); });
+setInterval(() => { if (!document.hidden && document.body.classList.contains('fslot-on') && !document.documentElement.classList.contains('simple-mode')) footSlotSync(); }, 2000); // (남은 개수 따라가기 - 가벼움)
 // 1019o: [미리보기] = 지금 고친 디자인을 그대로 보내서 하객 화면으로 그림 (저장 안 됨 · 새 탭)
 //  예전엔 링크(preview_t / 짧은 주소)를 바로 열고 저장은 같이 보내서 - 저장이 끝나기 전에 열리거나(늦음)
 //  처음 저장 관문(이름·날짜) 전이면 아예 저장이 안 돼서 서버에 남은 예전 디자인(섹션 몇 개만)이 보였음
@@ -17383,9 +17429,9 @@ function initAdminPreview() {
 //  photoField : old 예전 | P1 썸네일 칩 | P2 가로 카드 | P3 끌어 놓기 칸 | P4 타일 (섹션들의 사진 칸 공통)
 //  guideStyle : old 예전 | G1 물음표 | G2 작은 칩 | G3 움직이는 그림 | G4 맨 아래 링크 | G5 처음만 말풍선 | G6 편집|사용법 탭 | G7 떠 있는 ? | G8 한 줄 팁
 //  주소에 ?hp=B&vp=C&pf=P2&gs=G6 처럼 붙이면 그 모양으로 미리 볼 수 있음
-const UIP_DEF = { heroPicker: 'E', videoPicker: 'D', photoField: 'P1', guideStyle: 'G2', overToggle: 'T1', nextPicker: 'R1', toggleChip: 'K5', feAnim: 'F1', jumpFix: 'S1', menuStyle: 'old', menuStylePc: 'old', sheetStyle: 'old', setStyle: 'old', setInner: 'old', s10Add: 'old' };
-const UIP_OPTS = { heroPicker: ['old', 'A', 'B', 'C', 'D', 'E'], videoPicker: ['old', 'A', 'B', 'C', 'D', 'E'], photoField: ['old', 'P1', 'P2', 'P3', 'P4'], guideStyle: ['old', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8'], overToggle: ['old', 'T1', 'T2', 'T3', 'T4', 'T7', 'T8'], nextPicker: ['old', 'N5', 'N6', 'R1', 'R2', 'R3'], toggleChip: ['old', 'K1', 'K2', 'K3', 'K4', 'K5'], feAnim: ['old', 'none', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'], jumpFix: ['old', 'S1', 'S2', 'S3', 'S4', 'S6'], menuStyle: ['old', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6'], menuStylePc: ['old', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6'], sheetStyle: ['old', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10'], setStyle: ['old', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'A3', 'A7', 'A8'], setInner: ['old', 'B4', 'B5'], s10Add: ['old', 'C4', 'C5', 'C6'] };
-const UIP_URL = { heroPicker: urlParams.get('hp'), videoPicker: urlParams.get('vp'), photoField: urlParams.get('pf'), guideStyle: urlParams.get('gs'), overToggle: urlParams.get('ot'), nextPicker: urlParams.get('np'), toggleChip: urlParams.get('tc'), feAnim: urlParams.get('fa'), jumpFix: urlParams.get('jf'), menuStyle: urlParams.get('ms'), menuStylePc: urlParams.get('mp'), sheetStyle: urlParams.get('ss'), setStyle: urlParams.get('sp'), setInner: urlParams.get('si'), s10Add: urlParams.get('sa') };
+const UIP_DEF = { heroPicker: 'E', videoPicker: 'D', photoField: 'P1', guideStyle: 'G2', overToggle: 'T1', nextPicker: 'R1', toggleChip: 'K5', feAnim: 'F1', jumpFix: 'S1', menuStyle: 'old', menuStylePc: 'old', sheetStyle: 'old', setStyle: 'old', setInner: 'old', s10Add: 'old', footSlot: 'auto' };
+const UIP_OPTS = { heroPicker: ['old', 'A', 'B', 'C', 'D', 'E'], videoPicker: ['old', 'A', 'B', 'C', 'D', 'E'], photoField: ['old', 'P1', 'P2', 'P3', 'P4'], guideStyle: ['old', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8'], overToggle: ['old', 'T1', 'T2', 'T3', 'T4', 'T7', 'T8'], nextPicker: ['old', 'N5', 'N6', 'R1', 'R2', 'R3'], toggleChip: ['old', 'K1', 'K2', 'K3', 'K4', 'K5'], feAnim: ['old', 'none', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'], jumpFix: ['old', 'S1', 'S2', 'S3', 'S4', 'S6'], menuStyle: ['old', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6'], menuStylePc: ['old', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6'], sheetStyle: ['old', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10'], setStyle: ['old', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'A3', 'A7', 'A8'], setInner: ['old', 'B4', 'B5'], s10Add: ['old', 'C4', 'C5', 'C6'], footSlot: ['text', 'kakao', 'section', 'check', 'auto'] };
+const UIP_URL = { heroPicker: urlParams.get('hp'), videoPicker: urlParams.get('vp'), photoField: urlParams.get('pf'), guideStyle: urlParams.get('gs'), overToggle: urlParams.get('ot'), nextPicker: urlParams.get('np'), toggleChip: urlParams.get('tc'), feAnim: urlParams.get('fa'), jumpFix: urlParams.get('jf'), menuStyle: urlParams.get('ms'), menuStylePc: urlParams.get('mp'), sheetStyle: urlParams.get('ss'), setStyle: urlParams.get('sp'), setInner: urlParams.get('si'), s10Add: urlParams.get('sa'), footSlot: urlParams.get('fs') };
 const UIP = Object.assign({}, UIP_DEF);
 Object.keys(UIP_URL).forEach(k => { if (UIP_OPTS[k].includes(UIP_URL[k])) UIP[k] = UIP_URL[k]; });
 function uip(k) { return UIP_OPTS[k].includes(UIP[k]) ? UIP[k] : UIP_DEF[k]; }
@@ -17393,6 +17439,7 @@ function applyFeAnim() { // 칸 나타남·사라짐 효과 → body.fea-F1 등
     if (!document.body) return;
     [...document.body.classList].filter(c => c.indexOf('fea-') === 0).forEach(c => document.body.classList.remove(c));
     document.body.classList.add('fea-' + uip('feAnim'), 'fea-jf-' + uip('jumpFix'));
+    try { footSlotSync(); } catch (e) {}
 }
 // 옵션이 바뀔 때 화면 (관리자 → 세부 모양 "옵션 바뀔 때 화면"): S2·S6 = 사라질 칸을 회색으로 잠가 남겨 둠
 function jfKeep() { const j = uip('jumpFix'); return j === 'S2' || j === 'S6'; }

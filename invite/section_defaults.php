@@ -66,8 +66,9 @@ const SECTION_PREF_OPTS = [
     'setStyle'    => ['old', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'A3', 'A7', 'A8'],
     'setInner'    => ['old', 'B4', 'B5'],
     's10Add'      => ['old', 'C4', 'C5', 'C6'],
+    'footSlot'    => ['text', 'kakao', 'section', 'check', 'auto'], // 1019r 휴대폰 전문가 모드 아래 줄 두 번째 버튼
 ];
-const SECTION_PREF_DEFAULTS = ['heroPicker' => 'E', 'videoPicker' => 'D', 'photoField' => 'P1', 'guideStyle' => 'G2', 'overToggle' => 'T1', 'nextPicker' => 'R1', 'toggleChip' => 'K5', 'feAnim' => 'F1', 'jumpFix' => 'S1', 'menuStyle' => 'old', 'menuStylePc' => 'old', 'sheetStyle' => 'old', 'setStyle' => 'old', 'setInner' => 'old', 's10Add' => 'old'];
+const SECTION_PREF_DEFAULTS = ['heroPicker' => 'E', 'videoPicker' => 'D', 'photoField' => 'P1', 'guideStyle' => 'G2', 'overToggle' => 'T1', 'nextPicker' => 'R1', 'toggleChip' => 'K5', 'feAnim' => 'F1', 'jumpFix' => 'S1', 'menuStyle' => 'old', 'menuStylePc' => 'old', 'sheetStyle' => 'old', 'setStyle' => 'old', 'setInner' => 'old', 's10Add' => 'old', 'footSlot' => 'auto'];
 function section_defaults_prefs(?array $in = null): array
 {
     if ($in === null) {

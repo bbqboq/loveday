@@ -5792,3 +5792,24 @@ html.ld-slock #previewRoot .sticker-el.selected, html.ld-slock #previewRoot .cus
 /* 1019p: 휴대폰 전문가 모드 - 화면 설정 · 섹션 창이 떠 있으면 오른쪽 [도움말] 둥근 버튼 숨김 (창 안 칸을 가렸음) */
 body:has(#controlsFabBackdrop.active, #desktopFullscreenBackdrop.active, #topControls.mobile-open) .ldh-btn.fab { opacity: 0; pointer-events: none; transform: translateY(6px); }
 .ldh-btn.fab { transition: opacity .18s cubic-bezier(.23,1,.32,1), transform .18s cubic-bezier(.23,1,.32,1); }
+
+/* 1019r 휴대폰 전문가 모드 아래 줄 두 번째 버튼 (footSlot: 카톡 미리보기 · 섹션 넣기 · 점검) - 되돌리기 = 관리자에서 '예전 모양' */
+body.fslot-on #addTextTopBtn { display: none !important; }
+.simple-mode #footSlotBtn { display: none !important; }
+#footSlotBtn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+#footSlotBtn[hidden] { display: none !important; }
+#footSlotBtn.fs-kk { background: #FEE500; border-color: #E8D200; color: #3A1D1D; }
+#footSlotBtn .fs-dot { min-width: 17px; height: 17px; padding: 0 4px; border-radius: 99px; background: #B4642A; color: #fff; font-size: 10.5px; font-weight: 800; display: inline-grid; place-items: center; font-variant-numeric: tabular-nums; }
+#footSlotBtn .fs-dot.ok { background: #3E7B5A; }
+.pubchk.fs-sec .fs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; overflow: auto; padding: 2px 1px 4px; }
+.pubchk.fs-sec .fs-card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 11px 11px 10px; border-radius: 14px; border: 1px solid var(--ui-line, #ECE4DA); background: #fff; font: inherit; color: #1E1A17; text-align: left; cursor: pointer; transition: transform .14s cubic-bezier(.23,1,.32,1), border-color .15s, background-color .15s; }
+.pubchk.fs-sec .fs-card:active { transform: scale(.97); }
+.pubchk.fs-sec .fs-card.on { border-color: #3E7B5A; background: #F3F8F4; }
+.pubchk.fs-sec .fs-card b { font-size: 13.5px; font-weight: 800; }
+.pubchk.fs-sec .fs-card small { font-size: 11.5px; color: #746D65; line-height: 1.45; }
+.pubchk.fs-sec .fs-ic { width: 30px; height: 30px; border-radius: 9px; background: var(--ui-soft, #F7F3EE); display: grid; place-items: center; }
+.pubchk.fs-sec .fs-ic svg { width: 17px; height: 17px; }
+.pubchk.fs-sec .fs-n { margin: 10px 2px 2px; font-size: 12px; color: #746D65; line-height: 1.5; }
+#previewRoot .col.fs-new { animation: fsNew 1.5s cubic-bezier(.23,1,.32,1); }
+@keyframes fsNew { 0% { box-shadow: inset 0 0 0 3px rgba(181,86,106,.65); } 100% { box-shadow: inset 0 0 0 3px rgba(181,86,106,0); } }
+@media (prefers-reduced-motion: reduce) { #previewRoot .col.fs-new { animation: none; } }

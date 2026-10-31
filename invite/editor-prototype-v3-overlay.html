@@ -17,7 +17,7 @@ html.ld-late .ld-wait-late { visibility: visible; }
 <title>청첩장 에디터 프로토타입 v3 - 오버레이 드래그 &amp; 라이트박스</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-<link rel="stylesheet" href="assets/editor.min.css?v=321d848761"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
+<link rel="stylesheet" href="assets/editor.min.css?v=59d838484c"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
 <link rel="stylesheet" href="assets/invite-blocks.min.css?v=ac282a6028">
@@ -328,6 +328,7 @@ html.ld-late .ld-wait-late { visibility: visible; }
 <div class="action-bar">
     <a class="pill" id="previewBtn" href="#" target="_blank" rel="noopener" style="display:none;">👁 미리보기</a>
     <button type="button" class="pill pill-primary-outline" id="addTextTopBtn" title="사진 위 아무 곳에나 자유롭게 문구를 얹을 수 있어요">+ 텍스트 추가</button>
+    <button type="button" class="pill pill-primary-outline" id="footSlotBtn" hidden></button>
     <button type="button" class="pill" id="saveDraftBtn">임시저장</button>
     <button type="button" class="pill-primary" id="publishBtn">발행하기</button>
 </div>
@@ -586,7 +587,7 @@ html.ld-late .ld-wait-late { visibility: visible; }
     </div>
 </div><!-- /screenIntroSettings -->
 
-<script src="assets/editor.min.js?v=0aa960e837" onerror="document.documentElement.classList.remove('ld-boot')"></script><!-- 에디터 기능 (원본 assets/editor.js → node tools/build-editor.js) -->
+<script src="assets/editor.min.js?v=5514f01def" onerror="document.documentElement.classList.remove('ld-boot')"></script><!-- 에디터 기능 (원본 assets/editor.js → node tools/build-editor.js) -->
 </body>
 </html>
 <!-- 아래 줄은 지우지 말 것: 서버에 올릴 때 예전(더 큰) 파일 뒷부분이 남아도 화면에 글자로 나오거나 실행되지 않게 숨김 (2026-10-20 실서버에서 CSS가 글자로 보였음) -->
