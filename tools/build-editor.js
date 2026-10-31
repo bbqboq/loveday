@@ -18,6 +18,8 @@ const JS = { loader: 'js', minify: true, target: 'es2020', charset: 'utf8', lega
 const FILES = [
     { src: 'assets/editor.css', out: 'assets/editor.min.css', opt: CSS, html: true },
     { src: 'assets/editor.js', out: 'assets/editor.min.js', opt: JS, html: true },
+    { src: 'assets/editor-help.js', out: 'assets/editor-help.min.js', opt: JS, html: true }, // 1019s 나중에 불러오는 조각 (HTML window.LD_CHUNKS)
+    { src: 'assets/editor-thm.js', out: 'assets/editor-thm.min.js', opt: JS, html: true },
     { src: 'assets/invite-blocks.css', out: 'assets/invite-blocks.min.css', opt: CSS, html: true }, // 공용 섹션 (에디터 + 하객 화면) - 1019부터 압축본
     { src: 'assets/invite-blocks.js', out: 'assets/invite-blocks.min.js', opt: JS, html: true },
     { src: 'assets/render-invite.css', out: 'assets/render-invite.min.css', opt: CSS, html: false }, // 하객 화면 전용

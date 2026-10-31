@@ -328,6 +328,21 @@ const fieldDefs = {
     timeline: [],
     interview: []
 };
+// ===== 1019s 나중에 불러오는 조각 (editor.js를 가볍게) =====
+//  window.LD_CHUNKS(에디터 HTML) = { 이름: 'assets/editor-이름.min.js?v=지문' } · 조각은 같은 전역(state · esc …)을 그대로 씀
+//  help = 도움말 목록 LDH_* (도움말을 열 때 · 처음 6초 뒤 한가할 때) · thm = 디자인 썸네일 만들기 (?thumbs=make일 때만)
+const LD_CHUNK_P = {};
+function ldChunk(n) {
+    if (LD_CHUNK_P[n]) return LD_CHUNK_P[n];
+    const u = (window.LD_CHUNKS || {})[n];
+    return (LD_CHUNK_P[n] = new Promise((ok, no) => {
+        if (!u) return no(new Error('조각 주소가 없어요: ' + n));
+        const sc = document.createElement('script'); sc.src = u; sc.async = true;
+        sc.onload = () => ok(); sc.onerror = () => { delete LD_CHUNK_P[n]; no(new Error('조각을 못 받았어요: ' + n)); };
+        document.head.appendChild(sc);
+    }));
+}
+setTimeout(() => (window.requestIdleCallback || (f => setTimeout(f, 0)))(() => ldChunk('help').catch(() => {})), 6000);
 const blockLabels = { heroVideo:'메인 영상', hero:'메인 사진', greeting:'인사말', location:'오시는 길', gallery:'갤러리', account:'마음 전하실 곳', dday:'디데이 카운트다운', timeline:'타임라인', interview:'인터뷰' };
 // 섹션마다 목록/편집창을 같은 색으로 뭉뚱그려 보여주면 지금 뭘 고치고 있는지 헷갈린다는 피드백을 받아서,
 // 섹션 종류별로 고유 색을 하나씩 정해두고 목록의 점 색 + 편집창 상단 띠 색으로 같이 써서 한눈에 매칭되게 한다.
@@ -9987,255 +10002,7 @@ function dpkOvClose(picking) {
     setTimeout(() => { if (!ov.classList.contains('show')) ov.querySelector('.dpk-vw').innerHTML = ''; }, 300);
     if (!picking && DPK.ovId && DPK.ovId !== DPK.cur) { dpkMark(DPK.ovId); dpkGo(DPK.ovId, true); dpkPaint(); }
 }
-// ===== 디자인 썸네일 만들기 (관리자 → 추천 디자인 → [썸네일 만들기] = 에디터 ?thumbs=make) =====
-//  디자인마다 dpkShot(위쪽 섹션까지)으로 그린 청첩장을 화면 왼쪽 위(390px 칸 .thm-cap)에 띄우고, '이 탭 공유'(getDisplayMedia)로
-//  화면을 그대로 찍어 첫 화면(390×844)·긴 화면(최대 2600px, 칸보다 길면 몇 번에 나눠 찍어 이어 붙임)을 WebP로 dpk_thumbs.php에 올림.
-//  (DOM을 그림으로 바꾸는 라이브러리는 마스크·color-mix·글꼴 등을 제대로 못 그려서 화면을 그대로 찍음 · PC 크롬·엣지만)
-//  찍기 전에 초록 칸을 띄워 동영상 속 그 칸의 자리를 찾아 맞춤(thmCalib) - 화면 배율·창 크기가 달라도 맞게
-const THM = { csrf: '', items: {}, st: {}, run: false, stop: false };
-const THM_MAX_H = 2600, THM_COVER_H = 844, THM_OUT = 1.5; // 그림 배율 (390px → 585px)
-const thm$ = id => document.getElementById(id);
-function thmMsg(t, bad) { const m = thm$('thmMsg'); if (m) { m.textContent = t || ''; m.classList.toggle('bad', !!bad); } }
-function thmIds() { return allDesigns().map(p => p.id); }
-function thmStat(id) { const t = THM.items[id]; return THM.st[id] || (!t ? 'no' : t.sig === dpkSig(id) ? 'ok' : 'old'); }
-const THM_LBL = { no: '그림 없음', old: '예전 그림', ok: '✓ 최신', run: '찍는 중…', up: '올리는 중…', done: '✓ 저장함', bad: '못 찍음' };
-function thmDraw(now) {
-    const ids = thmIds(), l = thm$('thmL'); if (!l) return;
-    l.innerHTML = ids.map(id => { const p = allDesigns().find(x => x.id === id) || {}, t = THM.items[id], st = thmStat(id);
-        return `<div class="thm-r${id === now ? ' now' : ''}${id === THM_ONLY ? ' pick' : ''}" data-thm-id="${esc(id)}">${t ? `<img src="${esc(t.c)}" alt="" loading="lazy">` : '<i></i>'}<b>${esc(p.label || id)}</b><small class="${st === 'done' ? 'ok' : st}">${THM_LBL[st] || ''}</small>`
-            + `<span class="thm-ra"><button type="button" data-thm-shot="${esc(id)}"${THM.run || !THM.csrf ? ' disabled' : ''} title="이 디자인만 다시 찍기">${t ? '다시 찍기' : '찍기'}</button>${t ? `<button type="button" class="del" data-thm-del="${esc(id)}"${THM.run ? ' disabled' : ''} title="이 디자인 그림만 지우기">지우기</button>` : ''}</span></div>`; }).join('');
-    const todo = ids.filter(id => ['no', 'old', 'bad'].includes(thmStat(id))).length;
-    const a = thm$('thmGoNew'), b = thm$('thmGoAll');
-    if (a) { a.textContent = todo ? `바뀐 것만 찍기 (${todo}개)` : '모두 최신이에요'; a.disabled = THM.run || !todo; }
-    if (b) { b.textContent = THM.run ? '멈추기' : `모두 다시 찍기 (${ids.length}개)`; b.disabled = false; }
-    if (now) { const r = l.querySelector('.thm-r.now'); if (r) r.scrollIntoView({ block: 'nearest' }); }
-    else if (THM_ONLY && !thmDraw.seen) { const r = l.querySelector('.thm-r.pick'); if (r) { thmDraw.seen = true; r.scrollIntoView({ block: 'center' }); } }
-}
-// 디자인 하나만: [다시 찍기] = 그 디자인만 찍기 · [지우기] = 그 디자인 그림만 지움 (고객 화면은 다시 찍을 때까지 진짜로 그려서 보여 줌)
-const THM_ONLY = (new URLSearchParams(location.search).get('only') || '').replace(/[^a-z0-9-]/gi, ''); // 관리자 → 추천 디자인 썸네일 칸 [다시 찍기]로 열면 그 디자인을 짚어 둠
-async function thmDel(id) {
-    if (THM.run || !THM.items[id]) return;
-    const p = allDesigns().find(x => x.id === id) || {};
-    if (!(await LD.confirm(`'${p.label || id}' 썸네일을 지울까요?`, { message: '고객 디자인 고르기 화면은 다시 찍을 때까지 진짜로 그려서 보여 줘요.', ok: '지우기', cancel: '그대로 두기' }))) return;
-    const fd = new FormData(); fd.append('csrf_token', THM.csrf); fd.append('act', 'del'); fd.append('id', id);
-    try { const j = await fetch('dpk_thumbs.php', { method: 'POST', body: fd }).then(x => x.json()); if (!j.ok) throw new Error(j.error || ''); delete THM.items[id]; delete THM.st[id]; thmMsg(`'${p.label || id}' 썸네일을 지웠어요.`); }
-    catch (e) { thmMsg('지우지 못했어요. 새로고침 후 다시 해 주세요.', true); }
-    thmDraw();
-}
-async function thmOpen() {
-    document.documentElement.classList.add('thm-on'); DPK.off = true; // (뒤 디자인 고르기 화면은 그리지 않음)
-    const el = document.createElement('div'); el.className = 'thm'; el.id = 'thm';
-    el.innerHTML = `<div class="thm-h"><b>디자인 썸네일 만들기</b><p>${THM_DOM ? '디자인마다 첫 화면·긴 화면 그림을 만들어 두면 고객 디자인 고르기 화면이 빨라져요. 휴대폰에서는 청첩장을 그림으로 바꿔서 찍어요 (디자인 하나에 몇 초). 다 찍을 때까지 화면을 끄거나 다른 앱으로 가지 마세요.' : `디자인마다 첫 화면·긴 화면 그림을 찍어 두면 고객 디자인 고르기 화면이 빨라져요. [찍기]를 누르면 크롬·엣지가 <b>'이 탭 공유'</b>를 물어요 → <b>[공유]</b>를 눌러 주세요. 다 찍을 때까지 이 창을 그대로 두세요 (다른 탭으로 가면 멈춰요).`}</p></div>
-        <p class="thm-msg" id="thmMsg">디자인 목록을 불러오는 중…</p><div class="thm-l" id="thmL"></div>
-        <div class="thm-f"><button type="button" class="main" id="thmGoNew" disabled>바뀐 것만 찍기</button><button type="button" id="thmGoAll" disabled>모두 다시 찍기</button><a href="admin_designs.php#thumbs">추천 디자인 관리로</a></div>`;
-    document.body.appendChild(el);
-    thm$('thmGoNew').addEventListener('click', () => thmRun(thmIds().filter(id => ['no', 'old', 'bad'].includes(thmStat(id)))));
-    thm$('thmGoAll').addEventListener('click', () => { if (THM.run) { THM.stop = true; thmMsg('지금 찍는 디자인까지만 하고 멈춰요…'); } else thmRun(thmIds()); });
-    thm$('thmL').addEventListener('click', e => { const a = e.target.closest('[data-thm-shot]'), d = e.target.closest('[data-thm-del]'); if (a && !a.disabled) thmRun([a.dataset.thmShot]); else if (d && !d.disabled) thmDel(d.dataset.thmDel); });
-    const t0 = Date.now(); while (!(PRESETS_OK && SAMPLE_LIST_OK && DPK_SECDEF) && Date.now() - t0 < 8000) await new Promise(r => setTimeout(r, 150)); // (디자인·샘플·메인 사진 예시를 다 받은 뒤 - 지문이 고객 화면과 같게)
-    try { const j = await fetch('dpk_thumbs.php?csrf=1', { cache: 'no-store' }).then(r => r.json()); if (!j.ok || !j.csrf) throw 0; THM.csrf = j.csrf; }
-    catch (e) { thmMsg('관리자로 로그인한 뒤 다시 열어 주세요. (관리자 → 추천 디자인 → [썸네일 만들기])', true); return; }
-    try { const j = await fetch('dpk_thumbs.php', { cache: 'no-store' }).then(r => r.json()); THM.items = (j && j.items) || {}; } catch (e) {}
-    const okEnv = THM_DOM || (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && window.innerWidth >= 820);
-    thmMsg(okEnv ? (THM_ONLY && thmIds().includes(THM_ONLY) ? `짚어 둔 디자인 줄의 [${THM.items[THM_ONLY] ? '다시 찍기' : '찍기'}]를 누르면 그 디자인만 찍어요.` : '') : (window.innerWidth < 820 ? '창을 더 넓게(820px 이상) 해 주세요.' : '이 브라우저는 화면을 찍을 수 없어요. PC 크롬이나 엣지에서 열어 주세요.'), !okEnv);
-    thmDraw();
-}
-// 화면을 찍을 칸 (왼쪽 위 390px) - 높이는 화면 높이까지
-function thmCapEl() { let c = thm$('thmCap'); if (!c) { c = document.createElement('div'); c.className = 'thm-cap'; c.id = 'thmCap'; document.body.appendChild(c); } c.style.height = Math.min(window.innerHeight, 1000) + 'px'; return c; }
-const thmWait = ms => new Promise(r => setTimeout(r, ms));
-// 바꾼 화면이 동영상에 들어올 때까지 기다림 (새 장면 두 번 또는 0.5초)
-async function thmFrame(v) {
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-    await thmWait(90);
-    if (v.requestVideoFrameCallback) for (let i = 0; i < 2; i++) await Promise.race([new Promise(r => v.requestVideoFrameCallback(() => r())), thmWait(260)]);
-    else await thmWait(300);
-}
-// 초록 칸을 띄워 동영상 속 자리 찾기 → {x, y, w, h} (칸 390 × 높이 = 동영상의 이 네모)
-async function thmCalib(v, cap) {
-    cap.innerHTML = '<div style="position:absolute;inset:0;background:#00FF00"></div>';
-    await thmFrame(v);
-    const W = v.videoWidth, H = v.videoHeight; if (!W || !H) return null;
-    const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(v, 0, 0);
-    const d = x.getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = -1, y1 = -1;
-    for (let y = 0; y < H; y += 1) for (let i = (y * W) * 4, e = i + W * 4; i < e; i += 4) if (d[i] < 70 && d[i + 1] > 190 && d[i + 2] < 70) { const px = (i / 4) % W; if (px < x0) x0 = px; if (px > x1) x1 = px; if (y < y0) y0 = y; if (y > y1) y1 = y; }
-    cap.innerHTML = '';
-    if (x1 < 0 || x1 - x0 < 100) return null;
-    return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1, cw: 390, ch: cap.clientHeight, iw: window.innerWidth, ih: window.innerHeight };
-}
-async function thmImgs(root) {
-    const ims = [...root.querySelectorAll('img')];
-    await Promise.race([Promise.all(ims.map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; }))), thmWait(6000)]);
-    try { await Promise.race([document.fonts.ready, thmWait(3000)]); } catch (e) {}
-}
-const thmBlob = (cv, q) => new Promise(r => cv.toBlob(b => { if (b && b.type === 'image/webp') r(b); else cv.toBlob(r, 'image/jpeg', .84); }, 'image/webp', q));
-// 디자인 하나 찍기 → {c: Blob, l: Blob, h}
-async function thmShoot(id, v, cal) {
-    delete DPK.shots[id];
-    const s = await dpkShot(id, 's'); if (!s) throw new Error('그리지 못했어요');
-    const cap = thmCapEl(); cap.innerHTML = '';
-    const el = dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) }); el.style.animation = 'none'; cap.appendChild(el);
-    await thmImgs(el); await thmWait(700);
-    cap.querySelectorAll('*').forEach(n => { n.style.animationPlayState = 'paused'; }); // (장식 효과는 0.7초 흐른 모습 그대로)
-    const H = Math.min(THM_MAX_H, Math.max(THM_COVER_H, el.offsetHeight)), VH = cal.ch, kx = cal.w / cal.cw, ky = cal.h / cal.ch;
-    const OW = Math.round(390 * THM_OUT), full = document.createElement('canvas'); full.width = OW; full.height = Math.round(H * THM_OUT);
-    const fx = full.getContext('2d'), bg = getComputedStyle(el).backgroundColor; fx.fillStyle = !bg || /rgba\(0, 0, 0, 0\)|transparent/.test(bg) ? '#fff' : bg; fx.fillRect(0, 0, full.width, full.height);
-    for (let y = 0; y < H; y += VH) {
-        el.style.transform = `translateY(${-y}px)`;
-        await thmFrame(v);
-        const seg = Math.min(VH, H - y);
-        fx.drawImage(v, cal.x, cal.y, cal.w, seg * ky, 0, Math.round(y * THM_OUT), OW, Math.round(seg * THM_OUT));
-    }
-    const cov = document.createElement('canvas'); cov.width = OW; cov.height = Math.round(THM_COVER_H * THM_OUT);
-    cov.getContext('2d').drawImage(full, 0, 0, OW, cov.height, 0, 0, OW, cov.height);
-    cap.innerHTML = ''; delete DPK.shots[id];
-    return { c: await thmBlob(cov, .78), l: await thmBlob(full, .7), h: Math.round(H) };
-}
-// 찍은 그림 올리기 (두 방식 같이)
-async function thmPut(id, r) {
-    const fd = new FormData(); fd.append('csrf_token', THM.csrf); fd.append('act', 'put'); fd.append('id', id); fd.append('sig', dpkSig(id)); fd.append('h', String(r.h));
-    const ext = r.c.type === 'image/webp' ? 'webp' : 'jpg'; fd.append('c', r.c, `${id}-c.${ext}`); fd.append('l', r.l, `${id}-l.${ext}`);
-    const j = await fetch('dpk_thumbs.php', { method: 'POST', body: fd }).then(x => x.json());
-    if (!j.ok) throw new Error(j.error || '올리지 못했어요');
-    THM.items[id] = j.item;
-}
-// ---- 휴대폰 방식: 화면 녹화(getDisplayMedia)가 안 되는 기기(휴대폰·태블릿 브라우저)는 청첩장을 그림으로 바꿔서 찍음 ----
-//  assets/modern-screenshot.js (SVG foreignObject - 브라우저가 직접 그려서 마스크·color-mix도 그대로) · 다른 사이트 글꼴은 직접 받아 넣음(thmFontCss)
-//  PC에서도 주소 끝에 &how=dom 이면 이 방식 (확인용)
-const THM_DOM = (() => { try { return urlParams.get('how') === 'dom' || !(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) || matchMedia('(pointer: coarse)').matches; } catch (e) { return true; } })();
-let THM_LIB = null;
-function thmLib() {
-    return THM_LIB || (THM_LIB = new Promise((ok, bad) => {
-        if (window.modernScreenshot) return ok(window.modernScreenshot);
-        const sc = document.createElement('script'); sc.src = 'assets/modern-screenshot.js?v=4.6.8';
-        sc.onload = () => window.modernScreenshot ? ok(window.modernScreenshot) : bad(new Error('그림 도구를 불러오지 못했어요'));
-        sc.onerror = () => { THM_LIB = null; bad(new Error('그림 도구를 불러오지 못했어요')); };
-        document.head.appendChild(sc);
-    }));
-}
-// 다른 사이트(구글 글꼴 등) 글꼴은 그림 도구가 못 읽어서, 이 디자인에 쓰인 글꼴 · 들어 있는 글자 칸(unicode-range)만 받아 data: 로 넣음 (한 번 받은 건 기억)
-const THM_FONT = { css: {}, data: {} };
-function thmB64(buf) { let s = ''; const b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
-function thmInRange(range, cps) {
-    if (!range) return true;
-    return range.split(',').some(part => {
-        const m = part.trim().replace(/^U\+/i, ''); let a, b;
-        if (m.includes('?')) { a = parseInt(m.replace(/\?/g, '0'), 16); b = parseInt(m.replace(/\?/g, 'F'), 16); }
-        else { const [x, y] = m.split('-'); a = parseInt(x, 16); b = y ? parseInt(y, 16) : a; }
-        for (const c of cps) if (c >= a && c <= b) return true; return false;
-    });
-}
-async function thmFontCss(el) {
-    const fams = new Set(), cps = new Set();
-    [el, ...el.querySelectorAll('*')].forEach(n => {
-        [getComputedStyle(n), getComputedStyle(n, '::before'), getComputedStyle(n, '::after')].forEach(cs => (cs.fontFamily || '').split(',').forEach(f => { f = f.trim().replace(/^["']|["']$/g, ''); if (f) fams.add(f.toLowerCase()); }));
-    });
-    for (const ch of (el.textContent || '') + '0123456789:.·-&♥ ') cps.add(ch.codePointAt(0));
-    const blocks = [];
-    for (const sh of document.styleSheets) {
-        let rules = null; try { rules = sh.cssRules; } catch (e) {}
-        if (rules) { for (const r of rules) if (r.type === 5) blocks.push([r.cssText, sh.href || location.href]); continue; } // (같은 사이트 글꼴)
-        if (!sh.href) continue;
-        if (!THM_FONT.css[sh.href]) THM_FONT.css[sh.href] = fetch(sh.href).then(x => x.ok ? x.text() : '').catch(() => '');
-        const css = await THM_FONT.css[sh.href];
-        (css.match(/@font-face\s*{[^}]*}/g) || []).forEach(t => blocks.push([t, sh.href]));
-    }
-    const out = [];
-    for (const [txt, base] of blocks) {
-        const fam = ((txt.match(/font-family:\s*([^;]+)/i) || [])[1] || '').trim().replace(/^["']|["']$/g, '').toLowerCase();
-        if (!fams.has(fam) || !thmInRange((txt.match(/unicode-range:\s*([^;}]+)/i) || [])[1], cps)) continue;
-        const um = txt.match(/url\(\s*["']?([^"')]+)["']?\s*\)/); if (!um || /^data:/.test(um[1])) { out.push(txt); continue; }
-        const url = new URL(um[1], base).href;
-        try {
-            if (!THM_FONT.data[url]) THM_FONT.data[url] = fetch(url).then(x => { if (!x.ok) throw 0; return x.arrayBuffer(); }).then(b => `data:font/${/\.woff2(\?|$)/.test(url) ? 'woff2' : /\.woff(\?|$)/.test(url) ? 'woff' : 'ttf'};base64,${thmB64(b)}`);
-            const d = await THM_FONT.data[url];
-            out.push(txt.replace(/src:[^;}]+/, `src: url(${d})`));
-        } catch (e) {}
-    }
-    return out.join('\n');
-}
-// 꾸밈 층(::before/::after)에 깐 그림(금테 액자 장식 등)은 그림 도구가 빠뜨려서, 찍기 전에 data: 그림으로 바꿔 그 칸에만 덧씌움
-const THM_IMG = {};
-async function thmPseudoInline(el) {
-    const rules = []; let n = 0;
-    const toData = url => THM_IMG[url] || (THM_IMG[url] = fetch(url).then(r => { if (!r.ok) throw 0; return r.blob(); }).then(b => new Promise(ok => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = () => ok(url); fr.readAsDataURL(b); })).catch(() => url));
-    for (const node of [el, ...el.querySelectorAll('*')]) for (const ps of ['::before', '::after']) {
-        const cs = getComputedStyle(node, ps); if (!cs || cs.content === 'none' || cs.display === 'none') continue;
-        for (const prop of ['background-image', 'mask-image', '-webkit-mask-image']) {
-            const v = cs.getPropertyValue(prop); if (!v || !/url\(["']?(?!data:)/.test(v)) continue;
-            const urls = [...v.matchAll(/url\(["']?([^"')]+)["']?\)/g)].map(m => m[1]).filter(u => !/^data:/.test(u));
-            let out = v; for (const u of urls) out = out.split(u).join(await toData(u));
-            if (!node.dataset.thmPs) node.dataset.thmPs = String(++n);
-            rules.push(`[data-thm-ps="${node.dataset.thmPs}"]${ps} { ${prop}: ${out} !important; }`);
-        }
-    }
-    if (rules.length) { const st = document.createElement('style'); st.textContent = rules.join('\n'); el.prepend(st); }
-}
-async function thmShootDom(id) {
-    const ms = await thmLib();
-    delete DPK.shots[id];
-    const s = await dpkShot(id, 's'); if (!s) throw new Error('그리지 못했어요');
-    const cap = thmCapEl(); cap.classList.add('dom'); cap.innerHTML = '';
-    const el = dpkIvEl({ cls: s.cls, style: s.style, html: dpkSlim(s) }); el.style.animation = 'none'; cap.appendChild(el);
-    el.querySelectorAll('img[loading]').forEach(im => { im.loading = 'eager'; });
-    await thmImgs(el); await thmWait(700);
-    cap.querySelectorAll('*').forEach(n => { n.style.animationPlayState = 'paused'; });
-    await thmPseudoInline(el);
-    const H = Math.min(THM_MAX_H, Math.max(THM_COVER_H, el.offsetHeight));
-    const bg = getComputedStyle(el).backgroundColor;
-    const full = await ms.domToCanvas(el, { width: 390, height: H, scale: THM_OUT, backgroundColor: !bg || /rgba\(0, 0, 0, 0\)|transparent/.test(bg) ? '#fff' : bg, font: { cssText: await thmFontCss(el) }, timeout: 20000 });
-    const OW = full.width, cov = document.createElement('canvas'); cov.width = OW; cov.height = Math.round(THM_COVER_H * THM_OUT);
-    cov.getContext('2d').drawImage(full, 0, 0, OW, cov.height, 0, 0, OW, cov.height);
-    cap.innerHTML = ''; delete DPK.shots[id];
-    return { c: await thmBlob(cov, .78), l: await thmBlob(full, .7), h: Math.round(H) };
-}
-async function thmRunDom(ids) {
-    THM.run = true; THM.stop = false; thmDraw();
-    let done = 0, fail = 0;
-    try {
-        await thmLib();
-        for (const id of ids) {
-            if (THM.stop) break;
-            THM.st[id] = 'run'; thmDraw(id); thmMsg(`찍는 중… ${done + fail + 1} / ${ids.length} (화면을 끄지 말고 그대로 두세요)`);
-            try { const r = await thmShootDom(id); THM.st[id] = 'up'; thmDraw(id); await thmPut(id, r); THM.st[id] = 'done'; done++; }
-            catch (e) { console.warn('[thm]', id, e); THM.st[id] = 'bad'; fail++; }
-            thmDraw(id);
-        }
-    } catch (e) { thmMsg(e.message || '찍지 못했어요', true); }
-    finally {
-        const cap = thm$('thmCap'); if (cap) cap.remove();
-        THM.run = false; thmDraw();
-        if (done || fail) thmMsg(`${done}개 저장했어요${fail ? ` · ${fail}개는 못 찍었어요 (다시 눌러 보세요)` : ''}${THM.stop ? ' · 멈췄어요' : ''}. 고객 디자인 고르기 화면에 바로 반영돼요.`, !!fail);
-    }
-}
-async function thmRun(ids) {
-    if (THM.run || !ids.length) return;
-    if (THM_DOM) return thmRunDom(ids);
-    let stream = null;
-    try { stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser', width: { ideal: 4096 }, height: { ideal: 4096 }, frameRate: 30 }, audio: false, preferCurrentTab: true, selfBrowserSurface: 'include', surfaceSwitching: 'exclude' }); }
-    catch (e) { thmMsg('화면 찍기를 허락하지 않았어요. 다시 누르고 \'이 탭 공유\'에서 [공유]를 눌러 주세요.', true); return; }
-    THM.run = true; THM.stop = false; thmDraw();
-    const track = stream.getVideoTracks()[0], v = document.createElement('video'); v.muted = true; v.playsInline = true; v.srcObject = stream;
-    let done = 0, fail = 0, cal = null;
-    try {
-        await v.play();
-        for (const id of ids) {
-            if (THM.stop || track.readyState === 'ended') break;
-            if (!cal || cal.iw !== window.innerWidth || cal.ih !== window.innerHeight) { cal = await thmCalib(v, thmCapEl()); if (!cal) { thmMsg('찍은 화면에서 이 탭을 찾지 못했어요. 다시 누르고 \'이 탭\'을 골라 주세요.', true); break; } } // (창 크기가 바뀌면 다시)
-            THM.st[id] = 'run'; thmDraw(id); thmMsg(`찍는 중… ${done + fail + 1} / ${ids.length}`);
-            try {
-                const r = await thmShoot(id, v, cal);
-                THM.st[id] = 'up'; thmDraw(id);
-                await thmPut(id, r); THM.st[id] = 'done'; done++;
-            } catch (e) { console.warn('[thm]', id, e); THM.st[id] = 'bad'; fail++; }
-            thmDraw(id);
-        }
-    } finally {
-        try { track.stop(); } catch (e) {}
-        const cap = thm$('thmCap'); if (cap) cap.remove();
-        THM.run = false; thmDraw();
-        if (!thm$('thmMsg').classList.contains('bad') || done) thmMsg(`${done}개 저장했어요${fail ? ` · ${fail}개는 못 찍었어요 (다시 눌러 보세요)` : ''}${THM.stop ? ' · 멈췄어요' : ''}. 고객 디자인 고르기 화면에 바로 반영돼요.`, !!fail);
-    }
-}
+// (1019s) 디자인 썸네일 만들기 코드는 assets/editor-thm.js로 옮김 (?thumbs=make일 때만 ldChunk('thm')로 불러옴)
 // 샘플 미리보기: 그 디자인(관리자 샘플이 있으면 샘플 모습)을 잠깐 입혀서 에디터 미리보기를 화면 가득 보여줌
 //  [돌아가기] = 보기 전 상태 그대로 되돌림 / [이 샘플로 선택] = 그 디자인으로 시작 (startWithPreset)
 let spvSnap = null, spvId = null;
@@ -15435,7 +15202,7 @@ async function bootstrapFromServer() {
     if (TESTBED_MODE) {
         showServerNotice('공용 테스트베드입니다 - 여기서 저장하는 내용은 이 링크로 접속하는 모두에게 공유/덮어써집니다. 실제 서비스 디자인이 아닙니다.', true);
     }
-    if (!EDIT_TOKEN) { showDesignScreenWithGuide(); if (THUMB_MAKE) thmOpen(); return; }
+    if (!EDIT_TOKEN) { showDesignScreenWithGuide(); if (THUMB_MAKE) ldChunk('thm').then(() => thmOpen()).catch(e => console.error(e)); return; }
     try {
         const res = await fetch(API_ENDPOINTS.load);
         const data = await res.json();
@@ -16818,69 +16585,7 @@ function ldhExpertOpen(id) {
 const ldhUndoEl = () => ldhFirst('#spUndo', '#udUndo', '#undoTab');
 const ldhTextEl = () => ldhFirst('#previewRoot .col[data-block-id="hero"] .drag-part', '#previewRoot .col[data-block-id="heroVideo"] .drag-part', '#previewRoot .drag-part');
 // 할 일 목록 - t: 제목, d: 한 줄 설명, steps: 순서 설명, show: 보여주기 단계 [{el, t, x}], go: [버튼 이름, 함수], when: 이 화면에서만
-const LDH_EASY = [
-    { t: '내 청첩장 전체 보기', d: '하객이 보는 모습 그대로 봐요', steps: ['아래 버튼을 누르면 하객이 보는 화면이 떠요. 배경음악을 넣었으면 음악도 나와요.', '이 화면에선 고칠 수 없어요. 다 보고 [수정하기]나 [닫기]를 누르면 다시 고칠 수 있어요.'], go: ['지금 보기', () => spOpenPreview(false)] },
-    { t: '이름 · 날짜 · 예식장 바꾸기', d: '틀린 글자를 고쳐요', steps: ['아래 [그 칸으로 가기]를 누르면 바로 그 칸이 열려요.', '칸에 적으면 위(옆) 청첩장에 바로 바뀌고, 지금 적는 곳이 반짝 빛나요.'], go: ['그 칸으로 가기', () => ldhEasyGo('names:name', 'names')] },
-    { t: '예식 날짜가 아직 안 정해졌어요', d: '날짜 없이도 먼저 만들 수 있어요', when: () => spOpt('names', 'tbd'), steps: ['날짜 질문(목록 화면은 \'두 사람\' 칸)에서 [아직 일정을 잡지 않았어요]를 누르고 [다음]을 눌러요.', '청첩장 날짜 자리에는 \'날짜는 정해지면 알려 드릴게요\' 같은 안내가 나오고, 디데이는 잠시 꺼져요.', '날짜가 정해지면 같은 곳에서 버튼을 다시 눌러 끄고 날짜를 적어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('names:date', 'names')] },
-    { t: '사진 · 영상 바꾸기', d: '첫 화면 사진이나 유튜브 영상을 넣어요', steps: ['아래 [그 칸으로 가기]를 눌러요.', '사진은 [사진 고르기]를 누르고 한 장 골라요. 영상은 유튜브 주소를 그대로 붙여 넣어요.', '처음에 보이는 사진·영상은 예시예요. 목록에 \'아직 예시\'라고 나오면 내 사진·영상으로 바꿔 주세요.', '\'보일 부분 · 확대\'에서 사진을 끌면 보일 곳을 옮기고, 막대로 크게 할 수 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('hero:media', 'hero')] },
-    { t: '무엇이 빠졌는지 보기', d: '맨 위 \'발행 준비\' 카드', when: c => c.view === 'list' && spOpt('flow', 'summary'), steps: () => spRdDock() ? ['목록 화면 맨 위 줄이 지금 어디까지 왔는지 알려 줘요: ① 채우기 → ② 확인하기 → ③ 발행하기.', '아래 칸 중 ! 표시가 있는 칸만 채우면 돼요. 채우면 칸이 접혀 사라져요.', '화면 맨 아래 [완성본 보기]로 하객 화면을 보고, [발행하기] → [주소 복사하기]로 보내요.'] : EASY_READY === 'next' ? ['목록 화면 맨 위 카드의 큰 검은 버튼이 지금 할 일 하나를 알려 줘요 (예: 두 분 이름 적기).', '버튼을 누르면 그 칸이 바로 열려요. 채우면 버튼이 다음 할 일로 바뀌어요: ① 채우기 → ② 완성본 보기 → ③ 발행하기.', '발행한 뒤엔 [주소 복사하기]로 하객에게 보낼 주소를 복사해요.'] : ['목록 화면 맨 위 \'발행 준비\' 카드에 아직 채우지 않은 것이 단추로 나와요 (예: 날짜 · 계좌).', '단추를 누르면 그 칸이 바로 열려요. 아래 칸 중 ! 표시가 있는 칸도 채우면 좋아요.', '다 채우면 \'발행 준비 다 됐어요\'로 바뀌어요. [완성본 보기]로 보고 발행하면 돼요.'], show: () => [{ el: () => ldhFirst('#spReady'), t: '발행 준비', x: '여기 단추를 누르면 빠진 칸이 바로 열려요.' }] },
-    { t: '하객에게 보내기', d: '발행하고 카카오톡으로 보내요', steps: ['아래 [완성본 열기]를 눌러요.', '화면 아래 [발행하기]를 눌러요. 발행해야 하객이 볼 수 있어요.', '발행한 뒤 [내 청첩장] 화면에서 카카오톡 공유나 링크 복사를 눌러 보내요.'], go: ['완성본 열기', () => spOpenPreview(true)] },
-    { t: '카톡으로 보낼 때 모양 바꾸기', d: '사진 · 제목 · 내용 · 버튼', steps: ['아래 [바로 열기]를 누르면 카톡으로 받았을 때 모습이 보여요 (목록 맨 위 카드 · 완성본 화면 아래 [카톡 미리보기]도 같아요).', '미리보기 사진을 끌면 보이는 부분이 바뀌고, [다른 사진 고르기]로 사진을 바꿔요. 세로 · 정사각 · 가로도 골라요.', '제목 · 내용 · 버튼 이름을 적으면 바로 미리보기에 보여요. 내용을 비워 두면 날짜와 예식장이 들어가요.'], go: ['바로 열기', () => { closeLdh(); kkSheetOpen(); }] },
-    { t: '발행하기 전에 확인하기', d: '빠진 것이 있으면 알려 줘요', when: () => spOpt('flow', 'precheck'), steps: ['[발행하기]를 누르면 예시 사진·예시 영상·빈 계좌·미정 날짜처럼 빠진 것이 있을 때 \'발행 전에 확인해요\' 창이 떠요.', '줄을 누르면 그 칸이 바로 열려요. 다 고치지 않아도 [그래도 발행하기]로 발행할 수 있어요.', '[카톡 미리보기]로 카카오톡에서 어떻게 보일지도 봐요.'] },
-    { t: '갤러리 · 계좌 같은 칸 더 넣기', d: '넣고 싶은 칸을 켜요', when: c => c.view !== 'list', steps: ['질문을 다 마치면 목록 화면이 나와요. 맨 아래 \'더 넣을 수 있는 칸\'에 아직 안 넣은 칸이 모여 있어요.', '칸 오른쪽 스위치를 켜면 청첩장에 들어가고, 내용을 채우는 칸이 바로 열려요.', '빼고 싶으면 그 칸의 스위치를 다시 꺼요.'], go: ['목록 화면으로', () => { closeLdh(); state.spView = 'list'; spOpenSet = new Set(); spLaterShow = true; spRender(); setTimeout(() => { const g = document.querySelector('#simplePane .spb-add'); if (g) g.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 120); }] },
-    { t: '갤러리 · 계좌 같은 칸 더 넣기', d: '넣고 싶은 칸을 켜요', when: c => c.view === 'list', steps: ['맨 아래 \'더 넣을 수 있는 칸\'에서 오른쪽 스위치를 켜면 청첩장에 들어가요.', '켜면 그 칸이 제자리로 가서 내용을 적는 곳이 펼쳐져요. 칸 이름을 누르면 다시 접고 펼쳐요.', '빼고 싶으면 스위치를 다시 꺼요. 꺼진 칸은 \'더 넣을 수 있는 칸\'으로 돌아가요.'], show: () => [{ el: () => ldhFirst('#simplePane .spb-add [data-li-sw]', '#simplePane [data-li-sw]'), t: '켜고 끄기', x: '이 스위치를 켜면 그 칸이 청첩장에 들어가요.' }], go: ['그 칸들 보기', () => { if (!document.querySelector('#simplePane .spb-add')) { spLaterShow = true; spRender(); } const g = document.querySelector('#simplePane .spb-add'); if (g) g.scrollIntoView({ block: 'start', behavior: 'smooth' }); }] },
-    { t: '섹션 순서 바꾸기', d: '청첩장에 나오는 순서를 바꿔요', when: c => c.view === 'list' && spOpt('flow', 'order'), steps: ['목록 화면 맨 아래 [섹션 순서 바꾸기]를 눌러요.', '줄을 끌거나 ↑ ↓ 를 눌러 순서를 바꿔요. 첫 화면은 맨 위, 공유하기는 맨 아래에 그대로 있어요.', '컴퓨터에서는 목록의 칸 머리줄을 바로 끌어서 옮겨도 돼요.'], go: ['순서 바꾸기 열기', () => { if (!document.getElementById('spOrderBtn')) { spLaterShow = true; spRender(); } const b = document.getElementById('spOrderBtn'); if (b) b.click(); }] },
-    { t: '질문에 처음부터 다시 답하기', d: '이름부터 한 번 더 차례로', when: c => c.view === 'list' && spOpt('flow', 'ask') && !spInPlace, steps: ['목록 화면 맨 아래 [질문에 처음부터 다시 답하기]를 눌러요.', '적어 둔 내용은 그대로 있어요. 바꿀 곳만 고치고 [다음]을 누르면 돼요.'], go: ['처음부터 답하기', () => { const b = document.getElementById('spAskAgain'); if (b) b.click(); }] },
-    { t: '질문을 건너뛰고 싶어요', d: '나중에 해도 돼요', when: c => c.view === 'quick' && spOpt('flow', 'skip'), steps: ['질문 위쪽 [나중에 할게요]를 누르면 그 질문을 건너뛰어요.', '건너뛴 것은 질문을 다 마친 뒤 목록 화면에서 채울 수 있어요.'], show: () => [{ el: () => ldhFirst('#spSkip'), t: '나중에 할게요', x: '이 질문은 건너뛰고 다음 질문으로 가요.' }] },
-    { t: '디자인 바꾸기', d: '적은 내용은 그대로 두고 모양만', when: () => spOpt('theme', 'design') && !spInPlace, steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 위 [디자인 바꾸기]가 열려요.', '마음에 드는 디자인을 누르면 이름·사진·글·계좌는 그대로 두고 모양만 바뀌어요.', '처음 디자인을 고를 때는 아래 [내 사진으로 보기]로 내 사진을 넣어 미리 볼 수도 있어요.'], go: ['그 칸으로 가기', () => { spDesignOpen = true; ldhEasyGo('', 'theme'); }] },
-    { t: '칸 모양 바꾸기 (빈티지 · 다른 디자인 스킨)', d: '인사말·방명록 같은 칸을 다른 모양으로', when: () => spOpt('theme', 'sskin'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'섹션 꾸밈\'에서 빈티지 큐피드 · 밤하늘 골드 · 안개 유리 중 하나를 눌러요.', '아래 \'디자인 스킨\'에서 다른 디자인(가든 · 필름 · 스크랩북 …)을 누르면 그 디자인의 색 · 글꼴 · 꾸밈이 모든 칸에 입혀져요. 처음처럼 하려면 [디자인 따라]를 눌러요.', '칸마다 따로 바꾸려면 전문가 모드의 \'섹션 스킨\'에서 해요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
-    { t: '배경 무늬 끄고 켜기', d: '색·글꼴 칸 → 배경 꾸밈 스위치', when: () => spOpt('theme', 'backdrop'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'배경 꾸밈\' 스위치를 끄면 배경 무늬와 종이 질감이 빠지고 바탕색만 남아요. 다시 켜면 디자인 원래 배경이에요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
-    { t: '색 바꾸면 달력 · 계좌 꾸밈도 같이', d: '바꾼 색을 따라가게 · 원래 색 그대로', when: () => spOpt('theme', 'colorLink') && colorLinkShown(), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'색을 바꾸면 꾸밈도 같이\' 스위치가 켜져 있으면, 색 묶음이나 포인트 색을 바꿀 때 달력 · 디데이 · 계좌 · 방명록 · 참석 버튼 · 교통 안내 꾸밈도 그 색으로 같이 바뀌어요.', '따로 고른 디자인 스킨도 모양은 그대로, 색만 바꾼 색으로 바뀌어요.', '스위치를 끄면 꾸밈의 포인트 색은 디자인 원래 색 그대로 남아요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
-    { t: '꾸밈을 예전 모습으로 (예전 · 모던)', d: '같은 디자인을 예전 장식 그대로', when: () => spOpt('theme', 'lookStyle') && lookOldAvail(), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸이 열려요.', '\'꾸밈 스타일\'에서 [예전]을 누르면 디자인마다 다른 장식(레이스 · 필름 구멍 · 핀 · ◆ 같은)이 살아 있는 예전 모습이 돼요.', '[모던]은 깔끔한 카드와 고딕 숫자, 제목 위 작은 영문 글씨예요. 언제든 다시 바꿀 수 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
-    { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', when: () => spOpt('gallery', 'reveal'), steps: ['아래 [그 칸으로 가기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 위(옆) 청첩장에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요. [한 번에]를 누르면 예전처럼 바로 보여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'gallery')] },
-    { t: '인트로 배경에 사진 · 영상 넣기', d: '청첩장을 열 때 뒤에 깔리는 화면', when: () => spOpt('finish', 'intro') && spOpt('finish', 'introFx') && spOpt('finish', 'introMedia'), steps: () => ['아래 [그 칸으로 가기]를 누르면 \'인트로\' 칸이 열려요. 인트로 스위치를 켜요.', '\'배경\'에서 [사진]을 누르면 앨범이 열려요. 한 장 고르면 인트로 뒤에 깔려요. 미리보기에서 사진을 끌면 보일 자리가 옮겨져요.', '[유튜브 영상]을 누르고 유튜브 주소를 붙여 넣으면 영상이 소리 없이 뒤에서 흘러가요.', EASY_INTRO === 'old' ? '[▶ 인트로 보기]를 누르면 하객이 보는 그대로 확인할 수 있어요.' : '칸 안 미리보기에서 하객이 보는 그대로 되풀이해 재생돼요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'finish')] },
-    { t: '인트로 분위기 바꾸기', d: '추천 분위기 · 16가지 중에서 고르기', when: () => spOpt('finish', 'intro') && EASY_INTRO === 'd', steps: ['아래 [그 칸으로 가기]를 누르면 \'인트로\' 칸이 열려요. 처음엔 디자인에 어울리는 추천 분위기가 가운데 있어요.', '큰 휴대폰 그림을 옆으로 넘기거나 아래 이름을 눌러 16가지 분위기를 봐요. 가운데 그림이 실제로 움직여요.', '마음에 들면 [이 분위기로 하고 다음]을 눌러요. 그러면 문구 · 색 · 글자 효과 · 스티커를 자세히 바꾸는 화면이 나와요.', '다른 분위기로 바꾸고 싶으면 [분위기 다시 고르기]를 눌러요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'finish')] },
-    { t: '인트로 쉽게 만들기', d: '분위기만 고르고 문구 적기', when: () => spOpt('finish', 'intro') && EASY_INTRO === 's', steps: ['아래 [그 칸으로 가기]를 누르면 \'인트로\' 칸이 열려요.', '① 분위기 카드(타자기 · 손글씨 · 하트 팡 · 별빛 …)를 누르면 배경 · 글자 색 · 효과 · 스티커가 한 번에 바뀌어요. 카드 안에서 실제로 움직이는 걸 보고 골라요.', '② 문구 칸에 적거나 아래 예시 문구를 눌러요.', '더 바꾸고 싶으면 [더 꾸미기]를 펼쳐요. 스티커를 누르면 ✨ 단추로 나타나는 움직임도 고를 수 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'finish')] },
-    { t: '인트로 글자 · 스티커 고치기', d: '미리보기를 눌러서 바로 고쳐요', when: () => spOpt('finish', 'intro') && EASY_INTRO !== 'old', steps: ['아래 [그 칸으로 가기]를 누르면 \'인트로\' 칸이 열리고, 칸 안에서 인트로가 되풀이해 재생돼요.', '미리보기의 글자를 톡 누르면 문구 · 글꼴 · 크기 · 색 · 정렬을 고치는 창이 떠요. 글자를 끌면 자리가 옮겨져요.', () => EASY_STK === 'gizmo' ? '스티커를 누르면 노란 테두리가 생겨요. 끌어서 옮기고, 위 동그라미로 돌리고, 오른쪽 아래 동그라미로 크기를 바꿔요. ✕는 지우기, ✨는 나타나는 움직임 · 테두리, 옆 단추는 뒤집기 · 앞/뒤예요.' : '스티커를 누르면 위에 작은 메뉴 [✨ 움직임 · 뒤집기 · 지우기]가 떠요. 끌어서 옮기고, 두 손가락으로 벌리면 커지고 비틀면 돌아가요. 아래 크기 [− +] · 돌리기 버튼으로도 돼요 (PC는 마우스 휠도 돼요). [?]를 누르면 사용법이 다시 나와요.', '[+ 더 고르기]를 누르면 하트 · 꽃 · 별 같은 다른 스티커도 찾아 넣을 수 있어요. \'재생 길이\'에서 글자가 나타나는 시간도 골라요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'finish')] },
-    { t: '꽃잎 효과 · 공유 버튼 · 그림자 · 글꼴 고르기', d: '\'효과 · 더 꾸미기\' 칸', when: () => ['ambient', 'scrollFx', 'scrollbar', 'share', 'shadow', 'font'].some(k => spOpt('finish', k)), steps: ['아래 [그 칸으로 가기]를 누르면 \'효과 · 더 꾸미기\' 칸이 열려요.', '장식 효과(꽃잎 · 눈 · 별 …)와 섹션 나타나는 효과를 누르면 위(옆) 청첩장에서 바로 보여 줘요.', '떠 있는 공유 버튼 스위치로 화면 구석 공유 버튼을 켜고, 위치 · 색을 골라요.', 'PC 그림자는 컴퓨터로 볼 때 청첩장 양옆에 은은한 그림자를 넣어요. 글꼴도 여기서 다시 고를 수 있어요.'], go: ['그 칸으로 가기', () => { ldhEasyGo('', 'fxmore'); setTimeout(() => document.getElementById('spMoreHd')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 450); }] },
-    { t: '중세 유럽 빈티지로 꾸미기 (천사의 편지)', d: '천사 아기 · 하트 · 금테 액자 · 밀랍 도장', steps: ['디자인을 고를 때(또는 \'색·글꼴\' 칸 [디자인 바꾸기]) \'천사의 편지\'를 고르면 금테 액자 첫 화면 · 빈티지 큐피드 달력 · 장미와 천사 스티커까지 한 번에 돼요.', '지금 디자인 그대로 두고 싶으면 첫 화면 꾸미기에서 \'천사의 편지\' 레이아웃을, \'색·글꼴\' 칸 \'섹션 꾸밈\'에서 \'천사의 편지\'를 골라요.', '스티커 창 [테마] → \'빈티지 그림 전체\'에 천사 · 비둘기 · 장미 · 왕관 · 밀랍 도장 그림이 있어요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
-    { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 스티커', steps: ['디자인을 고를 때(또는 \'색·글꼴\' 칸 [디자인 바꾸기]) \'웹툰 · 우리 결혼해요\'를 고르면 한 번에 웹툰 모양이 돼요.', '지금 디자인 그대로 두고 싶으면 첫 화면 꾸미기에서 \'웹툰 표지\'·\'웹툰 말풍선\' 레이아웃을, \'색·글꼴\' 칸 \'섹션 꾸밈\'에서 \'웹툰 컷\'을 골라요.', '\'스티커 꾸미기\'의 \'웹툰 첫 화\'·\'두근두근 말풍선\' 세트로 웹툰 스티커를 한 번에 붙여요.'], go: ['그 칸으로 가기', () => ldhEasyGo('', 'theme')] },
-    { t: '스티커 한 번에 꾸미기', d: '하트·꽃·별 스티커를 세트로', when: () => spOpt('flow', 'stkset'), steps: ['아래 [그 칸으로 가기]를 누르면 \'색·글꼴\' 칸 맨 아래 \'스티커 꾸미기\'가 보여요.', '마음에 드는 세트를 누르면 첫 화면·인사말·갤러리 모서리에 어울리게 붙어요.', '[다른 세트로]로 바꾸거나 [스티커 다 빼기]로 모두 뺄 수 있어요. 하나씩 옮기려면 전문가 모드에서 해요.'], go: ['그 칸으로 가기', () => spAddGo('#stk')] },
-    { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },
-    { t: '저장은 어떻게 하나요?', d: '따로 안 눌러도 저절로 저장돼요', steps: ['고치면 몇 초 뒤 저절로 저장돼요. 질문을 넘길 때도 저장돼요.', '창을 닫았다가 다시 들어와도 하던 질문부터 이어서 해요.', '이미 발행한 청첩장이면 고친 내용이 하객 화면에도 바로 바뀌어요.'] },
-    { t: '위 청첩장 화면 쓰는 법', d: '크기 바꾸기 · 끄고 켜기', when: c => c.mv === 'split', steps: ['위는 내 청첩장, 아래는 적는 곳이에요. 아래에 적으면 위가 바로 바뀌고, 고치는 곳으로 저절로 움직여요.', '가운데 줄을 위아래로 끌면 크기가 바뀌어요. [⤢ 전체]를 누르면 청첩장을 크게 봐요.', '글자를 적느라 키보드가 올라오면 위 칸이 작아지고 적는 칸이 가운데로 와요.', '맨 위 [청첩장 보기]를 끄면 적는 곳만 크게 보여요.'], show: () => ldhIntroSteps('easy-split') },
-    { t: '작은 청첩장 창 쓰는 법', d: '숨었다가 잠깐 나와요', when: c => c.mv === 'lens' && spLensKind() !== 'plain', steps: () => spLensKind() === 'peek'
-        ? ['평소엔 청첩장 창이 숨어 있어서 설정 글자를 가리지 않아요.', '스위치·막대·고르기를 바꾸면 창이 3초 동안 나와 바뀐 모습을 보여 줘요. 글자를 적을 땐 6초 동안 보여 줘요.', '창이나 오른쪽 \'청첩장\' 손잡이를 누르면 6초 더 보여요. ✕를 누르면 바로 숨어요.']
-        : ['작은 창이 지금 만지는 칸을 피해 다른 모서리로 비켜요.', '비킬 곳이 없으면 오른쪽 아래 \'청첩장\' 동그라미로 접혀요. 설정을 바꾸면 3초 동안 나와서 바뀐 모습을 보여 줘요.', '동그라미를 누르면 6초 동안 보여요. ✕를 누르면 바로 접혀요.'], show: () => ldhIntroSteps('easy-lens') },
-    { t: '작은 청첩장 창 쓰는 법', d: '옮기기 · 크게 보기', when: c => c.mv === 'lens' && spLensKind() === 'plain', steps: ['작은 창에 지금 고치는 곳이 크게 보여요.', '창을 끌면 원하는 자리로 옮겨져요. 옆 끝으로 밀면 숨어요.', '창을 누르면 청첩장 전체가 크게 보여요.'], show: () => ldhIntroSteps('easy-lens') },
-    { t: '글자 위치 · 스티커까지 바꾸고 싶어요', d: '전문가 모드에서 자세히 꾸며요', steps: ['[전문가 모드]에서는 글자를 끌어서 옮기고, 스티커를 하나씩 붙이고, 칸 모양을 더 자세히 바꿀 수 있어요.', '지금 적은 내용은 그대로 옮겨져요. 언제든 간편 만들기로 돌아올 수 있어요.', '[전문가 모드] 버튼은 질문을 다 마치면 위에 나와요. 지금 가려면 아래 버튼을 눌러요.'], go: ['전문가 모드로 가기', () => { closeLdh(); spInPlace ? spExitInPlace() : simpleToFull(); }] },
-];
-const LDH_EXPERT = [
-    { t: '스티커 붙이기', d: '하트 · 꽃 · 별 · 움직이는 그림', steps: ['위쪽 웃는 얼굴 버튼(스티커 넣기)을 눌러요.', '[추천]에는 지금 디자인에 어울리는 그림이 먼저 나와요. [테마]에서 로맨틱 · 별·우주 · 비 오는 날 … 을 골라 볼 수도 있어요.', '찾기 칸에 하트, 꽃, 비처럼 적거나 [움직임]을 누르면 움직이는 스티커만 모아 봐요 (초록 점 = 움직여요).', '스티커를 누르면 청첩장에 붙어요. 끌어서 옮기고, 모서리를 끌어 크기를 바꿔요.', '[세트]를 누르면 \'웹툰 첫 화\'·\'리본과 하트\' 같은 세트가 첫 화면·인사말·갤러리 쪽에 한 번에 붙어요.'], show: () => [{ el: () => ldhFirst('#stickerAddBtn', '[data-act="sticker"]'), t: '스티커 넣기', x: '이 버튼을 누르면 스티커 창이 열려요.' }], go: ['스티커 창 열기', () => { closeLdh(); setTimeout(() => document.getElementById('stickerAddBtn')?.click(), 50); }] },
-    { t: '섹션 하나만 다른 모양으로 (섹션 스킨)', d: '모양 · 디자인 21가지 스킨', when: () => spOpt('flow', 'sskin'), steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요. 편집창 맨 위에 \'섹션 스킨\'이 있어요.', '\'모양\' 줄(방명록 카드·줄글, 달력·카운트, 계좌, 인터뷰 …)에서 그림을 누르면 그 모양으로 바뀌어요.', '\'스킨\' 줄에서 빈티지 · 밤하늘 · 안개 또는 다른 디자인(클래식 · 가든 · 필름 · 웹툰 …) 그림을 누르면 그 디자인의 색 · 글꼴 · 꾸밈이 이 섹션에만 입혀져요. 옆으로 밀면 21가지가 다 나와요.', '[모든 섹션에 같은 스킨]을 누르면 모든 섹션이 같은 스킨이 돼요. 처음처럼 하려면 [디자인 따라]를 눌러요.'], go: ['방명록 열어 보기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'guestbook' && b.enabled) ? 'guestbook' : (state.blocks.find(b => b.enabled && !SKIN_NO.includes(b.id)) || {}).id)] },
-    { t: '배경 무늬 끄고 켜기', d: '화면 설정 → 부가기능 → 배경 꾸밈', steps: ['아래 [바로 열기]를 누르면 화면 설정이 열려요.', '\'부가기능\'의 \'배경 꾸밈\'을 끄면 별 · 빗줄기 · 하늘빛 같은 배경 무늬와 종이 질감이 빠지고 바탕색 한 가지만 남아요.', '다시 켜면 디자인 원래 배경으로 돌아와요. 무늬는 섹션마다 끊기지 않고 청첩장 전체에 한 장으로 이어져 있어요.'], go: ['바로 열기', () => { closeLdh(); document.getElementById(mmPc() ? 'pcSettingsBtn' : 'controlsFab')?.click(); }] },
-    { t: '달력 · 카운트 모양과 색 바꾸기', d: '디데이 편집창 → 달력 모양 · 카운터 모양 · 포인트 색', steps: ['아래 [바로 열기]를 누르면 디데이 카운트다운 편집창이 열려요.', '\'달력 모양\' · \'카운터 모양\' 칸을 누르면 모양이 한 줄로 나와요. 옆으로 넘기면 기본 모양 다음에 디자인 22개의 모양(천사의 편지 밀랍 도장 · 웹툰 말풍선 …)이 있어요. 어느 디자인에서나 골라 쓸 수 있어요.', '\'포인트 색\'에서 디자인 색 동그라미를 누르거나 [직접 고르기]로 색을 고르면 달력 · 카운트 색만 바뀌어요. 바탕은 늘 화면 설정 색이에요. 처음대로 하려면 [전체 색 따라].'], go: ['바로 열기', () => { closeLdh(); ldhExpertOpen('dday'); }] },
-    { t: '색 바꾸면 달력 · 계좌 꾸밈도 같이', d: '화면 설정 → 색 · 연동 스위치', when: () => colorLinkShown(), steps: ['아래 [바로 열기]를 누르면 화면 설정의 \'색\' 칸이 열려요.', '\'색을 바꾸면 꾸밈도 같이\'가 켜져 있으면 스킨 · 바탕색 · 포인트 색을 바꿀 때 달력 · 디데이 · 계좌 · 방명록 · 참석 버튼 · 교통 안내 꾸밈과 따로 고른 디자인 스킨도 그 색으로 같이 바뀌어요.', '끄면 꾸밈의 포인트 색은 디자인 원래 색 그대로예요. 빈티지 · 밤하늘 · 안개 · 웹툰처럼 직접 고른 섹션 테마는 늘 그 색이에요.'], go: ['바로 열기', () => { closeLdh(); document.getElementById(mmPc() ? 'pcSettingsBtn' : 'controlsFab')?.click(); setTimeout(() => { try { spCur = 'color'; spOpen.__d3 = 1; spOpen.color = 1; spApply(); document.getElementById('colorLinkGroup')?.scrollIntoView({ block: 'center' }); } catch (e) {} }, 150); }] },
-    { t: '꾸밈을 예전 모습으로 (예전 · 모던)', d: '화면 설정 → 부가기능 → 꾸밈 스타일', when: () => lookOldAvail(), steps: ['아래 [바로 열기]를 누르면 화면 설정이 열려요.', '\'부가기능\' 칸의 \'꾸밈 스타일\'에서 [예전]을 누르면 디자인마다 다른 장식이 살아 있는 예전 모습, [모던]은 깔끔한 요즘 모습이에요.', '달력 · 카운트 · 계좌 · 방명록 · 참석 · 교통 모양도 같이 바뀌어요. 디자인 꾸밈을 끄면 이 칸은 안 보여요.'], go: ['바로 열기', () => { closeLdh(); document.getElementById(mmPc() ? 'pcSettingsBtn' : 'controlsFab')?.click(); }] },
-    { t: '갤러리 사진이 차라락 나오게', d: '하객이 내려오면 한 장씩 톡톡', steps: ['아래 [바로 열기]를 누르면 갤러리 칸이 열려요.', '\'사진 나타나는 방식\'에서 [차례로]나 [무작위로 차라락]을 눌러요. 미리보기에서 한 번 보여 줘요.', '하객이 스크롤해서 갤러리까지 내려오면 사진이 한 장씩 나타나요.'], go: ['바로 열기', () => ldhExpertOpen('gallery')] },
-    { t: '중세 유럽 빈티지로 꾸미기 (천사의 편지)', d: '천사 아기 · 하트 · 금테 액자 · 밀랍 도장', steps: ['메인 사진 칸 맨 위 \'메인 레이아웃\'에서 \'천사의 편지\'를 고르면 사진이 금테 액자 속으로 들어가요. 아래 \'사진 칸 테두리\'에서 금테 액자 · 폴라로이드 · 아치 …로 바꿀 수 있어요.', '섹션을 열어 맨 위 \'섹션 스킨\' → \'천사의 편지\'를 누르면 그 섹션만, [모든 섹션에 같은 스킨]을 누르면 모든 섹션이 양피지 · 금테 · ❦ 모양이 돼요.', '디데이 섹션 \'모양\' 줄에서 \'빈티지 큐피드\'(원래 큐피드 달력) 또는 \'테마 모양\'(금테 달력 + 천사 · 밀랍 도장)을 골라요.', '스티커 창 [테마] → \'빈티지 그림 전체\'에서 천사 · 비둘기 · 장미 그림을 붙여요.'], go: ['메인 사진 칸 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
-    { t: '웹툰처럼 꾸미기', d: '말풍선 · 효과음 · 웹툰 컷', steps: ['메인 사진 칸 맨 위 \'메인 레이아웃\'에서 \'웹툰 표지\'나 \'웹툰 말풍선\'을 골라요.', '글 칸 오른쪽 [효과 ▾] → \'글자 상자\'에서 말풍선 · 노랑 상자 · 효과음 · 꼬리표를 골라 어느 글자든 웹툰처럼 바꿔요.', '섹션을 열어 맨 위 \'섹션 스킨\' → \'웹툰 · 우리 결혼해요\'를 고르고 [모든 섹션에 같은 스킨]을 눌러요.', '스티커 창 [테마] → \'웹툰\'에서 말풍선·효과음 스티커를 붙여요.'], go: ['메인 사진 칸 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
-    { t: '섹션 안 카드 색 바꾸기', d: '방명록 · 안내 · 계좌 칸과 팝업 창 색', steps: ['섹션 목록에서 바꿀 섹션 이름을 눌러 열어요 (방명록 · 안내 말씀 · 마음 전하실 곳 · 연락하기 …).', '아래쪽 \'섹션 여백 · 배경색\' 밑 \'안쪽 창 색\'에서 바탕과 글자 색을 골라요. 그 섹션의 카드와 팝업 창이 같이 바뀌어요.', '바탕만 골라도 글자는 잘 보이는 색으로 저절로 맞춰져요. 처음 색으로 하려면 맨 앞 동그라미(테마 기본 색)를 눌러요.'] },
-    { t: '글자 내용 바꾸기', d: '청첩장의 글자를 고쳐요', steps: ['청첩장에서 바꿀 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.', '다 적었으면 글자 바깥 빈 곳을 눌러요.'], show: () => [{ el: ldhTextEl, t: '두 번 누르기', x: '이 글자를 두 번 톡톡 누르면 바로 고칠 수 있어요.' }] },
-    { t: '글자 크기 · 색 · 글꼴 바꾸기', d: '글자를 한 번 눌러요', steps: ['글자를 한 번 누르면 크기·색·글꼴을 바꾸는 작은 창이 떠요.', '[−] [+]로 크기를, 동그라미를 눌러 색을 바꿔요.'], show: () => [{ el: ldhTextEl, t: '한 번 누르기', x: '글자를 한 번 누르면 크기·색 창이 떠요.' }] },
-    { t: '글자 · 사진 옮기기', d: '손가락(마우스)으로 끌어요', steps: ['옮길 글자를 꾹 누른 채로 끌면 옮겨져요.', '휴대폰에서 안 끌리면 위쪽 손바닥 버튼(손가락으로 끌기)이 켜져 있는지 봐요.', '휴대폰에서 위아래로 넘길 때는 화면 양 끝을 밀어요.'], show: () => [{ el: ldhTextEl, t: '끌어서 옮기기', x: '이 글자를 꾹 누른 채로 끌어 보세요.' }, { el: () => ldhFirst('#qtTouchDrag'), t: '손가락으로 끌기', x: '이 버튼이 켜져 있어야 휴대폰에서 글자가 끌려요.' }] },
-    { t: '사진 · 영상 바꾸기', d: '첫 화면 사진이나 유튜브 영상을 바꿔요', steps: ['아래 [바로 열기]를 누르면 메인 사진(영상) 칸이 열려요.', '사진은 [사진 바꾸기]를 누르고 한 장 골라요. 영상은 유튜브 주소를 그대로 붙여 넣어요.', '처음 들어 있는 사진·영상은 예시예요. 발행하기 전에 꼭 내 사진·영상으로 바꿔 주세요.'], go: ['바로 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
-    { t: '첫 화면 모양 바꾸기', d: '이름 · 날짜 글자 배치를 한 번에', steps: ['아래 [바로 열기]를 누르면 메인 사진(영상) 칸이 열려요.', '맨 위 \'메인 레이아웃\'에서 마음에 드는 모양을 누르면 글자 모양·자리가 한 번에 바뀌어요.', '글 칸 오른쪽 [효과 ▾]를 누르면 글자가 나타나는 효과(써지듯이 · 천천히 …)를 바꿔요.'], go: ['바로 열기', () => ldhExpertOpen(state.blocks.find(b => b.id === 'hero' && b.enabled) ? 'hero' : 'heroVideo')] },
-    { t: '청첩장을 열 때 나오는 글자 (인트로)', d: '타자 · 손글씨처럼 나타나는 글자', steps: ['위쪽 [인트로 꾸미기] 버튼을 눌러요. 어디 있는지 모르면 아래 [화면에서 보여주기]를 눌러요.', '[기본]에서 문구와 글자 효과(타자 · 천천히 나타나기 · 손글씨처럼 그려지기 …)를 골라요.', '[배경]에서 \'메인 화면 위\'를 고르면 메인 사진·영상 위에 글자만 나타났다 사라져요.'], show: () => [{ el: () => ldhFirst('#introSettingsBtn'), t: '인트로 꾸미기', x: '이 버튼을 누르면 인트로를 꾸미는 창이 열려요.' }] },
-    { t: '계좌 · 인사말 같은 내용 고치기', d: '섹션 칸을 열어서 적어요', steps: ['섹션 목록에서 고칠 섹션 이름을 누르면 바로 아래에 적는 칸이 열려요.', '휴대폰은 오른쪽 아래 목록 버튼을 먼저 눌러요.'], show: () => [{ el: () => ldhFirst('#sectionsFabBtn', '#sectionsSheet'), t: '섹션 목록', x: '여기서 고칠 섹션 이름을 누르면 적는 칸이 열려요.' }] },
-    { t: '섹션 켜고 끄기 · 순서 바꾸기', d: '갤러리·지도 같은 칸을 넣고 빼요', steps: ['섹션 목록에서 오른쪽 스위치를 켜면 청첩장에 들어가고, 끄면 빠져요.', '왼쪽 ⠿ 를 꾹 눌러 끌면 순서가 바뀌어요.'], show: () => [{ el: () => ldhFirst('#sectionsFabBtn', '#sectionsSheet'), t: '섹션 목록', x: '여기서 켜고 끄고, ⠿ 를 끌어 순서를 바꿔요.' }] },
-    { t: '위쪽 작은 그림 버튼은 뭐예요?', d: '버튼 이름을 하나씩 알려 드려요', icons: true },
-    { t: '잘못 고쳤어요', d: '바로 전으로 되돌려요', steps: ['[되돌리기] 화살표를 누를 때마다 한 단계씩 전으로 돌아가요.', '너무 많이 돌아갔으면 옆의 [다시하기]를 눌러요.'], show: () => [{ el: ldhUndoEl, t: '되돌리기', x: '이 화살표를 누르면 바로 전 모습으로 돌아가요.' }] },
-    { t: '저장 · 발행하기', d: '저장하고 하객에게 보이게 해요', steps: ['[임시저장]은 지금까지 고친 걸 저장해요. 발행 전이면 하객에게는 안 보여요.', '[발행하기]를 눌러야 하객이 볼 수 있어요. 예시 사진·빈 계좌처럼 빠진 것이 있으면 먼저 \'발행 전에 확인해요\' 창이 떠요 (줄을 누르면 그 칸이 열려요).', '이미 발행했다면 저장할 때마다 하객 화면도 바로 바뀌어요.'], show: () => [{ el: () => ldhFirst('#saveDraftBtn'), t: '임시저장', x: '고친 걸 저장해요.' }, { el: () => ldhFirst('#publishBtn'), t: '발행하기', x: '이걸 눌러야 하객이 청첩장을 볼 수 있어요.' }] },
-    { t: '하객 화면으로 보기', d: '실제로 어떻게 보이는지 봐요', steps: ['[미리보기]를 누르면 하객이 보는 화면이 떠요.'], show: () => [{ el: () => ldhFirst('#previewBtn'), t: '미리보기', x: '하객이 보는 모습 그대로 봐요.' }] },
-    { t: '보는 모습 바꾸기 (좁게 · 표준 · 테두리)', d: '작은 휴대폰 · 지금 휴대폰 · 휴대폰 틀', steps: ['휴대폰에서는 처음에 [좁게] + [테두리]로 보여요 - 작은 휴대폰에서도 잘 보이는지 같이 확인돼요.', '[표준]은 지금 휴대폰 크기 그대로, [좁게]는 작은 휴대폰(320px) 크기예요. PC는 [꽉채움] [확대]도 있어요.', '[테두리]는 휴대폰 틀을 보이거나 숨겨요. 어느 것을 눌러도 청첩장 모양은 그대로예요.'], show: () => [{ el: () => ldhFirst('#pWidthNormal', '#mWidthNormal'), t: '화면 크기', x: '보는 크기만 바뀌어요. 하객 화면엔 영향이 없어요.' }] },
-    { t: '간편 만들기로 돌아가기', d: '질문에 답하는 쉬운 화면으로', when: () => { const b = ldh$('#tbToSimple'); return !!(b && !b.hidden); }, steps: ['아래 버튼을 누르면 간편 만들기로 돌아가요.', '이름·날짜·사진·글·계좌는 그대로 옮겨져요.'], go: ['간편 만들기로', () => { closeLdh(); fullToSimple(); }] },
-];
+// (1019s) 도움말 목록 LDH_EASY · LDH_EXPERT · LDH_ICON은 assets/editor-help.js로 옮김 (도움말을 열 때·한가할 때 ldChunk('help'))
 // '칸별로 바로 가기' - 손으로 쓴 목록이 아니라 지금 고객에게 보이는 칸(간편: 목록 화면 칸 spSteps / 전문가: 섹션 목록)으로 저절로 만듦
 //  → 관리자가 새 칸을 켜거나 새 섹션·단계를 만들면 따로 손대지 않아도 여기에 바로 나옴 (누르면 그 칸·섹션이 열림)
 const ldhAskIdOf = k => { const a = (typeof spAskSteps === 'function' ? spAskSteps() : []).find(x => x.k === k); return a ? spAskId(a) : ''; };
@@ -16893,25 +16598,7 @@ function ldhAutoHtml(c) {
         <div class="ldh-auto">${rows.map(([k, t, on]) => `<button type="button" class="ldh-a${on === false ? ' off' : ''}" data-ldh-k="${esc(k)}"><span>${esc(t)}</span>${on === null ? '' : `<em>${on ? '넣음' : '안 넣음'}</em>`}</button>`).join('')}</div>`;
 }
 // 작은 그림 버튼 쉬운 이름 + 하는 일 (버튼 id → [이름, 설명]). 여기 없는 버튼은 버튼 설명(title)을 그대로
-const LDH_ICON = {
-    mainHomeBtnTop: ['내 청첩장 목록', '만든 청첩장 목록 화면으로 나가요. 고친 건 저장해 두고 나가세요.'],
-    backToInfo: ['이름 · 날짜 다시 적기', '처음에 적은 두 사람 이름·예식 날짜를 다시 적어요.'],
-    pcSettingsBtn: ['화면 설정', '청첩장 색·글꼴·배경·효과를 바꿔요.'], controlsFab: ['화면 설정', '청첩장 색·글꼴·배경·효과를 바꿔요.'],
-    sectionsFabBtn: ['섹션 목록', '갤러리·계좌·인사말 같은 칸을 열어서 고치고, 켜고 끄고, 순서를 바꿔요.'],
-    pWidthNormal: ['보통 크기로 보기', '휴대폰 크기 그대로 봐요. 보는 크기만 바뀌어요.'], mWidthNormal: ['보통 크기로 보기', '휴대폰 크기 그대로 봐요. 보는 크기만 바뀌어요.'],
-    pWidthNarrow: ['작은 휴대폰으로 보기', '화면이 작은 휴대폰에서 어떻게 보이는지 봐요.'], mWidthNarrow: ['작은 휴대폰으로 보기', '화면이 작은 휴대폰에서 어떻게 보이는지 봐요.'],
-    pWidthFill: ['넓게 보기', '테두리 없이 넓게 봐요. 청첩장 모양은 그대로예요.'], pZoomToggle: ['크게 보기', '누를 때마다 크게 봐요. 청첩장 모양은 그대로예요.'],
-    pShadowToggle: ['양옆 그림자', '컴퓨터로 볼 때 청첩장 양옆에 옅은 그림자를 넣어요.'],
-    pBezelToggle: ['휴대폰 테두리', '미리보기에 휴대폰 테두리를 보이거나 숨겨요.'], mBezelToggle: ['휴대폰 테두리', '미리보기에 휴대폰 테두리를 보이거나 숨겨요.'],
-    qtHelp: ['편집 요령 다시 보기', '처음에 보여 준 편집 요령을 다시 봐요.'],
-    qtMultiSelect: ['여러 개 한꺼번에 고르기', '켜면 글자·스티커 여러 개를 끌어서 한꺼번에 골라 같이 옮겨요.'],
-    qtGridSnap: ['반듯하게 맞추기', '켜면 글자를 옮길 때 격자에 맞춰 반듯하게 놓여요.'],
-    qtTouchDrag: ['손가락으로 끌기', '켜져 있어야 휴대폰에서 글자·사진을 손가락으로 끌어 옮길 수 있어요.'],
-    qtAllRulers: ['위아래 간격 바로 조절', '켜면 섹션을 안 눌러도 미리보기에서 섹션 위아래 간격을 바로 조절해요.'],
-    stickerAddBtn: ['스티커 넣기', '하트·꽃·별 같은 작은 그림(움직이는 것도 있어요)을 청첩장에 붙여요.'],
-    introSettingsBtn: ['인트로 꾸미기', '청첩장을 열 때 처음 나오는 글자 효과를 꾸며요.'],
-};
-const ldhIconOf = e => LDH_ICON[e.id] || (e.matches('[data-autofocus-toggle]') ? ['고른 섹션으로 이동', '켜면 섹션을 고를 때 미리보기가 그 자리로 움직여요.'] : null);
+const ldhIconOf = e => (typeof LDH_ICON !== 'undefined' && LDH_ICON[e.id]) || (e.matches('[data-autofocus-toggle]') ? ['고른 섹션으로 이동', '켜면 섹션을 고를 때 미리보기가 그 자리로 움직여요.'] : null);
 // 처음 한 번 사용법 안내 (화면마다)
 function ldhIntroSteps(kind) {
     const help = { el: () => ldh$('#ldHelpBtn'), t: '모르면 도움말', x: '헷갈리면 언제든 여기 [도움말]을 누르세요. 하고 싶은 일을 고르면 알려 드려요.' };
@@ -16959,6 +16646,7 @@ function ldhPlaceBtn() {
     if (fab) { const f = ldhFirst('#sectionsFabBtn', '#controlsFab'); b.style.bottom = (f ? window.innerHeight - f.getBoundingClientRect().top + 12 : 300) + 'px'; } else b.style.bottom = '';
 }
 function openLdh(item) {
+    if (typeof LDH_EASY === 'undefined') { ldChunk('help').then(() => openLdh(item)).catch(() => {}); return; } // (도움말 목록은 따로 받음 - 1019s)
     ldhInit(); if (!ldhEl) return;
     const c = ldhCtx(), list = (c.easy ? LDH_EASY : LDH_EXPERT).filter(x => !x.when || x.when(c)), bd = ldh$('#ldhBd');
     ldh$('#ldhBack').hidden = !item;
