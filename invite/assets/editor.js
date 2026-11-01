@@ -202,7 +202,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.easy && Array.isArray(j.easy.steps)) { EASY_STEPS = j.easy.steps; try { if (document.documentElement.classList.contains('simple-mode')) { if (spApplyEasyOrder()) renderPreview(); spRender(); } } catch (e) {} } // 손쉬운 제작 단계
     // 편집창 모양 (관리자 → 섹션 순서 → 편집창 모양). 주소에 ?panel= 이 있으면 그게 우선
     if (j && typeof j.panelStyle === 'string' && !PZ_URL) {
-        const ps = j.panelStyle === 'old' ? 'old' : (['A', 'B', 'C'].includes(j.panelStyle) ? j.panelStyle : null);
+        const ps = j.panelStyle === 'old' ? 'old' : 'C'; // (1019u: A 한 줄 정리형 · B 탭형 시안은 지움 → 타일형)
         if (ps && ps !== pzStyle()) { PANEL_STYLE = ps; try { if (selectedId) renderFieldEditor(); } catch (e) {} } else PANEL_STYLE = ps;
     }
     if (j && Array.isArray(j.hidden) && j.hidden.length) {
@@ -2041,7 +2041,7 @@ function renderBlockList() {
         ul._sortable = Sortable.create(ul, {
             // 묶음 머리줄·"비어 있어요" 칸(S10)도 놓을 자리로 인식시켜야 빈 묶음에 넣을 수 있다 (손잡이 .row-top이 없어서 그 줄들은 끌리지 않음)
             handle: '.row-top', draggable: 'li.block-row, .bs-gh10, .bs-gempty', animation: 150,
-            filter: '.switch, .row-expand-btn, .bs-minus, .bs-w, .bs-wseg, input, select, textarea', preventOnFilter: false,
+            filter: '.switch, .row-expand-btn, .bs-minus, input, select, textarea', preventOnFilter: false,
             delay: 220, delayOnTouchOnly: true, touchStartThreshold: 6,
             onStart: () => { blockDragging = true; parkFieldDrawer(); }, // 끌어 옮기는 동안은 펼친 옵션 창을 잠깐 접어둠
             onEnd: evt => {
@@ -3382,8 +3382,6 @@ function appendVideoTextControls(wrap, block) {
     const full = InviteBlocks.heroFull(f, 'video'); // 전체화면이면 글자는 항상 영상 위 → 스위치 숨김
     const box = document.createElement('div');
     box.className = 'field';
-    if (full && !jfKeep()) box.hidden = true;
-    else if (full) box.dataset.disWhy = '전체화면이라 자동으로 켜져 있어요';
     // (예전 "글자를 영상 위로" 스위치는 뺐다 - 노란 글자 칸 높이 하나로: 0이면 영상 위에만, 내리면 영상 위·아래 어디든)
     if (full) box.hidden = true;
     box.innerHTML = `<p class="band-hint">↕ 미리보기 영상 아래 <b>노란 칸</b>을 끌어 내리면 글자 칸이 생겨서, 이름·날짜를 영상 위·아래 어디든 놓을 수 있어요 <small>(끝까지 올리면 영상 위에만)</small></p>
@@ -13233,7 +13231,7 @@ function sskBind(box, b) {
 //  고르면 편집창이 다시 그려져 줄이 맨 앞으로 돌아가던 것 → 넘긴 자리를 줄마다(섹션 · 줄 종류 · 몇 번째) 기억해 두고,
 //  새로 그려진 줄이 화면에 보이는 순간(휴대폰 편집 칸처럼 늦게 열려도 - ResizeObserver) 그 자리로 되돌림.
 //  기억이 없으면(처음 여는 줄) 고른 칸이 안 보일 때만 고른 칸이 보이게.
-const ROW_SEL = '.ssk-row, .hl-row, .skp-pals, .bdr-l, .b5chips, .mm-chips, .sp-chips, .sp-jump, #skinPicker, .stk-qs, .stk-themes, .dd-pick, .width-row, .opt-pics';
+const ROW_SEL = '.ssk-row, .hl-row, .skp-pals, .bdr-l, .mm-chips, .sp-chips, #skinPicker, .stk-qs, .stk-themes, .dd-pick, .width-row, .opt-pics';
 const ROWPOS = new Map();
 function rowKey(row) {
     const host = row.closest('[data-ssk-for], [data-step], [data-sp-step], [data-sp-id]');
@@ -16248,17 +16246,13 @@ function sectionGuideList(id) {
 function ensureSectionGuide(root) {
     if (!root || !TIP_CFG.loaded || !TIP_CFG.show || !(TIP_CFG.features || {}).guide || !selectedId) return;
     if (root.querySelector('.sgd-guide')) return;
-    root.classList.remove('fe-guide');
     const gs = uip('guideStyle');
     const box = buildGuideBox(selectedId, blockLabels[selectedId] || '', gs);
     if (!box) return;
     const head = root.querySelector('h3');
-    if (gs === 'G4') root.appendChild(box); // 맨 아래 한 줄 링크
-    else if (head) head.after(box); else root.prepend(box);
-    // 제목 줄 안으로 옮기는 버튼 (G1 ? · G2 칩 · G3 움직이는 그림 · G5 말풍선)
-    if (head && ['G1', 'G2', 'G3', 'G5'].includes(gs)) { const ob = box.querySelector('.sgd-open'); const rb = head.querySelector('.layout-reset-btn'); if (rb) rb.before(ob); else head.appendChild(ob); }
-    if (gs === 'G7') { const w = document.createElement('div'); w.className = 'sgd-fabwrap'; w.appendChild(box.querySelector('.sgd-open')); box.appendChild(w); }
-    if (gs === 'G6' && guideOpen === selectedId) { root.classList.add('fe-guide'); box.querySelector('[data-sgd-edit]')?.classList.remove('on'); box.querySelector('.sgd-open')?.classList.add('on'); }
+    if (head) head.after(box); else root.prepend(box);
+    // 제목 줄 안으로 옮기는 버튼 (G3 움직이는 그림 - 1019u: G1·G2·G4~G8 시안은 지움)
+    if (head && gs === 'G3') { const ob = box.querySelector('.sgd-open'); const rb = head.querySelector('.layout-reset-btn'); if (rb) rb.before(ob); else head.appendChild(ob); }
 }
 // 😀 스티커 창 맨 위에도 "▶ 스티커 사용법" (스티커는 섹션이 아니라서 관리자 화면에서는 "스티커 (꾸미기)"로 따로 정함)
 function ensureStickerGuide() {
@@ -16274,36 +16268,12 @@ function buildGuideBox(id, label, gs) {
     const box = document.createElement('div');
     gs = gs || 'old';
     box.className = 'sgd-guide ' + gs.toLowerCase();
-    const coachSeen = tipStore.get('ldGuideCoach', {});
     const BTN = {
         old: `<button type="button" class="sgd-open"><span>▶</span>${esc(label)} 사용법 <em>${list.length}</em></button>`,
-        G1: `<button type="button" class="sgd-open g1" title="이 섹션 사용법" aria-label="이 섹션 사용법">?</button>`,
-        G2: `<button type="button" class="sgd-open g2"><span>▶</span>사용법</button>`,
         G3: `<button type="button" class="sgd-open g3"><span class="sgd-mv"></span>사용법</button>`,
-        G4: `<button type="button" class="sgd-open g4">💡 이 섹션 쓰는 법 보기<i>›</i></button>`,
-        G5: coachSeen[id] ? `<button type="button" class="sgd-open g5q" title="이 섹션 사용법">?</button>` : `<button type="button" class="sgd-open g5">처음이세요? 30초 사용법<u>✕</u></button>`,
-        G6: `<div class="sgd-tabs"><button type="button" class="on" data-sgd-edit>✎ 편집</button><button type="button" class="sgd-open g6">▶ 사용법 ${list.length}</button></div>`,
-        G7: `<button type="button" class="sgd-open g7" title="이 섹션 사용법" aria-label="이 섹션 사용법">?</button>`,
-        G8: `<button type="button" class="sgd-open g8"><b>TIP</b><span class="sgd-tk"></span><i>1/${list.length} ›</i></button>`,
     };
     box.innerHTML = (BTN[gs] || BTN.old) + `<div class="sgd-panel" hidden></div>`;
     const panel = box.querySelector('.sgd-panel'), openBtn = box.querySelector('.sgd-open');
-    if (gs === 'G8') { // 한 줄 팁: 몇 초마다 다음 사용법 문장으로 바뀜, 누르면 그 카드부터 그림으로
-        let ti = 0; const tk = openBtn.querySelector('.sgd-tk'), num = openBtn.querySelector('i');
-        const txt = it => String(it.t || TipDemos.label(it.d) || '').replace(/\*\*/g, '');
-        const step = () => { if (!openBtn.isConnected) { clearInterval(timer); return; } if (!panel.hidden) return; ti = (ti + 1) % list.length; tk.textContent = txt(list[ti]); tk.style.animation = 'none'; void tk.offsetWidth; tk.style.animation = ''; num.textContent = `${ti + 1}/${list.length} ›`; };
-        tk.textContent = txt(list[0]);
-        const timer = setInterval(step, 3200);
-        openBtn.addEventListener('click', () => { guideIdx = ti; }, true);
-    }
-    if (gs === 'G5' && !coachSeen[id]) { // 처음만 말풍선: 누르거나 ✕를 누르면 다음부터 ?로
-        openBtn.addEventListener('click', e => {
-            coachSeen[id] = 1; tipStore.set('ldGuideCoach', coachSeen);
-            const closeOnly = e.target.closest('u');
-            openBtn.className = 'sgd-open g5q'; openBtn.textContent = '?'; openBtn.title = '이 섹션 사용법';
-            if (closeOnly) { e.stopImmediatePropagation(); }
-        }, true);
-    }
     const stop = () => { clearTimeout(guideTimer); guideTimer = null; };
     // 저절로 다음 카드로 - 한 바퀴가 긴 시범(스티커 한눈에 등)은 끝까지 보고 넘어감, 마우스를 올리거나 손가락을 대면 잠깐 멈춤
     const tick = () => {
@@ -16330,13 +16300,12 @@ function buildGuideBox(id, label, gs) {
         guideOpen = id;
         show(keepIdx ? guideIdx : 0);
     };
-    openBtn.addEventListener('click', e => { e.stopPropagation(); const on = panel.hidden; open(on, gs === 'G8'); if (gs === 'G6') { document.getElementById('fieldEditor').classList.toggle('fe-guide', on); box.querySelector('[data-sgd-edit]').classList.toggle('on', !on); openBtn.classList.toggle('on', on); } if (on && gs === 'G7') panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
-    box.querySelector('[data-sgd-edit]')?.addEventListener('click', e => { e.stopPropagation(); open(false); document.getElementById('fieldEditor').classList.remove('fe-guide'); e.currentTarget.classList.add('on'); openBtn.classList.remove('on'); });
+    openBtn.addEventListener('click', e => { e.stopPropagation(); const on = panel.hidden; open(on); });
     panel.addEventListener('click', e => {
         e.stopPropagation();
         if (e.target.closest('.sgd-prev')) show(guideIdx - 1);
         else if (e.target.closest('.sgd-next')) show(guideIdx + 1);
-        else if (e.target.closest('.sgd-close')) { open(false); if (gs === 'G6') { document.getElementById('fieldEditor').classList.remove('fe-guide'); box.querySelector('[data-sgd-edit]')?.classList.add('on'); openBtn.classList.remove('on'); } }
+        else if (e.target.closest('.sgd-close')) open(false);
         else { const d = e.target.closest('[data-k]'); if (d) show(+d.dataset.k); }
     });
     if (guideOpen === id) open(true, true);
@@ -17094,7 +17063,7 @@ function initAdminPreview() {
             return;
         }
         if (menuPv) { try { showScreen('editor'); } catch (e) {} window.scrollTo(0, 0); return; }
-        if (d.panel && ['old', 'A', 'B', 'C'].includes(d.panel)) PANEL_STYLE = d.panel;
+        if (d.panel && ['old', 'A', 'B', 'C'].includes(d.panel)) PANEL_STYLE = d.panel === 'old' ? 'old' : 'C';
         if (d.theme) applyPopupTheme(d.theme);
         const sp = SETUP[d.focus] || SETUP.panel;
         const bl = state.blocks.find(b => b.id === sp[0]);
@@ -17132,8 +17101,8 @@ function initAdminPreview() {
 //  photoField : old 예전 | P1 썸네일 칩 | P2 가로 카드 | P3 끌어 놓기 칸 | P4 타일 (섹션들의 사진 칸 공통)
 //  guideStyle : old 예전 | G1 물음표 | G2 작은 칩 | G3 움직이는 그림 | G4 맨 아래 링크 | G5 처음만 말풍선 | G6 편집|사용법 탭 | G7 떠 있는 ? | G8 한 줄 팁
 //  주소에 ?hp=B&vp=C&pf=P2&gs=G6 처럼 붙이면 그 모양으로 미리 볼 수 있음
-const UIP_DEF = { heroPicker: 'E', videoPicker: 'D', photoField: 'P1', guideStyle: 'G2', overToggle: 'T1', nextPicker: 'R1', toggleChip: 'K5', feAnim: 'F1', jumpFix: 'S1', menuStyle: 'old', menuStylePc: 'old', sheetStyle: 'old', setStyle: 'old', setInner: 'old', s10Add: 'old', footSlot: 'auto' };
-const UIP_OPTS = { heroPicker: ['old', 'A', 'B', 'C', 'D', 'E'], videoPicker: ['old', 'A', 'B', 'C', 'D', 'E'], photoField: ['old', 'P1', 'P2', 'P3', 'P4'], guideStyle: ['old', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8'], overToggle: ['old', 'T1', 'T2', 'T3', 'T4', 'T7', 'T8'], nextPicker: ['old', 'N5', 'N6', 'R1', 'R2', 'R3'], toggleChip: ['old', 'K1', 'K2', 'K3', 'K4', 'K5'], feAnim: ['old', 'none', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'], jumpFix: ['old', 'S1', 'S2', 'S3', 'S4', 'S6'], menuStyle: ['old', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6'], menuStylePc: ['old', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6'], sheetStyle: ['old', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10'], setStyle: ['old', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'A3', 'A7', 'A8'], setInner: ['old', 'B4', 'B5'], s10Add: ['old', 'C4', 'C5', 'C6'], footSlot: ['text', 'kakao', 'section', 'check', 'auto'] };
+const UIP_DEF = { heroPicker: 'E', videoPicker: 'D', photoField: 'P1', guideStyle: 'G3', overToggle: 'T7', nextPicker: 'N5', toggleChip: 'K5', feAnim: 'F1', jumpFix: 'S1', menuStyle: 'M1', menuStylePc: 'M1', sheetStyle: 'S10', setStyle: 'A8', setInner: 'B4', s10Add: 'C6', footSlot: 'auto' };
+const UIP_OPTS = { heroPicker: ['old', 'E'], videoPicker: ['old', 'D'], photoField: ['old', 'P1'], guideStyle: ['old', 'G3'], overToggle: ['old', 'T7'], nextPicker: ['old', 'N5', 'R1', 'R2', 'R3'], toggleChip: ['old', 'K5'], feAnim: ['old', 'none', 'F1'], jumpFix: ['old', 'S1'], menuStyle: ['old', 'M1'], menuStylePc: ['old', 'M1'], sheetStyle: ['old', 'S10'], setStyle: ['old', 'A8'], setInner: ['old', 'B4'], s10Add: ['old', 'C4', 'C5', 'C6'], footSlot: ['text', 'kakao', 'section', 'check', 'auto'] }; // 1019u: 실서버에서 고른 모양 + 예전(old)만 남김 (나머지 시안은 지움 - 저장된 다른 값은 기본값으로)
 const UIP_URL = { heroPicker: urlParams.get('hp'), videoPicker: urlParams.get('vp'), photoField: urlParams.get('pf'), guideStyle: urlParams.get('gs'), overToggle: urlParams.get('ot'), nextPicker: urlParams.get('np'), toggleChip: urlParams.get('tc'), feAnim: urlParams.get('fa'), jumpFix: urlParams.get('jf'), menuStyle: urlParams.get('ms'), menuStylePc: urlParams.get('mp'), sheetStyle: urlParams.get('ss'), setStyle: urlParams.get('sp'), setInner: urlParams.get('si'), s10Add: urlParams.get('sa'), footSlot: urlParams.get('fs') };
 const UIP = Object.assign({}, UIP_DEF);
 Object.keys(UIP_URL).forEach(k => { if (UIP_OPTS[k].includes(UIP_URL[k])) UIP[k] = UIP_URL[k]; });
@@ -17144,8 +17113,6 @@ function applyFeAnim() { // 칸 나타남·사라짐 효과 → body.fea-F1 등
     document.body.classList.add('fea-' + uip('feAnim'), 'fea-jf-' + uip('jumpFix'));
     try { footSlotSync(); } catch (e) {}
 }
-// 옵션이 바뀔 때 화면 (관리자 → 세부 모양 "옵션 바뀔 때 화면"): S2·S6 = 사라질 칸을 회색으로 잠가 남겨 둠
-function jfKeep() { const j = uip('jumpFix'); return j === 'S2' || j === 'S6'; }
 applyFeAnim();
 // ===== 휴대폰 에디터 메뉴 모양 (관리자 → 세부 모양 "휴대폰 메뉴") =====
 //  old 예전 아이콘 줄 | M1 아이콘+글자 한 줄 | M2 아래 도구 막대 | M3 ＋ 버튼 하나 | M4 탭+도구 칩 | M5 큰 글자 버튼 2개 | M6 글자 버튼 한 줄
@@ -17181,9 +17148,6 @@ const MM_TOOLS = [ // [아이콘, 이름, 설명, 원래 버튼 id]
 const mmPc = () => window.innerWidth > 860;
 // PC는 마우스로 끌면 바로 여러 개가 골라지므로 '여러 개' 켜고 끄기는 모바일에서만 보인다
 const mmTools = () => MM_TOOLS.filter(t => !(mmPc() && t[3] === 'qtMultiSelect'));
-const MM_VIEW_M = [['좁게', '#mWidthNarrow'], ['표준', '#mWidthNormal'], ['테두리', '#mBezelToggle'], ['🎯 포커스', '#widthFabRow [data-autofocus-toggle]']];
-const MM_VIEW_P = [['표준', '#pWidthNormal'], ['좁게', '#pWidthNarrow'], ['꽉채움', '#pWidthFill'], ['확대', '#pZoomToggle'], ['그림자', '#pShadowToggle'], ['테두리', '#pBezelToggle'], ['🎯 포커스', '#pcWidthIcons [data-autofocus-toggle]']];
-const mmView = () => mmPc() ? MM_VIEW_P : MM_VIEW_M;
 const mmAct = {
     tips: () => tipAgain(),
     simple: () => document.getElementById('tbToSimple')?.click(), // 간편 만들기 (머리줄 버튼은 숨기고 도구 메뉴에서)
@@ -17229,7 +17193,6 @@ function mmSheet(title, parts, anchor) {
     parts.forEach(p => {
         if (p === 'tools') h += mmTools().map(([ic, l, d, id]) => `<button type="button" class="mm-li mm-tog${mmOn(id) ? ' on' : ''}" data-tog="${id}">${mmSvg(ic)}<span><b>${l}</b><small>${d}</small></span><em>${mmOn(id) ? '켜짐' : '꺼짐'}</em></button>`).join('')
             + (hasTipAgain() ? `<button type="button" class="mm-li" data-act="tips">${mmSvg('tip')}<span><b>편집 팁 다시 보기</b><small>${mmPc() ? '끌어서 여러 개 고르기 · Ctrl+A 등 PC 편집 요령' : '스크롤은 양 끝에서 등 모바일 편집 요령'}</small></span></button>` : '');
-        else if (p === 'view') h += `<div class="mm-row-l">미리보기 화면</div><div class="mm-seg">${mmView().map(([l, sel]) => `<button type="button" data-view="${sel}" class="${document.querySelector(sel)?.classList.contains('active') ? 'on' : ''}">${l}</button>`).join('')}</div>`;
         else if (p === 'undo') h += mmUndoModeRow();
         else if (p === 'simple') { const sb = document.getElementById('tbToSimple'); if (sb && !sb.hidden) h += `<button type="button" class="mm-li" data-act="simple">${mmSvg('tip')}<span><b>간편 만들기로</b><small>고른 디자인 모양 그대로, 칸만 채우는 쉬운 화면으로 돌아가요</small></span></button>`; }
         else if (Array.isArray(p)) h += `<button type="button" class="mm-li" data-act="${p[0]}">${mmSvg(p[1])}<span><b>${p[2]}</b>${p[3] ? `<small>${p[3]}</small>` : ''}</span></button>`;
@@ -17256,21 +17219,11 @@ function mmSheet(title, parts, anchor) {
         if (u) mmSetUndoMode(u.dataset.udMode);
     });
 }
-const MM_ADD = [['sticker', 'sticker', '스티커', '하트·꽃 같은 그림을 미리보기 위에 붙여요'], ['text', 'text', '글자 넣기', '사진 위 아무 곳에나 문구를 얹어요'], ['intro', 'intro', '인트로', '청첩장을 열 때 나오는 첫 화면']];
 // 도구 상태(켜짐 초록)를 메뉴 버튼에도 맞춤
 function mmSync() {
     document.querySelectorAll('[data-mm-tog]').forEach(b => b.classList.toggle('on', mmOn(b.dataset.mmTog)));
-    document.querySelectorAll('[data-mm-view]').forEach(b => b.classList.toggle('on', !!document.querySelector(b.dataset.mmView)?.classList.contains('active')));
     const n = mmTools().filter(t => mmOn(t[3])).length;
     document.querySelectorAll('.mm-tools-n').forEach(x => { x.textContent = n ? n : ''; x.hidden = !n; });
-}
-// PC: 떠 있는 도구 막대(M2)·＋(M3)를 미리보기 칸 기준으로 (오른쪽 섹션 목록을 가리지 않게)
-function mmPlacePc() {
-    if (!mmPc()) return;
-    const pv = document.querySelector('#screenEditor .preview-pane'), r = pv && pv.getBoundingClientRect();
-    if (!r || !r.width) return;
-    const dock = document.querySelector('.mm-dock'); if (dock) dock.style.left = (r.left + r.width / 2) + 'px';
-    const plus = document.querySelector('.mm-plus'); if (plus) plus.style.right = Math.max(16, window.innerWidth - r.right + 24) + 'px';
 }
 function applyMenuStyle() {
     const pc = mmPc();
@@ -17289,33 +17242,6 @@ function applyMenuStyle() {
     let el;
     if (ms === 'M1') { // 아이콘 + 글자 한 줄
         el = mk('mm-row mm-r1', btn('sticker', 'sticker', '스티커') + btn('text', 'text', '글자') + btn('intro', 'intro', '인트로') + toolsBtn('도구', 'tools') + mmUndoPair(), topbar);
-    } else if (ms === 'M2' && pc) { // PC: 미리보기 아래 가운데 떠 있는 도구 막대 (위 줄은 그대로)
-        el = mk('mm-dock', btn('settings', 'gear', '꾸미기') + `<button type="button" class="mm-b mm-big" data-sheet="add"><b>${mmSvg('plus')}</b><span>넣기</span></button>` + `<button type="button" class="mm-b" data-sheet="view">${mmSvg('view')}<span>화면</span></button>` + toolsBtn('도구', 'tools') + mmUndoPair());
-        mmPlacePc(); // 미리보기 칸 가운데 아래
-    } else if (ms === 'M2') { // 아래 도구 막대 (위 줄 없음)
-        mk('mm-mini', `<button type="button" class="mm-chip" data-act="home">${mmSvg('home')}<span>내 청첩장</span></button><span class="mm-sp"></span>${mmUndoPair()}<button type="button" class="mm-chip" data-act="preview">${mmSvg('eye')}<span>미리보기</span></button>`);
-        el = mk('mm-dock', btn('sections', 'sections', '섹션') + btn('settings', 'gear', '꾸미기') + `<button type="button" class="mm-b mm-big" data-sheet="add"><b>${mmSvg('plus')}</b><span>넣기</span></button>` + `<button type="button" class="mm-b" data-sheet="view">${mmSvg('view')}<span>화면</span></button>` + toolsBtn('도구', 'tools'));
-    } else if (ms === 'M3') { // ＋ 하나
-        mk('mm-row mm-r3', mmUndoPair(), topbar);
-        el = mk('mm-plus', `<button type="button" class="mm-b" data-sheet="all" aria-label="메뉴 열기">${mmSvg('plus')}<i class="mm-tools-n" hidden></i></button>`);
-        if (pc) mmPlacePc(); // 미리보기 칸 오른쪽 아래 (섹션 목록 왼쪽)
-    } else if (ms === 'M4') { // 탭 + 도구 칩
-        el = mk('mm-row mm-r4', `<div class="mm-tabs">${[['edit', 'tools', '편집'], ['add', 'plus', '넣기'], ['view', 'view', '화면'], ['intro', 'intro', '인트로']].map(([k, ic, l]) => `<button type="button" class="mm-tab" data-tab="${k}">${mmSvg(ic)}<span>${l}</span></button>`).join('')}${mmUndoPair()}</div><div class="mm-chips"></div>`, topbar);
-        const chips = el.querySelector('.mm-chips');
-        const paint = tab => {
-            el.querySelectorAll('.mm-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === tab));
-            if (tab === 'edit') chips.innerHTML = mmTools().map(([ic, l, d, id, sh]) => `<button type="button" class="mm-chip" data-mm-tog="${id}">${mmSvg(ic)}<span>${sh}</span></button>`).join('')
-                + (hasTipAgain() ? `<button type="button" class="mm-chip" data-act="tips">${mmSvg('tip')}<span>팁</span></button>` : '');
-            else if (tab === 'add') chips.innerHTML = MM_ADD.map(([a, ic, l]) => `<button type="button" class="mm-chip" data-act="${a}">${mmSvg(ic)}<span>${l}</span></button>`).join('');
-            else if (tab === 'view') chips.innerHTML = mmView().map(([l, sel]) => `<button type="button" class="mm-chip" data-mm-view="${sel}"><span>${l}</span></button>`).join('') + `<button type="button" class="mm-chip" data-act="settings">${mmSvg('gear')}<span>화면 설정</span></button>`;
-            mmSync();
-        };
-        el.addEventListener('click', e => { const t = e.target.closest('[data-tab]'); if (!t) return; if (t.dataset.tab === 'intro') { mmAct.intro(); return; } paint(t.dataset.tab); });
-        paint('edit');
-    } else if (ms === 'M5') { // 큰 글자 버튼 2개
-        el = mk('mm-row mm-r5', `<button type="button" class="mm-b mm-pill" data-sheet="add">${mmSvg('plus')}<span>넣기</span></button>` + `<button type="button" class="mm-b mm-pill" data-sheet="tools">${mmSvg('tools')}<span>도구</span><i class="mm-tools-n" hidden></i></button>` + mmUndoPair(), topbar);
-    } else if (ms === 'M6') { // 글자 버튼 한 줄 (그림 없이)
-        el = mk('mm-row mm-r6', btn('sticker', '', '스티커') + btn('text', '', '글자') + btn('intro', '', '인트로') + toolsBtn('도구 ▾', '') + mmUndoPair(), topbar);
     }
     // 공통: 버튼 누름
     document.querySelectorAll('.mm-gen').forEach(g => g.addEventListener('click', e => {
@@ -17323,16 +17249,11 @@ function applyMenuStyle() {
         if (b.classList.contains('mm-undo')) { undoHistory(); return; }
         if (b.classList.contains('mm-redo')) { redoHistory(); return; }
         if (b.dataset.mmTog) { document.getElementById(b.dataset.mmTog)?.click(); mmSync(); return; }
-        if (b.dataset.mmView) { document.querySelector(b.dataset.mmView)?.click(); setTimeout(mmSync, 30); return; }
         if (b.dataset.act) { mmAct[b.dataset.act] && mmAct[b.dataset.act](b); return; }
         const sh = b.dataset.sheet;
         if (sh === 'tools') mmSheet('도구', ['tools', 'simple', 'undo'], b); // (미리보기 화면 고르기는 빼고 "간편 만들기"를 여기로 - 위쪽 머리줄이 좁아서)
-        else if (sh === 'add') mmSheet('넣기', MM_ADD, b);
-        else if (sh === 'view') mmSheet('화면', ['view', ['settings', 'gear', '화면 설정', '스킨·폰트·배경·효과'], 'undo'], b);
-        else if (sh === 'all') mmSheet('무엇을 할까요?', [...(pc ? [] : [['sections', 'sections', '섹션 순서·편집', '섹션을 켜고 끄고 내용 고치기']]), ...MM_ADD, ['settings', 'gear', '화면 설정', '스킨·폰트·배경·효과'], 'view', 'tools', 'undo'], b);
     }));
     mmSync();
-    if (pc) [0, 300, 1200, 3000].forEach(t => setTimeout(mmPlacePc, t)); // 화면이 다 그려진 뒤에도 자리 맞춤
     if (typeof updateHistoryButtons === 'function') updateHistoryButtons();
 }
 // 화면 설정(⚙)에도 "되돌리기 버튼" 고르기 (예전 메뉴·PC에서도)
@@ -17346,7 +17267,7 @@ function applyMenuStyle() {
     card.querySelectorAll('[data-ud-mode]').forEach(b => b.classList.toggle('on', b.dataset.udMode === mmUndoMode()));
 })();
 applyMenuStyle();
-window.addEventListener('resize', () => { clearTimeout(applyMenuStyle.t); applyMenuStyle.t = setTimeout(() => { if (applyMenuStyle.mode !== mmPc()) applyMenuStyle(); else { mmSync(); mmPlacePc(); } }, 120); }); // 휴대폰 ↔ PC 폭이 바뀌면 그 모양으로 다시
+window.addEventListener('resize', () => { clearTimeout(applyMenuStyle.t); applyMenuStyle.t = setTimeout(() => { if (applyMenuStyle.mode !== mmPc()) applyMenuStyle(); else mmSync(); }, 120); }); // 휴대폰 ↔ PC 폭이 바뀌면 그 모양으로 다시
 // ===== 섹션 순서 & 폭 창 모양 (관리자 → 세부 모양 "섹션 목록 창") =====
 //  old 예전 | S1 큰 줄 | S2 들어간/넣을 섹션 | S3 2열 카드 | S4 썸네일 | S5 탭(순서·켜기·폭) | S6 번호 타임라인 | S7 묶음 접기 | S8 찾기+칩 | S9 타임라인+대기 섹션 | S10 그룹 섹션 (S9 + 묶음, 묶음은 관리자 → 섹션 묶음)
 //  목록(#blockList)과 그 안의 스위치·손잡이·⤢는 그대로 두고 모양·보조 버튼만 덧붙임 (끌어서 순서 바꾸기·섹션 편집 펼침은 예전 그대로)
@@ -17407,7 +17328,6 @@ const bsDefGroup = id => (BS_GROUPS.find(g => g.ids.includes(id)) || { k: 'etc' 
 const bsGroupOfB = b => (b && BS_HERO_IDS.includes(b.id)) ? 'first' : (b && b.id === 'share') ? 'etc' : (b && b.grp && (b.grp === 'etc' || BS_GROUPS.some(g => g.k === b.grp))) ? b.grp : bsDefGroup(b ? b.id : '');
 const bsGroupOf = id => bsGroupOfB(state.blocks.find(x => x.id === id) || { id });
 const bsGroupName = k => (bsGroupList().find(g => g.k === k) || {}).n || '';
-let bsTab = 'order', bsQuery = '', bsChip = 'on', bsClosed = { guest: true, photo: true, end: true };
 // S10 섹션 넣기 모양: C6 합본은 PC(861px 이상)에선 C5 말풍선, 휴대폰에선 C4 서랍
 function bsAddRaw() { try { return uip('s10Add'); } catch (e) { return 'old'; } }
 function bsAddMode() { const m = bsAddRaw(); return m === 'C6' ? (window.innerWidth > 860 ? 'C5' : 'C4') : m; }
@@ -17475,8 +17395,6 @@ function bsAfterDrag(evt) {
     if (bsDefGroup(b.id) === g) delete b.grp; else b.grp = g;
     renderBlockList(); renderPreview(); heroTopRefresh(); scheduleSnapshot();
 }
-function bsWidthOpts(id) { return widthOptions.filter(([v]) => !(id === 'gallery' && v === 33)); }
-function bsSetWidth(id, v) { const b = state.blocks.find(x => x.id === id); if (!b) return; b.width = v; renderBlockList(); renderPreview(); scheduleSnapshot(); }
 function bsToggle(id) { document.querySelector(`#blockList [data-toggle="${CSS.escape(id)}"]`)?.click(); }
 function bsDecorate() {
     let st; try { st = uip('sheetStyle'); } catch (e) { return; } // (설정을 읽기 전 첫 그리기는 건너뜀)
@@ -17485,52 +17403,26 @@ function bsDecorate() {
     sheet.querySelectorAll('.bs-gen').forEach(n => n.remove());
     ul.querySelectorAll('li.block-row').forEach(li => { li.style.order = ''; li.classList.remove('bs-hide'); delete li.dataset.bsN; });
     [...document.body.classList].filter(c => /^bs-/.test(c)).forEach(c => document.body.classList.remove(c));
-    if (ul._sortable && ul._sortable.option) { try { ul._sortable.option('disabled', st === 'S7'); } catch (e) {} }
     if (st === 'old') return;
     if (st === 'S10' && bsS10Normalize()) { renderBlockList(); renderPreview(); heroTopRefresh(); return; } // 묶음 순서대로 정리한 뒤 다시 그림
     document.body.classList.add('bs-on', 'bs-' + st);
-    if (st === 'S5') document.body.classList.add('bs-tab-' + bsTab);
     const rows = [...ul.querySelectorAll(':scope > li.block-row')].filter(li => !li.hidden);
     let n = 0;
     const offList = [];
     rows.forEach(li => {
         const id = li.dataset.id, b = state.blocks.find(x => x.id === id); if (!b) return;
         const top = li.querySelector('.row-top'), lab = top && top.querySelector('.label'); if (!lab) return;
-        const on = !!b.enabled, canW = !noWidthControl.includes(id), w = b.width || 100;
+        const on = !!b.enabled;
         if (on) { n++; li.dataset.bsN = n; } else offList.push(b);
-        if (st !== 'S4' && st !== 'S6') lab.insertAdjacentHTML('beforebegin', `<span class="bs-gen bs-ic"${on && (st === 'S9' || st === 'S10') ? ` data-n="${n}"` : ''}>${bsSvg(BS_ICON_OF(id))}</span>`);
-        if (st === 'S1' && canW && on) lab.insertAdjacentHTML('afterend', `<button type="button" class="bs-gen bs-w" data-bs-w="${id}" title="폭 바꾸기 (누를 때마다)">${w}%</button>`);
-        if (st === 'S3') lab.insertAdjacentHTML('afterend', `<span class="bs-gen bs-sub">${on ? (canW ? w + '%' : '전체') : '꺼짐'}</span>`);
-        if (st === 'S4') {
-            lab.insertAdjacentHTML('beforebegin', `<span class="bs-gen bs-th" data-th="${id}"></span>`);
-            lab.insertAdjacentHTML('beforeend', `<small class="bs-gen bs-sub">${on ? (canW ? w + '%' : '전체 폭') : '꺼짐'}</small>`);
-        }
-        if (st === 'S5' && canW) top.insertAdjacentHTML('beforeend', `<span class="bs-gen bs-wseg">${bsWidthOpts(id).map(([v]) => `<button type="button" data-bs-ws="${id}" data-v="${v}" class="${w === v ? 'on' : ''}">${v}</button>`).join('')}</span>`);
-        if ((st === 'S2' || st === 'S9' || st === 'S10') && on) top.insertAdjacentHTML('beforeend', `<button type="button" class="bs-gen bs-minus" data-bs-off="${id}" title="청첩장에서 빼기" aria-label="빼기">−</button>`);
-        if (st === 'S6' && !on) lab.insertAdjacentHTML('beforeend', `<button type="button" class="bs-gen bs-plus" data-bs-on="${id}">＋ 넣기</button>`);
-        if (st === 'S7') {
-            const gk = bsGroupOfB(b), gi = Math.max(0, bsGroupList().findIndex(g => g.k === gk));
-            li.style.order = gi * 1000 + state.blocks.indexOf(b) + 1;
-            li.dataset.bsG = gk;
-            li.classList.toggle('bs-hide', !!bsClosed[gk] && !li.classList.contains('acc-open'));
-            top.insertAdjacentHTML('beforeend', `<span class="bs-gen bs-mv"><button type="button" data-bs-mv="${id}" data-d="-1" aria-label="위로">${bsSvg('up')}</button><button type="button" data-bs-mv="${id}" data-d="1" aria-label="아래로">${bsSvg('down')}</button></span>`);
-        }
+        lab.insertAdjacentHTML('beforebegin', `<span class="bs-gen bs-ic"${on ? ` data-n="${n}"` : ''}>${bsSvg(BS_ICON_OF(id))}</span>`);
+        if (on) top.insertAdjacentHTML('beforeend', `<button type="button" class="bs-gen bs-minus" data-bs-off="${id}" title="청첩장에서 빼기" aria-label="빼기">−</button>`);
         if (st === 'S10') {
             const gk = bsGroupOfB(b); li.dataset.bsG = gk;
             li.classList.toggle('bs-hide', !!bsClosed10[gk] && !li.classList.contains('acc-open'));
         }
-        if (st === 'S8') {
-            const q = bsQuery.trim();
-            const hit = (!q || (blockLabels[id] || id).includes(q)) && (bsChip === 'all' || (bsChip === 'on' ? on : !on));
-            li.classList.toggle('bs-hide', !hit && !li.classList.contains('acc-open'));
-        }
     });
     // 목록 칸(흰 바탕·스크롤되는 칸) 안에 넣음 - li가 아닌 div라 끌어서 순서 바꾸기(Sortable)의 순서 계산에는 안 들어감
     const mk = (cls, html, where) => { const d = document.createElement('div'); d.className = 'bs-gen bs-x ' + cls; d.innerHTML = html; where === 'before' ? ul.prepend(d) : ul.append(d); return d; };
-    if (st === 'S2' || st === 'S9') {
-        mk('bs-cap', `<span>청첩장에 들어간 섹션 · ${n}</span><small>${st === 'S9' ? '끌어서 순서' : '⠿ 끌어서 순서'}</small>`, 'before');
-        if (offList.length) mk('bs-addw', `<div class="bs-cap"><span>더 넣을 수 있는 섹션 · ${offList.length}</span></div><div class="bs-add">${offList.map(b => `<button type="button" data-bs-on="${b.id}">${bsSvg(BS_ICON_OF(b.id))}<b>＋</b><span>${esc(blockLabels[b.id] || b.id)}</span></button>`).join('')}</div>`, 'after');
-    }
     if (st === 'S10') {
         // 묶음 머리 (섹션 줄 사이에 실제로 끼워 넣음 - li가 아닌 div라 끌어서 순서 바꾸기 계산엔 안 들어감)
         const L = bsGroupList(), lis = [...ul.querySelectorAll(':scope > li.block-row')];
@@ -17573,48 +17465,15 @@ function bsDecorate() {
                 + (bsDrawerShut ? '' : `<div class="bdr-l">${offList.length ? offList.map(b => `<button type="button" ${tg ? `data-bs-into="${b.id}" data-g="${tg.k}"` : `data-bs-on="${b.id}"`} data-bs-tile="${b.id}">${bsSvg(BS_ICON_OF(b.id))}<span>${esc(blockLabels[b.id] || b.id)}</span></button>`).join('') : '<p>대기 중인 섹션이 없어요 · 줄의 −를 누르면 여기로 와요</p>'}</div>`), 'after');
         } else if (offList.length) mk('bs-addw bs-add10', `<div class="bs-cap"><span>대기 중인 섹션 · ${offList.length}</span><small>누르면 제 묶음으로 · 끌어서 원하는 묶음에</small></div><div class="bs-add">${offList.map(b => `<button type="button" data-bs-on="${b.id}" data-bs-tile="${b.id}">${bsSvg(BS_ICON_OF(b.id))}<b>＋</b><span>${esc(blockLabels[b.id] || b.id)}</span><i>${esc(bsGroupName(bsGroupOfB(b)))}</i></button>`).join('')}</div>`, 'after');
     }
-    if (st === 'S5') mk('bs-tabs', [['order', '순서'], ['on', '켜고 끄기'], ['width', '폭']].map(([k, l]) => `<button type="button" data-bs-tab="${k}" class="${bsTab === k ? 'on' : ''}">${l}</button>`).join(''), 'before');
-    if (st === 'S7') bsGroupList().forEach(({ k: g, n: l, ic }, gi) => {
-        const all = rows.filter(li => li.dataset.bsG === g); if (!all.length) return;
-        const onN = all.filter(li => li.dataset.bsN).length;
-        const h = document.createElement('li');
-        h.className = 'bs-gen bs-gh' + (bsClosed[g] ? ' closed' : '');
-        h.dataset.bsGh = g; h.style.order = gi * 1000;
-        h.innerHTML = `${bsSvg(ic)}<b>${esc(l)}</b><small>${onN} / ${all.length} 켜짐</small>${bsSvg(bsClosed[g] ? 'chev' : 'down')}`;
-        ul.appendChild(h); // (DOM 맨 뒤에 붙이고 보이는 순서만 order로 - 섹션 줄의 DOM 순서는 그대로)
-    });
-    if (st === 'S8') {
-        mk('bs-find', `<label class="bs-search">${bsSvg('search')}<input type="search" placeholder="섹션 찾기 (예: 지도, 계좌)" value="${esc(bsQuery)}"></label><div class="bs-chips">${[['on', `켜짐 ${n}`], ['off', `꺼짐 ${offList.length}`], ['all', '전체']].map(([k, l]) => `<button type="button" data-bs-chip="${k}" class="${bsChip === k ? 'on' : ''}">${l}</button>`).join('')}</div>`, 'before');
-        if (bsChip !== 'off') mk('bs-addbtn-w', `<button type="button" class="bs-addbtn" data-bs-chip="off">${bsSvg('plus')}섹션 넣기 (꺼진 섹션 보기)</button>`, 'after');
-    }
-    if (st === 'S4') bsThumbsLater();
-}
-// S4: 미리보기의 그 섹션을 아주 작게 복사해서 썸네일로 (영상·지도처럼 무거운 건 빼고)
-function bsThumbsLater() { clearTimeout(bsThumbsLater.t); bsThumbsLater.t = setTimeout(bsThumbs, 120); }
-function bsThumbs() {
-    document.querySelectorAll('#blockList .bs-th[data-th]').forEach(th => {
-        const col = document.querySelector(`#previewRoot .col[data-block-id="${CSS.escape(th.dataset.th)}"]`);
-        th.innerHTML = '';
-        if (!col) return;
-        const c = col.cloneNode(true);
-        c.querySelectorAll('iframe, script, video, .section-ruler, .sticker-gizmo, .ib-next').forEach(n => n.remove());
-        c.removeAttribute('id'); c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
-        const w = col.offsetWidth || 390, k = 64 / w;
-        c.style.cssText += `;position:absolute;left:0;top:0;width:${w}px;margin:0;transform:scale(${k});transform-origin:0 0;pointer-events:none;animation:none;transition:none;opacity:1`;
-        c.classList.add('in-view');
-        th.appendChild(c);
-    });
 }
 (function initBsEvents() {
     const sheet = document.getElementById('sectionsSheet'); if (!sheet) return;
     sheet.addEventListener('click', e => {
-        const t = e.target.closest('button.bs-gen, .bs-gen button, li.bs-gh, [data-bs-on]');
+        const t = e.target.closest('button.bs-gen, .bs-gen button, [data-bs-on]');
         if (!t || !sheet.contains(t)) return;
         e.preventDefault(); e.stopPropagation();
         const d = t.dataset;
-        if (d.bsW) { const b = state.blocks.find(x => x.id === d.bsW), o = bsWidthOpts(d.bsW).map(x => x[0]); bsSetWidth(d.bsW, o[(o.indexOf(b.width || 100) + 1) % o.length]); }
-        else if (d.bsWs) bsSetWidth(d.bsWs, +d.v);
-        else if (d.bsOff) bsToggle(d.bsOff);
+        if (d.bsOff) bsToggle(d.bsOff);
         else if (d.bsInto) { if (d.bsTile && Date.now() - bsTileDragged < 500) return; bsMoveInto(d.bsInto, d.g); }
         else if (d.bsPopmore != null) { bsPopMore10 = !bsPopMore10; bsDecorate(); }
         else if (d.bsDr != null) { bsDrawerShut = !bsDrawerShut; bsDecorate(); }
@@ -17630,18 +17489,7 @@ function bsThumbs() {
             }
             bsDecorate();
         }
-        else if (d.bsTab) { bsTab = d.bsTab; bsDecorate(); }
-        else if (d.bsChip) { bsChip = d.bsChip; bsDecorate(); }
-        else if (d.bsGh) { bsClosed[d.bsGh] = !bsClosed[d.bsGh]; bsDecorate(); }
-        else if (d.bsMv) {
-            const i = state.blocks.findIndex(x => x.id === d.bsMv), g = bsGroupOf(d.bsMv), dir = +d.d;
-            let j = i + dir; while (j >= 0 && j < state.blocks.length && bsGroupOf(state.blocks[j].id) !== g) j += dir;
-            if (j < 0 || j >= state.blocks.length) return;
-            const [m] = state.blocks.splice(i, 1); state.blocks.splice(j, 0, m);
-            renderBlockList(); renderPreview(); scheduleSnapshot(); heroTopRefresh();
-        }
     }, true);
-    sheet.addEventListener('input', e => { if (e.target.closest('.bs-search')) { bsQuery = e.target.value; clearTimeout(bsDecorate.q); bsDecorate.q = setTimeout(() => { const pos = e.target.selectionStart; bsDecorate(); const inp = sheet.querySelector('.bs-search input'); if (inp) { inp.focus(); try { inp.setSelectionRange(pos, pos); } catch (er) {} } }, 180); } });
 })();
 
 // S10: 아래 "대기 중인 섹션" 칸을 끌어서 원하는 묶음·자리에 놓기 (마우스는 바로, 터치는 살짝 길게 누른 뒤 끌기)
@@ -17731,7 +17579,7 @@ Object.assign(MM_IC, {
     chev: '<path d="M9 6l6 6-6 6"/>', down: '<path d="M6 9l6 6 6-6"/>', back: '<path d="M15 6l-6 6 6 6"/>',
 });
 const spIcon = k => `<svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true">${MM_IC[k] || ''}</svg>`;
-let spOrig = null, spCur = 'theme', spOpen = {}, spAll = false;
+let spOrig = null, spCur = 'theme', spOpen = {};
 function spItems() { // 칸마다 종류 표시 (처음 한 번 원래 자리 기억)
     const tc = document.getElementById('topControls'); if (!tc) return [];
     const g = sel => { const el = tc.querySelector(sel); return el ? (el.matches('.settings-card, .control-group') ? el : el.closest('.control-group, .settings-card')) : null; };
@@ -17746,35 +17594,6 @@ function spRestore() {
     if (!spOrig) return;
     [...spOrig].reverse().forEach(o => { if (o.parent) o.parent.insertBefore(o.el, o.next && o.next.parentNode === o.parent ? o.next : null); });
 }
-function spSummary(cat) {
-    try {
-        if (cat === 'theme') return (skins[state.skin] && skins[state.skin].label) || '';
-        if (cat === 'font') return fontShort(fontOptions.find(f => f.id === (state.customFont || '')) || fontOptions[0]);
-        if (cat === 'color') return '배경 ' + (state.customBg || (skins[state.skin] || {}).bg || '').toUpperCase();
-        if (cat === 'fx') { const k = state.effects?.ambient || 'none', d = window.InviteBlocks?.AMBIENT?.[k]; return d ? `${d.label} · ${state.effects?.ambientOpacity ?? 100}%` : '없음'; }
-        if (cat === 'music') return state.bgm && state.bgm.enabled ? (state.bgm.title || '켜짐') : '꺼짐';
-        if (cat === 'share') return '카카오톡 · 링크';
-        if (cat === 'scroll') { const v = state.extras?.scrollbar || 'default', o = (window.InviteBlocks?.SCROLLBARS || []).find(x => x[0] === v); return o ? o[1] : '기본'; }
-        if (cat === 'more') return '부가기능';
-    } catch (e) {}
-    return '';
-}
-const SP_MOODS = [ // D8 분위기: [이름, 그림, 스킨 이름에 들어간 글자, 장식 효과, 바탕색]
-    ['로맨틱', '🌸', /클래식|로맨틱/, 'petals', 'linear-gradient(140deg,#C89B7B,#7A3B41)'],
-    ['내추럴', '🌿', /세이지|가든/, 'leaves', 'linear-gradient(140deg,#9AA79A,#4D6B53)'],
-    ['모던 나이트', '✦', /네이비|시네마|다크/, 'stars', 'linear-gradient(140deg,#3B4560,#1E2433)'],
-    ['빈티지', '☕', /빈티지|테라코타|어스/, 'autumn', 'linear-gradient(140deg,#E9D7C3,#B59272)'],
-    ['러블리', '♥', /핑크|라벤더|파스텔/, 'hearts', 'linear-gradient(140deg,#F2B8C6,#C9708A)'],
-    ['미니멀', '◻', /블랙|모던/, 'none', 'linear-gradient(140deg,#EDEDED,#9A9A9A)'],
-];
-function spApplyMood(i) {
-    const m = SP_MOODS[i]; if (!m) return;
-    const key = Object.keys(skins).find(k => m[2].test(skins[k].label || ''));
-    if (key) document.querySelector(`#skinPicker [data-skin="${CSS.escape(key)}"]`)?.click();
-    document.querySelector(`#ambientFxRow [data-ambient-val="${m[3]}"]`)?.click();
-    spApply();
-}
-const SP_LIST_STYLES = ['D3', 'A3', 'A7', 'A8']; // 목록 → 누르면 그 칸만 (세부 칸 모양 B4·B5는 이 모양들에서)
 // A3·A8: 값 대신 작은 견본 (테마=색 두 개, 글꼴=Aa, 색=색점, 효과=그림, 음악=스피커 버튼 - 꺼져 있으면 음소거 모양)
 function spMini(k) {
     const sk = skins[state.skin] || skins.classic;
@@ -17839,7 +17658,7 @@ function spUnitVal(u) {
 }
 function spInnerApply(pane, cat) {
     let mode = 'old'; try { mode = uip('setInner'); } catch (e) {}
-    pane.classList.remove('sp-b4', 'sp-b5');
+    pane.classList.remove('sp-b4');
     pane.querySelectorAll('.sp-inner-gen').forEach(n => n.remove());
     pane.querySelectorAll('.sp-u-hid, .sp-u-open').forEach(u => u.classList.remove('sp-u-hid', 'sp-u-open'));
     if (mode === 'old') return;
@@ -17877,37 +17696,8 @@ function spInnerApply(pane, cat) {
         });
         return;
     }
-    // B5: 작은 미리보기(공유 칸은 카카오·링크 견본이 미리보기) + 칩으로 하나씩
-    pane.classList.add('sp-b5');
-    let cur = spInnerSel[cat + ':b5'];
-    if (!ctrls.some(x => x.key === cur)) cur = ctrls[0] && ctrls[0].key;
-    const cx = ctrls.find(x => x.key === cur);
-    const pvs = units.filter(x => x.kind === 'pv');
-    const top = [];
-    if (!pvs.length) { const pv = gen('b5pv', ''); top.push(pv); requestAnimationFrame(() => b5Draw(pv)); }
-    if (ctrls.length > 1) top.push(gen('b5chips', ctrls.map(x => `<button type="button" class="${x.key === cur ? 'on' : ''}" data-sp-uc="${esc(x.key)}">${esc(x.label.replace(/#\d+$/, ''))}${x.kind === 'switch' ? `<i class="${x.u.querySelector('input[type=checkbox]')?.checked ? 'on' : ''}"></i>` : ''}</button>`).join('')));
-    top.reverse().forEach(el => pane.prepend(el));
-    units.forEach(x => {
-        if (x.kind === 'pv') { x.u.classList.toggle('sp-u-hid', !!cx && x.g !== cx.g); return; }
-        x.u.classList.toggle('sp-u-hid', x !== cx);
-    });
 }
 function spInnerRefresh() { const pn = document.querySelector('#topControls .sp-pane[data-sp-cat]'); if (pn) spInnerApply(pn, pn.dataset.spCat); }
-// B5 미리보기: 지금 청첩장을 작게 복사해서 바깥 배경 위에 (그림자·바깥색·글꼴·효과가 바로 보임)
-function b5Draw(el) {
-    const src = document.getElementById('previewRoot'); if (!src || !el || !el.isConnected) return;
-    const sk = skins[state.skin] || skins.classic;
-    el.style.background = state.desktopSideBg || '#F1EFE9';
-    el.innerHTML = `<div class="b5inv${state.desktopShadow ? ' sh' : ''}" style="background:${state.customBg || sk.bg}"></div>`;
-    const inv = el.firstChild, w = src.offsetWidth || 390, k = 104 / w;
-    const c = src.cloneNode(true);
-    c.removeAttribute('id'); c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
-    c.querySelectorAll('iframe, video, script, .section-ruler, .sticker-gizmo, .ib-next, .ld-live-pop').forEach(n => n.remove());
-    c.querySelectorAll('[class*="reveal"], [class*="rv-"], .col').forEach(n => n.classList.add('in-view'));
-    c.style.cssText += `;position:absolute;left:0;top:0;width:${w}px;margin:0;transform:scale(${k});transform-origin:0 0;pointer-events:none`;
-    inv.appendChild(c);
-}
-function b5Later() { clearTimeout(b5Later.t); b5Later.t = setTimeout(() => document.querySelectorAll('#topControls .b5pv').forEach(b5Draw), 220); }
 function spApply() {
     let st; try { st = uip('setStyle'); } catch (e) { return; }
     const tc = document.getElementById('topControls'); if (!tc) return;
@@ -17924,65 +17714,19 @@ function spApply() {
     const close = tc.querySelector('.controls-panel-close');
     close ? close.after(root) : tc.prepend(root);
     const pane = cats => { const p = box('sp-pane'); cats.forEach(c => of(c).forEach(el => p.appendChild(el))); return p; };
-    const head = (cat, extra) => `${spIcon(SP_CATS.find(c => c[0] === cat)[2])}<span><b>${SP_CATS.find(c => c[0] === cat)[1]}</b>${extra !== false ? `<small>${esc(spSummary(cat))}</small>` : ''}</span>`;
     const name = cat => SP_CATS.find(c => c[0] === cat)[1];
-    root.insertAdjacentHTML('beforeend', `<div class="sp-title">화면 설정</div>`);
-    if (st === 'D1') {
-        root.appendChild(box('sp-tiles', SP_CATS.map(([k, l, ic]) => `<button type="button" data-sp-cat="${k}" class="${spCur === k ? 'on' : ''}">${spIcon(ic)}<span>${l}</span></button>`).join('')));
-        root.appendChild(pane([spCur]));
-    } else if (st === 'D2') {
-        root.appendChild(pane(['theme'])).classList.add('sp-theme');
-        SP_CATS.filter(c => c[0] !== 'theme').forEach(([k]) => {
-            root.appendChild(box('sp-row' + (spOpen[k] ? ' open' : ''), `<button type="button" data-sp-open="${k}">${head(k)}${spIcon(spOpen[k] ? 'down' : 'chev')}</button>`));
-            if (spOpen[k]) root.appendChild(pane([k]));
-        });
-    } else if (SP_LIST_STYLES.includes(st)) { // D3 설정 앱 목록 · A3 한 줄+미니 견본 · A7 손잡이 띠 · A8 압축형
-        const oneLine = st !== 'D3', mini = st === 'A3' || st === 'A8';
-        tc.classList.add('sp-lst');
-        if (oneLine) tc.classList.add('sp-1l');
-        if (st === 'A7' || st === 'A8') { tc.classList.add('sp-hb'); root.querySelector('.sp-title').outerHTML = '<div class="sp-title sp-hdl"><i aria-hidden="true"></i><b>화면 설정</b></div>'; }
-        if (spCur && spOpen.__d3) {
-            root.appendChild(box('sp-back', `<button type="button" data-sp-back>${spIcon('back')}<b>${name(spCur)}</b></button>`));
-            const pn = root.appendChild(pane([spCur]));
-            pn.dataset.spCat = spCur;
-            spInnerApply(pn, spCur);
-        } else {
-            const ic = k => spIcon(SP_CATS.find(c => c[0] === k)[2]);
-            const rowOf = k => oneLine
-                ? `<button type="button" data-sp-go="${k}">${ic(k)}<b>${name(k)}</b>${mini ? spMini(k) : `<small class="sp-v">${esc(spSummary(k))}</small>`}${spIcon('chev')}</button>`
-                : `<button type="button" data-sp-go="${k}">${head(k)}${spIcon('chev')}</button>`;
-            const G = mini ? [[null, ['theme', 'font', 'color', 'fx', 'scroll']], [null, ['music', 'share', 'more']]]
-                : [['디자인', ['theme', 'font', 'color', 'fx', 'scroll']], ['청첩장 기능', ['music', 'share']], ['기타', ['more']]];
-            G.forEach(([gl, cats]) => {
-                if (gl) root.insertAdjacentHTML('beforeend', `<div class="sp-lab">${gl}</div>`);
-                root.appendChild(box('sp-list', cats.map(rowOf).join('')));
-            });
-        }
-    } else if (st === 'D4') {
-        const T = [['d', '디자인', ['theme', 'font', 'color']], ['f', '효과', ['fx']], ['m', '음악·공유', ['music', 'share']], ['e', '기타', ['scroll', 'more']]];
-        const cur = T.find(t => t[0] === spOpen.__tab) || T[0];
-        root.appendChild(box('sp-tabs', T.map(([k, l]) => `<button type="button" data-sp-tab="${k}" class="${cur[0] === k ? 'on' : ''}">${l}</button>`).join('')));
-        root.appendChild(pane(cur[2]));
-    } else if (st === 'D5') {
-        if (spAll) { SP_CATS.forEach(([k]) => { root.insertAdjacentHTML('beforeend', `<div class="sp-h">${spIcon(SP_CATS.find(c => c[0] === k)[2])}${name(k)}</div>`); root.appendChild(pane([k])); }); }
-        else {
-            root.appendChild(box('sp-chips', SP_CATS.map(([k, l, ic]) => `<button type="button" data-sp-cat="${k}" class="${spCur === k ? 'on' : ''}">${spIcon(ic)}${l}</button>`).join('')));
-            root.appendChild(pane([spCur]));
-        }
-        root.appendChild(box('sp-foot', `<button type="button" data-sp-all>${spAll ? '짧게 보기' : '모든 설정 보기'}</button><button type="button" class="sp-ok" data-sp-ok>OK</button>`));
-    } else if (st === 'D6' || st === 'D8') {
-        if (st === 'D8') {
-            root.appendChild(box('sp-moods', SP_MOODS.map(([l, em, re, fx, bg], i) => `<button type="button" data-sp-mood="${i}" style="background:${bg}"><em>${em}</em><b>${l}</b></button>`).join('')));
-            root.appendChild(box('sp-row' + (spOpen.__fine ? ' open' : ''), `<button type="button" data-sp-fine>${spIcon('pal')}<span><b>직접 조정</b><small>테마 · 글꼴 · 색 · 효과 · 스크롤바 · 음악 · 공유</small></span>${spIcon(spOpen.__fine ? 'down' : 'chev')}</button>`));
-            if (!spOpen.__fine) return;
-        }
-        SP_CATS.forEach(([k]) => {
-            root.appendChild(box('sp-card' + (spOpen[k] ? ' open' : ''), `<button type="button" data-sp-open="${k}">${head(k)}${spIcon(spOpen[k] ? 'down' : 'chev')}</button>`));
-            if (spOpen[k]) root.lastChild.appendChild(pane([k]));
-        });
-    } else if (st === 'D7') {
-        root.appendChild(box('sp-jump', SP_CATS.map(([k, l]) => `<button type="button" data-sp-jump="${k}">${l}</button>`).join('')));
-        SP_CATS.forEach(([k]) => { root.insertAdjacentHTML('beforeend', `<div class="sp-h" data-sp-h="${k}">${spIcon(SP_CATS.find(c => c[0] === k)[2])}${name(k)}</div>`); root.appendChild(pane([k])); });
+    // (1019u: 실서버에서 고른 A8 '꽉 줄인 목록'만 남김 - D1~D8·A3·A7 시안은 지움)
+    tc.classList.add('sp-lst', 'sp-1l', 'sp-hb');
+    root.insertAdjacentHTML('beforeend', '<div class="sp-title sp-hdl"><i aria-hidden="true"></i><b>화면 설정</b></div>');
+    if (spCur && spOpen.__d3) {
+        root.appendChild(box('sp-back', `<button type="button" data-sp-back>${spIcon('back')}<b>${name(spCur)}</b></button>`));
+        const pn = root.appendChild(pane([spCur]));
+        pn.dataset.spCat = spCur;
+        spInnerApply(pn, spCur);
+    } else {
+        const ic = k => spIcon(SP_CATS.find(c => c[0] === k)[2]);
+        const rowOf = k => `<button type="button" data-sp-go="${k}">${ic(k)}<b>${name(k)}</b>${spMini(k)}${spIcon('chev')}</button>`;
+        [['theme', 'font', 'color', 'fx', 'scroll'], ['music', 'share', 'more']].forEach(cats => root.appendChild(box('sp-list', cats.map(rowOf).join(''))));
     }
 }
 (function initSpEvents() {
@@ -17990,11 +17734,10 @@ function spApply() {
     tc.addEventListener('click', e => {
         const mu = e.target.closest('[data-sp-mute]'); // A3·A8 음악 줄의 스피커(음소거) 버튼
         if (mu) { e.preventDefault(); e.stopPropagation(); spToggleMusic(); return; }
-        const iu = e.target.closest('[data-sp-u], [data-sp-uc]'); // 세부 칸 B4 타일 · B5 칩
+        const iu = e.target.closest('[data-sp-u]'); // 세부 칸 B4 타일
         if (iu) {
             const pn = iu.closest('.sp-pane'), cat = pn && pn.dataset.spCat; if (!pn) return;
-            const key = iu.dataset.spU || iu.dataset.spUc;
-            if (iu.dataset.spUc != null) { spInnerSel[cat + ':b5'] = key; spInnerApply(pn, cat); return; }
+            const key = iu.dataset.spU;
             const ux = (pn._spUnits || []).find(x => x.key === key);
             if (ux && ux.kind === 'switch') { // 스위치는 타일을 누르면 바로 켜고 끔
                 const cb = ux.u.querySelector('input[type=checkbox]'); if (cb) cb.click();
@@ -18008,16 +17751,8 @@ function spApply() {
         }
         const b = e.target.closest('.sp-gen button'); if (!b || b.closest('.sp-pane')) return;
         const d = b.dataset;
-        if (d.spCat) { spCur = d.spCat; spApply(); }
-        else if (d.spOpen) { spOpen[d.spOpen] = !spOpen[d.spOpen]; spApply(); }
-        else if (d.spGo) { spCur = d.spGo; spOpen.__d3 = 1; spApply(); }
+        if (d.spGo) { spCur = d.spGo; spOpen.__d3 = 1; spApply(); }
         else if (d.spBack != null) { spOpen.__d3 = 0; spApply(); }
-        else if (d.spTab) { spOpen.__tab = d.spTab; spApply(); }
-        else if (d.spAll != null) { spAll = !spAll; spApply(); }
-        else if (d.spOk != null) { document.getElementById('controlsPanelClose')?.click(); }
-        else if (d.spFine != null) { spOpen.__fine = !spOpen.__fine; spApply(); }
-        else if (d.spMood != null) spApplyMood(+d.spMood);
-        else if (d.spJump) tc.querySelector(`[data-sp-h="${d.spJump}"]`)?.scrollIntoView({ block: 'start', behavior: 'smooth' });
     });
     // 스킨 카드(D2·D4): 버튼마다 그 스킨 색을 칠함
     const paintSkins = () => document.querySelectorAll('#skinPicker [data-skin]').forEach(b => { const k = skins[b.dataset.skin]; if (k) { b.style.setProperty('--sk-bg', k.bg); b.style.setProperty('--sk-ac', k.accent); b.style.setProperty('--sk-ink', k.ink); } });
@@ -18139,7 +17874,6 @@ function phfRefresh() {
     document.querySelectorAll('.pz-root').forEach(r => { try { pzRefresh(r); } catch (e) {} });
 }
 const heroBoxAR = () => { const im = document.querySelector('#previewRoot .col[data-block-id="hero"] img.hero-photo'); return im && im.clientHeight ? im.clientWidth / im.clientHeight : 0.75; };
-let heroDragOn = false, videoDragOn = false;
 function phfTransform(fe) {
     if (TIP_HARVEST) return;
     const UPS = '[data-sf-upload], [data-tl-upload], #heroUploadImg, #ddayUploadImg, #ivUploadImg';
@@ -18154,7 +17888,6 @@ function phfTransform(fe) {
         if (mode === 'old') return;
         const cMode = pzStyle() === 'C';
         if (!cMode && (mode === 'E')) mode = 'B';
-        if (!cMode && mode === 'P4') mode = 'P1';
         const rm = kids.find(c => c.matches(RMS));
         const media = kids.find(c => c.matches('.fp-wrap, img'));
         const im = media ? (media.tagName === 'IMG' ? media : media.querySelector('img')) : null;
@@ -18182,35 +17915,11 @@ function phfTransform(fe) {
         const meta = mk('div', 'phf-meta');
         const btns = mk('div', 'phf-btns');
         if (!src) { // 사진 없음
-            if (mode === 'P3') {
-                const drop = mk('button', 'phf-drop', PHF_ICO.photo + '<span>사진을 끌어 놓거나 눌러서 올리기</span>'); drop.type = 'button';
-                drop.addEventListener('click', () => up.click());
-                body.appendChild(drop);
-            } else {
-                const card = mk('div', mode === 'P2' ? 'phf-card' : 'phf-row');
-                card.appendChild(mode === 'P2' ? addBtn(96, 64) : addBtn(56, 56, '사진'));
-                meta.innerHTML = `<b>${esc(labText)}</b><span class="phf-hint">눌러서 올리거나 사진 파일을 끌어다 놓아요</span>`;
-                card.appendChild(meta); body.appendChild(card);
-            }
+            const card = mk('div', 'phf-row');
+            card.appendChild(addBtn(56, 56, '사진'));
+            meta.innerHTML = `<b>${esc(labText)}</b><span class="phf-hint">눌러서 올리거나 사진 파일을 끌어다 놓아요</span>`;
+            card.appendChild(meta); body.appendChild(card);
             up.hidden = true; hidden.appendChild(up);
-        } else if (mode === 'P2' || mode === 'P4') {
-            const card = mk('div', 'phf-card');
-            card.appendChild(thumb(96, 64));
-            meta.innerHTML = `<b>${esc(labText)}</b>${key ? `<span class="phf-hint">보이는 부분 · ${val()}</span>` : ''}`;
-            up.classList.add('phf-txt'); up.textContent = '바꾸기'; btns.appendChild(up);
-            const fb = focusBtn('위치'); if (fb) btns.appendChild(fb);
-            if (rm) btns.appendChild(ico(rm, PHF_ICO.trash, '삭제'));
-            meta.appendChild(btns); card.appendChild(meta); body.appendChild(card);
-        } else if (mode === 'P3') {
-            const row = mk('div', 'phf-row slim');
-            row.appendChild(thumb(44, 44));
-            meta.innerHTML = `<b>${esc(labText)}</b>`;
-            const links = mk('span', 'phf-links');
-            up.className = 'phf-link'; up.textContent = '바꾸기'; links.appendChild(up);
-            if (big) { const l = mk('button', 'phf-link', '위치'); l.type = 'button'; l.addEventListener('click', () => big.click()); links.appendChild(l); }
-            if (rm) { rm.className = 'phf-link red'; rm.textContent = '삭제'; links.appendChild(rm); }
-            if (key) links.insertAdjacentHTML('afterbegin', `${val()} 보임 · `);
-            meta.appendChild(links); row.appendChild(meta); body.appendChild(row);
         } else if (mode === 'B' || mode === 'E') { // 히어로: 자르기 창
             const row = mk('div', 'phf-strip-row');
             row.appendChild(phfCropStrip(src, key, heroBoxAR, 230, 150));
@@ -18221,38 +17930,20 @@ function phfTransform(fe) {
             row.appendChild(col); body.appendChild(row);
             if (key) { body.appendChild(phfZoom(key)); bindPinchZoom(row.querySelector('.phf-strip'), key); }
             if (media) hidden.appendChild(media); // 큰 창(크게 보며 정하기)용으로 보관
-        } else if (mode === 'C') { // 히어로: 미리보기에서 끌기
-            const row = mk('div', 'phf-row');
-            row.appendChild(thumb(48, 48));
-            const sw = mk('button', 'phf-sw' + (heroDragOn ? ' on' : ''), '<i></i>미리보기에서 사진 끌기'); sw.type = 'button';
-            sw.addEventListener('click', () => { heroDragOn = !heroDragOn; document.body.classList.toggle('hero-drag-on', heroDragOn); sw.classList.toggle('on', heroDragOn); });
-            meta.appendChild(sw);
-            meta.insertAdjacentHTML('beforeend', `<span class="phf-hint">켜면 미리보기의 사진을 끌어서 맞춰요${key ? ' · ' + val() : ''}</span>`);
-            btns.appendChild(ico(up, PHF_ICO.up, '사진 바꾸기')); if (rm) btns.appendChild(ico(rm, PHF_ICO.trash, '삭제'));
-            meta.appendChild(btns); row.appendChild(meta); body.appendChild(row);
-        } else if (mode === 'D') { // 히어로: 9칸 + 썸네일
-            const row = mk('div', 'phf-row');
-            row.appendChild(thumb(84, 72));
-            if (key) row.appendChild(phfNine(key));
-            const col = mk('div', 'phf-col');
-            col.appendChild(ico(up, PHF_ICO.up, '사진 바꾸기')); if (rm) col.appendChild(ico(rm, PHF_ICO.trash, '삭제'));
-            row.appendChild(col); body.appendChild(row);
-            if (key) body.insertAdjacentHTML('beforeend', `<span class="phf-hint">9칸으로 빠르게 · 썸네일을 눌러 세밀하게 · ${val()}</span>`);
-        } else { // P1, A
+        } else { // P1 (1019u: 히어로 A·C·D · 사진 칸 P2~P4 시안은 지움)
             const row = mk('div', 'phf-row');
             row.appendChild(thumb(84, 56));
             meta.innerHTML = `<b>${esc(labText)}</b>`;
-            if (mode === 'A') { const fb = focusBtn('위치 정하기', true); if (fb) btns.appendChild(fb); }
             btns.appendChild(ico(up, PHF_ICO.up, '사진 바꾸기'));
-            if (mode !== 'A') { const fb = focusBtn(); if (fb) btns.appendChild(fb); }
+            { const fb = focusBtn(); if (fb) btns.appendChild(fb); }
             if (rm) btns.appendChild(ico(rm, PHF_ICO.trash, '삭제'));
             meta.appendChild(btns);
             if (key) meta.insertAdjacentHTML('beforeend', `<span class="phf-hint">보이는 부분 · ${val()}</span>`);
             row.appendChild(meta); body.appendChild(row);
         }
         fd.appendChild(body); fd.appendChild(hidden);
-        // 타일형(C 편집창)에서는 사진 칸도 타일 하나로 (E·P4)
-        if (cMode && (mode === 'E' || mode === 'P4')) {
+        // 타일형(C 편집창)에서는 사진 칸도 타일 하나로 (E)
+        if (cMode && mode === 'E') {
             fd.dataset.pzKind = 'option';
             if (src) fd.dataset.pzThumb = src;
             fd.dataset.pzValue = src ? (key ? focusName(key) : '있음') : '없음';
@@ -18272,75 +17963,12 @@ function phfTransform(fe) {
         const [vx, vy] = videoFocusXY(f.videoFocus, f.videoPosition);
         const name = posName(vx * 100, vy * 100);
         fd.classList.add('vpk', 'vp-' + mode);
-        const setX = x => { f.videoFocus = `${x}% ${Math.round(vy * 1000) / 10}%`; renderPreview(); scheduleSnapshot(); renderFieldEditor(); };
         const lab = fd.querySelector(':scope > label');
-        if (mode === 'B' || mode === 'D') {
-            if (lab) lab.innerHTML = `영상 위치 <span class="phf-v">${esc(name)}</span>`;
-            if (cMode && mode === 'D') { fd.dataset.pzKind = 'option'; if (thumbSrc) fd.dataset.pzThumb = thumbSrc; fd.dataset.pzValue = name; }
-            return;
-        }
-        const bar = document.createElement('div');
-        bar.className = 'phf-row vp-bar';
-        const th = thumbSrc ? `<span class="phf-th vth" style="background-image:url('${esc(thumbSrc)}')"><i style="left:${vx * 100}%;top:${vy * 100}%"></i></span>` : '';
-        if (mode === 'A') {
-            bar.innerHTML = `${th}<div class="phf-meta"><b>영상 위치 <span class="phf-v">${esc(name)}</span></b><div class="phf-btns"><button type="button" class="phf-ic phf-txt dark" data-vp-modal>${PHF_ICO.target}위치 정하기</button></div></div>`;
-            bar.querySelector('[data-vp-modal]').addEventListener('click', () => {
-                const m = document.createElement('div'); m.className = 'fp-modal vp-modal';
-                m.innerHTML = `<div class="fp-box"><div class="fp-head"><b>영상에서 보일 부분 정하기</b><button type="button" class="fp-x" aria-label="닫기">✕</button></div><div class="vp-modal-body"></div><div class="fp-foot"><span></span><button type="button" class="fp-done">완료</button></div></div>`;
-                document.body.appendChild(m);
-                appendVideoFocusControls(m.querySelector('.vp-modal-body'), block);
-                m.querySelector('.vp-modal-body .vfp').dataset.vp = 'old';
-                const close = () => { m.remove(); renderFieldEditor(); };
-                m.addEventListener('click', e => { if (e.target === m || e.target.closest('.fp-x, .fp-done')) close(); });
-            });
-        } else if (mode === 'C') {
-            bar.innerHTML = `${th}<div class="phf-meta"><b>영상 위치 <span class="phf-v">${esc(name)}</span></b><span class="phf-seg">${[[0, '◀ 왼쪽'], [50, '가운데'], [100, '오른쪽 ▶']].map(([x, l]) => `<button type="button" data-vx="${x}" class="${Math.abs(vx * 100 - x) < 17 ? 'on' : ''}">${l}</button>`).join('')}</span></div>`;
-            bar.querySelectorAll('[data-vx]').forEach(b => b.addEventListener('click', () => setX(+b.dataset.vx)));
-        } else if (mode === 'E') {
-            bar.innerHTML = `${th}<div class="phf-meta"><button type="button" class="phf-sw${videoDragOn ? ' on' : ''}"><i></i>미리보기에서 영상 끌기</button><span class="phf-hint">켜면 미리보기 영상을 좌우로 밀어서 맞춰요 · <span class="phf-v">${esc(name)}</span></span></div>`;
-            bar.querySelector('.phf-sw').addEventListener('click', e => { videoDragOn = !videoDragOn; e.currentTarget.classList.toggle('on', videoDragOn); document.body.classList.toggle('video-drag-on', videoDragOn); });
-        }
-        [...fd.children].forEach(c => { c.classList.add('vp-hide'); });
-        fd.appendChild(bar);
+        // (1019u: B 작은 자르기 창 · D 타일 + 자르기 창만 - A·C·E 시안은 지움)
+        if (lab) lab.innerHTML = `영상 위치 <span class="phf-v">${esc(name)}</span>`;
+        if (cMode && mode === 'D') { fd.dataset.pzKind = 'option'; if (thumbSrc) fd.dataset.pzThumb = thumbSrc; fd.dataset.pzValue = name; }
     });
 }
-// 미리보기에서 바로 끌어서 맞추기 (히어로 사진 C · 영상 E). 스위치를 켰을 때만
-(function initPreviewDrag() {
-    const pv = document.getElementById('previewRoot');
-    if (!pv) return;
-    pv.addEventListener('pointerdown', e => {
-        const im = heroDragOn ? e.target.closest('img.hero-photo') : null;
-        const key = im ? fpKey(im.getAttribute('src')) : '';
-        if (key) {
-            e.preventDefault(); e.stopPropagation();
-            try { im.setPointerCapture(e.pointerId); } catch (err) {}
-            const fw = im.clientWidth, fh = im.clientHeight, a = (im.naturalWidth || 1) / (im.naturalHeight || 1);
-            const ovX = Math.max(0, fh * a - fw), ovY = Math.max(0, fw / a - fh);
-            const [sx0, sy0] = focusOf(key).split(' ').map(parseFloat), x0 = e.clientX, y0 = e.clientY;
-            const mv = ev => { setImgFocus(key, `${fpClamp(ovX > 1 ? sx0 - (ev.clientX - x0) / ovX * 100 : sx0)}% ${fpClamp(ovY > 1 ? sy0 - (ev.clientY - y0) / ovY * 100 : sy0)}%`, true); };
-            const up = () => { im.removeEventListener('pointermove', mv); im.removeEventListener('pointerup', up); im.removeEventListener('pointercancel', up); scheduleSnapshot(); };
-            im.addEventListener('pointermove', mv); im.addEventListener('pointerup', up); im.addEventListener('pointercancel', up);
-            return;
-        }
-        if (videoDragOn) {
-            const wrap = e.target.closest('.col[data-block-id="heroVideo"] .video-cover-wrap');
-            const ifr = wrap && wrap.querySelector('iframe[data-cover]');
-            const block = state.blocks.find(b => b.id === 'heroVideo');
-            if (!ifr || !block) return;
-            e.preventDefault(); e.stopPropagation();
-            try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
-            const ovX = Math.max(0, ifr.offsetWidth - wrap.clientWidth), ovY = Math.max(0, ifr.offsetHeight - wrap.clientHeight);
-            const [vx0, vy0] = videoFocusXY(block.fields.videoFocus, block.fields.videoPosition), x0 = e.clientX, y0 = e.clientY;
-            const mv = ev => {
-                const nx = ovX > 1 ? Math.max(0, Math.min(1, vx0 - (ev.clientX - x0) / ovX)) : vx0, ny = ovY > 1 ? Math.max(0, Math.min(1, vy0 - (ev.clientY - y0) / ovY)) : vy0;
-                block.fields.videoFocus = `${Math.round(nx * 1000) / 10}% ${Math.round(ny * 1000) / 10}%`;
-                ifr.dataset.videoFocus = block.fields.videoFocus; fitVideoCover(ifr);
-            };
-            const up = () => { wrap.removeEventListener('pointermove', mv); wrap.removeEventListener('pointerup', up); wrap.removeEventListener('pointercancel', up); scheduleSnapshot(); document.querySelectorAll('.vpk .phf-v').forEach(v => { const [a, b] = videoFocusXY(block.fields.videoFocus); v.textContent = posName(a * 100, b * 100); }); };
-            wrap.addEventListener('pointermove', mv); wrap.addEventListener('pointerup', up); wrap.addEventListener('pointercancel', up);
-        }
-    }, true);
-})();
 (function initPhotoFields() {
     const fe = document.getElementById('fieldEditor');
     if (fe) new MutationObserver(() => { phfTransform(fe); transformOverToggle(fe); }).observe(fe, { childList: true, subtree: true });
@@ -18431,7 +18059,7 @@ function addEyeButtons() {
 }
 addEyeButtons();
 // 옵션 버튼 꾹 누르기
-const LP_SEL = '#fieldEditor .width-btn, #fieldEditor [data-sf-choice], #fieldEditor .dd-pk, #fieldEditor .ovt-opt, #blockList [data-height-for]';
+const LP_SEL = '#fieldEditor .width-btn, #fieldEditor [data-sf-choice], #fieldEditor .dd-pk, #blockList [data-height-for]';
 let lp = null, lpSwallowUntil = 0;
 document.addEventListener('pointerdown', e => {
     const b = e.target.closest && e.target.closest(LP_SEL);
@@ -18490,7 +18118,7 @@ function decorateOptPics(root) {
 })();
 
 // ===== "이름·날짜 글자를 사진 위로도 옮길 수 있게" 스위치 모양 (관리자 → 편집창 모양 → 세부 모양) =====
-//  T1 타일(C 타일형 편집창에서만, 아니면 T3) · T2 두 칸 고르기 · T3 설명 스위치 카드 · T4 그림 카드 두 개 · T7 움직이는 그림 스위치 · T8 대표 사진 칸 안
+//  T7 움직이는 그림 스위치 (1019u: T1~T4·T8 시안은 지움 - 예전 모양 old는 그대로)
 const OVT_IC = {
     over: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M8 13h8M9.5 16h5"/></svg>',
     under: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3" width="17" height="11" rx="2.5"/><path d="M8 17.5h8M9.5 20.5h5"/></svg>',
@@ -18512,8 +18140,7 @@ function transformSwitch(fe, sp) {
     cb.dataset.ovt = mode;
     if (mode === 'old') return;
     const fd = cb.closest('.field'); if (!fd || fd.hidden) return; // 숨긴 스위치(전체화면)는 타일도 안 만듦
-    const cMode = pzStyle() === 'C';
-    if (mode === 'T1' && !cMode) mode = 'T3';
+    if (mode !== 'T7') mode = 'T7'; // (1019u: T7 움직이는 그림만 - T1~T4·T8 시안은 지움)
     const on = cb.checked, dis = cb.disabled;
     const set = want => { if (!cb.disabled && cb.checked !== want) cb.click(); };
     fd._ovtToggle = () => set(!cb.checked);
@@ -18536,34 +18163,12 @@ function transformSwitch(fe, sp) {
     }
     [...fd.children].forEach(c => { if (c.matches('label.account-toggle, p.field-hint')) c.classList.add('ovt-hide'); });
     const tip = dis ? (fd.dataset.disWhy || sp.tipDis) : on ? sp.tipOn : sp.tipOff;
-    if (mode === 'T1') { // 타일 하나 (pz가 타일 줄에 넣음, 누르면 바로 바뀜)
-        fd.dataset.pzKind = 'toggletile'; fd.dataset.ovtOn = on ? '1' : ''; fd.dataset.ovtDis = dis ? '1' : '';
-        if (!fd.querySelector('input[type=range]')) fd.classList.add('ovt-empty');
-        return;
-    }
     const wrap = document.createElement('div');
     wrap.className = 'ovt-ui';
-    fd.dataset.pzKind = sp.key === 'text' || uip('jumpFix') === 'S3' ? 'inline-end' : 'inline'; // 글자 위로 스위치는 타일 줄 아래 (영상·사진 히어로 같게) · S3: 바뀌는 칸 모두 아래 속이 아니라 타일 줄 위에 바로 보이게
-    const card3 = `<button type="button" class="ovt3${on ? ' on' : ''}" data-ov="${!on}"${dis ? ' disabled' : ''}><span class="ic">${OVT_IC[sp.icOn]}</span><span class="tx"><b>${sp.title}</b><small>${tip}</small></span><span class="ovt-sw"></span></button>`;
-    const pill = `<button type="button" class="ovt8${on ? ' on' : ''}" data-ov="${!on}"${dis ? ' disabled' : ''} title="${tip}"><span class="ovt-sw"></span>${sp.short}</button>`;
-    if (mode === 'T2') wrap.innerHTML = `<div class="ovt2"><small>${sp.name}</small><div class="ovt2-seg">${[[false, sp.offL, OVT_IC[sp.icOff]], [true, sp.onL, OVT_IC[sp.icOn]]].map(([v, l, ic]) => `<button type="button" class="ovt-opt${on === v ? ' on' : ''}" data-ov="${v}"${dis && v ? ' disabled' : ''}>${ic}${l}</button>`).join('')}</div></div>`;
-    else if (mode === 'T3') wrap.innerHTML = card3;
-    else if (mode === 'T4') wrap.innerHTML = `<div class="ovt4">${[[false, sp.cardOff, 'off'], [true, sp.cardOn, 'on']].map(([v, l, c]) => `<button type="button" class="ovt-opt${on === v ? ' on' : ''}" data-ov="${v}"${dis && v ? ' disabled' : ''}><span class="pic k-${sp.key} ${c}"><s></s><u></u></span>${l}</button>`).join('')}</div>${dis ? `<small class="ovt-tip">${tip}</small>` : ''}`;
-    else if (mode === 'T7') wrap.innerHTML = `<button type="button" class="ovt7 k-${sp.key}${on ? ' on' : ''}" data-ov="${!on}"${dis ? ' disabled' : ''}><span class="pic"><s></s><u></u></span><span class="tx"><b>${sp.title}</b><small>${tip}</small></span><span class="st">${on ? '켜짐' : '꺼짐'}</span></button>`;
-    else if (mode === 'T8') {
-        // 대표 사진 칸 안에 작은 스위치 (글자 자리만 - 사진 칸이 타일로 접혀 있거나 스크롤 버튼이면 그 자리에 작은 스위치만)
-        const pf = sp.key === 'text' ? [...fe.querySelectorAll('.phf')].find(x => x.querySelector('#heroUploadImg')) : null;
-        const host = pf && pf.dataset.pzKind !== 'option' && (pf.querySelector('.phf-meta') || pf.querySelector('.phf-body'));
-        if (host) {
-            host.insertAdjacentHTML('beforeend', pill);
-            host.querySelector('.ovt8').addEventListener('click', e => set(e.currentTarget.dataset.ov === 'true'));
-            if (!fd.querySelector('input[type=range]')) fd.classList.add('ovt-empty');
-            return;
-        }
-        wrap.innerHTML = pill;
-    }
+    fd.dataset.pzKind = sp.key === 'text' ? 'inline-end' : 'inline'; // 글자 위로 스위치는 타일 줄 아래 (영상·사진 히어로 같게) · S3: 바뀌는 칸 모두 아래 속이 아니라 타일 줄 위에 바로 보이게
+    wrap.innerHTML = `<button type="button" class="ovt7 k-${sp.key}${on ? ' on' : ''}" data-ov="${!on}"${dis ? ' disabled' : ''}><span class="pic"><s></s><u></u></span><span class="tx"><b>${sp.title}</b><small>${tip}</small></span><span class="st">${on ? '켜짐' : '꺼짐'}</span></button>`;
     fd.prepend(wrap);
-    wrap.querySelectorAll('[data-ov]').forEach(b => b.addEventListener('click', () => { if (mode === 'T7') { b.classList.toggle('on'); setTimeout(() => set(b.dataset.ov === 'true'), 260); } else set(b.dataset.ov === 'true'); }));
+    wrap.querySelectorAll('[data-ov]').forEach(b => b.addEventListener('click', () => { b.classList.toggle('on'); setTimeout(() => set(b.dataset.ov === 'true'), 260); }));
 }
 
 
@@ -18572,7 +18177,7 @@ function transformSwitch(fe, sp) {
 //  섹션마다 편집창을 새로 짜지 않고, 다 그려진 편집창의 칸들을 그대로 "옮겨서" 정리한다 → 원래 칸의 동작이 그대로 유지됨
 //  주소 끝에 ?panel=A|B|C|old 를 붙이면 그 모양으로 미리 볼 수 있음
 const PZ_URL = (urlParams.get('panel') || '').toUpperCase();
-let PANEL_STYLE = PZ_URL === 'OLD' ? 'old' : (['A', 'B', 'C'].includes(PZ_URL) ? PZ_URL : null);
+let PANEL_STYLE = PZ_URL === 'OLD' ? 'old' : (PZ_URL ? 'C' : null);
 const pzMem = { open: {}, tab: {} }; // 섹션별로 열어 둔 타일 · 탭 (편집창이 다시 그려져도 유지)
 const PZ_DECO_RE = /^(섹션 폭|스크롤 효과|섹션 여백|배경색)/;
 const PZ_SVG = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
@@ -18599,7 +18204,7 @@ const PZ_ICONS = [
 ];
 const PZ_DEF_ICON = '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>';
 function pzIcon(label) { const m = PZ_ICONS.find(([re]) => re.test(label)); return PZ_SVG(m ? m[1] : PZ_DEF_ICON); }
-function pzStyle() { return PANEL_STYLE === 'old' ? 'old' : (['A', 'B', 'C'].includes(PANEL_STYLE) ? PANEL_STYLE : 'C'); }
+function pzStyle() { return PANEL_STYLE === 'old' ? 'old' : 'C'; }
 function pzClean(t) { return String(t || '').replace(/\s+/g, ' ').replace(/\([^)]*\)/g, '').replace(/[↕↔]/g, '-').replace(/^[^\w가-힣"]+/, '').replace(/[:：]\s*$/, '').replace(/\s*-?\d+(\.\d+)?\s*(px|%|장|개)?\s*$/, '').trim(); }
 function pzLabelEl(n) { return n.querySelector(':scope > label:not(.account-toggle), :scope > .mini-label') || n.querySelector(':scope > .field > label:not(.account-toggle)'); }
 function pzKind(n) {
@@ -18660,16 +18265,6 @@ function pzSync(root, sid) {
         pop.classList.toggle('show', any);
     });
     root.querySelectorAll('[data-pz-for]').forEach(t => { const ns = t.closest('[data-ns]')?.dataset.ns; t.classList.toggle('open', open[ns] === t.dataset.pzFor); t.setAttribute('aria-expanded', open[ns] === t.dataset.pzFor ? 'true' : 'false'); });
-    if (root.classList.contains('pz-B')) {
-        const panes = [...root.querySelectorAll(':scope > .pz-pane')];
-        const has = p => [...p.querySelectorAll('.field, .pz-tl, .pz-bb, .panel, button, a, ul, p')].some(x => !x.closest('[hidden]') && x.style.display !== 'none');
-        const ok = panes.filter(has).map(p => p.dataset.pzPane);
-        let tab = pzMem.tab[sid];
-        if (!ok.includes(tab)) tab = ok[0] || 'c';
-        root.querySelectorAll('[data-pz-tab]').forEach(b => { b.hidden = !ok.includes(b.dataset.pzTab); b.classList.toggle('on', b.dataset.pzTab === tab); });
-        panes.forEach(p => p.classList.toggle('on', p.dataset.pzPane === tab));
-        root.querySelector('.pz-tabs').hidden = ok.length < 2;
-    }
     pzRefresh(root);
     // 작은 창이 없어졌으면 실제 화면 모드 끝 - 다시 그리는 도중 잠깐 비는 순간에 끝내지 않게 한 박자 뒤에 확인
     const liveGone = () => document.body.classList.contains('mob-live') && !document.body.classList.contains('mob-live-ph') && !document.body.classList.contains('mob-live-nb') && !document.querySelector('#fieldEditor .pz-pop.show');
@@ -18689,27 +18284,6 @@ const TG_IC = [
 ];
 function tgName(n) { const t = n.querySelector('label.account-toggle'); return t ? t.textContent.replace(/\s+/g, ' ').trim() : ''; }
 function tgIconSvg(name) { const m = TG_IC.find(([re]) => re.test(name)); return PZ_SVG(m ? m[1] : '<rect x="3" y="7" width="18" height="10" rx="5"/><circle cx="15" cy="12" r="3"/>'); }
-function tgTile(n, cb, g) {
-    const root = n.closest('.pz-root') || document.querySelector('#fieldEditor .pz-root');
-    const name = tgName(n);
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'pz-gen pz-tl ovt-tile tg-tile'; b.title = name;
-    const paint = () => { b.classList.toggle('lit', cb.checked); b.innerHTML = `${tgIconSvg(name)}<b>${esc(name)}</b><em>${cb.checked ? '켜짐' : '꺼짐'}</em>`; b.disabled = cb.disabled; };
-    paint();
-    b.addEventListener('click', () => { cb.click(); paint(); b.classList.remove('tg-pop'); void b.offsetWidth; b.classList.add('tg-pop'); });
-    cb.addEventListener('change', paint);
-    if (g) { g.hidden = true; root.querySelector('.pz-content').append(g); }
-    n.classList.add('tg-hid');
-    root.querySelector('.pz-content').append(n);
-    root.querySelector('.pz-tiles').append(b);
-}
-function tgSeg(n, cb) {
-    const t = n.querySelector('label.account-toggle'); if (!t || !cb) return;
-    const seg = document.createElement('span'); seg.className = 'tg-seg';
-    const paint = () => { seg.innerHTML = `<i class="${cb.checked ? '' : 'on'}">끔</i><i class="${cb.checked ? 'on' : ''}">켬</i>`; };
-    paint(); cb.addEventListener('change', paint);
-    t.appendChild(seg);
-}
 function tgIcon(n, cb) {
     const t = n.querySelector('label.account-toggle'); if (!t) return;
     const full = tgName(n);
@@ -18830,8 +18404,6 @@ function liveDiff(a, b, depth) {
         const sel = () => document.querySelector(`#previewRoot .col[data-block-id="${CSS.escape((liveCtx && liveCtx.sid) || selectedId || '')}"]`);
         const c0 = on ? sel() : null, old = c0 ? c0.cloneNode(true) : null;
         const r = orig.apply(this, arguments);
-        if (document.body.classList.contains('bs-S4') && typeof bsThumbsLater === 'function') bsThumbsLater(); // 섹션 목록 썸네일도 새로
-        if (typeof b5Later === 'function' && document.querySelector('#topControls .b5pv')) b5Later(); // 화면 설정 세부 칸 B5 미리보기도 새로
         if (old) {
             const c1 = sel();
             let t = c1 && liveDiff(old, c1, 0);
@@ -19107,10 +18679,9 @@ function pzTransform(fe) {
     if (!root) {
         root = document.createElement('div');
         root.className = `pz-gen pz-root pz-${mode}`;
-        root.innerHTML = (mode === 'B' ? `<div class="pz-tabs" role="tablist">${[['c', '내용'], ['o', '모양'], ['d', '꾸미기']].map(([k, l]) => `<button type="button" data-pz-tab="${k}">${l}</button>`).join('')}</div>` : '')
-            + `<div class="pz-pane pz-content" data-pz-pane="c"></div>`
+        root.innerHTML = `<div class="pz-pane pz-content" data-pz-pane="c"></div>`
             + `<div class="pz-pane pz-opts" data-pz-pane="o"><div class="pz-chips"></div><div class="pz-rows"></div>${mode === 'C' ? '<div class="pz-tiles" data-ns="o"></div><div class="pz-pop" data-ns="o"></div>' : ''}</div>`
-            + `<div class="pz-pane pz-deco" data-pz-pane="d">${mode === 'B' ? '<div class="pz-rows"></div>' : '<div class="pz-bar" data-ns="d"></div><div class="pz-pop" data-ns="d"></div>'}</div>`;
+            + `<div class="pz-pane pz-deco" data-pz-pane="d"><div class="pz-bar" data-ns="d"></div><div class="pz-pop" data-ns="d"></div></div>`;
         const first = raw.find(n => pzKind(n) !== 'head');
         if (first) first.before(root); else fe.append(root);
         root.addEventListener('click', e => {
@@ -19122,8 +18693,6 @@ function pzTransform(fe) {
                 if (o[ns] && mobLiveOk()) mobLiveEnter(); // 휴대폰: 실제 화면을 보면서 고르기
                 pzSync(root, selectedId); return;
             }
-            const tb = e.target.closest('[data-pz-tab]');
-            if (tb) { pzMem.tab[selectedId] = tb.dataset.pzTab; pzSync(root, selectedId); return; }
             setTimeout(() => pzRefresh(root), 0);
         });
         root.addEventListener('input', () => setTimeout(() => pzRefresh(root), 0));
@@ -19191,17 +18760,15 @@ function pzTransform(fe) {
         if (k === 'inline-end') { if (g) { g.hidden = true; Q('.pz-content').append(g); } Q('.pz-opts').append(n); return; } // 타일 줄 아래에 바로 보이는 칸 (스크롤 버튼 N5) // 그 자리에서 바로 보이는 칸 (글자 자리 T2~T8)
         if (k === 'content' || k === 'hint') { if (g) Q('.pz-content').append(g); row(n); Q('.pz-content').append(n); }
         else if (k === 'toggle') {
-            let tm = uip('toggleChip');
-            if (tm === 'K1' && mode !== 'C') tm = 'K3'; // 타일은 C 타일형에서만
+            const tm = uip('toggleChip'); // (1019u: K5 아이콘 칩 · 예전만 - K1~K4 시안은 지움)
             const cb = n.querySelector('input[type=checkbox]');
-            if (tm === 'K1' && cb && Q('.pz-tiles')) { tgTile(n, cb, g); return; }
             const c = Q('.pz-chips'); if (g) { g.classList.add('pz-cl'); c.append(g); } chip(n);
-            if (tm !== 'old') { n.classList.add('tg', 'tg-' + tm); if (tm === 'K4') tgSeg(n, cb); if (tm === 'K5') tgIcon(n, cb); }
+            if (tm === 'K5') { n.classList.add('tg', 'tg-K5'); tgIcon(n, cb); }
             c.append(n);
         }
         else if (k === 'deco') {
             if (g) { g.hidden = true; Q('.pz-content').append(g); }
-            if (mode === 'B') { row(n); Q('.pz-deco .pz-rows').append(n); } else tile(n, 'd', true);
+            tile(n, 'd', true);
         } else if (mode === 'C') { if (g) { g.hidden = true; Q('.pz-content').append(g); } tile(n, 'o', false); }
         else { if (g) Q('.pz-opts .pz-rows').append(g); row(n); Q('.pz-opts .pz-rows').append(n); }
         if (q) n.before(q);
@@ -19300,8 +18867,8 @@ function feDiff(snap) {
     });
     moved.filter(([el]) => !moved.some(([o]) => o !== el && o.contains(el)) && !added.some(a => a.contains(el)))
         .forEach(([el, dx, dy]) => { // 남은 칸 미끄러짐은 "예전"과 F4에서만 (다른 효과는 흔들림 없이 바로 제자리)
-            if (fa !== 'old' && fa !== 'F4') return;
-            try { el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: fa === 'old' ? 520 : 240, easing: fa === 'old' ? 'cubic-bezier(.2,.8,.3,1)' : 'ease-out' }); } catch (e) {}
+            if (fa !== 'old') return;
+            try { el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 520, easing: 'cubic-bezier(.2,.8,.3,1)' }); } catch (e) {}
         });
     // 없어진 칸: 예전 자리에 그대로 겹쳐 보였다가 흐려지며 작아져서 사라짐
     const feR = fe.getBoundingClientRect();
@@ -19330,7 +18897,7 @@ function feDiff(snap) {
         // S1·S6: 방금 누른 칸을 기억했다가, 다시 그린 뒤에도 손가락 아래 그 자리에 있게 화면을 맞춤
         let anchor = null;
         const jf = uip('jumpFix');
-        if (snap && (jf === 'S1' || jf === 'S6') && !document.body.classList.contains('mob-live') && feFx.tap && Date.now() - feFx.tap.t < 2500 && fe.contains(feFx.tap.el)) {
+        if (snap && jf === 'S1' && !document.body.classList.contains('mob-live') && feFx.tap && Date.now() - feFx.tap.t < 2500 && fe.contains(feFx.tap.el)) {
             const hit = snap.items.filter(x => x.el.contains(feFx.tap.el)).sort((a, b) => a.h - b.h)[0];
             // 누른 버튼 자체를 data-* 값으로 다시 찾을 수 있으면 그 버튼 기준 (더 정확)
             const tb = feFx.tap.el.closest('button, label, [data-v]');

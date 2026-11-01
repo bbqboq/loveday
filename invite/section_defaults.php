@@ -46,29 +46,29 @@ function section_defaults_file(): string
     return (defined('UPLOAD_DIR') ? UPLOAD_DIR : __DIR__ . '/uploads/') . 'site/section_defaults.json';
 }
 
-const SECTION_PANEL_STYLES = ['old', 'A', 'B', 'C'];
+const SECTION_PANEL_STYLES = ['old', 'C']; // (1019u: A 한 줄 정리형 · B 탭형 시안은 지움)
 const SECTION_PANEL_DEFAULT = 'C';
 
 /** 세부 모양 (사진 칸·히어로 사진 위치·영상 위치·사용법 버튼) - 정한 적 없으면 추천값 */
-const SECTION_PREF_OPTS = [
-    'heroPicker'  => ['old', 'A', 'B', 'C', 'D', 'E'],
-    'videoPicker' => ['old', 'A', 'B', 'C', 'D', 'E'],
-    'photoField'  => ['old', 'P1', 'P2', 'P3', 'P4'],
-    'guideStyle'  => ['old', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8'],
-    'overToggle'  => ['old', 'T1', 'T2', 'T3', 'T4', 'T7', 'T8'],
-    'nextPicker'  => ['old', 'N5', 'N6', 'R1', 'R2', 'R3'],
-    'toggleChip'  => ['old', 'K1', 'K2', 'K3', 'K4', 'K5'],
-    'feAnim'      => ['old', 'none', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'],
-    'jumpFix'     => ['old', 'S1', 'S2', 'S3', 'S4', 'S6'],
-    'menuStyle'   => ['old', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6'],
-    'menuStylePc' => ['old', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6'],
-    'sheetStyle'  => ['old', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10'],
-    'setStyle'    => ['old', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'A3', 'A7', 'A8'],
-    'setInner'    => ['old', 'B4', 'B5'],
-    's10Add'      => ['old', 'C4', 'C5', 'C6'],
-    'footSlot'    => ['text', 'kakao', 'section', 'check', 'auto'], // 1019r 휴대폰 전문가 모드 아래 줄 두 번째 버튼
+const SECTION_PREF_OPTS = [ // 1019u: 실서버에서 고른 모양 + 예전(old)만 남김 (A·B·C·D·G·T·K·F·M·S… 시안은 지움 - 저장된 다른 값은 기본값으로)
+    'heroPicker' => ['old', 'E'],
+    'videoPicker' => ['old', 'D'],
+    'photoField' => ['old', 'P1'],
+    'guideStyle' => ['old', 'G3'],
+    'overToggle' => ['old', 'T7'],
+    'nextPicker' => ['old', 'N5', 'R1', 'R2', 'R3'],
+    'toggleChip' => ['old', 'K5'],
+    'feAnim' => ['old', 'none', 'F1'],
+    'jumpFix' => ['old', 'S1'],
+    'menuStyle' => ['old', 'M1'],
+    'menuStylePc' => ['old', 'M1'],
+    'sheetStyle' => ['old', 'S10'],
+    'setStyle' => ['old', 'A8'],
+    'setInner' => ['old', 'B4'],
+    's10Add' => ['old', 'C4', 'C5', 'C6'],
+    'footSlot' => ['text', 'kakao', 'section', 'check', 'auto'],
 ];
-const SECTION_PREF_DEFAULTS = ['heroPicker' => 'E', 'videoPicker' => 'D', 'photoField' => 'P1', 'guideStyle' => 'G2', 'overToggle' => 'T1', 'nextPicker' => 'R1', 'toggleChip' => 'K5', 'feAnim' => 'F1', 'jumpFix' => 'S1', 'menuStyle' => 'old', 'menuStylePc' => 'old', 'sheetStyle' => 'old', 'setStyle' => 'old', 'setInner' => 'old', 's10Add' => 'old', 'footSlot' => 'auto'];
+const SECTION_PREF_DEFAULTS = ['heroPicker' => 'E', 'videoPicker' => 'D', 'photoField' => 'P1', 'guideStyle' => 'G3', 'overToggle' => 'T7', 'nextPicker' => 'N5', 'toggleChip' => 'K5', 'feAnim' => 'F1', 'jumpFix' => 'S1', 'menuStyle' => 'M1', 'menuStylePc' => 'M1', 'sheetStyle' => 'S10', 'setStyle' => 'A8', 'setInner' => 'B4', 's10Add' => 'C6', 'footSlot' => 'auto'];
 function section_defaults_prefs(?array $in = null): array
 {
     if ($in === null) {
