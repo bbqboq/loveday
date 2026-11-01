@@ -612,7 +612,17 @@
             const m = h.querySelector(':scope > .hero-photo-wrap, :scope > .video-cover-wrap'); if (!m) return;
             const img = m.querySelector('img');
             if (img && !img.complete && !img._inkWait) { img._inkWait = 1; img.addEventListener('load', () => heroInkAuto(root), { once: true }); }
-            const media = (img && img.getBoundingClientRect().height ? img : m).getBoundingClientRect(); if (!media.height) return;
+            // (1019t) 사진을 확대하면 img가 scale로 커져 칸 밖까지 잡혀서(clip-path로 잘려 보이지 않는 곳까지) 칸 밖 글자(한지 양쪽 세로 이름 등)가
+            //  사진 위로 잘못 판정 → 흰 바탕에 흰 글자였음 → 실제로 보이는 부분 = img ∩ 사진 칸
+            let ir = (img && img.getBoundingClientRect().height ? img : m).getBoundingClientRect(); const wr = m.getBoundingClientRect();
+            const z = img && img.dataset.fz ? parseFloat(img.style.scale) || 1 : 1;
+            if (z > 1) { // 확대 전 칸 = 보이는 곳 (applyImgZoom: 기준점은 그대로, 바깥은 clip-path로 잘림)
+                const [ox, oy] = String(img.style.transformOrigin || '50% 50%').split(' ').map(v => (parseFloat(v) || 50) / 100);
+                const w = ir.width / z, h = ir.height / z, cx = ir.left + ox * ir.width, cy = ir.top + oy * ir.height;
+                ir = { left: cx - ox * w, right: cx - ox * w + w, top: cy - oy * h, bottom: cy - oy * h + h };
+            }
+            const media = wr.height ? { left: Math.max(ir.left, wr.left), right: Math.min(ir.right, wr.right), top: Math.max(ir.top, wr.top), bottom: Math.min(ir.bottom, wr.bottom) } : ir;
+            if (!(media.bottom - media.top > 0)) return;
             h.querySelectorAll('.hero-over-canvas .drag-part').forEach(p => {
                 const q = p.getBoundingClientRect(), cx = q.left + q.width / 2, cy = q.top + q.height / 2;
                 const on = cy < media.bottom && cy > media.top && cx > media.left && cx < media.right;
@@ -1506,6 +1516,12 @@
     }
     // 메인 레이아웃 (기본 제공). 고르면 메인 사진·영상의 화면 크기·글자 자리·글꼴·색과 문구 칸을 이 모양으로 바꾸고, 사진·이름 같은 내용은 그대로 둠
     //  parts: 이름·날짜·하트 칸 / layers: 더 얹는 문구 칸 / hide: 안 보이게 할 칸 (layers로 대신 쓸 때) - 좌표는 화면(사진) 기준 %, 글자 크기는 폭 390 기준 px
+    // 1019t 첫 화면 레이아웃 정리 27 → 16 (사용자: 천사의 편지·아치 곡선 글씨 등 비슷하거나 의미 없는 것 빼기)
+    //  지우지 않음 - 이미 만든 청첩장은 그대로 그려지고, 고르는 화면에서만 빠짐 (에디터 heroTrimOn = 관리자 flow.heroTrim, 끄면 27개 모두)
+    //  값 = 그 레이아웃을 쓰던 디자인을 새로 고를 때 대신 넣는 비슷한 레이아웃
+    const HERO_LAYOUT_OLD = { 'arch': 'olive-arch', 'arc-top': 'our-wedding-day', 'angel-letter': 'olive-arch', 'happily-ever-after': 'getting-married',
+        'happy-wedding-day': 'getting-married', 'sea-wave': 'fade-date', 'wine-vows': 'magazine', 'winter-snow': 'magazine', 'spring-bloom': 'split-top',
+        'picnic-day': 'polaroid', 'webtoon-bubble': 'webtoon-cover' };
     const HERO_LAYOUTS = [
         // 1. 위에 세 줄 세리프 + 아래 영문 날짜·글귀
         { id: 'our-wedding-day', label: 'our wedding day', desc: '위에 세 줄 세리프 · 아래 영문 날짜와 글귀',
@@ -3913,5 +3929,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { locTitleUp, mapLock, NAV_POS, navPosOf, locNavOver, navSheetBind, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, photoRect, photoPinOf, pinPhotoItems, SCROLLBARS, SB_OLD, SB_OVERLAY, sbDefault, applyScrollbar, clearScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { locTitleUp, mapLock, NAV_POS, navPosOf, locNavOver, navSheetBind, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, HERO_LAYOUT_OLD, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, photoRect, photoPinOf, pinPhotoItems, SCROLLBARS, SB_OLD, SB_OVERLAY, sbDefault, applyScrollbar, clearScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

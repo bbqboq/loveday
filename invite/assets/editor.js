@@ -297,7 +297,8 @@ function applyPreset(presetId) {
     if (p.ambientScope === 'hero') state.effects.ambientScope = 'hero'; else delete state.effects.ambientScope;
     if (p.ambientOpacity) state.effects.ambientOpacity = p.ambientOpacity; else delete state.effects.ambientOpacity;
     if (p.heroLayout && p.hero !== 'text') { // 디자인마다 첫 화면 레이아웃 (매거진 표지 · 아치 · 폴라로이드 …)
-        const lay = (typeof spHeroLayouts === 'function' ? spHeroLayouts() : (InviteBlocks.HERO_LAYOUTS || [])).find(l => l.id === p.heroLayout);
+        const lid = heroTrimId(p.heroLayout); // 1019t: 정리로 뺀 레이아웃이면 비슷한 레이아웃으로
+        const lay = (typeof spHeroLayouts === 'function' ? spHeroLayouts() : (InviteBlocks.HERO_LAYOUTS || [])).find(l => l.id === lid);
         if (lay) [hero, heroVideo].forEach(b => { if (b) { try { InviteBlocks.applyHeroLayout(b, lay); } catch (e) {} } });
     }
     (p.stickers || []).forEach((st, i) => {
@@ -9381,6 +9382,7 @@ function applySampleDesign(d) {
     state.customTexts = Array.isArray(d.customTexts) ? JSON.parse(JSON.stringify(d.customTexts)) : [];
     state.info = d.info && typeof d.info === 'object' ? Object.assign({}, d.info) : null;
     if (state.customFont) loadFontCss(state.customFont);
+    heroTrimBlocks(); // 1019t
 }
 // 메인 레이아웃: 관리자가 저장한 것 받아오기 (간편 만들기 메인 화면 단계에 기본 레이아웃 뒤로 붙음) + 관리자면 저장 칸
 let HL_ADMIN = false;
@@ -9556,7 +9558,7 @@ function dpkSig(id) {
     if (DPK.sigKey !== DPK.key) { DPK.sig = {}; DPK.sigKey = DPK.key; }
     if (DPK.sig[id]) return DPK.sig[id];
     const p = allDesigns().find(x => x.id === id) || {}, sm = SAMPLE_LIST[id] || {};
-    const src = JSON.stringify([p, sm.updated || sm.updated_at || '', sm.cover || '', EASY_HERO_SAMPLE, EASY_HERO_POS], (k, v) => (k === 'off' || k === 'no') ? undefined : v); // (보이기 켜고 끄기·번호는 그림과 상관없음)
+    const src = JSON.stringify([p, sm.updated || sm.updated_at || '', sm.cover || '', EASY_HERO_SAMPLE, EASY_HERO_POS, heroTrimId(p.heroLayout) !== p.heroLayout ? 't' : ''], (k, v) => (k === 'off' || k === 'no') ? undefined : v); // (보이기 켜고 끄기·번호는 그림과 상관없음)
     let h = 2166136261; for (let i = 0; i < src.length; i++) { h ^= src.charCodeAt(i); h = Math.imul(h, 16777619); }
     return (DPK.sig[id] = (h >>> 0).toString(36));
 }
@@ -12584,6 +12586,18 @@ function spPhotoCrop(holder, blk) {
 // 메인 레이아웃 고르기 (간편 만들기 메인 화면 단계): 내 사진·이름으로 그린 작은 화면 + 고른 레이아웃의 문구 칸 고치기
 let HERO_LAYOUTS_ADMIN = []; // 관리자가 저장한 레이아웃 (hero_layouts.php)
 const spHeroLayouts = () => ((window.InviteBlocks && InviteBlocks.HERO_LAYOUTS) || []).concat(HERO_LAYOUTS_ADMIN);
+// 1019t 첫 화면 레이아웃 27 → 16: 고르는 화면(간편·전문가)에서 InviteBlocks.HERO_LAYOUT_OLD 11개를 뺌 (지금 고른 것은 늘 보임)
+//  디자인을 새로 고르거나 관리자 샘플로 시작할 때 그 레이아웃이면 비슷한 것으로 · 이미 만든 청첩장은 그대로 · 끄기: 관리자 간편 flow heroTrim
+function heroTrimOn() { try { return spOpt('flow', 'heroTrim'); } catch (e) { return true; } }
+function heroTrimId(id) { const m = (window.InviteBlocks && InviteBlocks.HERO_LAYOUT_OLD) || {}; return id && m[id] && heroTrimOn() ? m[id] : id; }
+function spHeroPickList(cur) { const m = (window.InviteBlocks && InviteBlocks.HERO_LAYOUT_OLD) || {}, on = heroTrimOn(); return spHeroLayouts().filter(l => !on || !m[l.id] || l.id === cur); }
+// 관리자 샘플(꾸민 디자인)로 시작할 때 첫 화면이 뺀 레이아웃이면 바꿈 (샘플을 고치는 관리자 화면 ?sample= 은 그대로)
+function heroTrimBlocks() {
+    try { if (SAMPLE_ID) return; } catch (e) { return; }
+    (state.blocks || []).forEach(b => { if (!b || (b.id !== 'hero' && b.id !== 'heroVideo') || !b.fields) return;
+        const to = heroTrimId(b.fields.heroLayout); if (!to || to === b.fields.heroLayout) return;
+        const lay = spHeroLayouts().find(l => l.id === to); if (lay) { try { InviteBlocks.applyHeroLayout(b, lay); } catch (e) {} } });
+}
 function spHeroLayoutMini(lay, hb, kind) {
     const f = hb.fields, sk = skins[state.skin] || skins.classic, box = lay.box; // 사진 칸 레이아웃은 영상도 칸 안에 (영상은 썸네일로)
     const isPhoto = kind !== 'video'; // ('photo' 또는 'hero' - 예전엔 'hero'로 부르면 사진이 안 나왔음: 지금 청첩장 카드)
@@ -12646,10 +12660,11 @@ function hlSegEdit(segs, oldS, newS) {
 //  27개 → 4묶음 11개(대표 - 묶음마다 한 줄 3개 이하) + 묶음마다 '비슷한 모양 더 보기'(나머지 16개, 지우지 않음 - 이미 고른 청첩장은 그대로)
 //  옆으로 긴 한 줄 → 묶음 칩 + 3칸 격자 (메인 화면 칸 '옆으로 넘기기' 장 안에서 옆으로 밀기와 안 겹치게)
 const HL_CATS = [
-    ['full', '사진 가득', ['our-wedding-day', 'getting-married', 'magazine'], ['names-vertical', 'happily-ever-after', 'happy-wedding-day', 'minimal-line', 'arc-top', 'wine-vows', 'winter-snow']],
-    ['date', '큰 날짜', ['save-the-date', 'fade-date'], ['big-date', 'sea-wave']],
-    ['box', '사진 칸', ['polaroid', 'arch', 'split-top'], ['hanji-seal', 'picnic-day', 'olive-arch', 'boarding-pass', 'spring-bloom', 'retro-groovy']],
-    ['concept', '컨셉', ['webtoon-cover', 'press-front', 'angel-letter'], ['webtoon-bubble']],
+    // (1019t 16개: 묶음마다 대표 3 + 더 보기 names-vertical·minimal-line·hanji-seal·boarding-pass / 뒤쪽은 관리자 heroTrim을 끄면 보이는 11개)
+    ['full', '사진 가득', ['our-wedding-day', 'getting-married', 'magazine'], ['names-vertical', 'minimal-line', 'happily-ever-after', 'happy-wedding-day', 'arc-top', 'wine-vows', 'winter-snow']],
+    ['date', '큰 날짜', ['save-the-date', 'fade-date', 'big-date'], ['sea-wave']],
+    ['box', '사진 칸', ['polaroid', 'olive-arch', 'split-top'], ['hanji-seal', 'boarding-pass', 'arch', 'picnic-day', 'spring-bloom']],
+    ['concept', '컨셉', ['webtoon-cover', 'press-front', 'retro-groovy'], ['angel-letter', 'webtoon-bubble']],
 ];
 let spHlCat = '', spHlMore = false, spHlMini = null; // spHlMini = 숨은 카드 그림을 보일 때 그림 (숨은 레이아웃 글꼴까지 미리 받지 않게)
 function hlCatOf(l) { for (const [c, , core, more] of HL_CATS) { if (core.includes(l.id)) return [c, false]; if (more.includes(l.id)) return [c, true]; } return [l.box ? 'box' : 'full', true]; } // (나중에 새로 넣은 레이아웃 = 그 모양 묶음의 '더 보기')
@@ -12678,7 +12693,7 @@ function hlGridBind(root) {
     void cur;
 }
 function spHeroLayoutHtml(hb, kind) {
-    const f = hb.fields, list = spHeroLayouts(), adv = !document.documentElement.classList.contains('simple-mode'); // 사진 칸 레이아웃은 사진에만
+    const f = hb.fields, list = spHeroPickList(f.heroLayout || ''), adv = !document.documentElement.classList.contains('simple-mode'); // 사진 칸 레이아웃은 사진에만
     if (!list.length) return '';
     const cur = f.heroLayout || '';
     const cardsOf = () => list.map(l => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${spHeroLayoutMini(l, hb, kind)}<b>${esc(l.label)}</b></button>`).join(''); // (1019j: 격자면 안 그림 - 27개 글꼴을 한꺼번에 받지 않게)
