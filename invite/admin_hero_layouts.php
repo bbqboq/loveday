@@ -23,6 +23,14 @@ foreach (glob(__DIR__ . '/presets/*/hero.{jpg,jpeg,png,webp}', GLOB_BRACE) ?: []
     $dir = basename(dirname($p));
     if (preg_match('/^[A-Za-z0-9_-]{1,60}$/', $dir)) $pics[] = ['디자인 ' . $dir, '/invite/presets/' . $dir . '/' . basename($p)];
 }
+// 스티커 그림 (1019z2 스티커 칸): assets/stickers/<테마>/*.svg|webp - 폴더를 읽음
+$stkNames = ['romantic' => '로맨틱', 'cosmos' => '별·우주', 'classic' => '클래식', 'garden' => '가든·꽃', 'party' => '축하', 'season' => '계절', 'rain' => '비 오는 날', 'webtoon' => '웹툰', 'vintage' => '빈티지'];
+$stkLib = [];
+foreach ($stkNames as $t => $lab) {
+    $fs = [];
+    foreach (glob(__DIR__ . '/assets/stickers/' . $t . '/*.{svg,webp}', GLOB_BRACE) ?: [] as $f) { $b = basename($f); if (preg_match('/^[a-z0-9-]+\.(svg|webp)$/', $b)) $fs[] = $b; }
+    if ($fs) { sort($fs); $stkLib[] = [$t, $lab, $fs]; }
+}
 $vb = @filemtime(__DIR__ . '/assets/invite-blocks.js') ?: time();
 ?>
 <!DOCTYPE html>
@@ -194,6 +202,23 @@ $vb = @filemtime(__DIR__ . '/assets/invite-blocks.js') ?: time();
   .hx-chips button { flex: none; }
   #btnNew { height: 42px; }
 }
+/* 스티커 칸 (1019z2) */
+.hl-m span.hl-stkl { line-height: 0; } .hl-m .hl-stk-img { display: block; width: 100%; height: auto; }
+.add button.stk { grid-column: 1 / -1; border-style: solid; border-color: #E8C9A8; background: #FFF8F0; }
+.skp-bg { position: fixed; inset: 0; background: rgba(20,16,12,.42); z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.skp { background: #fff; border-radius: 18px; width: min(560px, 100%); max-height: min(82vh, 760px); display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden; }
+.skp-h { display: flex; align-items: center; gap: 8px; padding: 14px 16px 8px; } .skp-h b { font-size: 16px; } .skp-h small { color: #8A847B; } .skp-h button { margin-left: auto; border: 0; background: none; font-size: 18px; cursor: pointer; color: #8A847B; }
+.skp-t { display: flex; gap: 6px; overflow-x: auto; padding: 0 16px 10px; scrollbar-width: none; border-bottom: 1px solid #EFEAE3; } .skp-t::-webkit-scrollbar { display: none; }
+.skp-t button { flex: none; border: 1px solid #E5DFD7; background: #fff; border-radius: 99px; padding: 6px 12px; font: inherit; font-size: 12.5px; cursor: pointer; color: #5A524A; }
+.skp-t button.on { background: #2B2320; border-color: #2B2320; color: #fff; }
+.skp-b { overflow-y: auto; padding: 4px 16px 16px; }
+.skp-lab { font-size: 12.5px; font-weight: 700; color: #5A524A; padding: 12px 0 6px; position: sticky; top: 0; background: #fff; }
+.skp-g { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.skp-g button { aspect-ratio: 1; border: 1.5px solid transparent; background: #FAF8F6; border-radius: 10px; padding: 5px; cursor: pointer; min-width: 0; }
+.skp-g button:hover { border-color: #E0526A; } .skp-g button.on { border-color: #3B82F6; background: #F2F7FF; }
+.skp-g img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.stk-pv { display: flex; align-items: center; gap: 10px; } .stk-pv img { width: 64px; height: 64px; object-fit: contain; background: #FAF8F6; border-radius: 10px; padding: 4px; }
+@media (max-width: 560px) { .skp-bg { align-items: flex-end; padding: 0; } .skp { border-radius: 18px 18px 0 0; max-height: 78vh; } .skp-g { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 </style>
 </head>
 <body>
@@ -235,6 +260,7 @@ $vb = @filemtime(__DIR__ . '/assets/invite-blocks.js') ?: time();
 (function () {
 'use strict';
 const RO = <?= $readonly ? 'true' : 'false' ?>;
+const STK_LIB = <?= json_encode($stkLib, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>; // [[테마, 이름, [파일…]]]
 const PICS = <?= json_encode($pics, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>;
 const IB = window.InviteBlocks, esc = IB.esc;
 const BUILT = IB.HERO_LAYOUTS || [];
@@ -553,15 +579,16 @@ window.addEventListener('beforeunload', e => { if (E && dirty && !RO) { e.preven
 function renderLayers() {
     if (!E) return;
     const row = (s, ic, t, extra, hid) => `<div class="lyr-r${sel && sel.t === s.t && sel.i === s.i && sel.k === s.k ? ' on' : ''}${hid ? ' hid' : ''}" data-s='${JSON.stringify(s)}'><i>${ic}</i><span>${esc(t)}</span>${extra || ''}</div>`;
-    let h = '<div class="lyr-h">글자 칸 (위에 있는 것이 앞)</div>';
-    h += E.layers.map((L, i) => ({ L, i })).reverse().map(({ L, i }) => row({ t: 'l', i }, L.deco ? '▢' : L.vertical ? '↕' : 'T', String(L.text || '(빈 칸)').replace(/\n/g, ' / '),
+    let h = '<div class="lyr-h">글자 · 스티커 칸 (위에 있는 것이 앞)</div>';
+    h += E.layers.map((L, i) => ({ L, i })).reverse().map(({ L, i }) => row({ t: 'l', i }, L.stk ? '★' : L.deco ? '▢' : L.vertical ? '↕' : 'T', L.stk ? '스티커 · ' + stkName(L.stk) : String(L.text || '(빈 칸)').replace(/\n/g, ' / '),
         RO ? '' : `<button type="button" data-up="${i}" title="앞으로">▲</button><button type="button" data-dn="${i}" title="뒤로">▼</button><button type="button" data-rm="${i}" title="지우기">✕</button>`)).join('') || '<p class="hint">글자 칸이 없어요. 아래에서 넣어 주세요.</p>';
     h += '<div class="lyr-h">이름·날짜 (고객이 적은 그대로)</div>';
     h += PART_KEYS.map(k => row({ t: 'p', k }, '◎', PART_NAMES[k], RO ? '' : `<button type="button" data-eye="${k}" title="${E.hide.includes(k) ? '보이기' : '숨기기'}">${E.hide.includes(k) ? '보이기' : '숨기기'}</button>`, E.hide.includes(k))).join('');
     h += '<div class="lyr-h">사진</div>';
     h += E.box ? row({ t: 'box' }, '▣', `사진 칸 (${frameName(E.box.frame)})`, RO ? '' : '<button type="button" data-nobox title="사진을 화면 가득">없애기</button>') : `<div class="lyr-r" data-s='{"t":"bg"}'><i>▣</i><span>사진 화면 가득</span>${RO ? '' : '<button type="button" data-mkbox>사진 칸으로</button>'}</div>`;
     $('lyr').innerHTML = h;
-    $('add').innerHTML = [['big', '큰 제목', 'our wedding day'], ['names', '이름', '{신랑} ♥ {신부}'], ['date', '날짜', '{날짜:점}'], ['venue', '예식장', '{예식장}'], ['vert', '세로 글씨', '세로로'], ['bubble', '말풍선', '웹툰'], ['caption', '나레이션', '노란 상자'], ['seal', '도장', '포인트 색'], ['arc', '휜 글씨', '아치'], ['small', '작은 글귀', '두 줄 문장']].map(([k, t, s]) => `<button type="button" data-add="${k}"><b>${esc(t)}</b>${esc(s)}</button>`).join('');
+    $('add').innerHTML = [['big', '큰 제목', 'our wedding day'], ['names', '이름', '{신랑} ♥ {신부}'], ['date', '날짜', '{날짜:점}'], ['venue', '예식장', '{예식장}'], ['vert', '세로 글씨', '세로로'], ['bubble', '말풍선', '웹툰'], ['caption', '나레이션', '노란 상자'], ['seal', '도장', '포인트 색'], ['arc', '휜 글씨', '아치'], ['small', '작은 글귀', '두 줄 문장']].map(([k, t, s]) => `<button type="button" data-add="${k}"><b>${esc(t)}</b>${esc(s)}</button>`).join('')
+        + '<button type="button" class="stk" data-add="stk"><b>★ 스티커 넣기</b>하트 · 꽃 · 반짝이는 별 …</button>';
 }
 const frameName = f => ((IB.HERO_BOX_FRAMES || []).find(x => x[0] === f) || [, '사각형'])[1];
 $('lyr').addEventListener('click', e => {
@@ -581,7 +608,8 @@ $('lyr').addEventListener('click', e => {
 function mkBox() { snap(); E.box = { x: 9, y: 14, w: 82, h: 56, frame: 'rounded', fade: 0 }; E.photo.heroShade = 'none'; E.video = null; E.layers.forEach(L => { if ((L.color || '').toUpperCase() === '#FFFFFF') L.color = ''; }); sel = { t: 'box' }; renderAll(); }
 $('add').addEventListener('click', e => {
     const b = e.target.closest('[data-add]'); if (!b || !E || RO) return;
-    if (E.layers.length >= MAX_LAYERS) { LD.alert(`글자 칸은 ${MAX_LAYERS}개까지 넣을 수 있어요.`); return; }
+    if (E.layers.length >= MAX_LAYERS) { LD.alert(`글자 · 스티커 칸은 모두 ${MAX_LAYERS}개까지 넣을 수 있어요.`); return; }
+    if (b.dataset.add === 'stk') { stkPick('', k => { if (E.layers.length >= MAX_LAYERS) return; snap(); E.layers.push({ text: '', stk: k, x: 50, y: 50, width: 22, widthAuto: false }); sel = { t: 'l', i: E.layers.length - 1 }; renderAll(); }); return; }
     const ink = E.box ? '' : '#FFFFFF';
     const P = { big: { text: 'our wedding day', fontSize: 44, font: 'cormorant', color: ink }, names: { text: '{신랑} ♥ {신부}', fontSize: 24, color: ink, ls: 40 }, date: { text: '{날짜:점}', fontSize: 14, color: ink, ls: 120 },
         venue: { text: '{예식장}', fontSize: 13, color: ink, ls: 40 }, vert: { text: '{신랑} {신부}', fontSize: 13, color: ink, vertical: 'up', ls: 120 }, bubble: { text: '우리 결혼해요!', fontSize: 15, color: '#1B1B1F', deco: 'bubble' },
@@ -606,12 +634,24 @@ function renderProps() {
     if (!E) return;
     const o = objOf(sel), dis = RO ? ' disabled' : '';
     let h = '';
-    if (sel && sel.t === 'l' && o) {
+    const isStk = sel && sel.t === 'l' && o && !!o.stk;
+    if (isStk) {
+        h += `<div class="sec"><b>스티커</b><div class="stk-pv"><img src="/invite/assets/stickers/${esc(o.stk)}" alt=""><div><div style="font-size:13px;font-weight:600">${esc(stkName(o.stk))}</div>${RO ? '' : '<button type="button" class="btn2 sm" data-act="stkswap" style="margin-top:6px">다른 그림으로 바꾸기</button>'}</div></div>
+            ${rng('width', num(o.width, 22), 3, 100, 1, '크기 (폭 %)')}
+            ${rng('rotation', num(o.rotation, 0), -180, 180, 1, '기울기')}
+            <div class="f"><span>자리</span><div class="in">가로 <input type="number" data-k="x" step=".5" value="${num(o.x, 50)}"> 세로 <input type="number" data-k="y" step=".5" value="${num(o.y, 50)}"></div></div>
+            <p class="hint">휴대폰 화면에서 스티커를 끌어 옮겨요. 움직이는 그림은 하객 화면에서도 계속 움직여요.</p></div>
+            <div class="sec"><b>등장 효과</b>
+            <div class="f"><span>효과</span><select data-k="anim"${dis}>${opt(IB.HL_ANIMS || [['', '없음']], o.anim || '')}</select></div>
+            ${o.anim ? rng('animDelay', num(o.animDelay, 0), 0, 8, .1, '시작 (초)') + rng('animDur', num(o.animDur, 1.8), .3, 8, .1, '길이 (초)') : ''}</div>
+            <div class="sec rw"><div class="acts"><button type="button" class="btn2 sm" data-act="dup">복제 (Ctrl+D)</button><button type="button" class="btn2 sm" data-act="front">맨 앞으로</button><button type="button" class="btn2 sm" data-act="back">맨 뒤로</button><button type="button" class="btn2 sm dng" data-act="del">지우기</button></div></div>`;
+    }
+    if (sel && sel.t === 'l' && o && !isStk) {
         h += `<div class="sec"><b>글자</b><textarea data-k="text" rows="3"${dis}>${esc(o.text || '')}</textarea>
             <div class="tok">${TOKENS.map(([t, s]) => `<button type="button" data-tok="${esc(t)}" title="${esc(s)}">${esc(t.replace(/[{}]/g, ''))}</button>`).join('')}</div>
             <p class="hint">눌러서 넣는 칸은 고객이 적은 이름·날짜·예식장으로 바뀌어요. 줄을 바꾸면 여러 줄로 보여요.</p></div>`;
     }
-    if (sel && (sel.t === 'l' || sel.t === 'p') && o) {
+    if (sel && (sel.t === 'l' || sel.t === 'p') && o && !isStk) {
         h += `<div class="sec"><b>${sel.t === 'p' ? esc(PART_NAMES[sel.k]) + ' - ' : ''}글자 모양</b>
             <div class="f"><span>글꼴</span><select data-k="font"${dis}>${opt(FONTS, o.font || '')}</select></div>
             ${rng('fontSize', num(o.fontSize, 16), 6, 120, .5, '크기')}
@@ -622,7 +662,7 @@ function renderProps() {
             ${sel.t === 'l' ? `<div class="f"><span>그림자</span><div class="in"><label><input type="checkbox" data-k="shadow"${o.shadow ? ' checked' : ''}${dis}> 그림자</label><label><input type="checkbox" data-k="outline"${o.outline ? ' checked' : ''}${dis}> 테두리</label></div></div>` : ''}
             <div class="f"><span>자리</span><div class="in">가로 <input type="number" data-k="x" step=".5" value="${num(o.x, 50)}"> 세로 <input type="number" data-k="y" step=".5" value="${num(o.y, 50)}"></div></div></div>`;
     }
-    if (sel && sel.t === 'l' && o) {
+    if (sel && sel.t === 'l' && o && !isStk) {
         h += `<div class="sec"><b>꾸밈</b>
             <div class="f"><span>글자 상자</span><select data-k="deco"${dis}>${opt(IB.HL_DECOS || [['', '없음']], o.deco || '')}</select></div>
             <div class="f"><span>세로 쓰기</span>${seg('vertical', [['', '가로'], ['up', '세로 (글자 바로)'], ['side', '세로 (눕혀서)']], o.vertical)}</div>
@@ -703,8 +743,30 @@ $('pr').addEventListener('click', e => {
     if (a === 'dup') dupLayer();
     else if (a === 'del') delSel();
     else if (a === 'front' || a === 'back') { snap(); const L = E.layers.splice(sel.i, 1)[0]; if (a === 'front') { E.layers.push(L); sel.i = E.layers.length - 1; } else { E.layers.unshift(L); sel.i = 0; } renderAll(); }
+    else if (a === 'stkswap' && sel && sel.t === 'l') { const L = E.layers[sel.i]; if (L) stkPick(L.stk, k => { snap(); L.stk = k; renderAll(); }); }
     else if (a === 'center' && E.box) { snap(); E.box.x = Math.round((50 - E.box.w / 2) * 10) / 10; draw(); renderProps(); }
 });
+
+// ---- 스티커 고르기 창 (1019z2) - 테마 칩을 누르면 그 묶음으로 내려감, 모든 그림이 한 번에 보임
+function stkName(k) { const [t, f] = String(k || '').split('/'); const g = STK_LIB.find(x => x[0] === t); return (g ? g[1] + ' · ' : '') + String(f || '').replace(/\.(svg|webp)$/, ''); }
+function stkPick(cur, done) {
+    if (!STK_LIB.length) { LD.alert('스티커 그림이 없어요.'); return; }
+    const bg = document.createElement('div'); bg.className = 'skp-bg';
+    const n = STK_LIB.reduce((a, g) => a + g[2].length, 0);
+    bg.innerHTML = `<div class="skp" role="dialog" aria-label="스티커 고르기"><div class="skp-h"><b>스티커 고르기</b><small>${n}개 · 누르면 넣어요</small><button type="button" data-x aria-label="닫기">✕</button></div>
+        <div class="skp-t">${STK_LIB.map(([t, l], i) => `<button type="button" data-t="${esc(t)}" class="${i ? '' : 'on'}">${esc(l)}</button>`).join('')}</div>
+        <div class="skp-b">${STK_LIB.map(([t, l, fs]) => `<div class="skp-lab" id="skp-${esc(t)}">${esc(l)} <small style="font-weight:400;color:#A39890">${fs.length}</small></div><div class="skp-g">${fs.map(f => { const k = t + '/' + f; return `<button type="button" data-k="${esc(k)}" class="${k === cur ? 'on' : ''}" title="${esc(f.replace(/\.(svg|webp)$/, ''))}"><img src="/invite/assets/stickers/${esc(k)}" alt="" loading="lazy"></button>`; }).join('')}</div>`).join('')}</div></div>`;
+    document.body.appendChild(bg);
+    const body = bg.querySelector('.skp-b'), close = () => { bg.remove(); document.removeEventListener('keydown', esc1); };
+    const esc1 = e => { if (e.key === 'Escape') close(); }; document.addEventListener('keydown', esc1);
+    bg.addEventListener('click', e => {
+        if (e.target === bg || e.target.closest('[data-x]')) { close(); return; }
+        const t = e.target.closest('[data-t]'); if (t) { const lab = bg.querySelector('#skp-' + t.dataset.t); if (lab) body.scrollTo({ top: lab.offsetTop - 4, behavior: 'smooth' }); return; }
+        const k = e.target.closest('[data-k]'); if (k) { close(); done(k.dataset.k); }
+    });
+    body.addEventListener('scroll', () => { let on = STK_LIB[0][0]; STK_LIB.forEach(([t]) => { const lab = bg.querySelector('#skp-' + t); if (lab && lab.offsetTop - 30 <= body.scrollTop) on = t; }); bg.querySelectorAll('.skp-t button').forEach(b => b.classList.toggle('on', b.dataset.t === on)); }, { passive: true });
+    if (cur) { const c = bg.querySelector('.skp-g .on'); if (c) c.scrollIntoView({ block: 'center' }); }
+}
 
 // ---------------------------------------------------------------- 시작
 fetch('hero_layouts.php?a=list', { cache: 'no-store' }).then(r => r.json()).then(j => { take(j); renderList(); }).catch(() => { renderList(); });

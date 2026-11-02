@@ -2628,3 +2628,8 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ib-navp-band .location-map { border-radius: 10px 10px 0 0; }
 .loc-map-box.full-width.ib-navp-band .ib-nav-band { border-left: 0; border-right: 0; }
 .ib-navp-band .ib-ml-cover { align-items: flex-end; padding: 0 0 10px; }
+
+/* 첫 화면 스티커 칸 (1019z2, 관리자 첫 화면 레이아웃에서 넣음) - 글자 칸과 같은 자리·기울기·등장 효과, 폭 = 크기 */
+.op-layer.hl-stkl { line-height: 0; text-shadow: none !important; white-space: normal; }
+.hl-stkl .hl-stk-img { display: block; width: 100%; height: auto; pointer-events: none; -webkit-user-drag: none; user-select: none; }
+.hl-m span.hl-stkl { line-height: 0; }

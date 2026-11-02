@@ -82,6 +82,7 @@ function hl_style($s): array
     if (isset($s['glow'])) $o['glow'] = hl_hex($s['glow']);
     if (isset($s['align']) && in_array($s['align'], ['', 'left', 'center', 'right'], true)) $o['align'] = $s['align'];
     if (isset($s['deco']) && in_array($s['deco'], HL_DECO_KEYS, true)) $o['deco'] = $s['deco']; // 1019w 글자 상자 (말풍선 등)
+    if (isset($s['stk']) && is_string($s['stk']) && preg_match('#^[a-z0-9-]+/[a-z0-9-]+\.(svg|webp)$#', $s['stk']) && is_file(__DIR__ . '/assets/stickers/' . $s['stk'])) $o['stk'] = $s['stk']; // 1019z2 스티커 칸
     return $o;
 }
 /** 화면 크기 같은 설정 (정해진 키·값만) */

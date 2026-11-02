@@ -8174,6 +8174,7 @@ function addSizeRotateHandles(frame, o) {
 function selectPart(el, block, part) {
     if (document.documentElement.matches('.simple-mode:is(.sp-mv-lens, .sp-mv-split)')) return; // 휴대폰 간편 만들기 미리보기는 보기만 (1018z18u: 숨은 작은 창 속 글자를 눌러 전문가 글자 창이 뜨던 것)
     deselectPart();
+    if (block && block.fields && block.fields.layout && block.fields.layout[part] && block.fields.layout[part].stk) return; // 첫 화면 스티커 칸은 글자 창 없음 (끌어서 옮기기만)
     const canvas = el.closest('.drag-canvas');
     if (!canvas) return;
     const layout = partLayout(block, part, el, true);
@@ -9385,7 +9386,7 @@ let HL_ADMIN = false;
 function hlRefreshEasy() { try { if (document.documentElement.classList.contains('simple-mode')) spRender(); } catch (e) {} }
 fetch('hero_layouts.php?a=list', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { if (j && Array.isArray(j.items)) { hlTakeCfg(j); hlRefreshEasy(); } }).catch(() => {});
 fetch('hero_layouts.php?a=me', { cache: 'no-store', credentials: 'same-origin' }).then(r => r.ok ? r.json() : null).then(j => { HL_ADMIN = !!(j && j.ok && j.admin); }).catch(() => {});
-const HL_ST = ['x', 'y', 'fontSize', 'scaleX', 'widthAuto', 'width', 'rotation', 'ls', 'font', 'color', 'align', 'outline', 'shadow', 'glow', 'vertical', 'arc', 'arcW', 'anim', 'animDur', 'animDelay', 'deco'];
+const HL_ST = ['x', 'y', 'fontSize', 'scaleX', 'widthAuto', 'width', 'rotation', 'ls', 'font', 'color', 'align', 'outline', 'shadow', 'glow', 'vertical', 'arc', 'arcW', 'anim', 'animDur', 'animDelay', 'deco', 'stk'];
 function heroLayoutFromBlock(b) { // 지금 메인 화면 → 레이아웃 (글자 칸 자리·모양 + 화면 크기만, 사진·이름은 안 담음)
     const f = b.fields, isV = b.id === 'heroVideo', L = f.layout || {};
     const pick = (o, ks) => { const r = {}; ks.forEach(k => { if (o && o[k] !== undefined && o[k] !== null) r[k] = o[k]; }); return r; };
@@ -12695,7 +12696,7 @@ function spHeroLayoutHtml(hb, kind) {
     if (!list.length) return '';
     const cur = f.heroLayout || '';
     const cardsOf = () => list.map(l => `<button type="button" class="hl-c${cur === l.id ? ' on' : ''}" data-hl-pick="${esc(l.id)}" title="${esc(l.desc || '')}">${spHeroLayoutMini(l, hb, kind)}<b>${esc(l.label)}</b></button>`).join(''); // (1019j: 격자면 안 그림 - 27개 글꼴을 한꺼번에 받지 않게)
-    const keys = (f.heroLayers || []).filter(k => f.layout && f.layout[k]);
+    const keys = (f.heroLayers || []).filter(k => f.layout && f.layout[k] && !f.layout[k].stk); // (스티커 칸은 글 칸이 아님)
     // 문구 칸 (A안): 글 칸 오른쪽 끝에 [효과 ▾] - 누르면 작은 창 (효과 · 전문가 모드는 방향·휘기도) / 맨 아래 "모두 같게" 한 줄
     const FX = InviteBlocks.HL_ANIMS.map(([v, l]) => [v, { '': '없음', write: '써지듯', fade: '나타나기', up: '위로', zoom: '커지며' }[v] || l]);
     const anims = keys.map(k => f.layout[k].anim || ''), allFx = anims.every(v => v === anims[0]) ? anims[0] : null, anyAnim = anims.some(Boolean);
