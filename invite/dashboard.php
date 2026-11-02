@@ -12,6 +12,8 @@
 declare(strict_types=1);
 require_once __DIR__ . '/gdrive.php';
 require_once __DIR__ . '/naver_commerce.php'; // guest_functions(snap_* / rsvp_summary / guestbook_count) + 스마트스토어 주문·다운로드 조건
+require_once __DIR__ . '/site_images.php'; // site_dpk_thumb (1019w 사진 없는 청첩장 표지)
+require_once __DIR__ . '/section_defaults.php'; // section_defaults_easy_hero (같은 이유)
 
 $pdo = get_pdo();
 $customerId = (int) ($_SESSION['customer_id'] ?? 0);
@@ -262,6 +264,19 @@ function dash_card(PDO $pdo, array $o): array
         $zv = (float) (($d['imgZoom'] ?? [])[$ck] ?? 1);
         if ($zv > 1.001 && $zv <= 4) $coverZ = round($zv, 2);
     }
+    // 1019w 사진을 안 넣었으면 저절로 표지: 켜 둔 메인 영상 썸네일 → 디자인 예시 사진(presets 폴더 hero) → 관리자가 찍어 둔 디자인 썸네일(첫 화면 그림)
+    $coverAuto = '';
+    if ($cover === '' && $blocks) {
+        $hv = $blk('heroVideo');
+        $yid = $hv && !empty($hv['enabled']) ? (string) ($hv['fields']['youtubeId'] ?? '') : '';
+        if (preg_match('/^[A-Za-z0-9_-]{11}$/', $yid)) { $cover = 'https://i.ytimg.com/vi/' . $yid . '/hqdefault.jpg'; $coverAuto = 'video'; }
+        if ($cover === '') { $hb = $blk('hero'); $hi = (string) ($hb['fields']['heroImage'] ?? ''); if (preg_match('#^/invite/presets/[A-Za-z0-9_-]{1,60}/hero\.(jpg|jpeg|png|webp)$#', $hi) && is_file(__DIR__ . substr($hi, 7))) { $cover = $hi; $coverAuto = 'design'; } }
+        $pid = (string) ($d['presetId'] ?? '');
+        if ($cover === '' && $pid !== '' && preg_match('/^[a-z0-9-]{1,40}$/', $pid) && function_exists('site_dpk_thumb')) { $th = site_dpk_thumb($pid); if ($th !== '') { $cover = $th; $coverPos = '50% 0%'; $coverAuto = 'thumb'; } }
+        // 그래도 없으면 에디터 디자인 고르기 카드처럼 간편 만들기 메인 사진 예시 (관리자가 올린 사진 + 보일 부분)
+        if ($cover === '' && function_exists('section_defaults_easy_hero')) { $es = section_defaults_easy_hero(); if ($es !== '') { $cover = $es; $coverAuto = 'sample';
+            $ep = function_exists('section_defaults_easy_hero_pos') ? section_defaults_easy_hero_pos() : []; if (!empty($ep['focus'])) $coverPos = (string) $ep['focus']; if (($ep['zoom'] ?? 1) > 1) $coverZ = (float) $ep['zoom']; } }
+    }
     $pal = is_array($d['palette'] ?? null) ? $d['palette'] : [];
     $tint = preg_match('/^#[0-9a-f]{6}$/i', (string) ($pal['accent'] ?? '')) ? $pal['accent'] : '#8A4B55';
     // 상태·보관 - 시각은 DB가 직접 초로 바꿔 준 값으로 비교 (PHP와 DB 시간대가 어긋나도 정확)
@@ -286,7 +301,7 @@ function dash_card(PDO $pdo, array $o): array
         'title' => $named ? "{$g} ♥ {$b}" : '이름 없는 청첩장',
         'created' => date('n월 j일', strtotime((string) $o['created_at'])) . ' 만듦',
         'dday' => $dday, 'date' => $dateText, 'venue' => $venue,
-        'cover' => $cover, 'coverPos' => $coverPos, 'coverZ' => $coverZ, 'tint' => $tint,
+        'cover' => $cover, 'coverPos' => $coverPos, 'coverZ' => $coverZ, 'tint' => $tint, 'coverAuto' => $coverAuto, 'noDesign' => !$blocks,
         'expTs' => $expTs ? $expTs * 1000 : null, 'startTs' => ((int) ($ts['c'] ?? $now)) * 1000, 'demo' => $isDemo,
         'purgeTs' => $purgeTs ? $purgeTs * 1000 : null, 'graceH' => trial_grace_hours(),
         'status' => $expired ? 'expired' : $o['status'], 'plan' => $plan, 'planText' => $planText, 'warn' => $plan === 'trial',
@@ -917,7 +932,7 @@ const canCreate = MODE === 'customer';
 function renderMo() {
     const tr = document.getElementById('moTrack');
     tr.innerHTML = CARDS.map((c, i) => `<div class="slide ${c.cover ? '' : 'noimg'}" data-i="${i}" style="${coverStyle(c)}">
-        ${coverZoom(c)}<i class="gl"></i>${c.cover ? '<i class="shade"></i>' : `<div class="empty"><span class="ic">${ic('img', 'width:22px;height:22px')}</span>대표 사진을 넣으면 여기에 보여요</div><i class="shade" style="opacity:.5"></i>`}
+        ${coverZoom(c)}<i class="gl"></i>${c.cover ? '<i class="shade"></i>' : `<div class="empty"><span class="ic">${ic('img', 'width:22px;height:22px')}</span>${c.noDesign ? '아직 디자인을 고르지 않았어요' : '대표 사진을 넣으면 여기에 보여요'}</div><i class="shade" style="opacity:.5"></i>`}
         <div class="tp">${c.dday != null ? `<span class="dday">${ddayText(c.dday)}</span>` : ''}<span class="sp"></span><span class="pill ${c.status === 'expired' ? 'bad' : c.published ? 'ok' : ''}"><i></i>${c.status === 'expired' ? '만료' : c.published ? '발행됨' : '편집중'}</span></div>
         <div class="bt"><h2>${esc(c.nick || c.title)}</h2><p>${esc([c.date, c.venue].filter(Boolean).join(' · ') || c.created)}</p></div></div>`).join('')
       + (canCreate ? `<div class="slide newslide" data-i="new" onclick="${SLOTS.used < SLOTS.max ? "document.getElementById('newForm').submit()" : ''}"><span class="ic">${ic('plus', 'width:26px;height:26px')}</span><b>${SLOTS.used < SLOTS.max ? '새 청첩장 만들기' : '자리가 가득 찼어요'}</b><span>${SLOTS.used < SLOTS.max ? '디자인을 고르고 바로 시작해요' : '청첩장은 최대 ' + SLOTS.max + '개까지예요.<br>안 쓰는 청첩장을 지우면 새로 만들 수 있어요'}</span></div>` : '');
