@@ -5064,7 +5064,9 @@ function stkMount(pal, onAdd, opts) {
     opts = opts || {};
     // [세트] 탭 (메인 스티커 창만 · 간편 만들기 '스티커 꾸미기'와 같은 세트). 처음 그릴 땐 spOpt·STK_SETS가 아직 없어서(아래에 선언) try로 - 없으면 탭 없이
     const setsOn = () => { try { return !!opts.sets && spOpt('flow', 'stkset') && stkSetList().length > 0; } catch (e) { return false; } };
-    const S = pal._stk = { tab: 'rec', pack: '', q: '', more: {} };
+    // 1019z2 B안: 왼쪽 묶음 메뉴 + 오른쪽에 모든 스티커 ('더 보기' 없음) - 끄기 관리자 간편 flow.stkRail (예전 추천·테마 탭 + 더 보기)
+    const railOn = () => { try { return spOpt('flow', 'stkRail'); } catch (e) { return true; } };
+    const S = pal._stk = { tab: railOn() ? 'all' : 'rec', pack: '', q: '', more: {}, rgTop: 0 };
     const mineEl = pal.querySelector('.stk-mine');
     const wrap = document.createElement('div'); wrap.className = 'stk-wrap';
     wrap.innerHTML = `<div class="stk-grab" aria-hidden="true"></div><div class="stk-h"><b>스티커</b><small class="stk-dn"></small><button type="button" class="stk-x" aria-label="닫기" title="닫기">✕</button></div>
@@ -5086,11 +5088,17 @@ function stkMount(pal, onAdd, opts) {
         wrap.classList.toggle('searching', searching); $('.stk-srch').classList.toggle('has', searching);
         wrap.querySelectorAll('.stk-q').forEach(c => c.classList.toggle('on', c.dataset.q === S.q));
         const recent = stkRecent();
-        if (S.tab === 'set' && !setsOn()) S.tab = 'rec';
-        $('.stk-tabs').innerHTML = [['rec', '추천'], ['theme', '테마'], ...(setsOn() ? [['set', '세트']] : []), ['recent', `최근${recent.length ? `<small>${recent.length}</small>` : ''}`], ['mine', 'MY']].map(([k, l]) => `<button type="button" role="tab" class="stk-tab${S.tab === k ? ' on' : ''}" data-t="${k}" aria-selected="${S.tab === k}">${l}</button>`).join('');
+        if (S.tab === 'set' && !setsOn()) S.tab = railOn() ? 'all' : 'rec';
+        const rail = railOn();
+        if (rail && (S.tab === 'rec' || S.tab === 'theme' || S.tab === 'recent')) S.tab = 'all';
+        if (!rail && S.tab === 'all') S.tab = 'rec';
+        wrap.classList.toggle('stk-railm', rail && S.tab === 'all' && !searching);
+        if (rail) $('.stk-tabs').innerHTML = [['all', '전체'], ...(setsOn() ? [['set', '세트']] : []), ['mine', 'MY']].map(([k, l]) => `<button type="button" role="tab" class="stk-tab${S.tab === k ? ' on' : ''}" data-t="${k}" aria-selected="${S.tab === k}">${l}</button>`).join('');
+        else $('.stk-tabs').innerHTML = [['rec', '추천'], ['theme', '테마'], ...(setsOn() ? [['set', '세트']] : []), ['recent', `최근${recent.length ? `<small>${recent.length}</small>` : ''}`], ['mine', 'MY']].map(([k, l]) => `<button type="button" role="tab" class="stk-tab${S.tab === k ? ' on' : ''}" data-t="${k}" aria-selected="${S.tab === k}">${l}</button>`).join('');
         const order = rec.map(packOf).concat(stkThemeList().filter(t => !rec.includes(t.id)));
         $('.stk-themes').hidden = !(S.tab === 'theme' && !searching);
         $('.stk-themes').innerHTML = order.map(t => { const a = stkArtKeys(t.id)[0], v = stkVinKeys(t)[0]; return `<button type="button" class="stk-chip${t.id === S.pack ? ' on' : ''}" data-p="${t.id}">${a ? `<img src="${stkUrl(a)}" alt="">` : v ? `<img src="${stkUrl(v)}" alt="">` : ''}${esc(t.name)}${rec[0] === t.id ? ' <span class="stk-rec">추천</span>' : ''}</button>`; }).join('');
+        if (rail) $('.stk-themes').hidden = true;
         const isMine = S.tab === 'mine' && !searching;
         body.hidden = isMine; if (mineEl) mineEl.hidden = !isMine;
         if (isMine) return;
@@ -5105,6 +5113,23 @@ function stkMount(pal, onAdd, opts) {
             const n = art.length + vin.length + ic.length + emo.length;
             body.innerHTML = n ? `<div class="stk-lab stk-found">'<mark>${esc(w)}</mark>' 찾았어요 <small>${n}개</small></div>${block('그림 스티커', art, 's-a' + w, 'stk-g4', 12)}${block('빈티지 그림', vin, 's-v' + w, 'stk-g4', 8)}${block('라인 아이콘', ic, 's-i' + w, 'stk-g6', 6)}${block('이모지', emo, 's-e' + w, 'stk-g6', 12)}`
                 : `<div class="stk-empty">'${esc(w)}' 스티커가 없어요<br>${STK_QUICK.slice(0, 8).join(' · ')} 로 찾아 보세요</div>`;
+            return;
+        }
+        if (S.tab === 'all') { // 왼쪽 묶음 메뉴 + 오른쪽 전부 (최근 → 추천 테마 → 나머지 테마)
+            const all = (ks, cls) => ks.length ? `<div class="${cls}">${ks.map(stkIt).join('')}</div>` : '';
+            const secs = (recent.length ? [{ id: 'recent', name: '최근', ico: '', html: all(recent, 'stk-g4') }] : []).concat(order.map(t => {
+                const art = stkArtKeys(t.id), vin = stkVinKeys(t), ic = (t.icons || []).map(i => 'i:' + i), emo = t.emo.map(e => 'e:' + e);
+                return { id: t.id, name: t.name, rec: rec.includes(t.id), ico: art[0] || vin[0] || '', n: art.length + vin.length + ic.length + emo.length,
+                    html: all(art.concat(vin), 'stk-g4') + all(ic, 'stk-g6 stk-gi') + all(emo, 'stk-g6 stk-ge') };
+            }));
+            body.innerHTML = `<nav class="stk-rl" aria-label="스티커 묶음">${secs.map((x, i) => `<button type="button" data-rl="${x.id}" class="${i ? '' : 'on'}">${x.ico ? `<img src="${stkUrl(x.ico)}" alt="">` : '<b aria-hidden="true">🕘</b>'}<span>${esc(x.name.split('·')[0])}</span>${x.rec ? '<em>추천</em>' : ''}</button>`).join('')}</nav>
+                <div class="stk-rg">${secs.map(x => `<section class="stk-rs" data-rs="${x.id}"><div class="stk-lab">${esc(x.name)}${x.rec ? ' <span class="stk-rec">추천</span>' : ''} <small>${x.n != null ? x.n + '개' : ''}</small></div>${x.html}</section>`).join('')}</div>`;
+            const rg = body.querySelector('.stk-rg'), rl = body.querySelector('.stk-rl');
+            const mark = () => { let on = secs[0] && secs[0].id; rg.querySelectorAll('.stk-rs').forEach(x => { if (x.offsetTop - 8 <= rg.scrollTop) on = x.dataset.rs; }); S.rgTop = rg.scrollTop;
+                rl.querySelectorAll('[data-rl]').forEach(b => { const o = b.dataset.rl === on; if (o !== b.classList.contains('on')) { b.classList.toggle('on', o); if (o) b.scrollIntoView({ block: 'nearest' }); } }); };
+            rg.addEventListener('scroll', mark, { passive: true });
+            rl.addEventListener('click', e => { const b = e.target.closest('[data-rl]'); if (!b) return; const x = rg.querySelector(`[data-rs="${b.dataset.rl}"]`); if (x) rg.scrollTo({ top: x.offsetTop, behavior: 'smooth' }); });
+            rg.scrollTop = S.rgTop || 0; mark();
             return;
         }
         if (S.tab === 'rec') {
