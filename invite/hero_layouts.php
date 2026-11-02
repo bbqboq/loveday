@@ -25,9 +25,9 @@ const HL_MAX_BODY = 200_000;
 const HL_MAX_ITEMS = 60;
 const HL_PART_KEYS = ['groomName', 'heart', 'brideName', 'datetime'];
 const HL_MAX_LAYERS = 12;
-const HL_CAT_KEYS = ['full', 'date', 'box', 'concept'];
-const HL_DECO_KEYS = ['', 'bubble', 'caption', 'caption-w', 'sfx', 'tag', 'seal', 'card', 'line'];
-const HL_FRAME_KEYS = ['none', 'rounded', 'arch', 'polaroid', 'shadow', 'comic', 'baroque', 'stamp', 'lace', 'botanical', 'ribbon'];
+const HL_CAT_KEYS = ['full', 'date', 'box', 'concept', 'shape'];
+const HL_DECO_KEYS = ['', 'bubble', 'caption', 'caption-w', 'sfx', 'tag', 'seal', 'card', 'line', 'photo'];
+const HL_FRAME_KEYS = ['none', 'rounded', 'arch', 'polaroid', 'shadow', 'comic', 'baroque', 'stamp', 'lace', 'botanical', 'ribbon', 'oval', 'circle', 'mat', 'overlap', 'film', 'twin', 'torn', 'blob', 'grid4', 'hidden'];
 
 function hl_file(): string { return (defined('UPLOAD_DIR') ? UPLOAD_DIR : __DIR__ . '/uploads/') . 'site/hero_layouts.json'; }
 function hl_json(array $d, int $code = 200): void

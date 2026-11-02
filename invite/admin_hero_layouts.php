@@ -202,6 +202,21 @@ $vb = @filemtime(__DIR__ . '/assets/invite-blocks.js') ?: time();
   .hx-chips button { flex: none; }
   #btnNew { height: 42px; }
 }
+/* 1019z3 작은 그림 (레이아웃 고르기·관리자 목록) */
+.hl-m-box .hl-mb:is(.hb-fr-oval, .hb-fr-circle), .hl-m-box .hl-mb:is(.hb-fr-oval, .hb-fr-circle) em { border-radius: 50%; }
+.hl-m-box .hl-mb.hb-fr-circle { aspect-ratio: 1; height: auto !important; outline: 1px dashed rgba(138,109,69,.6); outline-offset: 3px; }
+.hl-m-box .hl-mb.hb-fr-oval { outline: 1px solid #B8955A; outline-offset: 2px; }
+.hl-m-box .hl-mb.hb-fr-mat { background: #fff; } .hl-m-box .hl-mb.hb-fr-mat em { inset: 6% 6% 14%; }
+.hl-m-box .hl-mb.hb-fr-overlap { overflow: visible; }
+.hl-m-box .hl-mb.hb-fr-overlap::after { content: ''; position: absolute; right: -22%; bottom: -24%; width: 62%; height: 58%; background: #CDBFAF; border: 2px solid #fff; }
+.hl-m-box .hl-mb.hb-fr-film { background: #1D1A18; } .hl-m-box .hl-mb.hb-fr-film em { inset: 4% 14%; }
+.hl-m-box .hl-mb.hb-fr-film em { -webkit-mask: linear-gradient(#000 0 0) top / 100% 31% no-repeat, linear-gradient(#000 0 0) center / 100% 31% no-repeat, linear-gradient(#000 0 0) bottom / 100% 31% no-repeat; mask: linear-gradient(#000 0 0) top / 100% 31% no-repeat, linear-gradient(#000 0 0) center / 100% 31% no-repeat, linear-gradient(#000 0 0) bottom / 100% 31% no-repeat; }
+.hl-m-box .hl-mb.hb-fr-twin em { -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 100V36A24 36 0 0 1 48 36V100Z M52 100V36A24 36 0 0 1 100 36V100Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 100V36A24 36 0 0 1 48 36V100Z M52 100V36A24 36 0 0 1 100 36V100Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.hl-m-box .hl-mb.hb-fr-torn em { -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V95L96 98.5 91 94.5 86 99.5 80 95 74 99 69 93.5 63 98 57 95 52 100 46 94 40 98.5 34 95 29 99.5 23 94 17 98 12 93.5 6 98.5 0 95Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V95L96 98.5 91 94.5 86 99.5 80 95 74 99 69 93.5 63 98 57 95 52 100 46 94 40 98.5 34 95 29 99.5 23 94 17 98 12 93.5 6 98.5 0 95Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.hl-m-box .hl-mb.hb-fr-blob, .hl-m-box .hl-mb.hb-fr-blob em { border-radius: 58% 42% 47% 53% / 44% 52% 48% 56%; }
+.hl-m-box .hl-mb.hb-fr-grid4 em { -webkit-mask: linear-gradient(#000 0 0) 0 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 0 100% / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 100% / 48% 48% no-repeat; mask: linear-gradient(#000 0 0) 0 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 0 100% / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 100% / 48% 48% no-repeat; }
+.hl-m-box .hl-mb.hb-fr-hidden em { visibility: hidden; }
+.hl-m span.hl-d-photo { background: linear-gradient(160deg, #B08A60, #4A3B30); -webkit-background-clip: text; background-clip: text; color: transparent !important; -webkit-text-fill-color: transparent; font-weight: 900; line-height: .88; }
 /* 스티커 칸 (1019z2) */
 .hl-m span.hl-stkl { line-height: 0; } .hl-m .hl-stk-img { display: block; width: 100%; height: auto; }
 .add button.stk { grid-column: 1 / -1; border-style: solid; border-color: #E8C9A8; background: #FFF8F0; }

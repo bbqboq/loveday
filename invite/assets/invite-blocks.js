@@ -733,7 +733,7 @@
     // 가로 100%일 때 heroRatio: auto(원본 비율) · 1/1 · 4/5 · 3/4 · 16/9 · screen(휴대폰 화면 꽉) · px(직접 heroHeightPx)
     const HERO_RATIOS = [['auto', '원본 비율'], ['1/1', '정사각'], ['4/5', '세로 4:5'], ['3/4', '세로 3:4'], ['16/9', '가로 16:9'], ['screen', '전체화면'], ['px', '높이조정']];
     // 사진 칸 모드 (메인 레이아웃): 화면 한 장(바탕색) 위 원하는 자리에 사진을 놓음 - x·y·w·h는 화면 기준 %, frame 모양, fade 아래쪽 흐려짐 %
-    const HERO_BOX_FRAMES = [['none', '사각형'], ['rounded', '둥근 모서리'], ['arch', '아치'], ['polaroid', '폴라로이드'], ['shadow', '그림자'], ['comic', '웹툰 컷'], ['baroque', '아르데코 금선'], ['stamp', '우표 · 소인', 1], ['lace', '레이스', 1], ['botanical', '올리브 가지', 1], ['ribbon', '리본 · 도장', 1]]; // [값, 이름, 1 = 관리자 레이아웃에서만 고름 (고객 화면엔 그 레이아웃을 골랐을 때만 보임)]
+    const HERO_BOX_FRAMES = [['none', '사각형'], ['rounded', '둥근 모서리'], ['arch', '아치'], ['polaroid', '폴라로이드'], ['shadow', '그림자'], ['comic', '웹툰 컷'], ['baroque', '아르데코 금선'], ['oval', '빈티지 타원', 1], ['circle', '동그라미 + 둘레 글자', 1], ['mat', '큰 여백 액자', 1], ['overlap', '두 장 겹침', 1], ['film', '필름 세 컷', 1], ['twin', '쌍둥이 아치', 1], ['torn', '찢은 종이', 1], ['blob', '물결 곡선', 1], ['grid4', '네 칸 그리드', 1], ['hidden', '사진 숨김 (글자 속 사진용)', 1], ['stamp', '우표 · 소인', 1], ['lace', '레이스', 1], ['botanical', '올리브 가지', 1], ['ribbon', '리본 · 도장', 1]]; // [값, 이름, 1 = 관리자 레이아웃에서만 고름 (고객 화면엔 그 레이아웃을 골랐을 때만 보임)]
     function heroBoxGeom(b) { // 사진 칸(heroBox) 자리·모양 - 사진 히어로와 유튜브 히어로가 같이 씀
         const n = (v, d, mn, mx) => Math.max(mn, Math.min(mx, Number.isFinite(+v) ? +v : d));
         const fr = HERO_BOX_FRAMES.some(x => x[0] === b.frame) ? b.frame : 'none', fade = n(b.fade, 0, 0, 90);
@@ -750,7 +750,7 @@
     function heroBoxHtml(f, src, pri) {
         const g = heroBoxGeom(f.heroBox), bg = g.bg ? ` style="background:${g.bg}"` : '', fr = g.fr;
         // '글자 잘 보이게' 그라데이션은 사진 위에만 (예전엔 첫 화면 전체 = 칸 밖 흰 바탕까지 어두워졌음)
-        return `<div class="hero-photo-wrap hero-full-wrap hero-boxed"${bg}><div class="hero-box hb-fr-${fr}" style="${g.style}"><span class="hb-ph"><img${pri} class="hero-photo" src="${src}" alt="">${heroTextOn(f, 'hero') && f.heroShade && f.heroShade !== 'none' ? heroShadeHtml(f, 'hero') : ''}</span></div></div>`;
+        return `<div class="hero-photo-wrap hero-full-wrap hero-boxed"${bg}><div class="hero-box hb-fr-${fr}" style="${g.style}--hb-img:url('${src}');"><span class="hb-ph"><img${pri} class="hero-photo" src="${src}" alt="">${heroTextOn(f, 'hero') && f.heroShade && f.heroShade !== 'none' ? heroShadeHtml(f, 'hero') : ''}</span></div></div>`;
     }
     function heroPhotoHtml(f, opts) {
         if (!f || !f.heroImage) return '';
@@ -1481,12 +1481,13 @@
     const heroStkOf = L => L && typeof L.stk === 'string' && HL_STK_RE.test(L.stk) ? L.stk : '';
     function heroLayerInner(text, L) { const k = heroStkOf(L); if (k) return `<img class="hl-stk-img" src="/invite/assets/stickers/${k}" alt="" draggable="false" loading="lazy">`; return L && Number(L.arc) ? heroArcSvg(text, L) : nl2br(text); }
     // 문구 칸 글자 상자 (웹툰): 말풍선 · 나레이션 박스(노랑/흰색) · 효과음 글자(굵은 먹선) · 꼬리표(빨간 알약)
-    const HL_DECOS = [['', '없음'], ['bubble', '말풍선'], ['caption', '나레이션 (노랑)'], ['caption-w', '나레이션 (흰색)'], ['sfx', '효과음 글자'], ['tag', '꼬리표'], ['seal', '도장 (포인트 색 네모)'], ['card', '흰 카드'], ['line', '위아래 가는 선']];
+    const HL_DECOS = [['', '없음'], ['bubble', '말풍선'], ['caption', '나레이션 (노랑)'], ['caption-w', '나레이션 (흰색)'], ['sfx', '효과음 글자'], ['tag', '꼬리표'], ['seal', '도장 (포인트 색 네모)'], ['card', '흰 카드'], ['line', '위아래 가는 선'], ['photo', '글자 속 사진']];
     function heroLayerCls(L) { return (heroStkOf(L) ? ' hl-stkl' : '') + (L.deco && HL_DECOS.some(x => x[0] === L.deco && x[0]) ? ` hl-deco hl-d-${L.deco}` : '') + (L.vertical ? ' hl-vert' + (L.vertical === 'side' ? ' hl-vert-side' : '') : '') + (L.anim && HL_ANIMS.some(x => x[0] === L.anim) ? ` hl-anim hl-a-${L.anim}` : '') + (Number(L.arc) ? ' hl-curve' : ''); }
     function heroLayerCss(L) { return (heroStkOf(L) ? `width:${Math.max(3, Math.min(100, Number(L.width) || 22))}%;` : '') + (Number(L.arc) ? `width:${Math.max(10, Math.min(100, Number(L.arcW) || 70))}%;` : '') + (L.anim ? `--hl-dur:${Math.max(.3, Math.min(8, Number(L.animDur) || 1.8))}s;--hl-delay:${Math.max(0, Math.min(8, Number(L.animDelay) || 0))}s;` : ''); }
     function heroLayersHtml(f, ink, styleOf, editor) {
         return ((f && f.heroLayers) || []).filter(k => f.layout && f.layout[k]).map(k => { const L = f.layout[k];
-            return `<span class="drag-part ${ink || 'on-light'} op-layer${heroLayerCls(L)}" data-part="${esc(k)}"${editor ? ' data-drag-el' : ''} style="${styleOf(k)}${heroLayerCss(L)}">${heroLayerInner(heroFill(f[k], f), L)}</span>`; }).join('');
+            const ph = L.deco === 'photo' && f.heroImage ? `background-image:url('${esc(imgUrl(f.heroImage))}');` : ''; // 글자 속 사진 (1019z3)
+            return `<span class="drag-part ${ink || 'on-light'} op-layer${heroLayerCls(L)}" data-part="${esc(k)}"${editor ? ' data-drag-el' : ''} style="${styleOf(k)}${heroLayerCss(L)}${ph}">${heroLayerInner(heroFill(f[k], f), L)}</span>`; }).join('');
     }
     // 등장 효과: 공개 페이지는 화면에 보이면(인트로가 끝난 뒤) 한 번 / 에디터는 [효과 다시 보기]를 누를 때만 (평소엔 다 나온 모습)
     const hlReduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1526,6 +1527,7 @@
         ['full', '사진 가득', ['our-wedding-day', 'getting-married', 'magazine'], ['names-vertical', 'minimal-line', 'happily-ever-after', 'happy-wedding-day', 'arc-top', 'wine-vows', 'winter-snow']],
         ['date', '큰 날짜', ['save-the-date', 'fade-date', 'big-date'], ['sea-wave']],
         ['box', '사진 칸', ['polaroid', 'olive-arch', 'split-top'], ['hanji-seal', 'boarding-pass', 'arch', 'picnic-day', 'spring-bloom']],
+        ['shape', '사진 모양', ['ref-oval', 'ref-twin', 'ref-film'], ['ref-circle', 'ref-mat', 'ref-overlap', 'ref-torn', 'ref-blob', 'ref-letters', 'ref-grid']], // 1019z3 레퍼런스 14종 중 새 모양 10
         ['concept', '컨셉', ['webtoon-cover', 'press-front', 'retro-groovy'], ['angel-letter', 'webtoon-bubble']],
     ];
     const HERO_LAYOUTS = [
@@ -1757,7 +1759,57 @@
           layers: [{ text: '피크닉처럼 가볍게 와 주세요', x: 50, y: 6, fontSize: 22, font: 'nanum-pen', color: '#C65D4B', rotation: -2, anim: 'write', animDur: 2 },
                    { text: '{신랑}  &  {신부}', x: 50, y: 73, fontSize: 24, ls: 40, anim: 'up', animDelay: .3 },
                    { text: '{날짜:점}  {요일:영문짧게}  {시간}', x: 50, y: 79, fontSize: 12.5, ls: 60, anim: 'up', animDelay: .6 },
-                   { text: '{예식장}', x: 50, y: 83, fontSize: 12, ls: 30, anim: 'up', animDelay: .8 }] }
+                   { text: '{예식장}', x: 50, y: 83, fontSize: 12, ls: 30, anim: 'up', animDelay: .8 }] },
+        // ---- 1019z3 레퍼런스 14종 중 새 사진 모양 10 (관리자 '첫 화면 레이아웃'에서 숨기기·고치기)
+        { id: 'ref-oval', label: '빈티지 타원', desc: '달걀 모양 사진 + 가는 금선 · 아래 이름', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 17, y: 8, w: 66, h: 54, frame: 'oval' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: '{신랑}  &  {신부}', x: 50, y: 70, fontSize: 24, font: 'gowun-batang', ls: 40, anim: 'up' },
+                   { text: '{날짜:점}  {요일:영문짧게}', x: 50, y: 76, fontSize: 12, ls: 240, color: '#8A7D70', anim: 'up', animDelay: .3 },
+                   { text: '{시간}  ·  {예식장}', x: 50, y: 80.5, fontSize: 12, ls: 30, anim: 'up', animDelay: .5 }] },
+        { id: 'ref-circle', label: '동그라미 + 둘레 글자', desc: '둥근 사진 둘레에 글자가 돌아감', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 22, y: 12, w: 56, h: 26, frame: 'circle' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: '{신랑}  &  {신부}', x: 50, y: 63, fontSize: 24, font: 'gowun-batang', ls: 40, anim: 'fade' },
+                   { text: '{날짜:점}  {요일:영문짧게}', x: 50, y: 69, fontSize: 12, ls: 240, color: '#8A7D70', anim: 'fade', animDelay: .3 },
+                   { text: '{시간}  ·  {예식장}', x: 50, y: 73.5, fontSize: 12, ls: 30, anim: 'fade', animDelay: .5 }] },
+        { id: 'ref-mat', label: '큰 여백 액자', desc: '사진 둘레를 넓은 흰 여백(매트)으로', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 10, y: 6, w: 80, h: 62, frame: 'mat' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'Wedding Invitation', x: 50, y: 63.2, fontSize: 15, font: 'cormorant', color: '#8A7D70', ls: 60 },
+                   { text: '{신랑}  ·  {신부}', x: 50, y: 76, fontSize: 22, font: 'gowun-batang', ls: 60, anim: 'up' },
+                   { text: '{날짜:점}  {시간}  ·  {예식장}', x: 50, y: 82, fontSize: 12, ls: 20, anim: 'up', animDelay: .3 }] },
+        { id: 'ref-overlap', label: '두 장 겹침', desc: '큰 사진 + 작은 사진이 비껴 겹침', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 8, y: 6, w: 62, h: 50, frame: 'overlap' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'Our\nWedding', x: 80, y: 13, fontSize: 22, font: 'cormorant', ls: 40, align: 'left', anim: 'fade' },
+                   { text: '{신랑}  &  {신부}', x: 50, y: 76, fontSize: 24, font: 'gowun-batang', ls: 40, anim: 'up' },
+                   { text: '{날짜:점}  {시간}  ·  {예식장}', x: 50, y: 82, fontSize: 12, ls: 20, anim: 'up', animDelay: .3 }] },
+        { id: 'ref-film', label: '필름 세 컷', desc: '세로 필름 3컷 · 옆에 세로 이름', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 12, y: 5, w: 52, h: 82, frame: 'film' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'WE ARE GETTING MARRIED', x: 82, y: 46, fontSize: 15, font: 'cormorant', ls: 260, vertical: 'side', anim: 'fade' },
+                   { text: '{날짜:점}  ·  {예식장}', x: 50, y: 92, fontSize: 12, ls: 40, anim: 'up', animDelay: .3 }] },
+        { id: 'ref-twin', label: '쌍둥이 아치', desc: '아치 둘이 나란히 · GROOM · BRIDE', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 9, y: 9, w: 82, h: 50, frame: 'twin' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'GROOM', x: 29.5, y: 62.5, fontSize: 11, font: 'cormorant', ls: 300, color: '#8A7D70' }, { text: 'BRIDE', x: 70.5, y: 62.5, fontSize: 11, font: 'cormorant', ls: 300, color: '#8A7D70' },
+                   { text: '{신랑}  &  {신부}', x: 50, y: 71, fontSize: 24, font: 'gowun-batang', ls: 40, anim: 'up' },
+                   { text: '{날짜:점}  {시간}  ·  {예식장}', x: 50, y: 77, fontSize: 12, ls: 20, anim: 'up', animDelay: .3 }] },
+        { id: 'ref-torn', label: '찢은 종이', desc: '사진 아래쪽이 종이 찢긴 듯', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 0, y: 0, w: 100, h: 62, frame: 'torn' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'we are getting married', x: 50, y: 70, fontSize: 26, font: 'great-vibes', anim: 'write', animDur: 2 },
+                   { text: '{신랑}  &  {신부}', x: 50, y: 77.5, fontSize: 20, font: 'gowun-batang', ls: 40, anim: 'up', animDelay: .4 },
+                   { text: '{날짜:점}  {시간}  ·  {예식장}', x: 50, y: 83, fontSize: 12, ls: 20, anim: 'up', animDelay: .6 }] },
+        { id: 'ref-blob', label: '물결 곡선', desc: '부드러운 덩어리 모양 사진', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 10, y: 7, w: 80, h: 56, frame: 'blob' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: '{신랑}  &  {신부}', x: 50, y: 71, fontSize: 24, font: 'gowun-batang', ls: 40, anim: 'up' },
+                   { text: '{날짜:점}  {요일:영문짧게}', x: 50, y: 77, fontSize: 12, ls: 240, color: '#8A7D70', anim: 'up', animDelay: .3 },
+                   { text: '{시간}  ·  {예식장}', x: 50, y: 81.5, fontSize: 12, ls: 30, anim: 'up', animDelay: .5 }] },
+        { id: 'ref-letters', label: '글자 속 사진', desc: '큰 날짜 숫자 안에 사진이 비침', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 0, y: 0, w: 100, h: 100, frame: 'hidden' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: '{월}\n{일}', x: 50, y: 36, fontSize: 168, font: 'pretendard', deco: 'photo', ls: -40, anim: 'up', animDur: 1.4 },
+                   { text: '{신랑}  &  {신부}', x: 50, y: 74, fontSize: 24, font: 'gowun-batang', ls: 40, color: '#3A312A', anim: 'fade', animDelay: .5 },
+                   { text: '{날짜:점}  {시간}  ·  {예식장}', x: 50, y: 80, fontSize: 12, ls: 20, color: '#5A4F45', anim: 'fade', animDelay: .7 }] },
+        { id: 'ref-grid', label: '네 칸 그리드', desc: '사진 4칸 바둑판 + 가운데 이름 동그라미', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
+          box: { x: 8, y: 6, w: 84, h: 58, frame: 'grid4' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          layers: [{ text: 'with\nlove', x: 50, y: 35, fontSize: 17, font: 'cormorant', deco: 'card', color: '#3A312A', ls: 40 },
+                   { text: '{신랑}  &  {신부}', x: 50, y: 72.5, fontSize: 24, font: 'gowun-batang', ls: 40, anim: 'up' },
+                   { text: '{날짜:점}  {시간}  ·  {예식장}', x: 50, y: 78.5, fontSize: 12, ls: 20, anim: 'up', animDelay: .3 }] },
     ];
     const HL_RESET = { deco: '', font: '', color: '', ls: 0, rotation: 0, align: '', outline: false, shadow: false, glow: '', scaleX: 100, widthAuto: true, width: 80, vertical: '', arc: 0, arcW: 70, anim: '', animDur: 1.8, animDelay: 0 };
     function applyHeroLayout(block, lay) {
