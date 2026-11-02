@@ -11658,8 +11658,15 @@ function spRenderAsk(pane) {
         if (pane.querySelector('#spCropBox, #spVfpBox')) spTaskMark('hero:edit', true);
         if (scrollPh || !spHeroScrollOk()) spTaskMark('hero:shade', true);
         if (pane.querySelector('.hl-row')) spTaskMark('hero:layout', true); };
-    const go = n => { if (n > spStep) lookSeen(); if (n >= N) return spAskToList(); spAskLast = spStep; spHeroPhase = 'pick'; spStep = Math.max(0, Math.min(N, n));
-        { const to = spAskSteps()[spStep]; if (to && to.k === 'finish' && SPI.dstep === 'edit' && spOpt('finish', 'introSteps')) SPI.dstep = 'pick'; } // 인트로 질문에 새로 들어오면 늘 ① 분위기 고르기부터 (사용자 보고: 뒤로 갔다 오면 바로 ② 마지막 화면이 나옴)
+    // 1019x [이전]으로 앞 질문에 돌아가면 그 질문의 '마지막' 화면으로 (사용자: '섹션 2에서 이전 → 1-3이어야지 1-1로 가네') · [다음]으로 들어가면 첫 화면
+    //  첫 화면 꾸미기 = ① 레이아웃·사진 → ② 스크롤 버튼 / 인트로 = (넣을까요?) → ① 분위기 고르기 → ② 자세히 꾸미기
+    const go = n => { const back = n < spStep; if (n > spStep) lookSeen(); if (n >= N) return spAskToList(); spAskLast = spStep; spStep = Math.max(0, Math.min(N, n));
+        const to = spAskSteps()[spStep];
+        spHeroPhase = back && to && to.k === 'hero' && to.part === 'look' && spHeroScrollOk() ? 'scroll' : 'pick';
+        if (to && to.k === 'finish' && spOpt('finish', 'introSteps')) {
+            if (back) { if (state.intro && state.intro.enabled && state.intro.spiPicked) SPI.dstep = 'edit'; }
+            else if (SPI.dstep === 'edit') SPI.dstep = 'pick'; // 인트로 질문에 새로 들어오면 늘 ① 분위기 고르기부터
+        }
         spRender(); spAskAutoSave(); }; // 정리 화면을 끄면 바로 완성본
     const lookToScroll = () => st && st.k === 'hero' && st.part === 'look' && !scrollPh && spHeroScrollOk();
     const next = () => { const need = scrollPh ? '' : spAskNeed(st); if (need) return spAskNag(pane, need); if (lookToScroll()) { lookSeen(); return spHeroToScroll(pane.querySelector('#spBody')); } return go(spStep + 1); };
@@ -11667,6 +11674,7 @@ function spRenderAsk(pane) {
     if (!pane._askNeedOn) { pane._askNeedOn = true; const sync = () => setTimeout(() => spAskNeedSync(pane), 60); pane.addEventListener('input', sync); pane.addEventListener('click', sync, true); pane.addEventListener('change', sync); }
     const prev = () => scrollPh ? (spHeroPhase = 'pick', spRender())
         : st && st.k === 'finish' && SPI.dstep === 'edit' && spOpt('finish', 'introSteps') && state.intro && state.intro.enabled ? (SPI.dstep = 'pick', SPI.pk = spiSetOf() || SPI.pk, spRender()) // 인트로 ② 자세히 꾸미기에서 [이전] = ① 분위기 고르기로
+        : st && st.k === 'finish' && SPI.dstep === 'pick' && spOpt('finish', 'introSteps') && spOpt('finish', 'introAsk') && !spOpt('finish', 'intro2') ? (SPI.dstep = 'ask', spRender()) // ① 분위기 고르기에서 [이전] = '넣을까요?' (그 단계를 쓸 때만)
         : go(spStep - 1);
     pane.querySelector('#spBack').addEventListener('click', prev);
     pane.querySelector('#spNow')?.addEventListener('click', () => spOpenPreview(false));
