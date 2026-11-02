@@ -1,0 +1,2 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><style>.s{animation:s 2.6s cubic-bezier(.45,.05,.4,1) infinite;transform-box:fill-box;transform-origin:center}@keyframes s{0%,100%{transform:scale(.6) rotate(0);opacity:.6}45%{transform:scale(1) rotate(45deg);opacity:1}55%{transform:scale(1) rotate(45deg);opacity:1}}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
+<g class="s"><path d="M50 4L58 42 96 50 58 58 50 96 42 58 4 50 42 42z" fill="#E8CC8A"/><path d="M50 4L58 42 50 50 42 42zM96 50L58 58 50 50 58 42z" fill="#F7E7BE"/></g></svg>
