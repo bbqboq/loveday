@@ -38,11 +38,18 @@ html, body { margin: 0; overflow: hidden; }
 .hlx-guide { position: absolute; background: #F0445A; display: none; }
 .hlx-guide.v { top: 0; bottom: 0; width: 1px; left: 50%; } .hlx-guide.h { left: 0; right: 0; height: 1px; top: 50%; }
 .hlx-box { position: absolute; border: 1.5px solid #3B82F6; display: none; box-sizing: border-box; }
-.hlx-box i { position: absolute; width: 12px; height: 12px; background: #fff; border: 1.5px solid #3B82F6; border-radius: 3px; pointer-events: auto; box-sizing: border-box; }
-.hlx-box i[data-c="nw"] { left: -7px; top: -7px; cursor: nwse-resize; } .hlx-box i[data-c="ne"] { right: -7px; top: -7px; cursor: nesw-resize; }
-.hlx-box i[data-c="sw"] { left: -7px; bottom: -7px; cursor: nesw-resize; } .hlx-box i[data-c="se"] { right: -7px; bottom: -7px; cursor: nwse-resize; }
-.hlx-box b { position: absolute; left: 50%; top: -30px; transform: translateX(-50%); background: #3B82F6; color: #fff; font: 600 11px/1 Pretendard, sans-serif; padding: 5px 7px; border-radius: 6px; white-space: nowrap; }
-.drag-part { cursor: move; }
+/* --hk = 부모가 휴대폰을 줄인 배율의 역수 (휴대폰 관리자 화면에서 손잡이·선이 너무 작아지지 않게) */
+:root { --hk: 1; }
+.hlx-sel { outline-width: calc(2px * var(--hk)) !important; outline-offset: calc(3px * var(--hk)); }
+.hlx-guide.v { width: calc(1px * var(--hk)); } .hlx-guide.h { height: calc(1px * var(--hk)); }
+.hlx-box { border-width: calc(1.5px * var(--hk)); }
+.hlx-box i { --s: calc(12px * var(--hk)); position: absolute; width: var(--s); height: var(--s); background: #fff; border: calc(1.5px * var(--hk)) solid #3B82F6; border-radius: calc(3px * var(--hk)); pointer-events: auto; box-sizing: border-box; touch-action: none; }
+.hlx-box i::after { content: ''; position: absolute; inset: calc(-8px * var(--hk)); } /* 손가락으로 잡기 쉽게 */
+.hlx-box i[data-c="nw"] { left: calc(var(--s) / -2); top: calc(var(--s) / -2); cursor: nwse-resize; } .hlx-box i[data-c="ne"] { right: calc(var(--s) / -2); top: calc(var(--s) / -2); cursor: nesw-resize; }
+.hlx-box i[data-c="sw"] { left: calc(var(--s) / -2); bottom: calc(var(--s) / -2); cursor: nesw-resize; } .hlx-box i[data-c="se"] { right: calc(var(--s) / -2); bottom: calc(var(--s) / -2); cursor: nwse-resize; }
+.hlx-box b { position: absolute; left: 50%; top: calc(-30px * var(--hk)); transform: translateX(-50%); background: #3B82F6; color: #fff; font: 600 calc(11px * var(--hk))/1 Pretendard, sans-serif; padding: calc(5px * var(--hk)) calc(7px * var(--hk)); border-radius: calc(6px * var(--hk)); white-space: nowrap; }
+.drag-part { cursor: move; touch-action: none; }
+.hero-box { touch-action: none; }
 .hlx-editing .drag-part { user-select: none; -webkit-user-select: none; }
 </style>
 </head>

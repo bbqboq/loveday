@@ -146,7 +146,50 @@ $vb = @filemtime(__DIR__ . '/assets/invite-blocks.js') ?: time();
 .hint { font-size: 11.5px; color: #8A847B; line-height: 1.55; margin: 0; }
 .acts { display: flex; gap: 6px; flex-wrap: wrap; }
 @media (max-width: 1180px) { .cv-g { grid-template-columns: 410px minmax(0, 1fr); } .cv-g > .pn.lp { grid-column: 1 / -1; order: 3; } }
-@media (max-width: 860px) { .cv-g { grid-template-columns: 1fr; } .ph-w { position: static; } .ph { margin: 0 auto; } }
+.ph-fit { position: relative; }
+.ph { transform-origin: 0 0; }
+.btn2.mob { display: none; }
+/* 휴대폰 (1019y 사용자: '모바일에서 너무 보기 어렵다'): 미리보기 휴대폰을 화면에 맞게 줄여 위에 붙여 두고(크게 보기 단추), 그 아래 모양 칸 → 칸 목록,
+   되돌리기·효과·저장은 화면 아래 띠 · 손가락으로 끌기 (iframe 안 touch-action) */
+@media (max-width: 860px) {
+  .hx { padding: 12px 12px 120px; }
+  .hx.editing .lead { display: none; }
+  .cv-top { position: static; padding: 0 0 8px; gap: 6px; background: none; }
+  .cv-top input.nm { flex: 1; min-width: 0; width: auto; font-size: 14px; height: 36px; }
+  .cv-top small { order: 9; width: 100%; font-size: 11px; line-height: 1.4; }
+  .cv-top .sp { display: none; }
+  .cv-act { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; display: flex; gap: 6px; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96); border-top: 1px solid #E8E4DC; box-shadow: 0 -6px 18px rgba(30,20,15,.06); }
+  .cv-act .btn2 { height: 40px; flex: none; }
+  .cv-act #btnSave { flex: 1; height: 40px; }
+  .cv-act .lb { display: none; }
+  .btn2.mob { display: inline-block; }
+  .cv-g { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .cv-g > .ph-w { order: 1; position: sticky; top: var(--hx-top, 52px); z-index: 30; margin: 0 -12px; padding: 8px 0 6px; background: #F7F5F2; box-shadow: 0 8px 14px -12px rgba(30,20,15,.35); }
+  .cv-g > .pn.pr { order: 2; } .cv-g > .pn.lp { order: 3; grid-column: auto; }
+  .ph-fit { margin: 0 auto; }
+  .ph { border-radius: 22px; padding: 6px; } .ph iframe { border-radius: 17px; }
+  .ph-bar { margin-top: 6px; } .ph-bar > span { display: none; }
+  .kb { display: none; }
+  .pn { padding: 12px; }
+  .f { grid-template-columns: 66px minmax(0, 1fr); }
+  .f input[type=number] { width: 56px; height: 34px; font-size: 14px; }
+  .f input[type=text], .f select, .pr textarea { height: 36px; font-size: 14px; }
+  .pr textarea { height: auto; font-size: 15px; }
+  .seg button { height: 32px; padding: 0 10px; }
+  .tok button { height: 30px; padding: 0 10px; font-size: 12px; }
+  .lyr-r { padding: 9px 8px; font-size: 13.5px; }
+  .lyr-r button { padding: 6px 8px; font-size: 13px; }
+  .add button { padding: 10px 6px; }
+  .hx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .hx-card { padding: 8px; border-radius: 14px; }
+  .hx-ds { display: none; }
+  .hx .lead { font-size: 12.5px; line-height: 1.6; }
+  .hx-bar { flex-direction: column; align-items: stretch; }
+  .hx-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -12px; padding: 0 12px; }
+  .hx-chips::-webkit-scrollbar { display: none; }
+  .hx-chips button { flex: none; }
+  #btnNew { height: 42px; }
+}
 </style>
 </head>
 <body>
@@ -166,15 +209,16 @@ $vb = @filemtime(__DIR__ . '/assets/invite-blocks.js') ?: time();
       <input type="text" class="nm" id="nm" maxlength="40" placeholder="레이아웃 이름">
       <small id="cvFrom"></small>
       <span class="sp"></span>
-      <button type="button" class="btn2 sm" id="btnUndo" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button>
+      <div class="cv-act"><button type="button" class="btn2 sm" id="btnUndo" title="되돌리기 (Ctrl+Z)">↶<span class="lb"> 되돌리기</span></button>
       <button type="button" class="btn2 sm" id="btnRedo" title="다시 하기 (Ctrl+Shift+Z)">↷</button>
-      <button type="button" class="btn2 sm" id="btnPlay">▶ 효과 보기</button>
-      <button type="button" class="btn2 pri rw" id="btnSave">저장</button>
+      <button type="button" class="btn2 sm" id="btnPlay">▶<span class="lb"> 효과 보기</span></button>
+      <button type="button" class="btn2 sm mob" id="btnBig" aria-pressed="false">휴대폰 크게</button>
+      <button type="button" class="btn2 pri rw" id="btnSave">저장</button></div>
     </div>
     <div class="cv-g">
       <div class="pn lp"><h4>칸 목록<span class="sp"></span></h4><div class="lyr" id="lyr"></div>
         <div class="add rw" id="add"></div></div>
-      <div class="ph-w"><div class="ph"><iframe id="fr" src="hero_layout_frame.php" title="첫 화면 미리보기"></iframe></div>
+      <div class="ph-w" id="phw"><div class="ph-fit" id="phFit"><div class="ph" id="ph"><iframe id="fr" src="hero_layout_frame.php" title="첫 화면 미리보기"></iframe></div></div>
         <div class="ph-bar"><span>예시</span><select id="pic"></select><select id="skin" title="바탕 색"></select></div>
         <div class="kb">끌어서 옮기기 · <kbd>←↑→↓</kbd> 조금씩 (<kbd>Shift</kbd> 크게) · <kbd>Del</kbd> 지우기 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · <kbd>Esc</kbd> 선택 풀기<br>가운데에 가까우면 빨간 선에 붙어요</div></div>
       <div class="pn pr" id="pr"></div>
@@ -315,7 +359,7 @@ function openEditor(id) {
     sel = null; hist = []; fut = []; dirty = false;
     $('nm').value = E.label;
     $('cvFrom').textContent = mine ? '직접 만든 레이아웃 고치기' : src ? `기본 '${src.label}'을 복제 - 저장하면 새 레이아웃이 돼요 (기본은 그대로)` : '새 레이아웃';
-    $('hx').classList.add('editing'); window.scrollTo(0, 0);
+    $('hx').classList.add('editing'); window.scrollTo(0, 0); requestAnimationFrame(fitPhone);
     history.replaceState(null, '', '#edit');
     renderAll();
 }
@@ -370,12 +414,26 @@ $('pic').addEventListener('change', () => {
     inp.click(); $('pic').value = PIC && PIC.startsWith('data:') ? '#mine' : PIC;
 });
 $('skin').addEventListener('change', () => { SKIN = $('skin').value; draw(); });
+// 휴대폰 크기 맞추기: iframe은 늘 390px로 그리고(하객 화면과 같게) 겉을 줄임 - 좁은 화면은 화면 높이의 약 45%(크게 보기 = 폭에 맞춤)
+let phBig = false, phK = 1;
+function fitPhone() {
+    const ph = $('ph'), fit = $('phFit'), W0 = 410, H0 = ph.offsetHeight || 780, mob = innerWidth <= 860;
+    const top = document.querySelector('.adm-top'); document.documentElement.style.setProperty('--hx-top', (top ? top.offsetHeight : 52) + 'px');
+    const avail = Math.min($('hx').clientWidth - (mob ? 24 : 0), W0);
+    phK = mob ? Math.min(avail / W0, phBig ? 1 : (innerHeight * .46) / H0) : 1;
+    ph.style.transform = phK < 1 ? `scale(${phK})` : '';
+    fit.style.width = mob ? W0 * phK + 'px' : ''; fit.style.height = mob ? H0 * phK + 'px' : '';
+    if (FD) FD.documentElement.style.setProperty('--hk', String(1 / phK)); // (줄인 만큼 손잡이·선을 키움)
+    if (E) markSel();
+}
+addEventListener('resize', fitPhone);
+$('btnBig').addEventListener('click', () => { phBig = !phBig; $('btnBig').textContent = phBig ? '휴대폰 작게' : '휴대폰 크게'; $('btnBig').setAttribute('aria-pressed', phBig); fitPhone(); });
 function frameReady() {
     FW = $('fr').contentWindow; FD = $('fr').contentDocument;
     if (!FW || !FW.hlReady) return false;
     const sk = (FW.hlSkins && FW.hlSkins()) || ['classic'];
     $('skin').innerHTML = sk.map(k => `<option value="${esc(k)}"${k === SKIN ? ' selected' : ''}>${esc(k)}</option>`).join('');
-    bindFrame(); if (E) draw();
+    bindFrame(); fitPhone(); if (E) draw();
     return true;
 }
 $('fr').addEventListener('load', frameReady);
