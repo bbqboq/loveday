@@ -2672,3 +2672,11 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .hl-m-box .hl-mb.hb-fr-grid4 em { -webkit-mask: linear-gradient(#000 0 0) 0 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 0 100% / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 100% / 48% 48% no-repeat; mask: linear-gradient(#000 0 0) 0 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 0 100% / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 100% / 48% 48% no-repeat; }
 .hl-m-box .hl-mb.hb-fr-hidden em { visibility: hidden; }
 .hl-m span.hl-d-photo { background: linear-gradient(160deg, #B08A60, #4A3B30); -webkit-background-clip: text; background-clip: text; color: transparent !important; -webkit-text-fill-color: transparent; font-weight: 900; line-height: .88; }
+
+/* 1019z4 글자 뒤 배경 (글자 속 사진 등): 사진을 화면에 옅게 · 흐리게 · 어둡게 깔기 */
+.hero-boxed .hb-fr-ghost :is(.hb-ph, .hero-vbox) { opacity: .2; }
+.hero-boxed .hb-fr-blurbg :is(.hb-ph, .hero-vbox) { filter: blur(14px) saturate(.9); transform: scale(1.12); opacity: .55; }
+.hero-boxed .hb-fr-blurbg { overflow: hidden; }
+.hero-boxed .hb-fr-darkbg :is(.hb-ph, .hero-vbox) { filter: brightness(.32) saturate(.8); }
+
+.hl-m-box .hl-mb.hb-fr-ghost em { opacity: .2; } .hl-m-box .hl-mb.hb-fr-blurbg em { filter: blur(3px); opacity: .55; transform: scale(1.1); } .hl-m-box .hl-mb.hb-fr-darkbg em { filter: brightness(.32); }

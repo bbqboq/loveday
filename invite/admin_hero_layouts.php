@@ -217,6 +217,7 @@ $vb = @filemtime(__DIR__ . '/assets/invite-blocks.js') ?: time();
 .hl-m-box .hl-mb.hb-fr-grid4 em { -webkit-mask: linear-gradient(#000 0 0) 0 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 0 100% / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 100% / 48% 48% no-repeat; mask: linear-gradient(#000 0 0) 0 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 0 / 48% 48% no-repeat, linear-gradient(#000 0 0) 0 100% / 48% 48% no-repeat, linear-gradient(#000 0 0) 100% 100% / 48% 48% no-repeat; }
 .hl-m-box .hl-mb.hb-fr-hidden em { visibility: hidden; }
 .hl-m span.hl-d-photo { background: linear-gradient(160deg, #B08A60, #4A3B30); -webkit-background-clip: text; background-clip: text; color: transparent !important; -webkit-text-fill-color: transparent; font-weight: 900; line-height: .88; }
+.hl-m-box .hl-mb.hb-fr-ghost em { opacity: .2; } .hl-m-box .hl-mb.hb-fr-blurbg em { filter: blur(3px); opacity: .55; transform: scale(1.1); } .hl-m-box .hl-mb.hb-fr-darkbg em { filter: brightness(.32); }
 /* 스티커 칸 (1019z2) */
 .hl-m span.hl-stkl { line-height: 0; } .hl-m .hl-stk-img { display: block; width: 100%; height: auto; }
 .add button.stk { grid-column: 1 / -1; border-style: solid; border-color: #E8C9A8; background: #FFF8F0; }

@@ -733,7 +733,7 @@
     // 가로 100%일 때 heroRatio: auto(원본 비율) · 1/1 · 4/5 · 3/4 · 16/9 · screen(휴대폰 화면 꽉) · px(직접 heroHeightPx)
     const HERO_RATIOS = [['auto', '원본 비율'], ['1/1', '정사각'], ['4/5', '세로 4:5'], ['3/4', '세로 3:4'], ['16/9', '가로 16:9'], ['screen', '전체화면'], ['px', '높이조정']];
     // 사진 칸 모드 (메인 레이아웃): 화면 한 장(바탕색) 위 원하는 자리에 사진을 놓음 - x·y·w·h는 화면 기준 %, frame 모양, fade 아래쪽 흐려짐 %
-    const HERO_BOX_FRAMES = [['none', '사각형'], ['rounded', '둥근 모서리'], ['arch', '아치'], ['polaroid', '폴라로이드'], ['shadow', '그림자'], ['comic', '웹툰 컷'], ['baroque', '아르데코 금선'], ['oval', '빈티지 타원', 1], ['circle', '동그라미 + 둘레 글자', 1], ['mat', '큰 여백 액자', 1], ['overlap', '두 장 겹침', 1], ['film', '필름 세 컷', 1], ['twin', '쌍둥이 아치', 1], ['torn', '찢은 종이', 1], ['blob', '물결 곡선', 1], ['grid4', '네 칸 그리드', 1], ['hidden', '사진 숨김 (글자 속 사진용)', 1], ['stamp', '우표 · 소인', 1], ['lace', '레이스', 1], ['botanical', '올리브 가지', 1], ['ribbon', '리본 · 도장', 1]]; // [값, 이름, 1 = 관리자 레이아웃에서만 고름 (고객 화면엔 그 레이아웃을 골랐을 때만 보임)]
+    const HERO_BOX_FRAMES = [['none', '사각형'], ['rounded', '둥근 모서리'], ['arch', '아치'], ['polaroid', '폴라로이드'], ['shadow', '그림자'], ['comic', '웹툰 컷'], ['baroque', '아르데코 금선'], ['oval', '빈티지 타원', 1], ['circle', '동그라미 + 둘레 글자', 1], ['mat', '큰 여백 액자', 1], ['overlap', '두 장 겹침', 1], ['film', '필름 세 컷', 1], ['twin', '쌍둥이 아치', 1], ['torn', '찢은 종이', 1], ['blob', '물결 곡선', 1], ['grid4', '네 칸 그리드', 1], ['hidden', '사진 숨김 (글자 속 사진용)', 1], ['ghost', '사진 옅게 깔기 (글자 뒤 배경)', 1], ['blurbg', '사진 흐리게 깔기 (글자 뒤 배경)', 1], ['darkbg', '사진 어둡게 깔기 (글자 뒤 배경)', 1], ['stamp', '우표 · 소인', 1], ['lace', '레이스', 1], ['botanical', '올리브 가지', 1], ['ribbon', '리본 · 도장', 1]]; // [값, 이름, 1 = 관리자 레이아웃에서만 고름 (고객 화면엔 그 레이아웃을 골랐을 때만 보임)]
     function heroBoxGeom(b) { // 사진 칸(heroBox) 자리·모양 - 사진 히어로와 유튜브 히어로가 같이 씀
         const n = (v, d, mn, mx) => Math.max(mn, Math.min(mx, Number.isFinite(+v) ? +v : d));
         const fr = HERO_BOX_FRAMES.some(x => x[0] === b.frame) ? b.frame : 'none', fade = n(b.fade, 0, 0, 90);
@@ -1801,7 +1801,7 @@
                    { text: '{날짜:점}  {요일:영문짧게}', x: 50, y: 77, fontSize: 12, ls: 240, color: '#8A7D70', anim: 'up', animDelay: .3 },
                    { text: '{시간}  ·  {예식장}', x: 50, y: 81.5, fontSize: 12, ls: 30, anim: 'up', animDelay: .5 }] },
         { id: 'ref-letters', label: '글자 속 사진', desc: '큰 날짜 숫자 안에 사진이 비침', photo: { heroWidth: 'full', heroRatio: 'screen', heroTextOver: true, heroShade: 'none' },
-          box: { x: 0, y: 0, w: 100, h: 100, frame: 'hidden' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
+          box: { x: 0, y: 0, w: 100, h: 100, frame: 'ghost' }, hide: ['groomName', 'brideName', 'heart', 'datetime'],
           layers: [{ text: '{월}\n{일}', x: 50, y: 36, fontSize: 168, font: 'pretendard', deco: 'photo', ls: -40, anim: 'up', animDur: 1.4 },
                    { text: '{신랑}  &  {신부}', x: 50, y: 74, fontSize: 24, font: 'gowun-batang', ls: 40, color: '#3A312A', anim: 'fade', animDelay: .5 },
                    { text: '{날짜:점}  {시간}  ·  {예식장}', x: 50, y: 80, fontSize: 12, ls: 20, color: '#5A4F45', anim: 'fade', animDelay: .7 }] },
