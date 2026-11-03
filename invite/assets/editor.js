@@ -9411,7 +9411,7 @@ let HL_ADMIN = false;
 function hlRefreshEasy() { try { if (document.documentElement.classList.contains('simple-mode')) spRender(); } catch (e) {} }
 fetch('hero_layouts.php?a=list', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { if (j && Array.isArray(j.items)) { hlTakeCfg(j); hlRefreshEasy(); } }).catch(() => {});
 fetch('hero_layouts.php?a=me', { cache: 'no-store', credentials: 'same-origin' }).then(r => r.ok ? r.json() : null).then(j => { HL_ADMIN = !!(j && j.ok && j.admin); }).catch(() => {});
-const HL_ST = ['x', 'y', 'fontSize', 'scaleX', 'widthAuto', 'width', 'rotation', 'ls', 'font', 'color', 'align', 'outline', 'shadow', 'glow', 'vertical', 'arc', 'arcW', 'anim', 'animDur', 'animDelay', 'deco', 'stk'];
+const HL_ST = ['x', 'y', 'fontSize', 'scaleX', 'widthAuto', 'width', 'rotation', 'ls', 'font', 'color', 'align', 'outline', 'shadow', 'glow', 'vertical', 'arc', 'arcW', 'anim', 'animDur', 'animDelay', 'deco', 'stk', 'phZ', 'phX', 'phY'];
 function heroLayoutFromBlock(b) { // 지금 메인 화면 → 레이아웃 (글자 칸 자리·모양 + 화면 크기만, 사진·이름은 안 담음)
     const f = b.fields, isV = b.id === 'heroVideo', L = f.layout || {};
     const pick = (o, ks) => { const r = {}; ks.forEach(k => { if (o && o[k] !== undefined && o[k] !== null) r[k] = o[k]; }); return r; };

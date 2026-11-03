@@ -1486,7 +1486,9 @@
     function heroLayerCss(L) { return (heroStkOf(L) ? `width:${Math.max(3, Math.min(100, Number(L.width) || 22))}%;` : '') + (Number(L.arc) ? `width:${Math.max(10, Math.min(100, Number(L.arcW) || 70))}%;` : '') + (L.anim ? `--hl-dur:${Math.max(.3, Math.min(8, Number(L.animDur) || 1.8))}s;--hl-delay:${Math.max(0, Math.min(8, Number(L.animDelay) || 0))}s;` : ''); }
     function heroLayersHtml(f, ink, styleOf, editor) {
         return ((f && f.heroLayers) || []).filter(k => f.layout && f.layout[k]).map(k => { const L = f.layout[k];
-            const ph = L.deco === 'photo' && f.heroImage ? `background-image:url('${esc(imgUrl(f.heroImage))}');` : ''; // 글자 속 사진 (1019z3)
+            const pn = (v, d, a, b) => { const n = Number(v); return isFinite(n) && v !== '' && v != null ? Math.max(a, Math.min(b, n)) : d; };
+            const ph = L.deco === 'photo' && f.heroImage ? `background-image:url('${esc(imgUrl(f.heroImage))}');` // 글자 속 사진 (1019z3) · 크기 phZ(100 = 꽉 · 400) · 자리 phX/phY % (1019z5)
+                + (L.phZ != null && L.phZ !== '' ? `background-size:${pn(L.phZ, 100, 100, 400)}% auto;` : '') + (L.phX != null || L.phY != null ? `background-position:${pn(L.phX, 50, 0, 100)}% ${pn(L.phY, 40, 0, 100)}%;` : '') : '';
             return `<span class="drag-part ${ink || 'on-light'} op-layer${heroLayerCls(L)}" data-part="${esc(k)}"${editor ? ' data-drag-el' : ''} style="${styleOf(k)}${heroLayerCss(L)}${ph}">${heroLayerInner(heroFill(f[k], f), L)}</span>`; }).join('');
     }
     // 등장 효과: 공개 페이지는 화면에 보이면(인트로가 끝난 뒤) 한 번 / 에디터는 [효과 다시 보기]를 누를 때만 (평소엔 다 나온 모습)

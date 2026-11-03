@@ -74,7 +74,7 @@ function hl_style($s): array
         if ($n !== null) $o[$k] = $n;
     }
     foreach (['widthAuto', 'outline', 'shadow'] as $k) if (isset($s[$k])) $o[$k] = (bool) $s[$k];
-    foreach (['arc' => [-100, 100], 'arcW' => [10, 100], 'animDur' => [0.3, 8], 'animDelay' => [0, 8]] as $k => [$mn, $mx]) { $n = hl_num($s[$k] ?? null, $mn, $mx); if ($n !== null) $o[$k] = $n; }
+    foreach (['arc' => [-100, 100], 'arcW' => [10, 100], 'animDur' => [0.3, 8], 'animDelay' => [0, 8], 'phZ' => [100, 400], 'phX' => [0, 100], 'phY' => [0, 100]] as $k => [$mn, $mx]) { $n = hl_num($s[$k] ?? null, $mn, $mx); if ($n !== null) $o[$k] = $n; }
     if (isset($s['vertical']) && in_array($s['vertical'], ['', 'up', 'side'], true)) $o['vertical'] = $s['vertical'];
     if (isset($s['anim']) && in_array($s['anim'], ['', 'write', 'fade', 'up', 'zoom'], true)) $o['anim'] = $s['anim'];
     if (isset($s['font']) && is_string($s['font']) && preg_match('/^[a-z0-9-]{0,30}$/', $s['font'])) $o['font'] = $s['font'];

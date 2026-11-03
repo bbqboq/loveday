@@ -684,6 +684,12 @@ function renderProps() {
             <div class="f"><span>세로 쓰기</span>${seg('vertical', [['', '가로'], ['up', '세로 (글자 바로)'], ['side', '세로 (눕혀서)']], o.vertical)}</div>
             ${rng('arc', num(o.arc, 0), -100, 100, 5, '휘기')}
             ${num(o.arc, 0) ? rng('arcW', num(o.arcW, 70), 10, 100, 1, '휜 폭 %') : ''}</div>
+            ${o.deco === 'photo' ? `<div class="sec"><b>글자 속 사진</b>
+            ${rng('phZ', num(o.phZ, 100), 100, 400, 5, '사진 크기 %')}
+            ${rng('phX', num(o.phX, 50), 0, 100, 1, '가로 자리')}
+            ${rng('phY', num(o.phY, 40), 0, 100, 1, '세로 자리')}
+            <div class="acts"><button type="button" class="btn2 sm" data-act="phreset">처음대로</button></div>
+            <p class="hint">100% = 글자 칸에 사진이 꽉 차요. 키우면 사진 속 일부만 크게 보이고, 막대로 보일 부분을 옮겨요.</p></div>` : ''}
             <div class="sec"><b>등장 효과</b>
             <div class="f"><span>효과</span><select data-k="anim"${dis}>${opt(IB.HL_ANIMS || [['', '없음']], o.anim || '')}</select></div>
             ${o.anim ? rng('animDelay', num(o.animDelay, 0), 0, 8, .1, '시작 (초)') + rng('animDur', num(o.animDur, 1.8), .3, 8, .1, '길이 (초)') : ''}
@@ -759,6 +765,7 @@ $('pr').addEventListener('click', e => {
     if (a === 'dup') dupLayer();
     else if (a === 'del') delSel();
     else if (a === 'front' || a === 'back') { snap(); const L = E.layers.splice(sel.i, 1)[0]; if (a === 'front') { E.layers.push(L); sel.i = E.layers.length - 1; } else { E.layers.unshift(L); sel.i = 0; } renderAll(); }
+    else if (a === 'phreset' && sel && sel.t === 'l') { const L = E.layers[sel.i]; if (L) { snap(); delete L.phZ; delete L.phX; delete L.phY; draw(); renderProps(); } }
     else if (a === 'stkswap' && sel && sel.t === 'l') { const L = E.layers[sel.i]; if (L) stkPick(L.stk, k => { snap(); L.stk = k; renderAll(); }); }
     else if (a === 'center' && E.box) { snap(); E.box.x = Math.round((50 - E.box.w / 2) * 10) / 10; draw(); renderProps(); }
 });
