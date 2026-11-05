@@ -56,3 +56,12 @@ echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swap.conf && sudo sysctl -p 
 php /var/www/…/invite/photo_thumbs.php all
 ```
 (안 해도 1시간 크론(expire_cleanup.php)이 한 번에 300장씩 채움)
+
+## 실서버 점검 결과 (artcenter, 2026-11-05 check.sh)
+
+- nginx + php8.5-fpm (8.3 fpm은 꺼져 있음) · MariaDB 10.11 · 웹 폴더 `/var/www/loveday/www/invite`
+- **php 8.5 `upload_max_filesize = 2M`** → 배경음악(줄여도 약 3MB)·큰 사진 원본이 막힘 → 20M / post_max_size 24M / nginx `client_max_body_size 24M`
+- `session.gc_maxlifetime = 1440` → Ubuntu sessionclean 크론은 php.ini 값만 봐서 `.user.ini` 43200이 안 먹음 → fpm php.ini 43200
+- `pm.max_children 5` (프로세스 약 54MB) → 10
+- 크론이 root로 돌아 expire_cleanup이 만든 사진 사본이 root 소유 → 1019z13 `photo_own`이 원본 주인으로 바꿈 + 크론을 `sudo -u www-data`로
+- 스왑 1.8GB 사용(107일 켜 둠, 부하 0) → vm.swappiness 10

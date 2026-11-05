@@ -27,6 +27,13 @@ function photo_thumb_ok_name(string $name): bool
     return (bool) preg_match(PHOTO_THUMB_RE, $name);
 }
 
+/** 크론이 root로 돌면 만든 파일·폴더 주인을 원본(웹 사용자)과 같게 - 안 그러면 nginx·PHP가 못 읽고 못 고침 (1019z13) */
+function photo_own(string $path, string $ref): void
+{
+    if (!function_exists('posix_geteuid') || posix_geteuid() !== 0 || !file_exists($path) || !file_exists($ref)) return;
+    @chown($path, (int) fileowner($ref)); @chgrp($path, (int) filegroup($ref));
+}
+
 function photo_thumbs_drop(string $dir, string $name): void
 {
     if (!photo_thumb_ok_name($name)) return;
@@ -41,13 +48,13 @@ function photo_thumbs_from_gd($im, string $dir, string $name): int
     foreach (PHOTO_THUMBS as $k => $side) {
         $path = $dir . $k . '/' . $name;
         if (max($w, $h) <= $side * 1.1) { @unlink($path); continue; } // 원본이 이미 작음 → 원본을 씀
-        if (!is_dir($dir . $k) && !@mkdir($dir . $k, 0750, true) && !is_dir($dir . $k)) continue;
+        if (!is_dir($dir . $k)) { if (!@mkdir($dir . $k, 0750, true) && !is_dir($dir . $k)) continue; photo_own($dir . $k, $dir); }
         $r = $side / max($w, $h);
         $tw = max(1, (int) round($w * $r)); $th = max(1, (int) round($h * $r));
         $t = imagecreatetruecolor($tw, $th);
         imagealphablending($t, false); imagesavealpha($t, true);
         imagecopyresampled($t, $im, 0, 0, 0, 0, $tw, $th, $w, $h);
-        if (@imagewebp($t, $path . '.tmp', $k === 's' ? 76 : 80) && @rename($path . '.tmp', $path)) $n++;
+        if (@imagewebp($t, $path . '.tmp', $k === 's' ? 76 : 80) && @rename($path . '.tmp', $path)) { $n++; photo_own($path, $dir); }
         else @unlink($path . '.tmp');
         imagedestroy($t);
     }
@@ -132,6 +139,7 @@ function photo_unburn_one(string $dir, string $name): bool
     if ($name === '' || !is_file($dir . 'master/' . $name) || !is_file($dir . $name)) return false;
     if (filesize($dir . 'master/' . $name) === filesize($dir . $name) && md5_file($dir . 'master/' . $name) === md5_file($dir . $name)) return false;
     if (!@copy($dir . 'master/' . $name, $dir . $name . '.tmp') || !@rename($dir . $name . '.tmp', $dir . $name)) { @unlink($dir . $name . '.tmp'); return false; }
+    photo_own($dir . $name, $dir);
     photo_thumbs_drop($dir, $name);
     photo_thumbs_make($dir, $name);
     return true;
