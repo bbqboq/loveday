@@ -56,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dir = invitation_upload_dir($id);
             @unlink($dir . $photo['file_path']);
             @unlink($dir . 'master/' . $photo['file_path']);
+            require_once __DIR__ . '/photo_thumbs.php'; photo_thumbs_drop($dir, (string) $photo['file_path']);
             $pdo->prepare('DELETE FROM invitation_photos WHERE id = ?')->execute([$photoId]);
         }
     } elseif (isset($_POST['set_plan'])) {

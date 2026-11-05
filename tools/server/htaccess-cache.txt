@@ -1,0 +1,18 @@
+# LOVE DAY - Apache 정적 파일 캐시·압축 (invite/.htaccess 맨 아래에 붙이기 - 이미 있는 내용은 지우지 말 것)
+#  Apache 2.4 + mod_headers · mod_expires · mod_deflate (sudo a2enmod headers expires deflate && sudo systemctl reload apache2)
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/css application/javascript application/json image/svg+xml text/plain text/html
+</IfModule>
+<IfModule mod_headers.c>
+  # uploads 사진·음악 (이름이 무작위라 안 바뀜) → 1년
+  <If "%{REQUEST_URI} =~ m#^/invite/uploads/.+\.(webp|jpe?g|png|gif|mp3|m4a)$#">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </If>
+  # assets 안 ?v= 붙은 파일 → 1년 / 그 밖 assets → 1시간
+  <If "%{REQUEST_URI} =~ m#^/invite/assets/.+\.(js|css|svg|webp|png|jpe?g|woff2?|json)$# && %{QUERY_STRING} =~ /(^|&)v=/">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </If>
+  <ElseIf "%{REQUEST_URI} =~ m#^/invite/assets/#">
+    Header set Cache-Control "public, max-age=3600"
+  </ElseIf>
+</IfModule>

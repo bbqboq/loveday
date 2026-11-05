@@ -166,6 +166,7 @@ function dash_duplicate(PDO $pdo, array $src, int $customerId): int
                 if ($im) { apply_watermark($im); $done = imagewebp($im, $nd . $name, 82); imagedestroy($im); }
             }
             if (!$done && !@copy(is_file($sd . $name) ? $sd . $name : $master, $nd . $name)) throw new RuntimeException('copy failed');
+            try { require_once __DIR__ . '/photo_thumbs.php'; photo_thumbs_make($nd, $name); } catch (Throwable $e) {} // 1019z11 작은 사본
             $sortQ->execute([$srcId, $name]);
             $insP->execute([$newId, $name, (int) ($sortQ->fetchColumn() ?: 0)]);
         }

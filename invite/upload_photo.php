@@ -13,6 +13,7 @@ declare(strict_types=1);
  */
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/snap_functions.php';
+require_once __DIR__ . '/photo_thumbs.php'; // 1019z11 작은 사본 s/·m/
 
 const MAX_PHOTOS        = 60;               // 청첩장 1건당 사진 수
 const CLIENT_WEBP_BYTES = 1536 * 1024;      // 브라우저에서 바꿔 온 WebP 최대 용량
@@ -91,6 +92,7 @@ function purge_unused_photos(PDO $pdo, array $invite): void
         if (is_file($path) && filemtime($path) > time() - 6 * 3600) continue; // 방금 올리고 아직 저장 전일 수 있음
         @unlink($path);
         @unlink($dir . 'master/' . $name);
+        photo_thumbs_drop($dir, $name);
         $del->execute([$row['id']]);
     }
 }
@@ -140,6 +142,11 @@ try {
               ?? validate_and_store_image($_FILES['photo'], (int) $invite['id'], $watermark);
     $stmt = $pdo->prepare('INSERT INTO invitation_photos (invitation_id, file_path) VALUES (?, ?)');
     $stmt->execute([$invite['id'], $filename]);
+    // 1019z11 갤러리용 작은 사본: 브라우저가 같이 보낸 것을 검사해서 저장, 워터마크(무료체험)·예전 브라우저면 서버가 만듦
+    try {
+        $tdir = invitation_upload_dir((int) $invite['id']);
+        if ($watermark || !photo_thumbs_store_client($_FILES, $tdir, $filename)) photo_thumbs_make($tdir, $filename);
+    } catch (Throwable $e) { /* 사본이 없어도 하객 화면은 원본으로 보임 */ }
 } catch (RuntimeException $e) {
     upload_fail($isAjax, 400, $e->getMessage());
 }

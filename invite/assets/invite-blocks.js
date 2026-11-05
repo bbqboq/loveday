@@ -115,6 +115,9 @@
     // 청첩장 전체에 하나의 표 design.imgFocus = { "파일이름.webp": "50% 30%" } (사진 파일 이름은 올릴 때 무작위라 겹치지 않음).
     // 그린 뒤에 applyImgFocus(root, 표)로 <img>의 object-position, 배경 사진의 background-position을 맞춘다 (에디터·공개 페이지 공통).
     const FOCUS_RE = /^\d{1,3}(\.\d+)?% \d{1,3}(\.\d+)?%$/;
+    // 1019z11 업로드 사진(uploads/{id}/{32자}.webp)의 작은 사본 주소 (서버 photo_thumbs.php) - 아니면 그대로
+    function thumbUrl(u, sz) { u = String(u || ''); const m = u.match(/^(.*?(?:^|\/)uploads\/\d+\/)([0-9a-f]{32}\.webp)$/); return m && (sz === 's' || sz === 'm') ? m[1] + sz + '/' + m[2] : u; }
+    function thumbFail(el) { el.onerror = null; const f = el.getAttribute('data-full'); if (f && el.getAttribute('src') !== f) el.setAttribute('src', f); }
     function imgKey(src) { const m = String(src || '').split(/[?#]/)[0].match(/([^/]+)$/); return m ? m[1] : ''; }
     // zoom = design.imgZoom = { "파일이름.webp": 1.6 } - 사진 칸 안에서 확대 (1 ~ 4배). 칸 크기는 그대로, 보이는 부분 점을 기준으로 커짐
     function zoomOf(zoom, key) { const z = Number(zoom && zoom[key]); return z > 1.001 && z <= 4 ? Math.round(z * 100) / 100 : 1; }
@@ -3077,7 +3080,10 @@
         const o = opts || {};
         const images = (f.images && f.images.length) ? f.images : (o.defaultImages ? o.defaultImages() : []);
         const scale = f.resScale || 1;
-        const src = im => esc(o.scaleImgUrl ? o.scaleImgUrl(im.src, scale) : im.src);
+        const raw = im => o.scaleImgUrl ? o.scaleImgUrl(im.src, scale) : im.src;
+        // 1019z11 갤러리는 작은 사본(s 800 · m 1280)을 받고 크게 보기(라이트박스)는 data-full 원본 - 사본이 없으면 원본으로(thumbFail)
+        let thSz = 'm';
+        const src = im => { const u = raw(im), t = thumbUrl(u, im.size === 'large' ? 'm' : thSz); return t === u ? esc(u) : `${esc(t)}" data-full="${esc(u)}" onerror="InviteBlocks.thumbFail(this)`; };
         const lazy = o.lazy ? ' loading="lazy" decoding="async"' : '';
         const lightboxCls = f.lightbox === false ? 'no-lightbox' : '';
         const edgeCls = f.edgeToEdge ? 'edge-to-edge' : '';
@@ -3090,9 +3096,11 @@
         if (type === 'grid') {
             const cols = (!f.colLayout || f.colLayout === 'auto') ? (width <= 33 ? 1 : (width <= 50 ? 2 : 3)) : parseInt(f.colLayout, 10);
             const cls = { 1: 'g1', 2: 'g2', 4: 'g4', 5: 'g5' }[cols] || '';
+            if (cols >= 2) thSz = 's';
             const imgs = images.map(im => `<img${lazy} src="${src(im)}" alt="" class="${im.size === 'large' ? 'g-large' : ''}">`).join('');
             return `<div class="blk-gallery ${edgeCls}" style="position:relative;">${title}<div class="grid ${cls} ${lightboxCls} ${cardCls}">${imgs}</div></div>`;
         }
+        if (type === 'tall' || type === 'circle') thSz = 's';
         const imgs = images.map(im => `<img${lazy} src="${src(im)}" alt="">`).join('');
         // 넘기는 콜라주: 사진 6장씩 두 줄 높낮이 콜라주 한 장 → 옆으로 넘김 (다음 장이 오른쪽에 살짝 보임)
         if (type === 'pages') {
@@ -3989,5 +3997,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { locTitleUp, mapLock, NAV_POS, navPosOf, locNavOver, navSheetBind, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroStkOf, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, HERO_CATS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, photoRect, photoPinOf, pinPhotoItems, SCROLLBARS, SB_OLD, SB_OVERLAY, sbDefault, applyScrollbar, clearScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { locTitleUp, mapLock, NAV_POS, navPosOf, locNavOver, navSheetBind, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroStkOf, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, HERO_CATS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, thumbUrl, thumbFail, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, photoRect, photoPinOf, pinPhotoItems, SCROLLBARS, SB_OLD, SB_OVERLAY, sbDefault, applyScrollbar, clearScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

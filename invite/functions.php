@@ -380,6 +380,7 @@ function apply_watermark(\GdImage $img, ?array $settings = null): void
  */
 function reprocess_invitation_photos(PDO $pdo, int $invitationId, bool $watermark): void
 {
+    require_once __DIR__ . '/photo_thumbs.php';
     $invDir    = invitation_upload_dir($invitationId);
     $masterDir = $invDir . 'master/';
 
@@ -399,6 +400,7 @@ function reprocess_invitation_photos(PDO $pdo, int $invitationId, bool $watermar
             apply_watermark($img);
         }
         imagewebp($img, $invDir . $row['file_path'], 82);
+        if (function_exists('photo_thumbs_from_gd')) photo_thumbs_from_gd($img, $invDir, (string) $row['file_path']); // 1019z11 작은 사본도 새 공개용으로
         imagedestroy($img);
     }
 }

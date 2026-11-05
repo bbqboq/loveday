@@ -1004,8 +1004,9 @@ function openLightbox(imgEl) {
     const gallery = imgEl.closest('.blk-gallery, [data-lbx-group]'); // 갤러리 섹션 / 신혼여행 라이브 소식 사진
     // 같은 사진이 여러 번 들어간 경우(슬라이드형 무한 반복 등)는 한 번만
     const seen = new Set(); const list = [];
-    Array.from(gallery.querySelectorAll('img')).forEach(im => { const src = im.currentSrc || im.src; if (src && !seen.has(src)) { seen.add(src); list.push(src); } });
-    let idx = Math.max(0, list.indexOf(imgEl.currentSrc || imgEl.src));
+    const full = im => { const f = im.getAttribute('data-full'); if (f) { try { return new URL(f, location.href).href; } catch (e) { return f; } } return im.currentSrc || im.src; }; // 1019z11 갤러리 칸은 작은 사본 → 크게 볼 땐 원본
+    Array.from(gallery.querySelectorAll('img')).forEach(im => { const src = full(im); if (src && !seen.has(src)) { seen.add(src); list.push(src); } });
+    let idx = Math.max(0, list.indexOf(full(imgEl)));
     const n = list.length;
     const ov = document.createElement('div');
     ov.className = 'lbx';
@@ -1018,7 +1019,7 @@ function openLightbox(imgEl) {
         </div></div>
         ${n > 1 ? `<button type="button" class="lbx-nav lbx-prev" aria-label="이전 사진"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
         <button type="button" class="lbx-nav lbx-next" aria-label="다음 사진"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
-        <div class="lbx-thumbs">${n <= 40 ? list.map((src, i) => `<button type="button" data-i="${i}" aria-label="${i + 1}번째 사진"><img src="${src}" alt="" loading="lazy"></button>`).join('') : ''}</div>` : ''}`;
+        <div class="lbx-thumbs">${n <= 40 ? list.map((src, i) => { const t = window.InviteBlocks && InviteBlocks.thumbUrl ? InviteBlocks.thumbUrl(src, 's') : src; return `<button type="button" data-i="${i}" aria-label="${i + 1}번째 사진"><img src="${t}"${t !== src ? ` data-full="${src}" onerror="InviteBlocks.thumbFail(this)"` : ''} alt="" loading="lazy"></button>`; }).join('') : ''}</div>` : ''}`;
     document.body.appendChild(ov);
     lockPageScroll();
     const track = ov.querySelector('.lbx-track');

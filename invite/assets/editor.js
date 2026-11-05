@@ -15399,6 +15399,26 @@ function openFocusPicker(src) {
     let raf = 0;
     if (pv) new MutationObserver(() => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; InviteBlocks.applyImgFocus(pv, state.imgFocus, state.imgZoom); }); }).observe(pv, { childList: true, subtree: true });
 })();
+// 1019z11 갤러리용 작은 사본 (서버 photo_thumbs.php PHOTO_THUMBS와 같은 크기): s = 긴 변 800 · m = 1280, 원본이 그보다 작으면 안 만듦
+//  하객 화면 갤러리는 이 사본을 받고(InviteBlocks.thumbUrl), 크게 보기는 원본 - 전송량이 크게 줄어듦
+const PHOTO_THUMB_SIDES = { s: 800, m: 1280 };
+async function makePhotoThumbs(file) {
+    const out = {};
+    if (!file || !/webp/.test(file.type || '') || !(await canEncodeWebp())) return out;
+    let img = null; try { img = await decodeImageFile(file); } catch (e) { return out; }
+    if (!img) return out;
+    const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, L = Math.max(w, h);
+    for (const k of Object.keys(PHOTO_THUMB_SIDES)) {
+        const side = PHOTO_THUMB_SIDES[k]; if (L <= side * 1.1) continue;
+        const r = side / L, cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(w * r)); cv.height = Math.max(1, Math.round(h * r));
+        const ctx = cv.getContext('2d'); ctx.imageSmoothingQuality = 'high'; ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        const b = await new Promise(res => cv.toBlob(res, 'image/webp', k === 's' ? 0.76 : 0.8));
+        if (b && b.size < 600 * 1024) out[k] = b;
+    }
+    if (img.close) img.close();
+    return out;
+}
 async function uploadPhotoToServer(file) {
     if (!EDIT_TOKEN || !serverCsrfToken) {
         showServerNotice('편집 링크(토큰)로 열어야 실제 사진 업로드가 가능합니다.');
@@ -15411,6 +15431,7 @@ async function uploadPhotoToServer(file) {
     fd.append('edit_token', EDIT_TOKEN);
     fd.append('csrf_token', serverCsrfToken);
     fd.append('photo', file);
+    try { const th = await makePhotoThumbs(file); for (const k in th) fd.append('thumb_' + k, th[k], 'thumb_' + k + '.webp'); } catch (e) { /* 사본은 없어도 됨 - 서버·크론이 만듦 */ }
     try {
         const res = await fetch(API_ENDPOINTS.uploadPhoto, { method: 'POST', body: fd });
         const raw = await res.text();
