@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/admin_guard.php';
+require_once __DIR__ . '/snap_functions.php'; // app_setting · save_app_setting (1019z12 넣는 방법)
 
 $pdo    = get_pdo();
 $notice = '';
@@ -18,7 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'opacity'           => max(0, min(100, (int) ($_POST['opacity'] ?? 70))),
     ];
     save_watermark_settings($pdo, $settings);
-    $notice = '저장되었습니다. 지금부터 새로 업로드되는 무료체험 사진에 이 설정이 적용됩니다.';
+    $mode = ($_POST['wm_mode'] ?? '') === 'burn' ? 'burn' : 'overlay';
+    try { save_app_setting($pdo, 'wm_mode', $mode); } catch (Throwable $e) {}
+    if ($mode === 'burn') @unlink(UPLOAD_DIR . 'site/wm_cursor.txt');
+    $notice = $mode === 'overlay'
+        ? '저장되었습니다. 무료체험 청첩장은 하객 화면에서 사진 위에 이 워터마크가 덮여 보입니다 (사진 파일은 그대로 - 바로 적용).'
+        : '저장되었습니다. 지금부터 새로 올리는 무료체험 사진에 워터마크를 새겨 넣습니다 (이미 올린 사진은 그대로).';
 }
 
 $row = $pdo->query('SELECT * FROM watermark_settings WHERE id = 1')->fetch();
@@ -30,6 +36,7 @@ $s = [
     'angle'             => (int) ($row['angle'] ?? 30),
     'opacity'           => (int) ($row['opacity'] ?? 70),
 ];
+$wmMode = app_setting('wm_mode') === 'burn' ? 'burn' : 'overlay';
 $csrf = csrf_token();
 ?>
 <!DOCTYPE html>
@@ -74,6 +81,11 @@ $csrf = csrf_token();
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
                 <div class="wm-layout">
                     <div class="wm-controls">
+                        <div class="wm-row">
+                            <label>넣는 방법</label>
+                            <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;margin:6px 0"><input type="radio" name="wm_mode" value="overlay" <?= $wmMode === 'overlay' ? 'checked' : '' ?> style="width:auto;margin-top:3px"> <span><b>화면에 덮기 (추천)</b><br><span class="wm-hint" style="margin:0">하객 화면에서 사진 위에 덮어 보여 줘요. 서버가 사진을 다시 만들지 않아 가볍고, 결제하면 바로 사라져요. 카톡 미리보기 그림에는 새겨 넣어요.</span></span></label>
+                            <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;margin:6px 0"><input type="radio" name="wm_mode" value="burn" <?= $wmMode === 'burn' ? 'checked' : '' ?> style="width:auto;margin-top:3px"> <span><b>사진 파일에 새겨 넣기 (예전)</b><br><span class="wm-hint" style="margin:0">올릴 때마다 서버가 사진을 다시 만들어요. 사진을 따로 저장해도 워터마크가 남아요.</span></span></label>
+                        </div>
                         <div class="wm-row">
                             <label>문구</label>
                             <input type="text" name="text" id="f_text" value="<?= htmlspecialchars($s['text'], ENT_QUOTES, 'UTF-8') ?>">

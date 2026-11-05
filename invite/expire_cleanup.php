@@ -28,6 +28,8 @@ $member = member_trial_cleanup($pdo, 1000);
 $trash  = trash_cleanup($pdo, 1000);
 require_once __DIR__ . '/featured_presets.php';
 try { $dtrash = design_trash_purge(); if ($dtrash) echo date('Y-m-d H:i:s') . " 디자인 휴지통 완전 삭제 {$dtrash}개 (" . DESIGN_TRASH_DAYS . "일 지난 것)\n"; } catch (Throwable $e) { echo date('Y-m-d H:i:s') . ' 디자인 휴지통 정리 오류: ' . $e->getMessage() . "\n"; }
+// 1019z12 워터마크를 새겨 둔 예전 사진을 원본으로 (화면에 덮는 방식일 때, 한 바퀴만)
+try { require_once __DIR__ . '/photo_thumbs.php'; $ub = photo_unburn_backfill($pdo, 15.0, 200); if ($ub['done']) echo date('Y-m-d H:i:s') . " 워터마크 새긴 사진 {$ub['done']}장을 원본으로\n"; } catch (Throwable $e) { echo date('Y-m-d H:i:s') . ' 워터마크 되돌리기 오류: ' . $e->getMessage() . "\n"; }
 // 1019z11 예전 사진의 작은 사본(갤러리용) 조금씩 채우기 - 한 번에 20초·300장까지
 try { require_once __DIR__ . '/photo_thumbs.php'; $th = photo_thumbs_backfill($pdo, 20.0, 300); if ($th['made']) echo date('Y-m-d H:i:s') . " 사진 사본 {$th['made']}장 만듦\n"; } catch (Throwable $e) { echo date('Y-m-d H:i:s') . ' 사진 사본 오류: ' . $e->getMessage() . "\n"; }
 if ($demo || $member || $trash) {

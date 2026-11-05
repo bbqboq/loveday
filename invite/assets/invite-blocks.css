@@ -2680,3 +2680,9 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .hero-boxed .hb-fr-darkbg :is(.hb-ph, .hero-vbox) { filter: brightness(.32) saturate(.8); }
 
 .hl-m-box .hl-mb.hb-fr-ghost em { opacity: .2; } .hl-m-box .hl-mb.hb-fr-blurbg em { filter: blur(3px); opacity: .55; transform: scale(1.1); } .hl-m-box .hl-mb.hb-fr-darkbg em { filter: brightness(.32); }
+
+/* 1019z12 무료체험 워터마크 = 사진 위에 덮기 (InviteBlocks.wmOverlay - 사진 칸 끝에 붙는 덮개, 사진 위 글자 칸은 그 뒤라 더 위에 보임) */
+.ld-wm-ov { position: absolute; inset: 0; pointer-events: none; background-repeat: repeat; background-position: 0 0; border-radius: inherit; }
+.ld-wm-set { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; z-index: 2; }
+.ld-wm-set > .ld-wm-ov, .ld-wm-ov.ld-wm-lbx { inset: auto; }
+.ld-wm-ov.ld-wm-lbx { will-change: transform; }

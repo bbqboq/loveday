@@ -49,7 +49,8 @@ if ($kind === 'kakao') {
     $zm = max(100, min(300, (float) ($share['kakaoZoom'] ?? 100))) / 100;
     $crop = [$ratio, $fx, $fy, $zm];
 }
-$out = invitation_upload_dir($id) . 'share_' . substr(sha1($src . filemtime($src) . json_encode($crop)), 0, 16) . '.jpg';
+$wmShare = needs_watermark($invite) && !wm_burn(); // 1019z12 화면에 덮는 방식이면 공유 그림 한 장에만 새김 (카톡 미리보기엔 화면 덮개가 없어서)
+$out = invitation_upload_dir($id) . 'share_' . substr(sha1($src . filemtime($src) . json_encode($crop) . ($wmShare ? 'wm' : '')), 0, 16) . '.jpg';
 if (!is_file($out)) {
     foreach (glob(invitation_upload_dir($id) . 'share_*.jpg') ?: [] as $old) {
         if (filemtime($old) < time() - 60) @unlink($old); // (og·kakao 썸네일이 서로 지우지 않게 방금 만든 건 남김)
@@ -73,6 +74,7 @@ if (!is_file($out)) {
         $dst = imagecreatetruecolor(max(1, (int) ($w * $r)), max(1, (int) ($h * $r)));
         imagecopyresampled($dst, $img, 0, 0, 0, 0, imagesx($dst), imagesy($dst), $w, $h);
     }
+    if ($wmShare) { try { apply_watermark($dst); } catch (Throwable $e) {} }
     imagejpeg($dst, $out, 85);
     imagedestroy($img); imagedestroy($dst);
 }

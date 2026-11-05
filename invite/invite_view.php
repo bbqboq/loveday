@@ -245,7 +245,10 @@ if ($lbZoom > 100): ?>
     window.INVITE_PREVIEW_T = <?= json_encode($previewToken) ?>; // 신랑신부 미리보기일 때만 - 신혼여행 라이브의 공개 전 소식까지 보여줌
     window.INVITE_CSRF = <?= json_encode($csrfForGuests) ?>; // 참석여부·방명록 전송 시 확인용
     window.INVITE_WEDDING_DATE = <?= json_encode($weddingYmd) ?>; // D-DAY 하객 안내 - 이 날짜(한국 시간)에만 보임
-    window.INVITE_SHARE_THUMB = <?= json_encode($ogImage !== '' ? 'https://loveday.kr/invite/share_thumb.php?s=' . rawurlencode($slug) . '&k=kakao&v=' . substr(md5(json_encode([$share['kakaoThumb'] ?? '', $share['kakaoRatio'] ?? '', $share['kakaoFocusX'] ?? 50, $share['kakaoFocusY'] ?? 50, $share['kakaoZoom'] ?? 100])), 0, 8) : '') ?>; // 카카오톡 공유 썸네일(jpg)
+    window.INVITE_SHARE_THUMB = <?= json_encode($ogImage !== '' ? 'https://loveday.kr/invite/share_thumb.php?s=' . rawurlencode($slug) . '&k=kakao&v=' . substr(md5(json_encode([$share['kakaoThumb'] ?? '', $share['kakaoRatio'] ?? '', $share['kakaoFocusX'] ?? 50, $share['kakaoFocusY'] ?? 50, $share['kakaoZoom'] ?? 100, $sampleId === '' && wm_overlay_cfg($invite) ? 'wm' : ''])), 0, 8) : '') ?>; // 카카오톡 공유 썸네일(jpg)
+<?php if ($sampleId === '' && ($wmCfg = wm_overlay_cfg($invite))): ?>
+    window.LD_WM = <?= json_encode($wmCfg, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>; // 1019z12 무료체험 워터마크 = 사진 위에 덮기 (InviteBlocks.wmOverlay)
+<?php endif; ?>
 <?php if ($sampleId !== ''): ?>
     window.INVITE_SAMPLE = true; // 디자인 샘플 보기 - 예시 지도 그림 · 예시 방명록, 참석·방명록은 안 보냄
 <?php endif; ?>

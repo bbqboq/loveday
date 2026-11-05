@@ -115,6 +115,94 @@
     // 청첩장 전체에 하나의 표 design.imgFocus = { "파일이름.webp": "50% 30%" } (사진 파일 이름은 올릴 때 무작위라 겹치지 않음).
     // 그린 뒤에 applyImgFocus(root, 표)로 <img>의 object-position, 배경 사진의 background-position을 맞춘다 (에디터·공개 페이지 공통).
     const FOCUS_RE = /^\d{1,3}(\.\d+)?% \d{1,3}(\.\d+)?%$/;
+    // 1019z12 무료체험 워터마크 = 사진 위에 덮기 (서버가 사진 파일을 고치지 않음) - cfg = window.LD_WM {text, w 글자 폭/사진 폭, sx 가로 간격/글자 폭, sy 줄 간격/글자 크기, a 각도, o 진하기}
+    //  관리자 → 워터마크 설정과 같은 모양(사선 반복 · 흰 글자 + 검은 그림자)을 SVG 무늬 한 장으로 만들어 사진 칸 위에 깜 (functions.php apply_watermark와 같은 계산)
+    const WM = { tile: null, key: '' };
+    function wmTile(c) {
+        const key = JSON.stringify(c); if (WM.key === key) return WM.tile;
+        const F = 60, txt = String(c.text || ''), ang = Number(c.a) || 0;
+        let tw = txt.length * F * 0.82;
+        try { const cv = document.createElement('canvas').getContext('2d'); cv.font = `700 ${F}px "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif`; tw = cv.measureText(txt).width || tw; } catch (e) {}
+        const sx = Math.max(10, tw * (Number(c.sx) || 0.55)), sy = Math.max(10, F * (Number(c.sy) || 9)), W = sx, H = sy * 2;
+        const o = Math.max(0, Math.min(100, Number(c.o) || 70)) / 100, ob = Math.max(0, o - 25 / 127);
+        const t = txt.replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+        let g = '';
+        for (let r = -3; r <= 4; r++) { const y = r * sy, off = (r & 1) ? sx / 2 : 0;
+            for (let k = -6; k <= 6; k++) { const x = k * sx + off; const tr = `rotate(${-ang} ${x.toFixed(1)} ${y.toFixed(1)})`;
+                g += `<text x="${(x + 2).toFixed(1)}" y="${(y + 2).toFixed(1)}" transform="rotate(${-ang} ${(x + 2).toFixed(1)} ${(y + 2).toFixed(1)})" fill="#000" fill-opacity="${ob.toFixed(2)}">${t}</text><text x="${x.toFixed(1)}" y="${y.toFixed(1)}" transform="${tr}" fill="#fff" fill-opacity="${o.toFixed(2)}">${t}</text>`; } }
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W.toFixed(1)}" height="${H.toFixed(1)}"><g font-family="Pretendard Variable, Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif" font-weight="700" font-size="${F}">${g}</g></svg>`;
+        WM.key = key; WM.tile = { url: 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")', w: W, h: H, tw, F };
+        return WM.tile;
+    }
+    const WM_IMG = /\/uploads\/\d+\/|^uploads\/\d+\//; // 고객이 올린 사진만 (스티커·예시 사진·디자인 그림 빼고)
+    function wmPaint(ov, host, c) {
+        const tl = wmTile(c), wd = host.clientWidth || host.offsetWidth || 0; if (!wd) return;
+        let fs = tl.F * (wd * (Number(c.w) || 0.5)) / tl.tw; fs = Math.max(8, Math.min(140, fs)); const k = fs / tl.F;
+        ov.style.backgroundImage = tl.url; ov.style.backgroundSize = `${(tl.w * k).toFixed(1)}px ${(tl.h * k).toFixed(1)}px`;
+    }
+    function wmApply(root, c) {
+        if (!root) return;
+        root.querySelectorAll('.ld-wm-ov, .ld-wm-set').forEach(o => { if (!c || !o.parentElement || !o.parentElement.isConnected) o.remove(); });
+        if (!c || !c.text) return;
+        const singles = new Map(), grids = new Map(), slides = []; // 사진 한 장 칸 → 사진 / 갤러리 칸(.grid) → 사진들
+        root.querySelectorAll('img').forEach(im => {
+            const src = im.getAttribute('data-full') || im.getAttribute('src') || '';
+            if (!WM_IMG.test(src) || im.closest('.ld-wm-ov, .ld-wm-set, .sticker-el, .hl-stk-img, [data-hl-stk]')) return;
+            const g = im.closest('.blk-gallery .grid, .lbx-thumbs');
+            if (g) { if (!grids.has(g)) grids.set(g, []); grids.get(g).push(im); return; }
+            if (im.parentElement && im.parentElement.classList.contains('lbx-slide')) { slides.push(im); return; }
+            const h = im.parentElement; if (h && !singles.has(h)) singles.set(h, im);
+        });
+        // 크게 보기: 칸(슬라이드)이 화면 전체라 사진 크기·자리에 맞춘 덮개 + 넘기기·확대(transform)를 그대로 따라 함
+        slides.forEach(im => {
+            const h = im.parentElement;
+            let ov = h.querySelector(':scope > .ld-wm-ov');
+            if (!ov) { ov = document.createElement('i'); ov.className = 'ld-wm-ov ld-wm-lbx'; ov.setAttribute('aria-hidden', 'true'); h.appendChild(ov); if (getComputedStyle(h).position === 'static') h.style.position = 'relative'; }
+            const sync = () => {
+                ov.style.left = im.offsetLeft + 'px'; ov.style.top = im.offsetTop + 'px';
+                ov.style.width = im.offsetWidth + 'px'; ov.style.height = im.offsetHeight + 'px';
+                ov.style.transform = im.style.transform || ''; ov.style.transition = im.style.transition || '';
+                ov.style.transformOrigin = im.style.transformOrigin || '';
+                ov.style.opacity = im.style.opacity || '';
+                wmPaint(ov, im, c);
+            };
+            sync();
+            if (!im._wmMo) { im._wmMo = new MutationObserver(sync); im._wmMo.observe(im, { attributes: true, attributeFilter: ['style', 'src'] }); im.addEventListener('load', sync); }
+        });
+        singles.forEach((im, h) => {
+            let ov = h.querySelector(':scope > .ld-wm-ov');
+            if (!ov) { ov = document.createElement('i'); ov.className = 'ld-wm-ov'; ov.setAttribute('aria-hidden', 'true'); if (getComputedStyle(h).position === 'static') h.style.position = 'relative'; }
+            if (im.nextSibling !== ov) h.insertBefore(ov, im.nextSibling); // 사진 바로 뒤 = 사진 위 글자 칸보다 아래
+            wmPaint(ov, h, c);
+        });
+        // 갤러리: 사진마다 그 크기의 덮개 (사진 폭 기준 글자 크기 - 서버가 새기던 것과 같게), 칸 끝 한 묶음 안에 둬서 갤러리 줄 모양(nth-child)을 안 건드림
+        grids.forEach((ims, g) => {
+            if (getComputedStyle(g).position === 'static') g.style.position = 'relative';
+            let set = g.querySelector(':scope > .ld-wm-set');
+            if (!set) { set = document.createElement('i'); set.className = 'ld-wm-set'; set.setAttribute('aria-hidden', 'true'); }
+            if (g.lastElementChild !== set) g.appendChild(set);
+            const gr = g.getBoundingClientRect(), bl = g.clientLeft, bt = g.clientTop;
+            while (set.children.length > ims.length) set.lastElementChild.remove();
+            ims.forEach((im, i) => {
+                let ov = set.children[i]; if (!ov) { ov = document.createElement('i'); ov.className = 'ld-wm-ov'; set.appendChild(ov); }
+                const r = im.getBoundingClientRect();
+                ov.style.cssText += `;left:${(r.left - gr.left - bl + g.scrollLeft).toFixed(1)}px;top:${(r.top - gr.top - bt + g.scrollTop).toFixed(1)}px;width:${r.width.toFixed(1)}px;height:${r.height.toFixed(1)}px;border-radius:${getComputedStyle(im).borderRadius}`;
+                wmPaint(ov, im, c);
+                if (!im._wmLd) { im._wmLd = 1; im.addEventListener('load', () => { const rt = g.closest('[data-wm-root]') || root; wmSoon(rt); }); }
+            });
+        });
+    }
+    function wmSoon(root) { if (!root._wmRaf) root._wmRaf = requestAnimationFrame(() => { root._wmRaf = 0; try { wmApply(root, root._wmCfg); } catch (e) {} }); }
+    // root 안 사진 칸마다 덮개를 붙이고, 다시 그려지거나 크기가 바뀌면 따라감 (한 root에 한 번만 걸면 됨)
+    function wmOverlay(root, c) {
+        if (!root) return;
+        root._wmCfg = c || null;
+        const soon = () => wmSoon(root);
+        try { wmApply(root, root._wmCfg); } catch (e) {}
+        if (root._wmOn || !c) return; root._wmOn = true;
+        try { new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && !(n.classList && (n.classList.contains('ld-wm-ov') || n.classList.contains('ld-wm-set')))))) soon(); }).observe(root, { childList: true, subtree: true }); } catch (e) {}
+        try { new ResizeObserver(soon).observe(root); } catch (e) { addEventListener('resize', soon); }
+    }
     // 1019z11 업로드 사진(uploads/{id}/{32자}.webp)의 작은 사본 주소 (서버 photo_thumbs.php) - 아니면 그대로
     function thumbUrl(u, sz) { u = String(u || ''); const m = u.match(/^(.*?(?:^|\/)uploads\/\d+\/)([0-9a-f]{32}\.webp)$/); return m && (sz === 's' || sz === 'm') ? m[1] + sz + '/' + m[2] : u; }
     function thumbFail(el) { el.onerror = null; const f = el.getAttribute('data-full'); if (f && el.getAttribute('src') !== f) el.setAttribute('src', f); }
@@ -3997,5 +4085,5 @@
             .concat(ORDER.filter(id => BLOCKS[id]).map(id => ({ id, label: BLOCKS[id].label, color: BLOCKS[id].color || '#999', core: false })));
     }
 
-    global.InviteBlocks = { locTitleUp, mapLock, NAV_POS, navPosOf, locNavOver, navSheetBind, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroStkOf, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, HERO_CATS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, thumbUrl, thumbFail, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, photoRect, photoPinOf, pinPhotoItems, SCROLLBARS, SB_OLD, SB_OVERLAY, sbDefault, applyScrollbar, clearScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
+    global.InviteBlocks = { locTitleUp, mapLock, NAV_POS, navPosOf, locNavOver, navSheetBind, INTRO_STK_FX, INTRO_STK_LOOP, INTRO_STK_NAMES, introStkFx, accMask, OLD_DECOS, lookOld, ensureOldLooks, BACKDROPS, BACKDROP_OF, backdropOf, backdropOn, applyBackdrop, TP_DECOS, TP_STYLES, THEME_DECO_NAMES, tpOf, SECTION_SKINS, THEME_DECOS, THEME_LOOKS, designLook, setColors, applyColorLink, colorChanged, colorLinkOn, curColorKey, IV_STYLES, ivCls, onAccent, HL_DECOS, SKIN_HAS_VINTAGE, SKIN_DARK, hexDark, introBgRgba, skinOf, NOTICE_STYLES, NOTICE_TPL, heroFill, heroLayersHtml, heroLayerInner, heroStkOf, heroLayerCls, heroLayerCss, fitHeroArcs, fitTextLayers, heroVideoBox, HL_ANIMS, armHeroAnims, playHeroAnims, playHeroAnimsTwice, HERO_BOX_FRAMES, HERO_LAYOUTS, HERO_CATS, applyHeroLayout, ACC_STYLES, CONTACT_STYLES, CAL_STYLES, ddayCalendar, DDAY_STYLES, ddayCounter, ddayTick, watchOffscreen, stickerFx, heroTextOpts, dockNextButtons, heroNextPos, nextBtnAllowed, heroFull, heroTextOn, heroInkAuto, videoBandSpace, NEXT_FX, NEXT_FX_MS, nextFxOf, playNextFx, armNextFx, HERO_SHADES, HERO_SHADE_LV, heroShadeOf, heroShadeHtml, NEXT_ICONS, NEXT_SHAPES, NEXT_ANIMS, NEXT_ICON_PATHS, BOX_COLOR_SECTIONS, boxColAttrs, freeCanvas, linkHref, nextBtnHtml, bindNextButtons, NEXT_STYLES, NEXT_SIZES, titleLayer, titleLayout, imgKey, thumbUrl, thumbFail, wmOverlay, applyImgFocus, zoomOf, accHtml, isVenueDemo, heroPhotoHtml, HERO_RATIOS, sectionCatalog, CORE_SECTIONS, BLOCKS, ORDER, setDesign, defaultBlock, esc, uid, imgUrl, ensureFont, FONT_CSS, beatWatch, AMBIENT, WEATHER_FX, ambientHtml, mountAmbient, SPARKLE, SUNGLOW, SPRITES3D, SPRITE_H, BG_PAPERS, paperCss, setPapers, GALLERY_TYPES, GALLERY_REVEALS, galleryHtml, armGalleryReveal, playGalleryReveal, ACCOUNT_ROLES, accountCardsHtml, kakaoUrl, kakaoRowHtml, bindInteractions, toast, setLabels, LABEL_DEFAULTS, initExtras, shareBarHtml, MENU_LABELS, createShareFab, SHARE_DEFAULTS, bindStage4Clicks, RichText, photoRect, photoPinOf, pinPhotoItems, SCROLLBARS, SB_OLD, SB_OVERLAY, sbDefault, applyScrollbar, clearScrollbar, tripFeedHtml, drawTripMap, tripSample: fillTripSample };
 })(typeof window !== 'undefined' ? window : this);

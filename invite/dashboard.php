@@ -161,11 +161,11 @@ function dash_duplicate(PDO $pdo, array $src, int $customerId): int
             $master = is_file($sd . 'master/' . $name) ? $sd . 'master/' . $name : $sd . $name;
             if (!@copy($master, $nd . 'master/' . $name)) throw new RuntimeException('copy failed');
             $done = false;
-            if (str_ends_with($name, '.webp') && !($srcWm && $master === $sd . $name)) {
+            if (wm_burn() && str_ends_with($name, '.webp') && !($srcWm && $master === $sd . $name)) { // 1019z12 화면에 덮는 방식이면 새기지 않음
                 $im = @imagecreatefromwebp($master);
                 if ($im) { apply_watermark($im); $done = imagewebp($im, $nd . $name, 82); imagedestroy($im); }
             }
-            if (!$done && !@copy(is_file($sd . $name) ? $sd . $name : $master, $nd . $name)) throw new RuntimeException('copy failed');
+            if (!$done && !@copy(wm_burn() ? (is_file($sd . $name) ? $sd . $name : $master) : $master, $nd . $name)) throw new RuntimeException('copy failed');
             try { require_once __DIR__ . '/photo_thumbs.php'; photo_thumbs_make($nd, $name); } catch (Throwable $e) {} // 1019z11 작은 사본
             $sortQ->execute([$srcId, $name]);
             $insP->execute([$newId, $name, (int) ($sortQ->fetchColumn() ?: 0)]);

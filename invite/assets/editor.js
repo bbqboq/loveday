@@ -14998,6 +14998,7 @@ async function bootstrapFromServer() {
         lastLoadedMeta = { groom_name: data.groom_name || '', bride_name: data.bride_name || '' };
         if (SAMPLE_ID && data.sample_label) { const n = document.getElementById('sampleBarName'); if (n) n.textContent = data.sample_label; }
         if (data.expiry) ExpiryWatch.start(data.expiry); // 자동 삭제 카운트다운
+        window.LD_WM = data.wm || null; try { const pr = document.getElementById('previewRoot'); if (pr && InviteBlocks.wmOverlay) InviteBlocks.wmOverlay(pr, window.LD_WM); } catch (e) {} // 1019z12 무료체험 워터마크를 미리보기 사진 위에 (하객 화면과 같게)
         window.LD_ACC_TRIAL = !!data.trial; // 무료체험: 미리보기 계좌번호 앞뒤 두 자리를 XX로 (InviteBlocks.accHtml · 하객 화면은 guest_secure.php가 가려서 줌)
         personalStickers = data.personal_stickers || [];
         renderPersonalStickerSections();

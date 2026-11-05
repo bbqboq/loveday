@@ -381,6 +381,15 @@ function apply_watermark(\GdImage $img, ?array $settings = null): void
 function reprocess_invitation_photos(PDO $pdo, int $invitationId, bool $watermark): void
 {
     require_once __DIR__ . '/photo_thumbs.php';
+    // 1019z12 화면에 덮는 방식: 워터마크를 넣을 땐 파일을 안 고치고(하객 화면이 덮음), 뺄 땐 새겨 둔 예전 사진만 원본으로 되돌림 (GD 안 씀 - 파일 복사)
+    if (!wm_burn()) {
+        if ($watermark) return;
+        $st = $pdo->prepare('SELECT file_path FROM invitation_photos WHERE invitation_id = ?');
+        $st->execute([$invitationId]);
+        $dir = invitation_upload_dir($invitationId);
+        foreach ($st->fetchAll() as $row) photo_unburn_one($dir, basename((string) $row['file_path']));
+        return;
+    }
     $invDir    = invitation_upload_dir($invitationId);
     $masterDir = $invDir . 'master/';
 
@@ -389,6 +398,10 @@ function reprocess_invitation_photos(PDO $pdo, int $invitationId, bool $watermar
 
     foreach ($stmt->fetchAll() as $row) {
         $masterPath = $masterDir . $row['file_path'];
+        if (!is_file($masterPath) && $watermark && is_file($invDir . $row['file_path'])) { // 화면에 덮던 때 올린 사진(원본이 공개용 하나뿐) → 원본으로 남겨 두고 새김
+            if (!is_dir($masterDir)) @mkdir($masterDir, 0750, true);
+            @copy($invDir . $row['file_path'], $masterPath);
+        }
         if (!is_file($masterPath)) {
             continue; // 마스터가 없으면(마이그레이션 이전 사진 등) 건드리지 않음
         }
@@ -434,6 +447,21 @@ function find_invitation_by_slug_any_status(PDO $pdo, string $slug): ?array
 }
 
 // 무료체험(trial) 상태면 업로드 사진에 워터마크를 강제로 넣는다
+/** 1019z12 워터마크를 사진 파일에 새겨 넣는지 (관리자 → 워터마크 '넣는 방법', 기본 = 화면에 덮기) */
+function wm_burn(): bool
+{
+    require_once __DIR__ . '/snap_functions.php';
+    return function_exists('app_setting') && app_setting('wm_mode') === 'burn';
+}
+
+/** 1019z12 화면에 덮는 워터마크 설정 (하객 화면·에디터 미리보기 window.LD_WM) - 덮을 필요가 없으면 null */
+function wm_overlay_cfg(array $invite): ?array
+{
+    if (!needs_watermark($invite) || wm_burn()) return null;
+    $s = get_watermark_settings();
+    return ['text' => (string) $s['text'], 'w' => (float) $s['width_ratio'], 'sx' => (float) $s['step_x_ratio'], 'sy' => (float) $s['step_y_multiplier'], 'a' => (int) $s['angle'], 'o' => (int) $s['opacity']];
+}
+
 function needs_watermark(array $invite): bool
 {
     return ($invite['storage_plan'] ?? 'trial') === 'trial';

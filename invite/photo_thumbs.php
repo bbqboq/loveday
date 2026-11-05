@@ -126,6 +126,47 @@ function photo_thumbs_backfill(PDO $pdo, float $budgetSec = 20.0, int $maxMake =
     return ['made' => $made, 'seen' => $seen, 'cursor' => $last];
 }
 
+/** 1019z12 예전에 워터마크를 새겨 둔 공개용 사진을 원본(master)으로 되돌림 (화면에 덮는 방식) - 바꿨으면 true */
+function photo_unburn_one(string $dir, string $name): bool
+{
+    if ($name === '' || !is_file($dir . 'master/' . $name) || !is_file($dir . $name)) return false;
+    if (filesize($dir . 'master/' . $name) === filesize($dir . $name) && md5_file($dir . 'master/' . $name) === md5_file($dir . $name)) return false;
+    if (!@copy($dir . 'master/' . $name, $dir . $name . '.tmp') || !@rename($dir . $name . '.tmp', $dir . $name)) { @unlink($dir . $name . '.tmp'); return false; }
+    photo_thumbs_drop($dir, $name);
+    photo_thumbs_make($dir, $name);
+    return true;
+}
+
+/** 1019z12 크론: 워터마크를 새겨 둔 사진(무료체험·예전에 올린 것)을 원본으로 조금씩 되돌림 - 화면에 덮는 방식일 때만. 위치 uploads/site/wm_cursor.txt */
+function photo_unburn_backfill(PDO $pdo, float $budgetSec = 15.0, int $max = 200): array
+{
+    if (wm_burn()) return ['done' => 0, 'seen' => 0, 'cursor' => 0];
+    $cf = UPLOAD_DIR . 'site/wm_cursor.txt';
+    $last = is_file($cf) ? (int) @file_get_contents($cf) : 0;
+    if ($last < 0) return ['done' => 0, 'seen' => 0, 'cursor' => -1]; // 한 바퀴 다 돌았음 (새 사진은 처음부터 새기지 않음)
+    $t0 = microtime(true); $done = 0; $seen = 0;
+    $st = $pdo->prepare('SELECT id, invitation_id, file_path FROM invitation_photos WHERE id > ? ORDER BY id LIMIT 300');
+    while (microtime(true) - $t0 < $budgetSec && $done < $max) {
+        $st->execute([$last]);
+        $rows = $st->fetchAll();
+        if (!$rows) { $last = -1; break; }
+        foreach ($rows as $r) {
+            $last = (int) $r['id']; $seen++;
+            if (photo_unburn_one(invitation_upload_dir((int) $r['invitation_id']), basename((string) $r['file_path']))) $done++;
+            if (microtime(true) - $t0 >= $budgetSec || $done >= $max) break;
+        }
+    }
+    if (is_dir(UPLOAD_DIR . 'site')) @file_put_contents($cf, (string) $last);
+    return ['done' => $done, 'seen' => $seen, 'cursor' => $last];
+}
+
+// php photo_thumbs.php unburn → 새겨 둔 워터마크를 한 번에 다 되돌림 (화면에 덮는 방식으로 바꾼 뒤 한 번)
+if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__ && ($argv[1] ?? '') === 'unburn') {
+    $pdo = get_pdo(); @unlink(UPLOAD_DIR . 'site/wm_cursor.txt'); $tot = 0;
+    do { $r = photo_unburn_backfill($pdo, 60.0, 100000); $tot += $r['done']; echo date('H:i:s') . " 원본으로 {$r['done']}장 (본 줄 {$r['seen']})\n"; } while ($r['cursor'] >= 0 && $r['seen'] > 0);
+    echo "끝: {$tot}장\n"; exit;
+}
+
 // php photo_thumbs.php all  → 시간 제한 없이 끝까지 한 번에 (서버가 한가할 때)
 if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
     $pdo = get_pdo();

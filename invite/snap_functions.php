@@ -11,6 +11,7 @@ date_default_timezone_set('Asia/Seoul'); // 업로드 기간·삭제일을 한�
  * 관리자 설정 (app_settings 테이블, 키-값)
  * ======================================================= */
 const APP_SETTING_DEFAULTS = [
+    'wm_mode'              => 'overlay', // 무료체험 워터마크 (1019z12): overlay = 하객 화면에서 사진 위에 덮기(서버가 사진을 안 고침) · burn = 예전처럼 사진 파일에 새겨 넣기
     'guest_nozoom'         => '0', // 하객 화면 확대 막기 (1018z18t, 관리자 → 하객 화면 → 방명록·참석, 기본 = 확대 허용)
     'snap_quota_invite_mb' => '50',
     'snap_quota_guest_mb'  => '50',

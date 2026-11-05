@@ -59,8 +59,8 @@ function store_client_webp(array $file, int $invitationId, bool $watermark): ?st
     }
     $filename = bin2hex(random_bytes(16)) . '.webp';
 
-    // 1) 마스터(워터마크 없음) - 받은 그대로
-    if (!@copy($tmp, $masterDir . $filename)) return null;
+    // 1) 마스터(워터마크 없음) - 받은 그대로 (1019z12 새기지 않으면 따로 안 둠 - 공개용이 곧 원본, 디스크 절반)
+    if ($watermark && !@copy($tmp, $masterDir . $filename)) return null;
     // 2) 공개용 - 무료체험이면 워터마크를 입혀서, 아니면 그대로
     if ($watermark) {
         $im = @imagecreatefromwebp($tmp);
@@ -138,14 +138,15 @@ if ((int) $countStmt->fetch()['cnt'] >= MAX_PHOTOS) {
 
 try {
     $watermark = needs_watermark($invite);
-    $filename  = store_client_webp($_FILES['photo'], (int) $invite['id'], $watermark)
-              ?? validate_and_store_image($_FILES['photo'], (int) $invite['id'], $watermark);
+    $burn      = $watermark && wm_burn(); // 1019z12 기본은 화면에 덮기 → 사진 파일은 그대로 (GD로 다시 만들지 않음)
+    $filename  = store_client_webp($_FILES['photo'], (int) $invite['id'], $burn)
+              ?? validate_and_store_image($_FILES['photo'], (int) $invite['id'], $burn);
     $stmt = $pdo->prepare('INSERT INTO invitation_photos (invitation_id, file_path) VALUES (?, ?)');
     $stmt->execute([$invite['id'], $filename]);
     // 1019z11 갤러리용 작은 사본: 브라우저가 같이 보낸 것을 검사해서 저장, 워터마크(무료체험)·예전 브라우저면 서버가 만듦
     try {
         $tdir = invitation_upload_dir((int) $invite['id']);
-        if ($watermark || !photo_thumbs_store_client($_FILES, $tdir, $filename)) photo_thumbs_make($tdir, $filename);
+        if ($burn || !photo_thumbs_store_client($_FILES, $tdir, $filename)) photo_thumbs_make($tdir, $filename);
     } catch (Throwable $e) { /* 사본이 없어도 하객 화면은 원본으로 보임 */ }
 } catch (RuntimeException $e) {
     upload_fail($isAjax, 400, $e->getMessage());

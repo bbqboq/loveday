@@ -1021,6 +1021,7 @@ function openLightbox(imgEl) {
         <button type="button" class="lbx-nav lbx-next" aria-label="다음 사진"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
         <div class="lbx-thumbs">${n <= 40 ? list.map((src, i) => { const t = window.InviteBlocks && InviteBlocks.thumbUrl ? InviteBlocks.thumbUrl(src, 's') : src; return `<button type="button" data-i="${i}" aria-label="${i + 1}번째 사진"><img src="${t}"${t !== src ? ` data-full="${src}" onerror="InviteBlocks.thumbFail(this)"` : ''} alt="" loading="lazy"></button>`; }).join('') : ''}</div>` : ''}`;
     document.body.appendChild(ov);
+    if (window.LD_WM && window.InviteBlocks && InviteBlocks.wmOverlay) setTimeout(() => InviteBlocks.wmOverlay(ov, window.LD_WM), 0); // 1019z12 크게 보기에도 워터마크
     lockPageScroll();
     const track = ov.querySelector('.lbx-track');
     const slides = Array.from(ov.querySelectorAll('.lbx-slide'));
@@ -1239,6 +1240,7 @@ function renderInviteReadOnly(rootEl, design, masked) {
         });
     });
     if (window.InviteBlocks && InviteBlocks.pinPhotoItems) InviteBlocks.pinPhotoItems(rootEl);
+    if (window.LD_WM && window.InviteBlocks && InviteBlocks.wmOverlay) InviteBlocks.wmOverlay(rootEl, window.LD_WM); // 1019z12 무료체험 워터마크 = 사진 위에 덮기
 
     rootEl.querySelectorAll('.blk-gallery .grid:not(.no-lightbox) img').forEach(img => {
         img.addEventListener('click', () => openLightbox(img));
