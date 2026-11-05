@@ -17,9 +17,35 @@ function csrf_token(): string
     return $_SESSION['csrf_token'];
 }
 
+/** 요청이 우리 사이트 화면에서 왔는지 (Origin → 없으면 Referer 주소의 호스트가 이 서버와 같은지, www. 는 같은 것으로 봄) - 1019z9 */
+function csrf_same_origin(): bool
+{
+    $host = strtolower((string) preg_replace('/:\d+$/', '', (string) ($_SERVER['HTTP_HOST'] ?? '')));
+    if ($host === '') return false;
+    $src = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
+    if ($src === '' || $src === 'null') $src = (string) ($_SERVER['HTTP_REFERER'] ?? '');
+    if ($src === '') return false;
+    $h = strtolower((string) (parse_url($src, PHP_URL_HOST) ?? ''));
+    $strip = fn(string $x): string => preg_replace('/^www\./', '', $x);
+    return $h !== '' && $strip($h) === $strip($host);
+}
+
+/**
+ * 토큰이 맞는지 (1019z9): 화면을 오래 띄워 둬서 세션(토큰)이 서버에서 지워졌거나 다른 탭에서 다시 로그인해 토큰이 바뀐 경우,
+ * 요청이 우리 사이트 화면에서 온 것(Origin/Referer 같은 호스트)이면 통과시키고 새 토큰을 만들어 둠 - 다른 사이트에서 몰래 보낸 요청은 Origin이 달라서 그대로 막힘.
+ * 로그인 확인(관리자 admin_guard · 편집 토큰 등)은 각 화면이 따로 하므로 그대로.
+ */
+function csrf_ok(?string $token): bool
+{
+    $s = (string) ($_SESSION['csrf_token'] ?? '');
+    if ($token && $s !== '' && hash_equals($s, (string) $token)) return true;
+    if (csrf_same_origin()) { csrf_token(); return true; }
+    return false;
+}
+
 function csrf_verify(?string $token): void
 {
-    if (!$token || !hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
+    if (!csrf_ok($token)) {
         http_response_code(403);
         exit('CSRF 검증에 실패했습니다. 새로고침 후 다시 시도해주세요.');
     }

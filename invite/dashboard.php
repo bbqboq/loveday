@@ -85,7 +85,7 @@ foreach ($list as $o) $ownedById[(int) $o['id']] = $o;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = (string) $_POST['action'];
     $isAjax = ($_SERVER['HTTP_ACCEPT'] ?? '') === 'application/json';
-    if (!hash_equals((string) ($_SESSION['csrf_token'] ?? ''), (string) ($_POST['csrf_token'] ?? ''))) {
+    if (!csrf_ok((string) ($_POST['csrf_token'] ?? ''))) {
         $isAjax ? dash_json(['ok' => false, 'error' => '페이지를 새로고침한 뒤 다시 시도해주세요.'], 403) : exit('CSRF 검증에 실패했습니다.');
     }
     if ($action === 'create' && $mode === 'customer') {

@@ -29,7 +29,7 @@ function music_transcode(string $src, string $dst): bool
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') music_fail(405, '허용되지 않는 요청입니다.');
-if (!hash_equals($_SESSION['csrf_token'] ?? '', (string) ($_POST['csrf_token'] ?? ''))) music_fail(403, '페이지를 새로고침 후 다시 시도해주세요.');
+if (!csrf_ok((string) ($_POST['csrf_token'] ?? ''))) music_fail(403, '페이지를 새로고침 후 다시 시도해주세요.');
 
 $pdo = get_pdo();
 $token = (string) ($_POST['edit_token'] ?? '');

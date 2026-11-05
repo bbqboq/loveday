@@ -15,7 +15,7 @@ function snap_fail(int $code, string $msg): void
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') snap_fail(405, '잘못된 요청입니다.');
-if (!hash_equals($_SESSION['csrf_token'] ?? '', (string) ($_POST['csrf_token'] ?? ''))) snap_fail(403, '페이지를 새로고침 후 다시 시도해주세요.');
+if (!csrf_ok((string) ($_POST['csrf_token'] ?? ''))) snap_fail(403, '페이지를 새로고침 후 다시 시도해주세요.');
 
 $pdo = get_pdo();
 $slug = (string) ($_POST['s'] ?? '');

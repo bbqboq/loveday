@@ -14,7 +14,7 @@ header('Content-Type: application/json; charset=utf-8');
 function trip_fail(int $code, string $msg): void { http_response_code($code); echo json_encode(['ok' => false, 'error' => $msg], JSON_UNESCAPED_UNICODE); exit; }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') trip_fail(405, '잘못된 요청입니다.');
-if (!hash_equals((string) ($_SESSION['csrf_token'] ?? ''), (string) ($_POST['csrf_token'] ?? ''))) trip_fail(403, '페이지를 새로고침한 뒤 다시 시도해주세요.');
+if (!csrf_ok((string) ($_POST['csrf_token'] ?? ''))) trip_fail(403, '페이지를 새로고침한 뒤 다시 시도해주세요.');
 $pdo = get_pdo();
 $invite = snap_owner_invite($pdo, (string) ($_POST['t'] ?? ''));
 if (!$invite) trip_fail(403, '편집 링크가 올바르지 않아요. 내 청첩장에서 다시 들어와주세요.');

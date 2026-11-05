@@ -21,7 +21,7 @@ function guest_fail(int $code, string $msg): void { guest_json(['ok' => false, '
 function guest_csrf_check(): void
 {
     $t = (string) ($_POST['csrf_token'] ?? '');
-    if ($t === '' || !hash_equals((string) ($_SESSION['csrf_token'] ?? ''), $t)) {
+    if (!csrf_ok($t)) { // 1019z9 오래 띄워 둔 화면도 같은 사이트면 통과
         guest_fail(403, '페이지를 새로고침한 뒤 다시 시도해주세요.');
     }
 }
