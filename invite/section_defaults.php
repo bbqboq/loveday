@@ -410,7 +410,7 @@ function section_youtube_id(string $in): string
     return '';
 }
 
-const SECTION_EASY_MVIEWS = ['split', 'lens', 'lens2', 'peek', 'off'];
+const SECTION_EASY_MVIEWS = ['peek']; // 1019z7 실서버에서 고른 것만 남김 (반반 화면·떠 있는 창·비켜서는 창·질문만 = 코드째 지움)
 /** 휴대폰 간편 만들기 보기 방식 (기본 'split') */
 function section_defaults_easy_mview(): string
 {
@@ -418,10 +418,10 @@ function section_defaults_easy_mview(): string
     if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 'split';
     $j = json_decode((string) file_get_contents($f), true);
     $v = is_array($j) ? (string) ($j['easy']['mobileView'] ?? '') : '';
-    return in_array($v, SECTION_EASY_MVIEWS, true) ? $v : 'split';
+    return in_array($v, SECTION_EASY_MVIEWS, true) ? $v : 'peek';
 }
 
-const SECTION_EASY_INTROS = ['d', 's', 'f', 'e', 'b', 'old'];
+const SECTION_EASY_INTROS = ['d']; // 1019z7 나머지(s·f·e·b·old) 지움
 /** 간편 만들기 인트로 칸 모양 (기본 'd' = 미리보기 위에서 바로 + 추천 분위기 + 분위기 16가지, 1018z18p · 's' = 쉬운 칸 1018z18o) */
 function section_defaults_easy_intro(): string
 {
@@ -432,9 +432,9 @@ function section_defaults_easy_intro(): string
     return in_array($v, SECTION_EASY_INTROS, true) ? $v : 'd';
 }
 /** 간편 만들기 첫 화면 글자 효과 고르기 'pic'(그림을 눌러 바꾸기 + 디자인 맞춤, 기본 1018z18x) | 'tap'(누르면 바로 고름 1018z18w) | 'list'(줄마다 ▶ 미리 보기 + 고르기 1018z18p) | 'cards'(움직이는 카드 1018z18o) */
-const SECTION_EASY_FXS = ['pic', 'tap', 'list', 'cards'];
+const SECTION_EASY_FXS = ['pic']; // 1019z7 tap·list·cards 지움
 /** 간편 만들기 인트로 스티커 고치기 'bubble'(말풍선 메뉴 + 두 손가락, 기본 1018z18p) | 'gizmo'(전문가 모드와 같은 조작 틀 1018z18m) */
-const SECTION_EASY_STKS = ['bubble', 'gizmo'];
+const SECTION_EASY_STKS = ['bubble']; // 1019z7 gizmo 지움
 function section_defaults_easy_pick(string $key, array $allowed): string
 {
     $f = section_defaults_file();
@@ -446,9 +446,9 @@ function section_defaults_easy_pick(string $key, array $allowed): string
 function section_defaults_easy_fx(): string { return section_defaults_easy_pick('fxPanel', SECTION_EASY_FXS); }
 function section_defaults_easy_stk(): string { return section_defaults_easy_pick('stkEdit', SECTION_EASY_STKS); }
 /** 간편 만들기 계좌 모양 고르기 'chips'(이름 칩 - 바로 뜸, 기본 1018z18w) | 'pics'(진짜로 그린 그림 카드 1018z18v) */
-const SECTION_EASY_ACCS = ['chips', 'pics'];
+const SECTION_EASY_ACCS = ['chips']; // 1019z7 pics 지움
 function section_defaults_easy_acc(): string { return section_defaults_easy_pick('accPanel', SECTION_EASY_ACCS); }
-const SECTION_EASY_NBS = ['swipe', 'rows', 'tiles', 'focus', 'old'];
+const SECTION_EASY_NBS = ['focus', 'rows', 'tiles', 'old']; // 1019z7 swipe 지움 (rows·tiles·focus는 전문가 R1~R3와 같은 코드라 남김)
 /** 간편 만들기 ↓ 스크롤 버튼 칸 모양 (기본 'swipe' = 첫 화면 큰 그림 옆으로 넘기기, 1018z18r) */
 function section_defaults_easy_nb(): string
 {
@@ -456,10 +456,10 @@ function section_defaults_easy_nb(): string
     if (!is_file($f) || filesize($f) > SECTION_FILE_MAX) return 'swipe';
     $j = json_decode((string) file_get_contents($f), true);
     $v = is_array($j) ? (string) ($j['easy']['nbPanel'] ?? '') : '';
-    return in_array($v, SECTION_EASY_NBS, true) ? $v : 'swipe';
+    return in_array($v, SECTION_EASY_NBS, true) ? $v : 'focus';
 }
 
-const SECTION_EASY_READYS = ['todo', 'pv', 'slim', 'next', 'bar']; // todo = 1019g 1안 남은 것만 크게(기본) · pv = 1019g 3안 미리보기에서 바로 · slim = 1018z18y 단순 (위 진행 한 줄 + 아래 고정 [완성본 보기])
+const SECTION_EASY_READYS = ['todo']; // todo = 1019g 1안 남은 것만 크게 (1019z7: pv·slim·next·bar 시안은 지움 - 저장돼 있으면 todo로)
 /** 목록 화면 발행 준비 카드 모양 (기본 'next' = C안 큰 버튼 하나) */
 function section_defaults_easy_ready(): string
 {
@@ -470,7 +470,7 @@ function section_defaults_easy_ready(): string
     return in_array($v, SECTION_EASY_READYS, true) ? $v : 'todo';
 }
 
-const SECTION_EASY_PCPICKS = ['grid', 'film', 'car'];
+const SECTION_EASY_PCPICKS = ['grid', 'car']; // 1019z7 film 지움 (car = 휴대폰 넘겨 보기라 남김)
 /** PC 디자인 고르기 화면 (기본 'grid') */
 function section_defaults_easy_pcpick(): string
 {
@@ -517,7 +517,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     $easyHeroPos = ($easyMore !== null && array_key_exists('heroPos', $easyMore)) ? section_easy_hero_pos_clean($easyMore['heroPos']) : section_defaults_easy_hero_pos(); // 예시 사진 보일 부분·확대
     if ($easyHero === '' || $easyHeroPos === section_easy_hero_pos_clean([])) $easyHeroPos = null;
     $easyMview = ($easyMore !== null && array_key_exists('mobileView', $easyMore)) ? (string) $easyMore['mobileView'] : section_defaults_easy_mview(); // 휴대폰 보기 방식
-    if (!in_array($easyMview, SECTION_EASY_MVIEWS, true)) $easyMview = 'split';
+    if (!in_array($easyMview, SECTION_EASY_MVIEWS, true)) $easyMview = 'peek';
     $easyMviewSet = $easyMview !== 'split';
     $easyPc = ($easyMore !== null && array_key_exists('pcPick', $easyMore)) ? (string) $easyMore['pcPick'] : section_defaults_easy_pcpick(); // PC 디자인 고르기 화면
     if (!in_array($easyPc, SECTION_EASY_PCPICKS, true)) $easyPc = 'grid';
@@ -526,7 +526,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if (!in_array($easyRd, SECTION_EASY_READYS, true)) $easyRd = 'todo';
     $easyRdSet = $easyRd !== 'todo'; // (1019g 기본이 'todo'로 바뀜 - 예전 기본 'slim'도 이제 고르면 저장됨)
     $easyNb = ($easyMore !== null && array_key_exists('nbPanel', $easyMore)) ? (string) $easyMore['nbPanel'] : section_defaults_easy_nb(); // 스크롤 버튼 칸 모양
-    if (!in_array($easyNb, SECTION_EASY_NBS, true)) $easyNb = 'swipe';
+    if (!in_array($easyNb, SECTION_EASY_NBS, true)) $easyNb = 'focus';
     $easyNbSet = $easyNb !== 'swipe';
     $easyIp = ($easyMore !== null && array_key_exists('introPanel', $easyMore)) ? (string) $easyMore['introPanel'] : section_defaults_easy_intro(); // 인트로 칸 모양
     if (!in_array($easyIp, SECTION_EASY_INTROS, true)) $easyIp = 'd';

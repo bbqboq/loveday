@@ -542,18 +542,6 @@ html.mob-easy-only #scBack { display: none; }
 .spb-ready .acts .wz-next { flex: 1; height: 46px; }
 .spb-ready .acts .wz-back { flex: none; height: 46px; padding: 0 14px; }
 .spb-next { gap: 10px; padding: 16px; }
-.spb-next .nx-seg { display: flex; gap: 6px; } .spb-next .nx-seg i { flex: 1; height: 6px; border-radius: 99px; background: var(--wz-line, #EAE6E0); }
-.spb-next .nx-seg i.cur { background: linear-gradient(90deg, var(--wz-ink, #1B1A18) var(--f, 0%), var(--wz-line, #EAE6E0) var(--f, 0%)); } .spb-next.s2 .nx-seg i.cur, .spb-next.s3 .nx-seg i.cur { background: var(--wz-ink, #1B1A18); }
-.spb-next .nx-seg i.done { background: #9A5B66; }
-.spb-next .nx-lab { display: flex; justify-content: space-between; font-size: 12px; color: var(--wz-sub); } .spb-next .nx-lab .cur { color: var(--wz-ink, #1B1A18); font-weight: 800; } .spb-next .nx-lab .done { color: #9A5B66; font-weight: 700; }
-.spb-next .nx-big { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 14px 16px; border: 0; border-radius: 16px; background: var(--wz-ink, #1B1A18); color: #fff; font: inherit; cursor: pointer; }
-.spb-next .nx-big:hover { filter: brightness(1.12); } .spb-next .nx-big:disabled { opacity: .7; cursor: default; }
-.spb-next .nx-big span { flex: 1; display: grid; gap: 2px; min-width: 0; } .spb-next .nx-big small { font-size: 12px; color: rgba(255,255,255,.72); } .spb-next .nx-big b { font-size: 17px; font-weight: 800; }
-.spb-next .nx-big i { font-style: normal; font-size: 22px; line-height: 1; }
-.spb-next.s3 .nx-big { background: #7C4650; } .spb-next.s4 .nx-big { background: #7C4650; }
-.spb-next .nx-after { margin: -2px 0 0; text-align: center; font-size: 12px; color: var(--wz-sub); word-break: break-all; }
-.spb-next .nx-subs { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; }
-.spb-next .nx-link { border: 0; background: none; padding: 2px 0; font: inherit; font-size: 12px; color: var(--wz-sub); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .spb-ready .acts .wz-next.ghost { flex: .8; background: #fff; color: var(--wz-ink, #1B1A18); border: 1px solid var(--ui-line, #E5DED3); box-shadow: none; }
 .spb-warn { background: #F6E7DB; } .spb-warn::after { content: '!'; position: absolute; inset: 0; display: grid; place-items: center; color: #A8643C; font-size: 12px; font-weight: 800; }
 .spb-li.warn .spb-tx small { color: #A8643C; }
@@ -708,8 +696,7 @@ html.mob-easy-only #scBack { display: none; }
 .sp-decmark { margin-top: 16px; }
 .sp-sw { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--wz-line); background: #fff; border-radius: 14px; margin-bottom: 10px; cursor: pointer; }
 .sp-sw > span { flex: 1; display: flex; flex-direction: column; gap: 3px; } .sp-sw b { font-size: 14px; } .sp-sw small { font-size: 12px; color: var(--wz-mute); }
-.sp-sw input { position: absolute; opacity: 0; pointer-events: none; left: 0; top: 0; width: 1px !important; height: 1px !important; min-width: 0 !important; margin: 0 !important; padding: 0 !important; } .sp-sw { position: relative; } /* (숨긴 체크 칸이 전문가 칸 모양(폭 100%)을 물려받아 화면 밖까지 넓어져, 누르면 화면이 옆으로 밀렸음 - 엔딩·감사 인사 등 공용 칸) */
-@media (max-width: 860px) { html.sp-ftop.simple-mode:not(.sp-mv-split) body::after { content: ''; display: block; height: 45vh; } } /* 글자 칸을 화면 위쪽으로 올릴 수 있게 아래 여유 (spFieldTop) */
+.sp-sw input { position: absolute; opacity: 0; pointer-events: none; left: 0; top: 0; width: 1px !important; height: 1px !important; min-width: 0 !important; margin: 0 !important; padding: 0 !important; } .sp-sw { position: relative; } /* (숨긴 체크 칸이 전문가 칸 모양(폭 100%)을 물려받아 화면 밖까지 넓어져, 누르면 화면이 옆으로 밀렸음 - 엔딩·감사 인사 등 공용 칸) */ /* 글자 칸을 화면 위쪽으로 올릴 수 있게 아래 여유 (spFieldTop) */
 .sp-sw i { flex: none; width: 44px; height: 26px; border-radius: 99px; background: var(--ui-line, #DED8CF); position: relative; transition: background .2s; }
 .sp-sw i::after { content: ''; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s; }
 .sp-sw input:checked + i { background: #1B1A18; } .sp-sw input:checked + i::after { transform: translateX(18px); }
@@ -919,7 +906,7 @@ html.mob-easy-only #scBack { display: none; }
 }
 
 /* ===== 휴대폰 간편 만들기: 적으면서 보이는 청첩장 (spMvApply) - ① 반반 화면 sp-mv-split / ② 돋보기 창 sp-mv-lens ===== */
-.sp-split-tg, .sp-split-hd, .sp-split-back, .sp-lens-ui, .sp-lens-dock, .sp-lens-tab { display: none; }
+.sp-split-tg, .sp-lens-ui, .sp-lens-dock, .sp-lens-tab { display: none; }
 .sp-glow { outline: 2px solid #E9C98F !important; outline-offset: 4px; box-shadow: 0 0 0 9px rgba(233, 201, 143, .3) !important; border-radius: 6px; transition: outline-color .4s, box-shadow .4s; }
 .simple-mode.sp-pv .preview-pane { left: 0 !important; top: 0 !important; width: auto !important; height: auto !important; } /* (돋보기 창 자리 값이 미리보기 화면에 남지 않게) */
 @media (max-width: 860px) {
@@ -934,29 +921,8 @@ html.mob-easy-only #scBack { display: none; }
     html.sp-mv-on:not(.sp-pv) #previewRoot .section-ruler, html.sp-mv-on:not(.sp-pv) #previewRoot .hb-area, html.sp-mv-on:not(.sp-pv) #previewRoot .hb-handle, html.sp-mv-on:not(.sp-pv) #previewRoot .hb-ok, html.sp-mv-on:not(.sp-pv) #previewRoot .hh-group { display: none !important; }
     html.sp-mv-on:not(.sp-pv) #previewRoot .col.selected { outline: none !important; box-shadow: none !important; }
 
-    /* ① 반반 화면: 위 청첩장 · 손잡이 · 아래 질문 (화면에 보이는 높이 = 키보드가 올라오면 그만큼 줄어듦) */
-    html.sp-mv-split:not(.sp-pv) body { overflow: hidden; }
-    html.sp-mv-split:not(.sp-pv) #screenEditor .layout { position: fixed; left: 0; right: 0; top: calc(var(--sp-vvt, 0px) + 50px); height: calc(var(--sp-vvh, 100dvh) - 50px); display: flex; flex-direction: column; overflow: hidden; overflow: clip; z-index: 5; } /* clip: 칸을 눌러 포커스가 갈 때 브라우저가 이 틀까지 밀어 올려 위 청첩장이 화면 밖으로 나가던 것 (hidden은 밀림) */
-    html.sp-mv-split:not(.sp-pv) #screenEditor .preview-pane { display: flex !important; order: 1; flex: none; height: var(--sp-split-h, 45%); min-height: 0; padding: 0 !important; overflow-y: auto; overflow-x: hidden; align-items: flex-start; background: var(--ui-soft, #EDE9E3); transition: height .28s ease; }
-    html.sp-split-drag #screenEditor .preview-pane { transition: none !important; }
-    html.sp-mv-split:not(.sp-pv) #screenEditor .preview-pane > .phone-frame { margin-bottom: 0; }
-    html.sp-mv-split:not(.sp-pv) .sp-split-hd { display: flex; order: 2; flex: none; height: 36px; align-items: center; gap: 6px; padding: 0 8px 0 12px; background: var(--ui-page, #F6F4F1); border-top: 1px solid var(--ui-line, #E5DED3); border-bottom: 1px solid var(--ui-line, #E5DED3); touch-action: none; user-select: none; -webkit-user-select: none; cursor: row-resize; box-shadow: 0 -4px 10px rgba(40, 30, 20, .06); }
-    .sp-sh-l { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; font-weight: 700; color: var(--wz-ink, #2B2320); display: flex; align-items: center; gap: 6px; }
-    .sp-sh-l::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 50%; background: #E9C98F; }
-    .sp-sh-g { flex: none; display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--wz-sub, #7A7067); }
-    .sp-sh-g i { width: 22px; height: 4px; border-radius: 99px; background: #BDB3A6; } .sp-sh-g b { font-weight: 700; color: var(--wz-ink, #2B2320); min-width: 2em; text-align: center; }
-    .sp-sh-b { flex: none; border: 1px solid var(--ui-line, #E5DED3); background: #fff; border-radius: 99px; font: inherit; font-size: 11px; font-weight: 700; padding: 4px 9px; color: var(--wz-ink, #2B2320); cursor: pointer; white-space: nowrap; }
-    .sp-sh-b[hidden] { display: none; }
-    html.sp-mv-split:not(.sp-pv) #simplePane { order: 3; flex: 1; min-height: 0 !important; overflow-y: auto !important; overscroll-behavior: contain; }
+    /* ① 반반 화면: 위 청첩장 · 손잡이 · 아래 질문 (화면에 보이는 높이 = 키보드가 올라오면 그만큼 줄어듦) */ /* clip: 칸을 눌러 포커스가 갈 때 브라우저가 이 틀까지 밀어 올려 위 청첩장이 화면 밖으로 나가던 것 (hidden은 밀림) */
     /* 키보드가 올라오면 (sp-kb): 위 청첩장 26%로 줄이고, [다음] 줄은 따라 붙지 않게 (적는 칸을 가리던 것) · 설명 줄·진행 막대는 잠깐 숨김 */
-    html.sp-mv-split.sp-kb:not(.sp-pv) #simplePane .sp-nav { position: static; padding-top: 6px; padding-bottom: 14px; background: none; }
-    html.sp-mv-split.sp-kb:not(.sp-pv) #simplePane :is(.sp-ask-top, .wz-lead) { display: none; }
-    html.sp-mv-split.sp-kb:not(.sp-pv) #simplePane .sp-body { padding-top: 8px; }
-    html.sp-mv-split.sp-kb:not(.sp-pv) .sp-split-hd { height: 30px; }
-    html.sp-mv-split.sp-kb:not(.sp-pv) .sp-split-hd :is(.sp-sh-g, .sp-sh-b) { display: none; }
-    html.sp-mv-split.sp-split-big:not(.sp-pv) #screenEditor .preview-pane { flex: 1; height: auto; }
-    html.sp-mv-split.sp-split-big:not(.sp-pv) #simplePane { display: none; }
-    html.sp-mv-split.sp-split-big:not(.sp-pv) .sp-split-back { display: block; position: fixed; left: 16px; right: 16px; bottom: 14px; z-index: 30; height: 50px; border: 0; border-radius: 14px; background: var(--wz-ink, #2B2320); color: #fff; font: inherit; font-size: 15px; font-weight: 700; box-shadow: 0 8px 20px rgba(0,0,0,.2); }
 
     /* ② 돋보기 창: 실제 미리보기를 세로로 긴 작은 창에 (확대·이동은 --sp-lens-tf, 자리는 spLensPlace) */
     html.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane { display: block !important; position: fixed; z-index: 640; overflow: hidden; padding: 0 !important; border-radius: 16px; background: #fff; box-shadow: 0 12px 30px rgba(20, 14, 10, .3); pointer-events: none; transition: left .34s cubic-bezier(.3,.8,.3,1), top .34s cubic-bezier(.3,.8,.3,1), width .3s ease, height .3s ease, opacity .2s; }
@@ -1019,7 +985,7 @@ html.mob-easy-only #scBack { display: none; }
     .sp-lens-cd.run::after { content: ''; position: absolute; inset: 0; background: var(--ui-point, #B08A5A); transform-origin: 0 50%; animation: spLensCd var(--cd, 2s) linear forwards; }
     @keyframes spLensCd { to { transform: scaleX(0); } }
 }
-@media (max-width: 860px) and (prefers-reduced-motion: reduce) { html.sp-mv-split #screenEditor .preview-pane, html.sp-mv-lens #screenEditor .preview-pane, html.sp-mv-lens #screenEditor .preview-pane > .phone-frame, .sp-lens-ui { transition: none !important; } }
+@media (max-width: 860px) and (prefers-reduced-motion: reduce) { html.sp-mv-lens #screenEditor .preview-pane, html.sp-mv-lens #screenEditor .preview-pane > .phone-frame, .sp-lens-ui { transition: none !important; } }
 
 /* 종이 질감 (청첩장 카드 배경 위에 깔리는 결) */
 #previewRoot.invite-preview { background-image: var(--p-paper, none); background-size: 300px; background-blend-mode: multiply; }
@@ -4749,10 +4715,6 @@ html.look-mode .onb-steps { display: none !important; }
 .spi-win.big .spi-ph { width: auto; height: 100%; }
 .spi-re { position: absolute; right: 10px; top: 10px; height: 32px; padding: 0 12px; border: 0; border-radius: 16px; background: rgba(0,0,0,.45); color: #fff; font: inherit; font-size: 12px; cursor: pointer; }
 .spi-cap { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font-size: 12px; color: rgba(255,255,255,.85); text-shadow: 0 1px 3px rgba(0,0,0,.5); pointer-events: none; }
-.spi-tabs { display: flex; gap: 3px; padding: 3px; border-radius: 12px; background: var(--ui-soft, #F3EEE8); overflow-x: auto; }
-.spi-tabs button { flex: 1 0 auto; height: 36px; padding: 0 10px; border: 0; border-radius: 10px; background: none; font: inherit; font-size: 13px; font-weight: 700; color: var(--wz-sub); cursor: pointer; }
-.spi-tabs button.on { background: #fff; color: var(--wz-ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
-.spi-tabb { min-height: 120px; }
 .spi-on { margin: 0; }
 /* F: 움직이는 효과 카드 */
 .spi-fxg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -4771,7 +4733,6 @@ html.look-mode .onb-steps { display: none !important; }
 .spi-stkb.on { border-color: var(--wz-ink); box-shadow: 0 0 0 1px var(--wz-ink); background: var(--ui-soft, #F3EEE8); }
 .spi-stkx { height: 32px; padding: 0 10px; border: 0; background: none; font: inherit; font-size: 12px; color: var(--wz-sub); text-decoration: underline; cursor: pointer; }
 .spi-cap { left: 50%; right: auto; transform: translateX(-50%); width: max-content; max-width: 90%; padding: 5px 10px; border-radius: 12px; background: rgba(0,0,0,.45); text-shadow: none; }
-.spi-tabb .spi-sec > .wz-lab > span:only-child, .spi-tabb .spi-sec > .wz-lab:not(:has(small)) { display: none; }
 .spi-stks { gap: 5px; } .spi-stkb { width: 34px; height: 34px; padding: 4px; border-radius: 9px; }
 /* 인트로 칸 손봄 (2026-10-20): E·F 미리보기도 휴대폰 화면 통째로(잘리지 않게) · 글자 칸 · 사진 끌기 */
 .spi-box .spi-win { height: min(54vh, 480px); justify-content: center; background: #1E1C1A; }
@@ -4873,7 +4834,6 @@ textarea[readonly].spi-txt, .spi-txs textarea[readonly] { background: #F6F3EE; c
 .hl-pop .hl-pg button.hlx-c.on { background: #fff; color: #2B2320; border-color: var(--wz-ink, #1B1A18); box-shadow: 0 0 0 1px var(--wz-ink, #1B1A18); }
 .hl-pop:has(.hlx) { max-width: min(296px, calc(100vw - 40px)); }
 /* 쉬운 인트로 칸 's' (1018z18o) */
-.spi-win.spi-win-s { height: min(46vh, 400px); }
 .spi-sets { display: flex; gap: 8px; overflow-x: auto; padding: 2px 1px 8px; scrollbar-width: none; }
 .spi-sets::-webkit-scrollbar { display: none; }
 .spi-set { flex: 0 0 auto; width: 96px; display: flex; flex-direction: column; gap: 3px; padding: 5px 5px 8px; border: 1.5px solid var(--wz-line, #E3DED6); border-radius: 14px; background: #fff; font: inherit; color: var(--wz-ink, #2B2320); cursor: pointer; text-align: center; }
@@ -4883,9 +4843,6 @@ textarea[readonly].spi-txt, .spi-txs textarea[readonly] { background: #F6F3EE; c
 .spi-set-tx { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 92%; font-size: 13px; line-height: 1.35; text-align: center; word-break: keep-all; }
 .spi-set-stk { position: absolute; width: 26%; height: auto; transform: translate(-50%, -50%); }
 .spi-txq { margin-top: 8px; }
-.spi-more { width: 100%; display: flex; align-items: center; gap: 8px; padding: 12px 14px; border: 1px dashed var(--wz-line, #DED8CF); border-radius: 14px; background: #fff; font: inherit; color: var(--wz-ink, #2B2320); cursor: pointer; text-align: left; }
-.spi-more span { font-weight: 700; font-size: 14px; flex: none; } .spi-more small { flex: 1; min-width: 0; font-size: 11.5px; color: var(--wz-sub, #8A847C); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .spi-more i { font-style: normal; color: var(--wz-sub, #8A847C); }
-.spi-morebox { display: flex; flex-direction: column; gap: 12px; padding: 12px; border-radius: 14px; background: var(--ui-soft, #F6F3EE); }
 /* 인트로 칸 'd' 미리보기 위에서 바로 + 추천 분위기 + 분위기 16가지 (1018z18p) */
 .spi-win.spi-win-d { height: min(52vh, 470px); }
 .spi-dbadge { position: absolute; left: 10px; top: 10px; z-index: 46; max-width: calc(100% - 130px); height: 28px; line-height: 28px; padding: 0 11px; border-radius: 14px; background: rgba(255,255,255,.92); color: #2B2320; font-size: 11.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
@@ -4930,15 +4887,11 @@ textarea[readonly].spi-txt, .spi-txs textarea[readonly] { background: #F6F3EE; c
 .hlb-pv[data-fx="up"] .hl-m > span { animation: hlxUp 2.6s cubic-bezier(.22, .9, .32, 1) infinite; }
 .hlb-pv[data-fx="zoom"] .hl-m > span { animation: hlxZoom 2.6s cubic-bezier(.22, .9, .32, 1) infinite; }
 .hlb-pv .hl-m > span:nth-of-type(2) { animation-delay: .15s; } .hlb-pv .hl-m > span:nth-of-type(3) { animation-delay: .3s; } .hlb-pv .hl-m > span:nth-of-type(n+4) { animation-delay: .45s; }
-.hlb-list { display: flex; flex-direction: column; border: 1px solid var(--wz-line, #E3DED6); border-radius: 14px; background: #fff; overflow: hidden; }
 .hlb-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
 .hlb-row + .hlb-row { border-top: 1px solid var(--wz-line, #EEE9E2); }
 .hlb-row.play { background: var(--ui-soft, #F8F5F0); }
 .hlb-pl { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--wz-line, #E3DED6); background: #fff; color: var(--wz-ink, #2B2320); font-size: 12px; cursor: pointer; }
 .hlb-row.play .hlb-pl { background: var(--wz-ink, #2B2320); border-color: var(--wz-ink, #2B2320); color: #fff; }
-.hlb-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; } .hlb-tx b { font-size: 13.5px; } .hlb-tx small { font-size: 11.5px; color: #8A847C; }
-.hlb-pick { flex: none; height: 34px; padding: 0 13px; border-radius: 17px; border: 1px solid var(--wz-line, #E3DED6); background: #fff; color: var(--wz-ink, #2B2320); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
-.hlb-row.on .hlb-pick { border-color: var(--wz-ink, #2B2320); background: var(--wz-ink, #2B2320); color: #fff; }
 @media (prefers-reduced-motion: reduce) { .hlb-pv .hl-m > span { animation: none !important; } }
 .spi-rec b, .spi-rec small { word-break: keep-all; }
 .spi-k-d #spiSetsSec > .wz-lab { flex-direction: column; align-items: flex-start; gap: 2px; }
@@ -5008,27 +4961,8 @@ textarea[readonly].spi-txt, .spi-txs textarea[readonly] { background: #F6F3EE; c
 .spi-edbar .g button { width: 28px; height: 28px; }
 .spi-edbar .ok { padding: 0 9px; font-size: 11.5px; }
 /* 스크롤 버튼 칸 'swipe' (1018z18r): 첫 화면 큰 그림을 옆으로 넘기며 모양 고르기 */
-.nbx-swipe { display: flex; flex-direction: column; gap: 10px; }
-.nbs-w { position: relative; margin: 0 -6px; }
-.nbs-w .spi-sarr { top: calc(50% - 15px); }
 .nbs { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px calc(50% - min(26vw, 100px)) 10px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .nbs::-webkit-scrollbar { display: none; }
-.nbs-c { flex: 0 0 min(52vw, 200px); scroll-snap-align: center; padding: 5px; border: 0; border-radius: 22px; background: #2B2320; cursor: pointer; transform: scale(.88); opacity: .5; transition: transform .25s ease, opacity .25s ease; }
-.nbs-c.on { transform: none; opacity: 1; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
-.nbs-ph { --k: .5; position: relative; display: block; aspect-ratio: 9 / 16; border-radius: 17px; overflow: hidden; container-type: inline-size; background: #3A342F; }
-.nbs-ph .hl-m { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; margin: 0 !important; border-radius: 0 !important; aspect-ratio: auto; }
-.nbs-ph .hl-m .hl-sh { display: none; }
-.nbs-ph .ib-shade { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
-.nbs-nb { position: absolute; left: 50%; bottom: 5%; z-index: 4; width: 0; height: 0; transform: scale(var(--k)); transform-origin: 0 100%; pointer-events: none; }
-.nbs-nb .ib-next { position: absolute; left: 0; bottom: 0; top: auto; right: auto; margin: 0; opacity: var(--next-op, .85); pointer-events: none; }
-.nbs-off { position: absolute; left: 0; bottom: 0; translate: -50% 0; white-space: nowrap; font-style: normal; font-size: 26px; color: #fff; background: rgba(0,0,0,.45); border-radius: 30px; padding: 8px 22px; }
-.nbs-n { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
-.nbs-n b { font-size: 16px; } .nbs-n span { font-size: 11.5px; color: var(--wz-sub, #8A847C); }
-.nbs-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 1px; }
-.nbs-chips::-webkit-scrollbar { display: none; }
-.nbs-chip { flex: none; height: 32px; padding: 0 13px; border: 1px solid var(--wz-line, #E3DED6); border-radius: 16px; background: #fff; font: inherit; font-size: 12.5px; color: var(--wz-ink, #2B2320); cursor: pointer; white-space: nowrap; }
-.nbs-chip.on { background: var(--wz-ink, #2B2320); border-color: var(--wz-ink, #2B2320); color: #fff; }
-@media (prefers-reduced-motion: reduce) { .nbs-c { transition: none; } }
 /* 1018z18s: 스티커 고치는 동안 미리보기 판 전체가 두 손가락 벌리기·비틀기 자리 (브라우저 화면 확대 안 되게) · 등장 효과 대신 톡 (공용 자산이 예전 판일 때) */
 .spi-editing .spi-win { touch-action: none; }
 .spi-ph .spi-stk.spi-fxfb { animation: spiStkOn .6s ease 1; }
@@ -5060,7 +4994,6 @@ html { touch-action: manipulation; } /* 두 번 톡 확대 막기 (1018z18s) - �
 /* 글자 효과 목록 ↔ 줄마다 [효과 ▾] 이어짐 표시 (1018z18t) */
 .hlb-link, .hlb-mix { margin: 0 0 8px; font-size: 12px; line-height: 1.5; color: var(--wz-sub, #8A8178); word-break: keep-all; }
 .hlb-mix { padding: 7px 10px; border-radius: 10px; background: var(--ui-soft, #F3EEE8); color: var(--wz-ink, #2B2320); }
-.hlb-row .hlb-tx b em { margin-left: 6px; font-style: normal; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 8px; background: var(--ui-soft, #F3EEE8); color: var(--wz-sub, #6F6A63); }
 .sticker-fx-popup.sfx-intro .sfx-mini { height: 24px; }
 .sticker-fx-popup.sfx-intro .sfx-mini i img, .sticker-fx-popup.sfx-intro .sfx-mini i svg { width: 18px; height: 18px; }
 @media (max-width: 860px) { .sticker-fx-popup.sfx-intro { max-height: min(62vh, 520px); } }
@@ -5075,16 +5008,6 @@ html.sp-mv-lens:not(.sp-pv) #screenEditor .preview-pane * { pointer-events: none
 .sp-accp-sw { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
 
 /* 글자 효과 고르기 '누르면 바로' (1018z18w) - 줄 전체가 버튼, 왼쪽 동그라미 ✓, 오른쪽에 그 효과로 움직이는 글자 */
-.hlb-tap .hlb-pv { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; }
-.hlb-tap .hlb-row { width: 100%; border: 0; background: #fff; font: inherit; color: inherit; text-align: left; cursor: pointer; padding: 10px 12px; -webkit-tap-highlight-color: transparent; }
-.hlb-tap .hlb-row + .hlb-row { border-top: 1px solid var(--wz-line, #EEE9E2); }
-.hlb-tap .hlb-row.on { background: var(--ui-tint, #FBF8F3); }
-.hlb-rd { flex: none; position: relative; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #CFC8BE; background: #fff; }
-.hlb-tap .hlb-row.on .hlb-rd { border-color: var(--wz-ink, #2B2320); background: var(--wz-ink, #2B2320); }
-.hlb-tap .hlb-row.on .hlb-rd::after { content: ''; position: absolute; left: 7px; top: 3.5px; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
-.hlb-tap .hlb-row.on .hlb-tx b { color: var(--wz-ink, #2B2320); }
-.hlb-smp { flex: none; width: 104px; height: 34px; }
-.hlb-tap .hlb-mix { margin: 0; }
 /* 계좌 모양 고르기 '이름 버튼' (1018z18w) - 그림을 그리지 않아 바로 뜸, 아이콘은 CSS로 */
 .sp-accc-g { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .sp-accc-b { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 2px 7px; border-radius: 12px; border: 1.5px solid var(--wz-line, #E3DED6); background: #fff; font: inherit; color: var(--wz-ink, #2B2320); cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -5275,11 +5198,8 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .sp-ask-o:focus-visible, .sp-seg button:focus-visible, .sp-ask-skip:focus-visible { outline: 2px solid var(--wz-ink, #1B1A18); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .sp-body, .wz-pop.on, .wz-pv.on, .spb-grp.spb-new, .spb-ready.flash { animation: none; } .sp-ask-o:active, .sp-seg button:active, .wz-back:active { scale: none; } .sp-ask-nav .wz-back { transition: none; } }
 /* ===== 1019f 반반 화면 미리보기 (Emil 기준 - 이 덩어리만 지우면 원래대로) ===== */
-@media (max-width: 860px) {
-    html.sp-mv-split:not(.sp-pv) #screenEditor .preview-pane { transition: height .26s cubic-bezier(.23,1,.32,1); }
-    .sp-sh-g b::before { content: '↕ '; font-weight: 400; color: var(--wz-sub, #7A7067); } /* (가운데 '반' 글자가 끌어서 크기 바꾸는 손잡이인 걸 알게) */
+@media (max-width: 860px) { /* (가운데 '반' 글자가 끌어서 크기 바꾸는 손잡이인 걸 알게) */
 }
-@media (max-width: 860px) and (prefers-reduced-motion: reduce) { html.sp-mv-split:not(.sp-pv) #screenEditor .preview-pane { transition: none; } }
 /* ===== 1019g 길찾기 버튼 자리 고르기 (.lnp - 전문가 모드 오시는 길 · 간편 만들기 예식장 정리 화면) ===== */
 .lnp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 6px 0 4px; }
 .lnp-c { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 8px 8px 10px; border: 1px solid var(--wz-line2, #DED8CF); border-radius: 12px; background: #fff; font: inherit; color: var(--wz-ink, #1B1A18); text-align: left; cursor: pointer; transition-property: border-color, box-shadow, scale; transition-duration: .15s; transition-timing-function: cubic-bezier(.23,1,.32,1); -webkit-tap-highlight-color: transparent; }
@@ -5322,16 +5242,9 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 /* 3안 */
 .spb-pvc { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--wz-line, #E5DED3); border-radius: 18px; background: #fff; }
 .spb-pvc .pc-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; } .spb-pvc .pc-h b { font-size: 18px; font-weight: 800; } .spb-pvc .pc-h span { font-size: 12.5px; font-weight: 700; color: var(--wz-sub); font-variant-numeric: tabular-nums; }
-.spb-pvc .pc-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; } .spb-pvc .pc-chips::-webkit-scrollbar { display: none; }
-.spb-pvc .pc-chips button { flex: none; height: 36px; padding: 0 12px; border: 1px solid var(--wz-line2, #DED8CF); border-radius: 99px; background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: var(--wz-ink); cursor: pointer; transition-property: background, color, border-color, scale; transition-duration: .15s; transition-timing-function: cubic-bezier(.23,1,.32,1); }
-.spb-pvc .pc-chips button.on { background: var(--wz-ink, #1B1A18); border-color: var(--wz-ink, #1B1A18); color: #fff; }
-.spb-pvc .pc-chips button:active, .spb-pvc .pc-go:active { scale: .97; }
+.spb-pvc .pc-go:active { scale: .97; }
 .spb-ready.spb-pvc .pc-d { margin: 0; font-size: 13px; color: var(--wz-sub); line-height: 1.5; }
 .spb-pvc .pc-go { height: 52px; border: 0; border-radius: 16px; background: var(--wz-ink, #1B1A18); color: #fff; font: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; transition: scale .15s cubic-bezier(.23,1,.32,1); }
-.spb-pvc .pc-links { display: flex; justify-content: center; } .spb-pvc .pc-links button { border: 0; background: none; padding: 6px 4px; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--wz-sub); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.spb-rd-pv:not(.pv-all) :is(.spb-grp, .spb-later, .spb-add, .spb-order, .spb-donerow) { display: none; }
-.spb-rd-pv:not(.pv-all) .spb-grp:has(.spb-li.open) { display: block; }
-.spb-rd-pv:not(.pv-all) .spb-grp:has(.spb-li.open) .spb-li:not(.open) { display: none; }
 .sp-pvpin { position: absolute; z-index: 30; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px 0 4px; border: 0; border-radius: 99px; background: #fff; color: #1B1A18; font: 800 12.5px/1 'Pretendard Variable', Pretendard, sans-serif; box-shadow: 0 3px 10px rgba(0,0,0,.22); cursor: pointer; pointer-events: auto; white-space: nowrap; animation: spPinIn .26s cubic-bezier(.23,1,.32,1) both; -webkit-tap-highlight-color: transparent; }
 .sp-pvpin span { width: 24px; height: 24px; border-radius: 50%; background: #C2553F; color: #fff; display: inline-grid; place-items: center; font-size: 12px; }
 .sp-pvpin:active { scale: .95; }
@@ -5382,7 +5295,7 @@ html.sp-pv .sp-dock, html.sp-kb .sp-dock { display: none; }
 .hsl-nav button:active { scale: .97; }
 .hsl-nav button:focus-visible { outline: 2px solid var(--wz-ink, #1B1A18); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .hsl-nav button { transition: none; } }
-.hsl-pg .nbs, .hsl-pg .nbs-chips { overscroll-behavior-x: contain; } /* (스크롤 버튼 장 안 큰 그림 넘기기가 장 넘기기로 번지지 않게) */
+.hsl-pg .nbs { overscroll-behavior-x: contain; } /* (스크롤 버튼 장 안 큰 그림 넘기기가 장 넘기기로 번지지 않게) */
 /* ===== 1019l 완성본 화면에서 내리다 보면 뒤의 편집 목록이 잠깐 보이던 것 =====
    완성본(고정 창) 끝에서 손가락이 계속 밀면 스크롤이 뒤 페이지로 번져 뒤 목록이 움직이고, 휴대폰 주소창이 접히며 창 크기가 바뀌는 사이 뒤가 비쳤음
    → 완성본 동안 뒤 페이지는 안 움직이게 + 스크롤은 완성본 안에서만 + 뒤를 화면 위아래 넉넉히 덮는 바탕 */
