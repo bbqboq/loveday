@@ -197,11 +197,27 @@
     function wmOverlay(root, c) {
         if (!root) return;
         root._wmCfg = c || null;
+        wmLock(!!c);
         const soon = () => wmSoon(root);
         try { wmApply(root, root._wmCfg); } catch (e) {}
         if (root._wmOn || !c) return; root._wmOn = true;
         try { new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && !(n.classList && (n.classList.contains('ld-wm-ov') || n.classList.contains('ld-wm-set')))))) soon(); }).observe(root, { childList: true, subtree: true }); } catch (e) {}
         try { new ResizeObserver(soon).observe(root); } catch (e) { addEventListener('resize', soon); }
+    }
+    // 1019z12 무료체험 사진 꾹 눌러 저장 · 오른쪽 클릭 저장 · 끌어서 저장 막기 (html.ld-wm-lock + CSS -webkit-touch-callout) - 끄기: window.LD_WM_SAVE_OK = true
+    let wmLockBound = false;
+    function wmLock(on) {
+        const de = document.documentElement;
+        if (!on || window.LD_WM_SAVE_OK) { de.classList.remove('ld-wm-lock'); return; }
+        de.classList.add('ld-wm-lock');
+        if (wmLockBound) return; wmLockBound = true;
+        const hit = e => {
+            if (!de.classList.contains('ld-wm-lock')) return false;
+            const t = e.target; if (!t || !t.closest) return false;
+            const im = t.tagName === 'IMG' ? t : t.closest('.lbx-slide, .ld-wm-ov') && (t.closest('.lbx-slide') || t.parentElement || t).querySelector('img');
+            return !!(im && WM_IMG.test(im.getAttribute('data-full') || im.getAttribute('src') || ''));
+        };
+        ['contextmenu', 'dragstart'].forEach(ev => document.addEventListener(ev, e => { if (hit(e)) e.preventDefault(); }, true));
     }
     // 1019z11 업로드 사진(uploads/{id}/{32자}.webp)의 작은 사본 주소 (서버 photo_thumbs.php) - 아니면 그대로
     function thumbUrl(u, sz) { u = String(u || ''); const m = u.match(/^(.*?(?:^|\/)uploads\/\d+\/)([0-9a-f]{32}\.webp)$/); return m && (sz === 's' || sz === 'm') ? m[1] + sz + '/' + m[2] : u; }

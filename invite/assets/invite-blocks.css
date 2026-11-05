@@ -2686,3 +2686,4 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ld-wm-set { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; z-index: 2; }
 .ld-wm-set > .ld-wm-ov, .ld-wm-ov.ld-wm-lbx { inset: auto; }
 .ld-wm-ov.ld-wm-lbx { will-change: transform; }
+html.ld-wm-lock img { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
