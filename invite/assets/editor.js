@@ -333,6 +333,7 @@ const fieldDefs = {
 //  help = 도움말 목록 LDH_* (도움말을 열 때 · 처음 6초 뒤 한가할 때) · thm = 디자인 썸네일 만들기 (?thumbs=make일 때만)
 const LD_CHUNK_P = {};
 function ldChunk(n) {
+    if (n === 'easy' && window.__ldEzDone) return Promise.resolve();
     if (LD_CHUNK_P[n]) return LD_CHUNK_P[n];
     const u = (window.LD_CHUNKS || {})[n];
     return (LD_CHUNK_P[n] = new Promise((ok, no) => {
@@ -343,6 +344,26 @@ function ldChunk(n) {
     }));
 }
 setTimeout(() => (window.requestIdleCallback || (f => setTimeout(f, 0)))(() => ldChunk('help').catch(() => {})), 6000);
+// 1019z6 간편 만들기 조각 (editor-easy.min.js): tools/build-editor.js가 압축할 때 간편 만들기 전용 함수(sp*·spi*)를 떼어 냄
+//  압축본 editor.min.js엔 그 자리에 ldEz를 부르는 작은 대리 함수만 남음 → 조각을 아직 못 받았는데 불리면 그 자리에서 받아 실행(동기)한 뒤 진짜 함수로
+//  원본(editor.js)은 그대로 한 파일 - 고칠 땐 지금처럼 editor.js만. 남길 함수 목록 = tools/easy-keep.json (전문가 모드에서도 불리는 것)
+function ldEzSync() {
+    if (window.__ldEzDone) return;
+    const u = (window.LD_CHUNKS || {}).easy; if (!u) return;
+    try { const x = new XMLHttpRequest(); x.open('GET', u, false); x.send(); if (x.status >= 200 && x.status < 300) { const sc = document.createElement('script'); sc.textContent = x.responseText; document.head.appendChild(sc); } } catch (e) {}
+}
+function ldEz(n, t, a) {
+    if (!window.__ldEzDone) ldEzSync();
+    const f = window[n];
+    if (typeof f !== 'function' || String(f).length < 90 && String(f).includes('ldEz(')) throw new Error('간편 만들기 조각을 불러오지 못했어요: ' + n);
+    return f.apply(t, a);
+}
+// 휴대폰(대부분 간편 만들기)은 에디터 바로 뒤에 이어서 받음(document.write = 순서대로, 에디터가 서버 내용을 받기 전에 끝남) · PC는 바로 비동기로
+function ldEzBoot() {
+    if (window.__ldEzDone || !(window.LD_CHUNKS || {}).easy) return;
+    if (document.readyState === 'loading' && matchMedia('(max-width: 860px), (pointer: coarse)').matches) { document.write('<script src="' + window.LD_CHUNKS.easy + '"><\/script>'); return; }
+    ldChunk('easy').catch(() => {});
+}
 const blockLabels = { heroVideo:'메인 영상', hero:'메인 사진', greeting:'인사말', location:'오시는 길', gallery:'갤러리', account:'마음 전하실 곳', dday:'디데이 카운트다운', timeline:'타임라인', interview:'인터뷰' };
 // 섹션마다 목록/편집창을 같은 색으로 뭉뚱그려 보여주면 지금 뭘 고치고 있는지 헷갈린다는 피드백을 받아서,
 // 섹션 종류별로 고유 색을 하나씩 정해두고 목록의 점 색 + 편집창 상단 띠 색으로 같이 써서 한눈에 매칭되게 한다.
@@ -15245,6 +15266,7 @@ async function bootstrapFromServer() {
     try {
         const res = await fetch(API_ENDPOINTS.load);
         const data = await res.json();
+        if (!window.__ldEzDone && !SAMPLE_ID) { let m = ''; try { const d = typeof data.design === 'string' ? JSON.parse(data.design || 'null') : data.design; m = d && d.mode; } catch (e) {} if (m === 'simple') { try { await ldChunk('easy'); } catch (e) {} } } // 간편 만들기로 저장된 청첩장은 조각을 받은 뒤 그림
         if (!data.ok && data.locked) { // 기간이 끝나 잠긴 청첩장 - 편집 대신 결제 안내
             const go = () => { location.href = data.pay_url; };
             if (window.LD) LD.alert(data.trial ? '무료체험 기간이 끝났어요' : '보관 기간이 끝났어요', { icon: 'clock', message: data.error, ok: data.trial ? '결제하고 계속 쓰기' : '내 청첩장으로' }).then(go);

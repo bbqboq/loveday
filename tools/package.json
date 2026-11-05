@@ -11,6 +11,7 @@
     "postcss": "8.4.38"
   },
   "dependencies": {
+    "acorn": "^8.19.0",
     "postcss": "^8.4.38"
   }
 }

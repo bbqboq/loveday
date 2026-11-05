@@ -17,7 +17,7 @@ const JS = { loader: 'js', minify: true, target: 'es2020', charset: 'utf8', lega
 // html: true = 에디터 HTML이 이 압축본을 ?v=지문으로 불러옴 · false = 하객 화면(invite_view.php)이 파일이 있으면 압축본을 씀 (?v=filemtime)
 const FILES = [
     { src: 'assets/editor.css', out: 'assets/editor.min.css', opt: CSS, html: true },
-    { src: 'assets/editor.js', out: 'assets/editor.min.js', opt: JS, html: true },
+    { src: 'assets/editor.js', out: 'assets/editor.min.js', opt: JS, html: true, split: 'assets/editor-easy.min.js' }, // 1019z6 간편 만들기 조각을 떼어 냄 (split-easy.js)
     { src: 'assets/editor-help.js', out: 'assets/editor-help.min.js', opt: JS, html: true }, // 1019s 나중에 불러오는 조각 (HTML window.LD_CHUNKS)
     { src: 'assets/editor-thm.js', out: 'assets/editor-thm.min.js', opt: JS, html: true },
     { src: 'assets/invite-blocks.css', out: 'assets/invite-blocks.min.css', opt: CSS, html: true }, // 공용 섹션 (에디터 + 하객 화면) - 1019부터 압축본
@@ -26,11 +26,23 @@ const FILES = [
     { src: 'assets/render-invite.js', out: 'assets/render-invite.min.js', opt: JS, html: false },
 ];
 const check = process.argv.includes('--check');
+const noSplit = process.argv.includes('--no-split');
 const hoverGate = process.argv.includes('--no-hover-gate') ? null : require('./hover-gate'); // 1019d 휴대폰 sticky hover 막기 (압축본만)
 let html = fs.readFileSync(HTML, 'utf8'), bad = 0;
 for (const f of FILES) {
     let src = fs.readFileSync(path.join(INV, f.src), 'utf8');
     if (hoverGate && f.opt.loader === 'css') { const g = hoverGate(src); src = g.css; if (!check) console.log(`  ${f.src}: 마우스 효과 ${g.n}곳을 (hover: hover) 안으로`); }
+    if (f.split && !noSplit) { // 간편 만들기 조각: 떼어 낸 부분을 따로 압축해서 쓰고 HTML LD_CHUNKS.easy ?v= 맞춤
+        const sp = require('./split-easy').split(src); src = sp.main;
+        const cc = esbuild.transformSync(sp.chunk, { ...f.opt, sourcefile: 'editor-easy.js' }).code;
+        const cv = crypto.createHash('sha1').update(cc).digest('hex').slice(0, 10);
+        const cp = path.join(INV, f.split), ccur = fs.existsSync(cp) ? fs.readFileSync(cp, 'utf8') : null;
+        const cre = new RegExp(f.split.replace(/[.]/g, '\\.') + '\\?v=[\\w-]+', 'g');
+        if (!cre.test(html)) { console.error(`  에디터 HTML LD_CHUNKS에 ${f.split}?v=… 주소가 없어요`); bad++; }
+        const h2 = html.replace(cre, `${f.split}?v=${cv}`);
+        if (check) { if (ccur !== cc || h2 !== html) { console.error(`  ${f.split}이(가) 옛날 거예요 → node tools/build-editor.js`); bad++; } else console.log(`  ✓ ${f.split} (${(Buffer.byteLength(cc) / 1024).toFixed(0)}KB)`); }
+        else { if (ccur !== cc) fs.writeFileSync(cp, cc); html = h2; console.log(`  ${f.split}  함수 ${sp.nFn}개 · 상수 ${sp.nConst}개  ${(Buffer.byteLength(cc) / 1024).toFixed(0)}KB  v=${cv}`); }
+    }
     const { code, warnings } = esbuild.transformSync(src, { ...f.opt, sourcefile: f.src });
     warnings.forEach(w => console.warn(`  주의 ${f.src}: ${w.text}`));
     const v = crypto.createHash('sha1').update(code).digest('hex').slice(0, 10);
