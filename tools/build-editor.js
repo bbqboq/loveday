@@ -17,7 +17,7 @@ const JS = { loader: 'js', minify: true, target: 'es2020', charset: 'utf8', lega
 // html: true = 에디터 HTML이 이 압축본을 ?v=지문으로 불러옴 · false = 하객 화면(invite_view.php)이 파일이 있으면 압축본을 씀 (?v=filemtime)
 const FILES = [
     { src: 'assets/editor.css', out: 'assets/editor.min.css', opt: CSS, html: true },
-    { src: 'assets/editor.js', out: 'assets/editor.min.js', opt: JS, html: true, split: 'assets/editor-easy.min.js' }, // 1019z6 간편 만들기 조각을 떼어 냄 (split-easy.js)
+    { src: 'assets/editor.js', out: 'assets/editor.min.js', opt: JS, html: true, split: 'assets/editor-easy.min.js', splitExp: 'assets/editor-exp.min.js' }, // 1019z6·z10 간편 만들기 조각을 떼어 냄 (split-easy.js)
     { src: 'assets/editor-help.js', out: 'assets/editor-help.min.js', opt: JS, html: true }, // 1019s 나중에 불러오는 조각 (HTML window.LD_CHUNKS)
     { src: 'assets/editor-thm.js', out: 'assets/editor-thm.min.js', opt: JS, html: true },
     { src: 'assets/invite-blocks.css', out: 'assets/invite-blocks.min.css', opt: CSS, html: true }, // 공용 섹션 (에디터 + 하객 화면) - 1019부터 압축본
@@ -42,6 +42,16 @@ for (const f of FILES) {
         const h2 = html.replace(cre, `${f.split}?v=${cv}`);
         if (check) { if (ccur !== cc || h2 !== html) { console.error(`  ${f.split}이(가) 옛날 거예요 → node tools/build-editor.js`); bad++; } else console.log(`  ✓ ${f.split} (${(Buffer.byteLength(cc) / 1024).toFixed(0)}KB)`); }
         else { if (ccur !== cc) fs.writeFileSync(cp, cc); html = h2; console.log(`  ${f.split}  함수 ${sp.nFn}개 · 상수 ${sp.nConst}개  ${(Buffer.byteLength(cc) / 1024).toFixed(0)}KB  v=${cv}`); }
+        if (f.splitExp && sp.nExp) { // 1019z10 전문가 모드 조각 (tools/exp-move.json)
+            const ec = esbuild.transformSync(sp.expChunk, { ...f.opt, sourcefile: 'editor-exp.js' }).code;
+            const ev = crypto.createHash('sha1').update(ec).digest('hex').slice(0, 10);
+            const ep = path.join(INV, f.splitExp), ecur = fs.existsSync(ep) ? fs.readFileSync(ep, 'utf8') : null;
+            const ere = new RegExp(f.splitExp.replace(/[.]/g, '\\.') + '\\?v=[\\w-]+', 'g');
+            if (!ere.test(html)) { console.error(`  에디터 HTML LD_CHUNKS에 ${f.splitExp}?v=… 주소가 없어요`); bad++; }
+            const h3 = html.replace(ere, `${f.splitExp}?v=${ev}`);
+            if (check) { if (ecur !== ec || h3 !== html) { console.error(`  ${f.splitExp}이(가) 옛날 거예요 → node tools/build-editor.js`); bad++; } else console.log(`  ✓ ${f.splitExp} (${(Buffer.byteLength(ec) / 1024).toFixed(0)}KB)`); }
+            else { if (ecur !== ec) fs.writeFileSync(ep, ec); html = h3; console.log(`  ${f.splitExp}  함수 ${sp.nExp}개  ${(Buffer.byteLength(ec) / 1024).toFixed(0)}KB  v=${ev}`); }
+        }
     }
     const { code, warnings } = esbuild.transformSync(src, { ...f.opt, sourcefile: f.src });
     warnings.forEach(w => console.warn(`  주의 ${f.src}: ${w.text}`));

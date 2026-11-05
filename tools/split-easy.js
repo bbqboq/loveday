@@ -12,6 +12,9 @@ const FN_RE = /^spi?[A-Z]/, CONST_RE = /^SPI?_/;
 
 function split(src) {
     const keep = new Set(JSON.parse(fs.readFileSync(path.join(__dirname, 'easy-keep.json'), 'utf8')).keep);
+    // 1019z10 전문가 모드 조각: tools/exp-move.json 에 적힌 맨 바깥 함수 (ldEx 대리 함수 · editor-exp.min.js)
+    const expList = fs.existsSync(path.join(__dirname, 'exp-move.json')) ? JSON.parse(fs.readFileSync(path.join(__dirname, 'exp-move.json'), 'utf8')).move : [];
+    const expSet = new Set(expList);
     const ast = acorn.parse(src, { ecmaVersion: 'latest', sourceType: 'script' });
     const nodes = ast.body;
     const fnMove = new Set();
@@ -20,24 +23,28 @@ function split(src) {
     const cands = new Map(); // name → node
     for (const n of nodes) if (n.type === 'VariableDeclaration' && n.kind === 'const' && n.declarations.length === 1 && n.declarations[0].id.type === 'Identifier' && CONST_RE.test(n.declarations[0].id.name)) cands.set(n.declarations[0].id.name, n);
     // 남는 코드(떼지 않는 문장)에서 쓰이는 const는 남김 - 줄어들 때까지 되풀이
-    const moved = n => (n.type === 'FunctionDeclaration' && fnMove.has(n.id.name)) || (n.type === 'VariableDeclaration' && cands.has(n.declarations[0] && n.declarations[0].id.name) && cands.get(n.declarations[0].id.name) === n);
+    const fnExp = new Set();
+    for (const n of nodes) if (n.type === 'FunctionDeclaration' && expSet.has(n.id.name) && !fnMove.has(n.id.name) && !n.generator) fnExp.add(n.id.name);
+    const moved = n => (n.type === 'FunctionDeclaration' && (fnMove.has(n.id.name) || fnExp.has(n.id.name))) || (n.type === 'VariableDeclaration' && cands.has(n.declarations[0] && n.declarations[0].id.name) && cands.get(n.declarations[0].id.name) === n);
     let changed = true;
     while (changed) {
         changed = false;
         const rest = nodes.filter(n => !moved(n)).map(n => src.slice(n.start, n.end)).join('\n');
         for (const name of [...cands.keys()]) if (new RegExp('\\b' + name + '\\b').test(rest)) { cands.delete(name); changed = true; }
     }
-    let main = '', chunk = '', pos = 0, nFn = 0, nConst = 0;
+    let main = '', chunk = '', expChunk = '', pos = 0, nFn = 0, nConst = 0, nExp = 0;
     for (const n of nodes) {
         if (!moved(n)) continue;
         main += src.slice(pos, n.start);
         const code = src.slice(n.start, n.end);
-        if (n.type === 'FunctionDeclaration') { const nm = n.id.name; main += `function ${nm}(){return ldEz('${nm}',this,arguments)}`; chunk += code + '\n'; nFn++; }
+        if (n.type === 'FunctionDeclaration' && fnExp.has(n.id.name)) { const nm = n.id.name; main += `function ${nm}(){return ldEx('${nm}',this,arguments)}`; expChunk += code + '\n'; nExp++; }
+        else if (n.type === 'FunctionDeclaration') { const nm = n.id.name; main += `function ${nm}(){return ldEz('${nm}',this,arguments)}`; chunk += code + '\n'; nFn++; }
         else { chunk += code.replace(/^const\b/, 'var') + '\n'; nConst++; }
         pos = n.end;
     }
-    main += src.slice(pos) + '\n;ldEzBoot();\n';
+    main += src.slice(pos) + '\n;ldEzBoot();' + (nExp ? 'ldExBoot();' : '') + '\n';
+    expChunk = '// 전문가 모드 조각 (tools/split-easy.js가 editor.js에서 떼어 냄 - 손으로 고치지 말 것, 목록 tools/exp-move.json)\n' + expChunk + 'window.__ldExDone = 1;\n';
     chunk = '// 간편 만들기 조각 (tools/split-easy.js가 editor.js에서 떼어 냄 - 손으로 고치지 말 것)\n' + chunk + 'window.__ldEzDone = 1;\n';
-    return { main, chunk, nFn, nConst };
+    return { main, chunk, nFn, nConst, expChunk, nExp };
 }
 module.exports = { split };

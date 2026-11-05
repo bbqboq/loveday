@@ -334,6 +334,7 @@ const fieldDefs = {
 const LD_CHUNK_P = {};
 function ldChunk(n) {
     if (n === 'easy' && window.__ldEzDone) return Promise.resolve();
+    if (n === 'exp' && window.__ldExDone) return Promise.resolve();
     if (LD_CHUNK_P[n]) return LD_CHUNK_P[n];
     const u = (window.LD_CHUNKS || {})[n];
     return (LD_CHUNK_P[n] = new Promise((ok, no) => {
@@ -363,6 +364,24 @@ function ldEzBoot() {
     if (window.__ldEzDone || !(window.LD_CHUNKS || {}).easy) return;
     if (document.readyState === 'loading' && matchMedia('(max-width: 860px), (pointer: coarse)').matches) { document.write('<script src="' + window.LD_CHUNKS.easy + '"><\/script>'); return; }
     ldChunk('easy').catch(() => {});
+}
+// 1019z10 전문가 모드 조각 (editor-exp.min.js): 간편 만들기·둘러보기에선 안 쓰는 전문가 편집창·조작 틀 함수 (목록 tools/exp-move.json, 떼어 내는 방식은 간편 조각과 같음)
+//  받는 때: PC = 바로 비동기 · 휴대폰 = 한가할 때(8초 뒤) · 전문가 모드로 저장된 청첩장은 bootstrapFromServer가 기다림 · [전문가 모드로]는 simpleToFull이 기다림 · 그 전에 불리면 그 자리에서 동기로
+function ldExSync() {
+    if (window.__ldExDone) return;
+    const u = (window.LD_CHUNKS || {}).exp; if (!u) return;
+    try { const x = new XMLHttpRequest(); x.open('GET', u, false); x.send(); if (x.status >= 200 && x.status < 300) { const sc = document.createElement('script'); sc.textContent = x.responseText; document.head.appendChild(sc); } } catch (e) {}
+}
+function ldEx(n, t, a) {
+    if (!window.__ldExDone) ldExSync();
+    const f = window[n];
+    if (typeof f !== 'function' || String(f).length < 90 && String(f).includes('ldEx(')) throw new Error('전문가 모드 조각을 불러오지 못했어요: ' + n);
+    return f.apply(t, a);
+}
+function ldExBoot() {
+    if (window.__ldExDone || !(window.LD_CHUNKS || {}).exp) return;
+    if (matchMedia('(max-width: 860px), (pointer: coarse)').matches) setTimeout(() => (window.requestIdleCallback || (f => setTimeout(f, 0)))(() => ldChunk('exp').catch(() => {})), 8000);
+    else ldChunk('exp').catch(() => {});
 }
 const blockLabels = { heroVideo:'메인 영상', hero:'메인 사진', greeting:'인사말', location:'오시는 길', gallery:'갤러리', account:'마음 전하실 곳', dday:'디데이 카운트다운', timeline:'타임라인', interview:'인터뷰' };
 // 섹션마다 목록/편집창을 같은 색으로 뭉뚱그려 보여주면 지금 뭘 고치고 있는지 헷갈린다는 피드백을 받아서,
@@ -14625,6 +14644,7 @@ function spExitInPlace() {
 }
 // ----- 간편 ↔ 직접 만들기 -----
 async function simpleToFull() {
+    if (!window.__ldExDone) { try { await ldChunk('exp'); } catch (e) {} } // 1019z10 전문가 모드 조각을 먼저
     stopAllBgm(); // 전문가 모드로 가면 간편 만들기에서 듣던 음악은 멈춤
     let restore = false;
     if (state.fullSnap) {
@@ -14966,7 +14986,8 @@ async function bootstrapFromServer() {
     try {
         const res = await fetch(API_ENDPOINTS.load);
         const data = await res.json();
-        if (!window.__ldEzDone && !SAMPLE_ID) { let m = ''; try { const d = typeof data.design === 'string' ? JSON.parse(data.design || 'null') : data.design; m = d && d.mode; } catch (e) {} if (m === 'simple') { try { await ldChunk('easy'); } catch (e) {} } } // 간편 만들기로 저장된 청첩장은 조각을 받은 뒤 그림
+        if (!window.__ldEzDone && !SAMPLE_ID) { let m = ''; try { const d = typeof data.design === 'string' ? JSON.parse(data.design || 'null') : data.design; m = d && d.mode; } catch (e) {} if (m === 'simple') { try { await ldChunk('easy'); } catch (e) {} } }
+        if (!window.__ldExDone && window.LD_CHUNKS && window.LD_CHUNKS.exp) { let m = ''; try { const d = typeof data.design === 'string' ? JSON.parse(data.design || 'null') : data.design; m = d && d.mode; } catch (e) {} if ((data.design && m !== 'simple') || SAMPLE_ID) { try { await ldChunk('exp'); } catch (e) {} } } // 1019z10 전문가 모드로 저장된 청첩장·관리자 샘플은 전문가 조각을 받은 뒤 그림 // 간편 만들기로 저장된 청첩장은 조각을 받은 뒤 그림
         if (!data.ok && data.locked) { // 기간이 끝나 잠긴 청첩장 - 편집 대신 결제 안내
             const go = () => { location.href = data.pay_url; };
             if (window.LD) LD.alert(data.trial ? '무료체험 기간이 끝났어요' : '보관 기간이 끝났어요', { icon: 'clock', message: data.error, ok: data.trial ? '결제하고 계속 쓰기' : '내 청첩장으로' }).then(go);
