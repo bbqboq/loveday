@@ -4,7 +4,7 @@
  *
  *  - 청첩장 1건당 1곡만 보관 (새로 올리면 이전 곡은 지운다). mp3/m4a
  *  - 권리 동의(agree=1)가 있어야 받는다. 동의 기록은 music_uploads 표에 남긴다 (신고가 들어오면 확인용)
- *  - 용량 줄이기: 에디터가 브라우저에서 먼저 96kbps mp3로 다시 저장해서 보낸다 (4분 곡 약 3MB).
+ *  - 용량 줄이기: 에디터가 브라우저에서 먼저 모노 64kbps · 앞 3분 mp3로 다시 저장해서 보낸다 (약 1.4MB, 1019z14 - 예전 96kbps 전곡 약 3MB).
  *    브라우저가 못 줄인 채로 온 큰 파일은, 서버에 ffmpeg가 있으면 여기서 한 번 더 줄인다.
  *  - 최대 용량: 관리자 설정 bgm_max_mb (기본 10MB, 줄인 뒤 크기 기준)
  */
@@ -14,7 +14,7 @@ require_once __DIR__ . '/snap_functions.php'; // app_setting() 사용
 header('Content-Type: application/json; charset=utf-8');
 function music_fail(int $code, string $msg): void { http_response_code($code); echo json_encode(['ok' => false, 'error' => $msg], JSON_UNESCAPED_UNICODE); exit; }
 
-/** 서버에 ffmpeg가 있으면 96kbps mp3로 다시 저장 (앨범 사진·태그도 뺌) */
+/** 서버에 ffmpeg가 있으면 에디터와 같게 모노 64kbps · 앞 3분(끝 3초 줄이며) mp3로 다시 저장 (앨범 사진·태그도 뺌) */
 function music_transcode(string $src, string $dst): bool
 {
     if (!function_exists('exec') || !function_exists('shell_exec')) return false;
@@ -23,7 +23,7 @@ function music_transcode(string $src, string $dst): bool
     $ff = trim((string) @shell_exec('command -v ffmpeg 2>/dev/null'));
     if ($ff === '') return false;
     $cmd = escapeshellcmd($ff) . ' -hide_banner -loglevel error -y -i ' . escapeshellarg($src)
-        . ' -vn -map_metadata -1 -ac 2 -ar 44100 -codec:a libmp3lame -b:a 96k ' . escapeshellarg($dst) . ' 2>&1';
+        . ' -vn -map_metadata -1 -t 180 -af afade=t=out:st=177:d=3 -ac 1 -ar 44100 -codec:a libmp3lame -b:a 64k ' . escapeshellarg($dst) . ' 2>&1';
     @exec($cmd, $out, $code);
     return $code === 0 && is_file($dst) && filesize($dst) > 1000;
 }
@@ -50,8 +50,8 @@ $dir = invitation_upload_dir((int) $invite['id']);
 if (!is_dir($dir) && !mkdir($dir, 0750, true) && !is_dir($dir)) music_fail(500, '저장 폴더를 만들 수 없어요.');
 $tmpName = $f['tmp_name'];
 $serverCompressed = false;
-// 브라우저가 줄이지 못한 큰 파일(2.5MB 넘음)은 서버에서 한 번 더 줄여 본다
-if (($_POST['compressed'] ?? '') !== '1' && $f['size'] > 2.5 * 1048576) {
+// 브라우저가 줄이지 못한 큰 파일(1.6MB 넘음)은 서버에서 한 번 더 줄여 본다
+if (($_POST['compressed'] ?? '') !== '1' && $f['size'] > 1.6 * 1048576) {
     $tc = $dir . 'tmp_' . bin2hex(random_bytes(6)) . '.mp3';
     if (music_transcode($tmpName, $tc) && filesize($tc) < $f['size']) { $tmpName = $tc; $ext = 'mp3'; $serverCompressed = true; }
     else @unlink($tc);

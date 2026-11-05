@@ -2936,15 +2936,16 @@ function bgmUploadPick(b, label, done) {
         LD.confirm('음악을 올리기 전에 확인해주세요', {
             message: '청첩장은 링크를 받은 누구나 들을 수 있어요. 가요 같은 시판 음원은 작사·작곡가, 가수, 음반사의 허락 없이 쓰면 저작권 문제가 될 수 있어요.',
             check: '이 음원을 청첩장에 쓸 권리가 있음을 확인합니다. (직접 만든 곡, 무료 사용이 허락된 곡, 사용권을 구입한 곡 등)',
-            note: '권리 문제로 신고가 들어오면 관리자가 음악만 삭제할 수 있어요.\n올린 음악은 듣기 좋은 음질(96kbps)로 용량을 줄여서 저장해요.',
+            note: '권리 문제로 신고가 들어오면 관리자가 음악만 삭제할 수 있어요.\n올린 음악은 앞 3분만, 휴대폰으로 듣기 좋은 음질로 용량을 줄여서 저장해요. (청첩장에선 끝나면 처음부터 다시 나와요)',
             ok: '동의하고 고르기', icon: 'info'
         }).then(ok => { if (ok) input.click(); });
 }
 
-// ===== 배경음악 용량 줄이기 (브라우저에서 mp3 96kbps로 다시 저장) =====
-// 320kbps 원곡 4분(약 9.6MB) → 약 2.9MB. 앨범 사진·태그도 빠진다. 휴대폰 스피커로 듣기엔 차이를 거의 못 느끼는 음질.
+// ===== 배경음악 용량 줄이기 (브라우저에서 mp3로 다시 저장) =====
+// 1019z14: 모노 64kbps + 앞 3분만(끝 3초 소리 줄이며 끝, 하객 화면은 되풀이 재생) → 4분 320kbps 원곡(약 9.6MB) → 약 1.4MB.
+//   휴대폰 스피커는 사실상 한 개라 모노로 바꿔도 거의 차이가 없음. 예전 = 스테레오 96kbps 전곡(약 2.9MB).
 // 인코더(assets/lame.min.js, LAME - LGPL)는 음악을 올릴 때만 불러온다.
-const BGM_KBPS = 96;
+const BGM_KBPS = 64, BGM_MAX_SEC = 180, BGM_FADE_SEC = 3;
 function loadLameEncoder() {
     if (window.lamejs && window.lamejs.Mp3Encoder) return Promise.resolve();
     return new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'assets/lame.min.js'; sc.onload = () => res(); sc.onerror = () => rej(new Error('인코더를 불러오지 못했어요')); document.head.appendChild(sc); });
@@ -2958,8 +2959,8 @@ async function compressMusic(file, onProgress) {
     try { audio = await new Promise((res, rej) => { const p = ctx.decodeAudioData(buf, res, rej); if (p && p.then) p.then(res, rej); }); }
     finally { try { ctx.close(); } catch (e) {} }
     const dur = audio.duration || 1;
-    // 이미 충분히 작은 mp3(약 120kbps 이하)는 다시 저장하지 않는다 - 음질만 나빠짐
-    if (/mpeg|mp3/i.test(file.type || file.name) && file.size * 8 / 1000 / dur <= BGM_KBPS * 1.25) return null;
+    // 이미 충분히 작고 짧은 mp3는 다시 저장하지 않는다 - 음질만 나빠짐
+    if (/mpeg|mp3/i.test(file.type || file.name) && file.size * 8 / 1000 / dur <= BGM_KBPS * 1.25 && dur <= BGM_MAX_SEC + 1) return null;
     await loadLameEncoder();
     // LAME가 받는 표본 주파수로 맞추기 (대부분 44100/48000이라 그대로)
     const okRates = [32000, 44100, 48000];
@@ -2969,9 +2970,14 @@ async function compressMusic(file, onProgress) {
         audio = await off.startRendering();
     }
     if (!okRates.includes(audio.sampleRate)) return null;
-    const stereo = audio.numberOfChannels >= 2;
-    const enc = new lamejs.Mp3Encoder(stereo ? 2 : 1, audio.sampleRate, stereo ? BGM_KBPS : 64);
-    const L = audio.getChannelData(0), R = stereo ? audio.getChannelData(1) : null;
+    const enc = new lamejs.Mp3Encoder(1, audio.sampleRate, BGM_KBPS);
+    // 모노로 섞기 + 앞 BGM_MAX_SEC초만 + 잘랐으면 끝을 서서히 줄임
+    const n = Math.min(audio.length, Math.round(BGM_MAX_SEC * audio.sampleRate));
+    const M = new Float32Array(n), chs = Math.min(2, audio.numberOfChannels);
+    for (let c = 0; c < chs; c++) { const d = audio.getChannelData(c); for (let i = 0; i < n; i++) M[i] += d[i] / chs; }
+    if (n < audio.length) { const f = Math.min(n, Math.round(BGM_FADE_SEC * audio.sampleRate)); for (let i = 0; i < f; i++) M[n - 1 - i] *= i / f; }
+    const stereo = false;
+    const L = M, R = null;
     const toI16 = (f, a, z) => { const o = new Int16Array(z - a); for (let i = a; i < z; i++) { const v = f[i] < -1 ? -1 : f[i] > 1 ? 1 : f[i]; o[i - a] = v < 0 ? v * 0x8000 : v * 0x7FFF; } return o; };
     const parts = []; const FRAME = 1152, STEP = FRAME * 64;
     let t0 = performance.now();
