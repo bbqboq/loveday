@@ -11608,6 +11608,7 @@ function spRenderAsk(pane) {
     const go = n => { const back = n < spStep; if (n > spStep) lookSeen(); if (n >= N) return spAskToList(); spAskLast = spStep; spStep = Math.max(0, Math.min(N, n));
         const to = spAskSteps()[spStep];
         spHeroPhase = back && to && to.k === 'hero' && to.part === 'look' && spHeroScrollOk() ? 'scroll' : 'pick';
+        if (to && to.k === 'venue') SPV.step = back && spVenueAddrOk() ? 1 : 0; // 1019z18 예식장 = ① 이름·주소 → ② 지도 (앞으로 오면 ①, 뒤로 오면 ②)
         if (to && to.k === 'finish' && spOpt('finish', 'introSteps')) {
             if (back) { if (state.intro && state.intro.enabled && state.intro.spiPicked) SPI.dstep = 'edit'; }
             else if (SPI.dstep === 'edit') SPI.dstep = 'pick'; // 인트로 질문에 새로 들어오면 늘 ① 분위기 고르기부터
@@ -13494,20 +13495,44 @@ function locNavPickBind(root, f, after) {
 }
 // 3. 예식장
 const spPostcodeOk = () => typeof daum !== 'undefined' && !!daum.Postcode;
+// 1019z18 예식장 질문 두 장 (사용자: '처음엔 주소 입력, 두 번째엔 지도 설정' - 계좌 칸 B안과 같은 옆으로 넘어가는 장 · 아래 [이전][다음]이 장을 넘김)
+//  질문 화면에서만 (목록 칸은 한 장 그대로) · 관리자 손쉬운 제작 → 예식장 [옵션] 'steps' 끄면 예전 한 화면
+var SPV = { step: 0 };
+function spVenueAddrOk() { const f = spBlock('location').fields, vdm = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; return !!(String(f.addressBase || f.address || '').trim() && !vdm.a); }
+function spVenueSlides(box) {
+    const sl = [...box.querySelectorAll('.spv-sl')], tr = box.querySelector('.spv-track'), wrap = box.querySelector('.spv-slides'); if (!tr) return;
+    const fit = () => { const c = sl[SPV.step]; if (c) wrap.style.height = c.offsetHeight + 'px'; };
+    const show = (n, anim) => { SPV.step = n; if (!anim) tr.style.transition = 'none'; tr.style.transform = `translateX(${-100 * n}%)`; if (!anim) { tr.offsetHeight; tr.style.transition = ''; }
+        sl.forEach((x, i) => { x.inert = i !== n; }); box.querySelectorAll('.spv-dots i').forEach((d, i) => d.classList.toggle('on', i <= n)); fit(); navSync();
+        if (n === 1) { spPvHint = { sel: '.location-map', t: Date.now() }; try { spScrollPreview(['location']); } catch (e) {} } };
+    if (box._spvRo) box._spvRo.disconnect(); if (window.ResizeObserver) { box._spvRo = new ResizeObserver(fit); sl.forEach(x => box._spvRo.observe(x)); }
+    wrap.addEventListener('scroll', () => { wrap.scrollLeft = 0; });
+    function navSync() { const nav = box.isConnected && document.querySelector('#simplePane .sp-ask-nav'); if (!nav) return; const nx = nav.querySelector('#spNext'), pv = nav.querySelector('#spPrev'); if (!nx) return;
+        if (nx.dataset.spvOrig == null) nx.dataset.spvOrig = nx.textContent;
+        nx.dataset.spv = SPV.step === 0 ? '1' : ''; nx.textContent = SPV.step === 0 ? '다음 · 지도 설정 ›' : nx.dataset.spvOrig;
+        if (pv) pv.dataset.spv = SPV.step === 1 ? '1' : '';
+        if (!nx._spvBound) { nx._spvBound = true; nx.addEventListener('click', ev => { if (nx.dataset.spv !== '1' || !box.isConnected) return; ev.preventDefault(); ev.stopImmediatePropagation();
+            if (!spVenueAddrOk()) { try { InviteBlocks.toast('주소 찾기를 눌러 예식장 주소를 넣어 주세요'); } catch (e) {} box.querySelector('#spAddr')?.focus({ preventScroll: true }); return; }
+            document.activeElement && document.activeElement.blur && document.activeElement.blur(); show(1, true); }, true); }
+        if (pv && !pv._spvBound) { pv._spvBound = true; pv.addEventListener('click', ev => { if (pv.dataset.spv !== '1' || !box.isConnected) return; ev.preventDefault(); ev.stopImmediatePropagation(); show(0, true); }, true); } }
+    show(SPV.step, false);
+}
 function spVenue(box) {
     const lb = spBlock('location'), f = lb.fields, vdm = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; // (디자인 예시 예식장·주소면 칸은 비워서 시작)
     if (!lb.enabled) { box.innerHTML = spH('어디에서 예식을 올리나요?', '주소를 찾으면 지도와 길찾기 버튼이 자동으로 만들어져요.') + spInclHtml('location') + spOffNote(); return; }
-    box.innerHTML = spH('어디에서 예식을 올리나요?', '주소를 찾으면 지도와 길찾기 버튼이 자동으로 만들어져요.') + `
+    const two = spOpt('venue', 'steps') && spViewNow() === 'quick' && window.innerWidth <= 860 && !!box.closest('#simplePane') && spOpt('venue', 'map'); // (휴대폰만 - PC는 예전 한 화면)
+    box.innerHTML = spH('어디에서 예식을 올리나요?', '주소를 찾으면 지도와 길찾기 버튼이 자동으로 만들어져요.') + `${two ? '<div class="spv-slides"><div class="spv-track"><div class="spv-sl"><div class="spv-h"><b>① 예식장 · 주소</b></div>' : ''}
         <div class="wz-field"><div class="wz-lab">예식장 이름</div><input class="wz-inp" data-f="venue" value="${vdm.v ? '' : wzEsc(f.venue)}" placeholder="예: ○○웨딩홀, ○○호텔"></div>
         <div class="wz-field"><div class="wz-lab">주소</div><div class="wz-addr"><input class="wz-inp sp-addr-in" data-f="addressBase" value="${vdm.a ? '' : wzEsc(f.addressBase || f.address)}" placeholder="주소 찾기를 눌러주세요"${spPostcodeOk() ? ' readonly' : ''}><button type="button" class="wz-btn2" id="spAddr">주소 찾기</button></div></div>
         ${spOpt('venue', 'detail') ? `<div class="wz-field"><div class="wz-lab">층 · 홀 이름 <small>선택</small></div><input class="wz-inp" data-f="addressDetail" value="${wzEsc(f.addressDetail)}" placeholder="예: 5층 그랜드홀"></div>` : ''}
         ${spOpt('venue', 'phone') ? `<div class="wz-field"><div class="wz-lab">예식장 전화 <small>선택</small></div><input class="wz-inp" data-f="phone" value="${wzEsc(f.phone)}" inputmode="tel" placeholder="02-000-0000"></div>` : ''}
+        ${two ? '</div><div class="spv-sl"><div class="spv-h"><b>② 지도 설정</b><span>바꾸면 작은 청첩장 창에서 바로 보여요</span></div>' : ''}
         ${spOpt('venue', 'map') ? `<div class="wz-field"><div class="wz-lab">지도</div>
             <label class="sp-sw"><span><b>지도 보여주기</b><small>주소로 카카오맵이 자동으로 떠요</small></span><input type="checkbox" data-sp-map="showMap"${f.showMap ? ' checked' : ''}><i></i></label>
             ${f.showMap ? `${spOpt('venue', 'mapWide') ? `<label class="sp-sw"><span><b>지도 가로 꽉 채우기</b><small>끄면 좌우 여백 있는 카드 모양</small></span><input type="checkbox" data-sp-map="mapFullWidth"${f.mapFullWidth ? ' checked' : ''}><i></i></label>` : ''}
             ${spOpt('venue', 'mapHeight') ? `<div class="sp-range"><span>지도 높이</span><input type="range" id="spMapH" min="100" max="500" step="10" value="${f.mapHeight ?? 190}"><span id="spMapHV">${f.mapHeight ?? 190}px</span></div>` : ''}
             ${spOpt('venue', 'navPos') && (spViewNow() !== 'quick' || window.innerWidth > 860) ? `<div class="wz-lab sp-lnp-lab">길찾기 버튼 자리</div>${locNavPickHtml(f)}` : ''}
-            ${spOpt('venue', 'mapDemo') ? '' : '<!--'}<div class="sp-mapdemo${f.mapFullWidth ? ' full' : ''}" id="spMapDemo" style="height:${Math.round((f.mapHeight ?? 190) * .8)}px" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b class="pin"></b><span>지도 예시 · 청첩장엔 예식장 지도가 이렇게 들어가요</span></div>${spOpt('venue', 'mapDemo') ? '' : '-->'}` : ''}</div>` : ''}`;
+            ${spOpt('venue', 'mapDemo') ? '' : '<!--'}<div class="sp-mapdemo${f.mapFullWidth ? ' full' : ''}" id="spMapDemo" style="height:${Math.round((f.mapHeight ?? 190) * .8)}px" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b class="pin"></b><span>지도 예시 · 청첩장엔 예식장 지도가 이렇게 들어가요</span></div>${spOpt('venue', 'mapDemo') ? '' : '-->'}` : ''}</div>` : ''}${two ? '</div></div></div><div class="spv-dots"><i></i><i></i></div>' : ''}`;
     // 지도 예시: 가로 꽉 채우기·높이를 바꾸면 그 자리에서 바로 (다시 그리지 않고 움직이며)
     const demo = box.querySelector('#spMapDemo');
     box.querySelectorAll('[data-sp-map]').forEach(c => c.addEventListener('change', () => {
@@ -13532,6 +13557,7 @@ function spVenue(box) {
         const layer = document.getElementById('addrLayer'); layer.innerHTML = '';
         new daum.Postcode({ oncomplete: d => { f.addressBase = d.roadAddress || d.jibunAddress; if ((!f.venue || (InviteBlocks.isVenueDemo && InviteBlocks.isVenueDemo(f).v)) && d.buildingName) f.venue = d.buildingName; f.address = [f.addressBase, f.addressDetail].filter(Boolean).join(' '); document.getElementById('addrModal').classList.remove('active'); spChanged(['location']); spRender(); }, width: '100%', height: '100%' }).embed(layer);
     });
+    if (two) spVenueSlides(box);
 }
 // 4. 인사말
 // 인사말 예시 묶음: '기본'엔 디자인에 들어 있던 문구(state.greetDemo)도 같이 (WZ_TONES에 없을 때)
@@ -13586,7 +13612,7 @@ function spAccPicsHtml(f) {
         ${mini ? '<div class="sp-accc-wrap"><div class="sp-accmini" id="spAccMini" aria-hidden="true"></div>' : ''}<div class="sp-accc-g" role="radiogroup" aria-label="계좌 모양">${SP_ACC_LOOKS.map(([v, l]) => `<button type="button" class="sp-accc-b${cur === v ? ' on' : ''}" data-acc-look="${v}" role="radio" aria-checked="${cur === v}"><i class="sp-acci sp-acci-${v}" aria-hidden="true"><s></s><s></s></i><b>${l}</b></button>`).join('')}</div>${mini ? '</div>' : ''}</div>`
         : '';
     const fold = O('display') && cards ? `<label class="sp-sw"><span><b>계좌를 접어 두기</b><small>${f.accCollapse ? '하객이 눌러야 계좌번호가 보여요' : '지금은 계좌번호가 바로 보여요'}</small></span><input type="checkbox" id="spAccFold" ${f.accCollapse ? 'checked' : ''}><i></i></label>` : '';
-    const kakao = O('kakao') ? `<label class="sp-sw"><span><b>카카오페이 송금 버튼</b><small>${kk ? '송금 링크를 적으면 계좌 아래에 노란 버튼이 생겨요' : '카카오페이 송금 링크가 있을 때만 켜요'}</small></span><input type="checkbox" id="spAccKk" ${kk ? 'checked' : ''}><i></i></label>
+    const kakao = O('kakao') && !spOpt('account', 'steps') ? `<label class="sp-sw"><span><b>카카오페이 송금 버튼</b><small>${kk ? '송금 링크를 적으면 계좌 아래에 노란 버튼이 생겨요' : '카카오페이 송금 링크가 있을 때만 켜요'}</small></span><input type="checkbox" id="spAccKk" ${kk ? 'checked' : ''}><i></i></label>
         ${kk ? `<div class="wz-field sp-in"><input class="wz-inp" data-sp-f="groomKakao" value="${wzEsc(f.groomKakao || '')}" placeholder="신랑 https://qr.kakaopay.com/..." inputmode="url" style="margin-bottom:6px"><input class="wz-inp" data-sp-f="brideKakao" value="${wzEsc(f.brideKakao || '')}" placeholder="신부 https://qr.kakaopay.com/..." inputmode="url"><p class="wz-hint">카카오페이 앱의 '송금코드' 링크를 복사해 붙여 넣어요.</p><p class="wz-hint sp-kk-bad" hidden>링크를 못 찾았어요 · https://qr.kakaopay.com/… 처럼 생긴 주소를 붙여 넣어 주세요</p></div>` : ''}` : '';
     return looks + (fold || kakao ? `<div class="sp-accp-sw">${fold}${kakao}</div>` : '');
 }
@@ -13683,12 +13709,12 @@ function spAbMount(host, f) {
         const c = spAbCheck(a.bank, a.number), fmt0 = BANK_ACCT_FMT[String(a.bank).replace(/은행$/, '')];
         const s1 = `${head(`② ${esc(a.bank || '')} 계좌번호`)}
             <div class="wz-field spab-numf"><input class="wz-inp spab-num" id="spAbNum" inputmode="numeric" enterkeyhint="next" autocomplete="off" value="${esc(acctFmt(a.bank, a.number))}" placeholder="${esc(fmt0 && fmt0[0] ? acctFmt(a.bank, '0'.repeat(fmt0[0].reduce((x, y) => x + y, 0))) : '숫자만 적어도 돼요')}" aria-label="계좌번호">
-            <div data-ab-chk>${c ? `<div class="spab-st ${c.ok ? 'ok' : 'bad'}">${esc(c.t)}</div>` : '<p class="spab-note">숫자만 적으면 \'-\'는 저절로 들어가요</p>'}</div><button type="button" class="spab-btn wide spab-kbgo" data-ab-kbgo="2">다음 · 예금주 ›</button></div>
+            <div data-ab-chk>${c ? `<div class="spab-st ${c.ok ? 'ok' : 'bad'}">${esc(c.t)}</div>` : '<p class="spab-note">숫자만 적으면 \'-\'는 저절로 들어가요</p>'}</div><div class="spab-kbrow"><button type="button" class="wz-back" data-ab-kbback="0" aria-label="은행 고르기로">‹</button><button type="button" class="wz-next" data-ab-kbgo="2">다음 · 예금주 ›</button></div></div>
             <div class="spab-row spab-nav"><button type="button" class="spab-btn ghost" data-ab-go="0">‹ 은행</button><button type="button" class="spab-btn wide" data-ab-go="2" ${c && c.ok ? '' : 'disabled'}>다음</button></div>`;
         const nx = spAbNext(f, roles, p.k), nxp = nx && roles.find(x => x.k === nx);
         const payOn = t => !!(p.pay && (String(f[p.pay + t] || '').trim() || SPAB.pay[p.pay + t]));
         const s2 = `${head('③ 예금주' + (p.pay ? ' · 송금 버튼' : ''))}
-            <div class="wz-field"><div class="wz-lab">예금주 <small>비워 두면 '${esc(spAbNameOf(p))}'</small></div><input class="wz-inp" id="spAbHold" enterkeyhint="done" value="${esc(a.holder && a.holder !== spAbNameOf(p) ? a.holder : '')}" placeholder="${esc(spAbNameOf(p))}" aria-label="예금주"><button type="button" class="spab-btn wide spab-kbgo" data-ab-kbgo="3">${nxp ? `확인 · 다음은 ${esc(nxp.role)} ›` : '확인'}</button></div>
+            <div class="wz-field"><div class="wz-lab">예금주 <small>비워 두면 '${esc(spAbNameOf(p))}'</small></div><input class="wz-inp" id="spAbHold" enterkeyhint="done" value="${esc(a.holder && a.holder !== spAbNameOf(p) ? a.holder : '')}" placeholder="${esc(spAbNameOf(p))}" aria-label="예금주"><div class="spab-kbrow"><button type="button" class="wz-back" data-ab-kbback="1" aria-label="계좌번호로">‹</button><button type="button" class="wz-next" data-ab-kbgo="3">${nxp ? `확인 · 다음은 ${esc(nxp.role)} ›` : '확인 ›'}</button></div></div>
             ${p.pay ? `<div class="spab-pay">
                 <label class="sp-sw"><span><b><i class="k">pay</i>카카오페이 송금 버튼</b></span><input type="checkbox" data-ab-pay="Kakao" ${payOn('Kakao') ? 'checked' : ''}><i></i></label>
                 ${payOn('Kakao') ? `<input class="wz-inp" data-ab-pf="Kakao" value="${esc(f[p.pay + 'Kakao'] || '')}" placeholder="https://qr.kakaopay.com/…" inputmode="url" aria-label="카카오페이 송금 링크"><div data-ab-kk></div>` : ''}
@@ -13726,8 +13752,8 @@ function spAbMount(host, f) {
     //  [이전] ② ③ → 앞 장 · ① → 앞 사람의 ③ (첫 분이면 원래대로 앞 질문) · 다 적었어요 → 마지막 분의 ③   [다음] ① → ② · ② → ③(자릿수가 맞아야) · ③ → 확인(다음 분으로) · 다 적었어요 → 다음 질문
     const ORDER = ['groomBank', 'brideBank', 'groomFatherBank', 'groomMotherBank', 'brideFatherBank', 'brideMotherBank'];
     const prevOf = k => { const sh = ORDER.filter(x => spAbShown(f, roles.find(r => r.k === x))), i = sh.indexOf(k); return i > 0 ? sh[i - 1] : (i < 0 ? sh[sh.length - 1] : ''); };
-    const qNav = () => { const nav = host.isConnected && host.closest('#simplePane') && document.querySelector('#simplePane .sp-ask-nav'); return nav ? { nx: nav.querySelector('#spNext'), pv: nav.querySelector('#spPrev') } : null; };
-    function navSync() { const q = qNav(); host.classList.toggle('spab-q', !!q); if (!q || !q.nx) return;
+    const qNav = () => { const nav = window.innerWidth <= 860 && host.isConnected && host.closest('#simplePane') && document.querySelector('#simplePane .sp-ask-nav'); /* (PC는 예전처럼 장 안 버튼 - 사용자 요청 1019z18) */ return nav ? { nx: nav.querySelector('#spNext'), pv: nav.querySelector('#spPrev') } : null; };
+    function navSync() { const q = qNav(); host.classList.toggle('spab-q', !!q); if (!q || !q.nx) { const nx0 = document.querySelector('#simplePane .sp-ask-nav #spNext'), pv0 = document.querySelector('#simplePane .sp-ask-nav #spPrev'); if (nx0 && nx0.dataset.ab) { nx0.dataset.ab = ''; nx0.classList.remove('sp-wait'); if (nx0.dataset.abOrig != null) nx0.textContent = nx0.dataset.abOrig; } if (pv0) pv0.dataset.ab = ''; return; }
         const { nx, pv } = q; if (nx.dataset.abOrig == null) nx.dataset.abOrig = nx.textContent; if (pv && pv.dataset.abOrig == null) pv.dataset.abOrig = pv.textContent;
         const p = roles.find(x => x.k === SPAB.cur) || roles[0], a = spAbParse(f[p.k]), c = spAbCheck(a.bank, a.number), st = SPAB.step;
         const nxk = spAbNext(f, roles, p.k), nxp = nxk && roles.find(x => x.k === nxk);
@@ -13757,6 +13783,7 @@ function spAbMount(host, f) {
                 if (p.opt && spAbShown(f, p) && SPAB.cur === k) { remove(k); return; } pick(k); return; }
             if (e.target.closest('[data-ab-rm]')) { remove(SPAB.cur); return; }
             // 키보드가 올라와 있을 땐 아래 [다음]이 키보드 뒤로 가려서, 적는 칸 바로 밑에 같은 버튼 (1019z17b)
+            const kb2 = e.target.closest('[data-ab-kbback]'); if (kb2) { go(+kb2.dataset.abKbback); if (kb2.dataset.abKbback === '1') setTimeout(() => host.querySelector('#spAbNum')?.focus({ preventScroll: true }), 340); return; }
             const kg = e.target.closest('[data-ab-kbgo]'); if (kg) { const p2 = roles.find(x => x.k === SPAB.cur), a2 = spAbParse(f[p2.k]), c2 = spAbCheck(a2.bank, a2.number);
                 if (kg.dataset.abKbgo === '2') { if (c2 && c2.ok) { go(2); setTimeout(() => host.querySelector('#spAbHold')?.focus({ preventScroll: true }), 340); } else try { InviteBlocks.toast(c2 ? c2.t : '계좌번호를 적어 주세요'); } catch (e3) {} return; }
                 host.querySelector('[data-ab-go="3"]')?.click(); return; }

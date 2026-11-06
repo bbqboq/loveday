@@ -5450,8 +5450,20 @@ body.fslot-on #addTextTopBtn { display: none !important; }
 .spa.spab-q .spab-nav { display: none; }
 .spab-numf { display: grid; gap: 8px; margin: 0; }
 /* 1019z17b 키보드가 올라오면: 아래 [다음]은 키보드 뒤라 적는 칸 바로 밑에 [다음] · 위 사람 표·점은 잠깐 숨겨 칸이 키보드 위에 오게 */
-.spab-kbgo { display: none; }
-html.sp-kb .spa .spab-kbgo { display: block; }
-html.sp-kb .spa:not(.spab-q) .spab-nav { display: none; }
+.spab-kbrow { display: none; }
+html.sp-kb .spa.spab-q .spab-kbrow { display: flex; gap: 10px; margin-top: 2px; }
+.spab-kbrow .wz-back { flex: none; width: 54px; height: 50px; padding: 0; font-size: 20px; }
+.spab-kbrow .wz-next { flex: 1; height: 50px; }
 html.sp-kb .spa .spab-t, html.sp-kb .spa .spab-dots { display: none; }
 html.sp-kb #simplePane:has(.spa.spab-q) .sp-ask-nav { display: none; } /* (키보드 위엔 칸 밑 [다음] 하나만) */
+/* 1019z18 예식장 질문 두 장 (spVenueSlides) - ① 예식장 · 주소 → ② 지도 설정 */
+#simplePane .spv-slides { overflow: hidden; margin: 0 -4px; transition: height .3s cubic-bezier(.23,1,.32,1); }
+#simplePane .spv-track { display: flex; align-items: flex-start; transition: transform .32s cubic-bezier(.23,1,.32,1); }
+#simplePane .spv-sl { flex: 0 0 100%; min-width: 0; padding: 4px; box-sizing: border-box; }
+.spv-h { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 10px; }
+.spv-h b { font-size: 14.5px; } .spv-h span { font-size: 12px; color: var(--wz-mute, #746D65); }
+.spv-dots { display: flex; gap: 6px; justify-content: center; margin: 4px 0 8px; }
+.spv-dots i { width: 22px; height: 4px; border-radius: 4px; background: var(--wz-line, #E4DED6); }
+.spv-dots i.on { background: var(--wz-acc, #8A4B55); }
+@media (prefers-reduced-motion: reduce) { #simplePane .spv-slides, #simplePane .spv-track { transition: none; } }
+html.sp-kb #simplePane .sp-acc-trial { display: none; } /* (키보드가 올라오면 무료체험 안내 상자는 잠깐 숨김 - 칸이 위로) */
