@@ -65,3 +65,9 @@ php /var/www/…/invite/photo_thumbs.php all
 - `pm.max_children 5` (프로세스 약 54MB) → 10
 - 크론이 root로 돌아 expire_cleanup이 만든 사진 사본이 root 소유 → 1019z13 `photo_own`이 원본 주인으로 바꿈 + 크론을 `sudo -u www-data`로
 - 스왑 1.8GB 사용(107일 켜 둠, 부하 0) → vm.swappiness 10
+
+## 백업 · 크론 · 시험 도구 (2026-11-07)
+
+- `backup.sh` → `/root/backup.sh` · root 크론 `30 3 * * *` · `/var/backups/site/{db,www,etc}/날짜` 14일 (DB마다 한 파일 · /var/www 하드링크 스냅샷 · nginx/php/letsencrypt/mysql 설정). Vultr 자동 백업은 안 씀(사용자 결정) → 서버 밖 사본 없음
+- 크론: naver_order_sync · cron_cleanup도 `runuser -u www-data --` · cron_cleanup 기록은 `/var/log/loveday_cron.log` (예전 invite/cron.log는 웹에서 열릴 수 있었음)
+- `loadtest.sh [테스트 청첩장 코드]` - ab로 동시 10·50·100
