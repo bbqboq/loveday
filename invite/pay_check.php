@@ -25,7 +25,7 @@ $read = function () use ($pdo, $id): array {
 $row = $read();
 $synced = false;
 if ($row['storage_plan'] === 'trial' && app_setting('naver_enabled') === '1' && nc_configured() && check_rate_limit($pdo, 'paychk_' . $id, 1, 20)) {
-    $lock = fopen(sys_get_temp_dir() . '/loveday_naver_sync.lock', 'c'); // naver_order_sync.php(크론)와 같은 잠금
+    $lock = ld_lock_open('naver_sync'); // naver_order_sync.php(크론)와 같은 잠금
     if ($lock && flock($lock, LOCK_EX | LOCK_NB)) {
         try { nc_sync($pdo); $synced = true; } catch (Throwable $e) { /* 다음 확인 때 다시 */ }
         flock($lock, LOCK_UN);

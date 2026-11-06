@@ -35,6 +35,26 @@ function csrf_same_origin(): bool
  * 요청이 우리 사이트 화면에서 온 것(Origin/Referer 같은 호스트)이면 통과시키고 새 토큰을 만들어 둠 - 다른 사이트에서 몰래 보낸 요청은 Origin이 달라서 그대로 막힘.
  * 로그인 확인(관리자 admin_guard · 편집 토큰 등)은 각 화면이 따로 하므로 그대로.
  */
+/**
+ * 1019z15 크론·화면이 같이 쓰는 잠금 파일 - uploads/site/ (없으면 임시 폴더). 처음 만들 때 누구나 열 수 있게(0666):
+ * 예전엔 /tmp에 root(크론)가 만든 잠금을 www-data(화면·바꾼 크론)가 못 열어서 '이미 실행 중'으로 영영 안 돌았음.
+ * 못 열면 null (부르는 쪽은 잠금 없이 그냥 진행)
+ */
+function ld_lock_open(string $name)
+{
+    $dirs = [];
+    if (defined('UPLOAD_DIR')) $dirs[] = rtrim(UPLOAD_DIR, '/') . '/site/';
+    $dirs[] = rtrim(sys_get_temp_dir(), '/') . '/';
+    foreach ($dirs as $d) {
+        if (!is_dir($d)) continue;
+        $p = $d . 'loveday_' . $name . '.lock';
+        $new = !file_exists($p);
+        $h = @fopen($p, 'c');
+        if ($h) { if ($new) @chmod($p, 0666); return $h; }
+    }
+    return null;
+}
+
 function csrf_ok(?string $token): bool
 {
     $s = (string) ($_SESSION['csrf_token'] ?? '');

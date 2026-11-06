@@ -19,8 +19,8 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require_once __DIR__ . '/guest_functions.php';
 
-$lock = fopen(sys_get_temp_dir() . '/loveday_expire_cleanup.lock', 'c');
-if (!$lock || !flock($lock, LOCK_EX | LOCK_NB)) { echo date('Y-m-d H:i:s') . " 이미 실행 중\n"; exit; }
+$lock = ld_lock_open('expire_cleanup');
+if ($lock && !flock($lock, LOCK_EX | LOCK_NB)) { echo date('Y-m-d H:i:s') . " 이미 실행 중\n"; exit; }
 
 $pdo = get_pdo();
 $demo   = demo_cleanup($pdo, 1000);

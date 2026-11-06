@@ -10,8 +10,8 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require_once __DIR__ . '/naver_commerce.php';
 
-$lock = fopen(sys_get_temp_dir() . '/loveday_naver_sync.lock', 'c');
-if (!$lock || !flock($lock, LOCK_EX | LOCK_NB)) exit(0); // 이전 실행이 아직 도는 중
+$lock = ld_lock_open('naver_sync');
+if ($lock && !flock($lock, LOCK_EX | LOCK_NB)) exit(0); // 이전 실행이 아직 도는 중
 
 if (app_setting('naver_enabled') !== '1' || !nc_configured()) exit(0);
 try {
