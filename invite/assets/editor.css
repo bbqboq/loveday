@@ -5389,3 +5389,59 @@ body.fslot-on #addTextTopBtn { display: none !important; }
 .stk2 .stk-rg .stk-lab { position: sticky; top: 0; z-index: 2; background: var(--ui-bg, #fff); margin: 0; padding: 10px 0 7px; }
 .stk2 .stk-rg .stk-gi, .stk2 .stk-rg .stk-ge { margin-top: 7px; }
 .stk2 .stk-rs + .stk-rs { margin-top: 6px; }
+
+/* ===== 1019z17 간편 계좌 칸 B안 (spAbMount) - 사람 표 + 옆으로 넘어가는 장 ===== */
+#simplePane .spa { display: grid; gap: 10px; margin: 4px 0 12px; }
+.spab-t { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 8px; }
+.spab-t h5 { margin: 0; font-size: 11px; font-weight: 700; color: var(--wz-mute, #746D65); letter-spacing: .04em; padding-left: 2px; }
+.spab-p { display: flex; align-items: center; gap: 6px; min-width: 0; border: 1px solid var(--wz-line, #E4DED6); background: var(--wz-card, #fff); color: var(--wz-ink, #2B2622); border-radius: 10px; padding: 7px 9px; font: inherit; font-size: 13px; cursor: pointer; text-align: left; }
+.spab-p em { font-style: normal; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spab-p i { flex: none; width: 17px; height: 17px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 10px; font-weight: 700; border: 1px solid var(--wz-line, #E4DED6); color: var(--wz-mute, #746D65); }
+.spab-p.ok i { background: #3F7A5A; border-color: #3F7A5A; color: #fff; }
+.spab-p.half i { background: #F6E7E1; border-color: #A65A3E; color: #A65A3E; }
+.spab-p.empty { color: var(--wz-mute, #746D65); border-style: dashed; background: transparent; }
+.spab-p.par { border-color: var(--wz-acc, #8A4B55); background: var(--wz-acc-soft, #F5EDEC); color: var(--wz-acc, #8A4B55); font-weight: 700; }
+.spab-p.par.ok i { border-color: #3F7A5A; }
+.spab-p.on { border-color: var(--wz-ink, #2B2622); box-shadow: inset 0 0 0 1px var(--wz-ink, #2B2622); }
+.spab-t.hint .spab-p.empty { border-color: var(--wz-acc, #8A4B55); color: var(--wz-acc, #8A4B55); animation: spabHint 1.6s ease-in-out infinite; }
+@keyframes spabHint { 50% { background: var(--wz-acc-soft, #F5EDEC); } }
+.spab-slides { overflow: hidden; margin: 0 -4px; transition: height .3s cubic-bezier(.23,1,.32,1); }
+.spab-track { display: flex; align-items: flex-start; transition: transform .32s cubic-bezier(.23,1,.32,1); }
+.spab-sl { flex: 0 0 100%; min-width: 0; display: grid; gap: 9px; padding: 4px; box-sizing: border-box; }
+.spab-h { display: flex; align-items: center; gap: 8px; }
+.spab-h b { font-size: 15px; } .spab-h span { font-size: 12.5px; color: var(--wz-mute, #746D65); }
+.spab-rm { margin-left: auto; border: 1px solid #A65A3E; background: transparent; color: #A65A3E; border-radius: 999px; padding: 3px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.spab-banks { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.spab-banks button { height: 36px; border: 1px solid transparent; background: var(--wz-soft, #F1EDE7); color: var(--wz-ink, #2B2622); border-radius: 10px; padding: 0 2px; font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spab-banks button:nth-child(-n+8) { font-weight: 700; }
+.spab-banks button.etc { grid-column: span 3; font-size: 12.5px; font-weight: 500; color: var(--wz-mute, #746D65); background: transparent; border: 1px dashed var(--wz-line, #E4DED6); }
+.spab-banks button.on { background: var(--wz-acc, #8A4B55); color: #fff; border-color: var(--wz-acc, #8A4B55); }
+.spab-banks button.etc.on { color: var(--wz-acc, #8A4B55); background: var(--wz-acc-soft, #F5EDEC); border-style: solid; }
+.spab-banks button:active, .spab-btn:active:not(:disabled), .spab-p:active { transform: scale(.97); }
+.spab-row { display: flex; gap: 8px; align-items: center; } .spab-row > * { min-width: 0; }
+.spab-row .wz-inp { flex: 1; }
+.spab-pre { flex: none; color: var(--wz-mute, #746D65); font-size: 14px; }
+.spab-num { font-size: 18px !important; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.spab-btn { border: 0; border-radius: 12px; padding: 11px 14px; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; background: var(--wz-ink, #2B2622); color: #fff; white-space: nowrap; }
+.spab-btn.ghost { background: transparent; color: var(--wz-ink, #2B2622); border: 1px solid var(--wz-line, #E4DED6); font-weight: 500; }
+.spab-btn.wide { flex: 1; }
+.spab-btn:disabled { opacity: .35; cursor: default; }
+.spab-st { font-size: 12.5px; border-radius: 10px; padding: 7px 10px; }
+.spab-st.ok { background: #E4F0E8; color: #3F7A5A; } .spab-st.bad { background: #F6E7E1; color: #A65A3E; }
+.spab-note { font-size: 12px; color: var(--wz-mute, #746D65); margin: 0; }
+.spab-pay { display: grid; gap: 8px; border: 1px solid var(--wz-line, #E4DED6); border-radius: 14px; padding: 8px 12px; }
+.spab-pay .sp-sw b { display: inline-flex; align-items: center; gap: 6px; }
+.spab-pay .sp-sw b i { display: inline-block; font-style: normal; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 6px; }
+.spab-pay .sp-sw b i.k { background: #FEE500; color: #3C1E1E; } .spab-pay .sp-sw b i.s { background: #3182F6; color: #fff; }
+.spab-dots { display: flex; gap: 6px; justify-content: center; }
+.spab-dots i { width: 22px; height: 4px; border-radius: 4px; background: var(--wz-line, #E4DED6); }
+.spab-dots i.on { background: var(--wz-acc, #8A4B55); }
+.spab-fin { display: grid; gap: 10px; }
+.spab-fh { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.spab-fh i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: #3F7A5A; color: #fff; font-style: normal; font-size: 12px; flex: none; }
+.spab-guide { display: flex; gap: 10px; align-items: flex-start; background: var(--wz-acc-soft, #F5EDEC); border-radius: 12px; padding: 10px 12px; font-size: 13px; }
+.spab-guide b { color: var(--wz-acc, #8A4B55); } .spab-guide small { color: var(--wz-mute, #746D65); font-size: 12px; }
+.spab-guide .arr { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--wz-acc, #8A4B55); color: #fff; display: grid; place-items: center; font-weight: 700; animation: spabArr 1.4s ease-in-out infinite; }
+@keyframes spabArr { 50% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .spab-slides, .spab-track { transition: none; } .spab-guide .arr, .spab-t.hint .spab-p.empty { animation: none; } }
+:is(.spab-p, .spab-banks button, .spab-btn, .spab-rm):focus-visible { outline: 2px solid var(--wz-acc, #8A4B55); outline-offset: 1px; }

@@ -11032,7 +11032,7 @@ function spLensSettle(ms) {
 function spLensTypingEl() { const a = document.activeElement; return a && a.closest && a.closest('#simplePane') && a.matches('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable=""]') ? a : null; }
 function spLensBubOn() { try { return spOpt('flow', 'lensBub') && !!spLensTypingEl() && !(Date.now() < (spMvShowSec.until || 0)); } catch (e) { return false; } }
 // 인사말을 직접 적는 칸 · 예식장 이름 · 층·홀 이름 · 계좌(은행·예금주·계좌번호) 칸은 작은 창 없음 - 창을 눌러 고정해 둔 때도 숨김 (사용자 요청 - 적는 동안 창이 오히려 가림)
-function spLensNoType(t) { t = t || spLensTypingEl(); return !!(t && spCurSt && (spCurSt.k === 'greet' || spCurSt.k === 'venue' && t.matches('[data-f="venue"], [data-f="addressDetail"]') || spCurSt.k === 'account' && t.closest('.wz-acc, .wz-banks')) && t.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"], [contenteditable=""]')); }
+function spLensNoType(t) { t = t || spLensTypingEl(); return !!(t && spCurSt && (spCurSt.k === 'greet' || spCurSt.k === 'venue' && t.matches('[data-f="venue"], [data-f="addressDetail"]') || spCurSt.k === 'account' && t.closest('.wz-acc, .wz-banks, .spa')) && t.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"], [contenteditable=""]')); }
 // 엔딩 크레딧 줄 칸(creditRows.n.*)을 적는 중이면: 미리보기 크레딧을 멈추고 그 줄을 가운데로 굴려 놓고(앞뒤 줄은 흐리게) 창은 크레딧 칸을 보여 줌
 function spLensPrompt() {
     const root = document.getElementById('previewRoot'), a = spLensTypingEl(), html = document.documentElement;
@@ -11895,7 +11895,7 @@ const SP_TASKS = [
       cut: b => { const f = b.querySelector(':scope > .wz-field'); spKeepOnly(b, c => c === f); } },
     { id: 'greet:text', k: 'greet', ask: 'greet', t: () => '인사말', chk: 'greet', sum: () => (spSum(spSteps().find(x => x.k === 'greet') || {})[0] || ''), cut: () => {} },
     { id: 'account:fill', k: 'account', ask: 'account', t: () => '계좌', chk: 'account', sum: () => (spSum(spSteps().find(x => x.k === 'account') || {})[0] || ''),
-      cut: b => spKeepOnly(b, c => c.matches('.wz-acc, #spPar, #spParents, .sp-acc-trial')) }, // (표시 방식·카드 모양은 다 채운 뒤에)
+      cut: b => spKeepOnly(b, c => c.matches('.wz-acc, .spa, #spPar, #spParents, .sp-acc-trial')) }, // (표시 방식·카드 모양은 다 채운 뒤에)
     { id: 'contact:phone', k: 'family', t: () => '연락처 번호', chk: 'contact', sum: () => '번호를 고쳤어요', cut: b => b.querySelectorAll(':scope > .sp-incl').forEach(x => x.remove()) },
 ];
 let spLastChecks = [];
@@ -13627,9 +13627,126 @@ function spAccPicsBind(box, f) {
       box.querySelectorAll('[data-sp-f$="Kakao"]').forEach(i => i.addEventListener('input', kkChk)); kkChk(); } // (링크로 못 알아보면 알려 줌 - 1018z18z9)
     box.querySelector('#spAccKk')?.addEventListener('change', e => { spAccKk = e.target.checked; if (!e.target.checked) { delete f.groomKakao; delete f.brideKakao; } redo(); if (e.target.checked) setTimeout(() => box.querySelector('[data-sp-f="groomKakao"]')?.focus(), 60); });
 }
+// ===== 1019z17 간편 계좌 칸 B안 (시안 claude.ai 아티팩트 PVyVG3iMMotQ1NEDw9LKhq, 관리자 마음 전할 곳 옵션 'steps' - 끄면 예전 카드 칸) =====
+//  위: 신랑측 | 신부측 표 (본인 · 아버지 · 어머니 - 부모님 칸은 누르면 넣고, 고치는 중에 한 번 더 누르면 빠짐)
+//  아래: 옆으로 넘어가는 장 ① 은행(22개 같은 크기 칸 + 그 밖의 은행 직접) ② 계좌번호('-' 자동 · 자릿수 확인) ③ 예금주 · 송금 버튼 → 다음 분으로 저절로 → 다 적었어요(부모님 안내)
+//  저장 값은 예전 그대로 f[groomBank…] = '은행 번호 (예금주)' · groomKakao/brideKakao · groomToss/brideToss(새로, 신랑·신부만)
+const SPAB_TOP = ['국민', '신한', '우리', '하나', '농협', '카카오뱅크', '토스뱅크', '기업'];
+const SPAB_MORE = ['케이뱅크', '우체국', '새마을금고', '신협', 'SC제일', '씨티', '부산', '대구', '광주', '경남', '수협', '산업', '전북', '제주'];
+const SPAB_SHORT = { '카카오뱅크': '카카오', '토스뱅크': '토스', '케이뱅크': '케이', '새마을금고': '새마을' };
+var SPAB = { cur: 'groomBank', step: 0, shown: [], own: false, pay: {}, at: '' }; // (var - 목록을 먼저 그려도 멈추지 않게)
+function spAbRoles() {
+    const wi = weddingInfo(), fam = ((state.blocks.find(b => b.id === 'family') || {}).fields) || {};
+    return [['groomBank', 'g', '신랑', wi.groom || '', 0, 'groom'], ['brideBank', 'b', '신부', wi.bride || '', 0, 'bride'],
+        ['groomFatherBank', 'g', '신랑 아버지', fam.groomFather || '', 1], ['groomMotherBank', 'g', '신랑 어머니', fam.groomMother || '', 1],
+        ['brideFatherBank', 'b', '신부 아버지', fam.brideFather || '', 1], ['brideMotherBank', 'b', '신부 어머니', fam.brideMother || '', 1]]
+        .map(([k, side, role, name, opt, pay]) => ({ k, side, role, name: String(name || '').trim(), opt: !!opt, pay: pay || '' }));
+}
+const spAbNameOf = p => p.name || p.role; // 예금주를 비우면: 신랑·신부는 이름, 부모님은 혼주 칸 이름 - 없으면 호칭('신랑 아버지')
+function spAbParse(v) {
+    if (!v) return { bank: '', number: '', holder: '' };
+    const a = parseAccountString(v);
+    if (a.number && /^[0\-\s]*$/.test(a.number)) return { bank: '', number: '', holder: '' }; // 디자인 예시 계좌(000-…)는 빈칸으로
+    if (a.number) return { bank: a.bank, number: a.number.replace(/\D/g, ''), holder: a.holder };
+    const m = String(v).match(/^(\S*)\s*\(([^)]*)\)\s*$/); return m ? { bank: m[1], number: '', holder: m[2] } : { bank: String(v).trim(), number: '', holder: '' };
+}
+function spAbCheck(bank, num) {
+    const d = String(num || '').replace(/\D/g, ''); if (!d) return null;
+    if (!bank) return { ok: false, t: '은행을 먼저 골라 주세요' };
+    const L = BANK_ACCT_FMT[String(bank).replace(/은행$/, '')];
+    if (!L || !L.length) return d.length >= 10 && d.length <= 16 ? { ok: true, t: `✓ ${d.length}자리` } : { ok: false, t: `계좌번호 자리 수를 확인해 주세요 · 지금 ${d.length}자리` };
+    const lens = [...new Set(L.map(p => p.reduce((a, b) => a + b, 0)))].sort((a, b) => a - b);
+    return lens.includes(d.length) ? { ok: true, t: `✓ ${bank} ${d.length}자리 · ${acctFmt(bank, d)}` } : { ok: false, t: `${bank}은(는) 보통 ${lens.join(' 또는 ')}자리예요 · 지금 ${d.length}자리` };
+}
+function spAbDone(f, k) { const a = spAbParse(f[k]); return !!(spAbCheck(a.bank, a.number) || {}).ok; }
+function spAbShown(f, p) { return !p.opt || SPAB.shown.includes(p.k) || !!spAbParse(f[p.k]).number || !!spAbParse(f[p.k]).bank; }
+function spAbNext(f, roles, cur) { return ['groomBank', 'brideBank', 'groomFatherBank', 'groomMotherBank', 'brideFatherBank', 'brideMotherBank']
+    .find(k => { const p = roles.find(x => x.k === k); return k !== cur && spAbShown(f, p) && !spAbDone(f, k); }); }
+function spAbMount(host, f) {
+    if (!host) return;
+    const token = (window.EDIT_TOKEN || '') + '|' + (state.presetId || ''); if (SPAB.at !== token) { SPAB.at = token; SPAB.shown = []; SPAB.pay = {}; SPAB.own = false; SPAB.cur = 'groomBank'; SPAB.step = spAbDone(f, 'groomBank') ? 1 : 0; }
+    const roles = spAbRoles();
+    const save = (k, a) => { const p = roles.find(x => x.k === k);
+        f[k] = a.number ? composeAccountParts({ bank: a.bank, number: acctFmt(a.bank, a.number), holder: (a.holder || '').trim() || spAbNameOf(p) }) : (a.bank || a.holder ? `${a.bank || ''}${a.holder ? ` (${a.holder})` : ''}`.trim() : '');
+        spChanged(['account']); scheduleSnapshot(); };
+    const ptab = () => { const cell = p => { const a = spAbParse(f[p.k]), sh = spAbShown(f, p), c = spAbCheck(a.bank, a.number);
+            const st = !sh ? 'empty' : c && c.ok ? 'ok' : (a.bank || a.number) ? 'half' : '', ic = !sh ? '+' : c && c.ok ? '✓' : (a.bank || a.number) ? '!' : '';
+            return `<button type="button" class="spab-p ${st}${p.opt && sh ? ' par' : ''}${SPAB.cur === p.k ? ' on' : ''}" data-ab-who="${p.k}" aria-pressed="${SPAB.cur === p.k}"><i aria-hidden="true">${ic}</i><em>${esc(p.role.replace(/^(신랑|신부) /, ''))}${p.opt || !p.name ? '' : ` · ${esc(p.name)}`}</em></button>`; };
+        const g = roles.filter(p => p.side === 'g'), b = roles.filter(p => p.side === 'b');
+        return `<div class="spab-t${SPAB.step === 3 ? ' hint' : ''}"><h5>신랑측</h5><h5>신부측</h5>${g.map((p, i) => cell(p) + cell(b[i])).join('')}</div>`; };
+    const draw = () => {
+        const p = roles.find(x => x.k === SPAB.cur) || roles[0], a = spAbParse(f[p.k]), step = SPAB.step;
+        const head = t => `<div class="spab-h"><b>${esc(p.role)}</b><span>${t}</span>${p.opt ? '<button type="button" class="spab-rm" data-ab-rm>이 계좌 빼기</button>' : ''}</div>`;
+        const own = a.bank && ![...SPAB_TOP, ...SPAB_MORE].includes(a.bank);
+        const s0 = `${head('① 어느 은행이에요?')}<div class="spab-banks" role="group" aria-label="은행">${[...SPAB_TOP, ...SPAB_MORE].map(b => `<button type="button" class="${a.bank === b ? 'on' : ''}" data-ab-bank="${esc(b)}" title="${esc(b)}">${esc(SPAB_SHORT[b] || b)}</button>`).join('')}<button type="button" class="etc${own || SPAB.own ? ' on' : ''}" data-ab-own>${own ? esc(a.bank) : '그 밖의 은행 · 증권 ✎'}</button></div>
+            ${SPAB.own ? `<div class="spab-row"><input class="wz-inp" id="spAbOwn" placeholder="은행 이름 (예: 미래에셋증권)" value="${own ? esc(a.bank) : ''}" aria-label="은행 이름"><button type="button" class="spab-btn" data-ab-ownok>다음</button></div>` : ''}`;
+        const c = spAbCheck(a.bank, a.number), fmt0 = BANK_ACCT_FMT[String(a.bank).replace(/은행$/, '')];
+        const s1 = `${head(`② ${esc(a.bank || '')} 계좌번호`)}
+            <input class="wz-inp spab-num" id="spAbNum" inputmode="numeric" autocomplete="off" value="${esc(acctFmt(a.bank, a.number))}" placeholder="${esc(fmt0 && fmt0[0] ? acctFmt(a.bank, '0'.repeat(fmt0[0].reduce((x, y) => x + y, 0))) : '숫자만 적어도 돼요')}" aria-label="계좌번호">
+            <div data-ab-chk>${c ? `<div class="spab-st ${c.ok ? 'ok' : 'bad'}">${esc(c.t)}</div>` : '<p class="spab-note">숫자만 적으면 \'-\'는 저절로 들어가요</p>'}</div>
+            <div class="spab-row"><button type="button" class="spab-btn ghost" data-ab-go="0">‹ 은행</button><button type="button" class="spab-btn wide" data-ab-go="2" ${c && c.ok ? '' : 'disabled'}>다음</button></div>`;
+        const nx = spAbNext(f, roles, p.k), nxp = nx && roles.find(x => x.k === nx);
+        const payOn = t => !!(p.pay && (String(f[p.pay + t] || '').trim() || SPAB.pay[p.pay + t]));
+        const s2 = `${head('③ 예금주' + (p.pay ? ' · 송금 버튼' : ''))}
+            <div class="wz-field"><div class="wz-lab">예금주 <small>비워 두면 '${esc(spAbNameOf(p))}'</small></div><input class="wz-inp" id="spAbHold" value="${esc(a.holder && a.holder !== spAbNameOf(p) ? a.holder : '')}" placeholder="${esc(spAbNameOf(p))}" aria-label="예금주"></div>
+            ${p.pay ? `<div class="spab-pay">
+                <label class="sp-sw"><span><b><i class="k">pay</i>카카오페이 송금 버튼</b></span><input type="checkbox" data-ab-pay="Kakao" ${payOn('Kakao') ? 'checked' : ''}><i></i></label>
+                ${payOn('Kakao') ? `<input class="wz-inp" data-ab-pf="Kakao" value="${esc(f[p.pay + 'Kakao'] || '')}" placeholder="https://qr.kakaopay.com/…" inputmode="url" aria-label="카카오페이 송금 링크"><div data-ab-kk></div>` : ''}
+                <label class="sp-sw"><span><b><i class="s">toss</i>토스 송금 버튼</b></span><input type="checkbox" data-ab-pay="Toss" ${payOn('Toss') ? 'checked' : ''}><i></i></label>
+                ${payOn('Toss') ? `<div class="spab-row"><span class="spab-pre">toss.me/</span><input class="wz-inp" data-ab-pf="Toss" value="${esc(String(f[p.pay + 'Toss'] || '').replace(/^.*toss\.me\//i, ''))}" placeholder="토스 아이디" aria-label="토스 아이디"></div>` : ''}
+            </div>` : ''}
+            <div class="spab-row"><button type="button" class="spab-btn ghost" data-ab-go="1">‹ 번호</button><button type="button" class="spab-btn wide" data-ab-go="3">${nxp ? `확인 · 다음은 ${esc(nxp.role)} ›` : '확인'}</button></div>`;
+        const filled = roles.filter(x => spAbDone(f, x.k)), parLeft = roles.filter(x => x.opt && !spAbShown(f, x)).length;
+        const s3 = `<div class="spab-fin"><div class="spab-fh"><i aria-hidden="true">✓</i><b>${esc(filled.map(x => x.role).join(' · ') || '')} 계좌를 다 적었어요</b></div>
+            ${parLeft ? `<div class="spab-guide"><span class="arr" aria-hidden="true">↑</span><span>부모님 계좌도 받으시려면 <b>위 표에서 아버지 · 어머니</b>를 눌러 추가해 주세요.<br><small>추가를 취소하려면 그 칸을 한 번 더 누르면 돼요.</small></span></div>` : ''}
+            <p class="spab-note">고칠 분이 있으면 위 표에서 그분을 누르세요.</p></div>`;
+        host.innerHTML = ptab() + `<div class="spab-slides"><div class="spab-track" style="transform:translateX(${-100 * (host._step ?? step)}%)">${[s0, s1, s2, s3].map((h, i) => `<div class="spab-sl"${i === step ? '' : ' inert'}>${h}</div>`).join('')}</div></div><div class="spab-dots">${[0, 1, 2, 3].map(i => `<i class="${i <= step ? 'on' : ''}"></i>`).join('')}</div>`;
+        const tr = host.querySelector('.spab-track'), sl = [...host.querySelectorAll('.spab-sl')], box = host.querySelector('.spab-slides');
+        const fit = () => { const cur = sl[SPAB.step]; if (cur) box.style.height = cur.offsetHeight + 'px'; };
+        requestAnimationFrame(() => { tr.style.transform = `translateX(${-100 * step}%)`; host._step = step; fit(); });
+        if (host._ro) host._ro.disconnect(); if (window.ResizeObserver) { host._ro = new ResizeObserver(fit); sl.forEach(x => host._ro.observe(x)); }
+        box.addEventListener('scroll', () => { box.scrollLeft = 0; }); // (숨은 장 안 칸에 포커스가 가도 옆으로 밀리지 않게)
+        // ② 번호
+        const ni = host.querySelector('#spAbNum');
+        ni.addEventListener('input', () => { const cur = spAbParse(f[p.k]); cur.number = ni.value.replace(/\D/g, ''); acctFmtInput(ni, cur.bank); save(p.k, cur);
+            const c2 = spAbCheck(cur.bank, cur.number); host.querySelector('[data-ab-chk]').innerHTML = c2 ? `<div class="spab-st ${c2.ok ? 'ok' : 'bad'}">${esc(c2.t)}</div>` : '';
+            host.querySelector('[data-ab-go="2"]').disabled = !(c2 && c2.ok); host.querySelector('.spab-t').outerHTML = ptab(); });
+        ni.addEventListener('keydown', e => { if (e.key === 'Enter' && !host.querySelector('[data-ab-go="2"]').disabled) { e.preventDefault(); go(2); } });
+        // ③ 예금주 · 송금
+        host.querySelector('#spAbHold').addEventListener('input', e => { const cur = spAbParse(f[p.k]); cur.holder = e.target.value; save(p.k, cur); });
+        host.querySelectorAll('[data-ab-pf]').forEach(i => i.addEventListener('input', () => {
+            let v = i.value.trim(); if (i.dataset.abPf === 'Toss') v = v.replace(/^.*toss\.me\//i, '').replace(/^@/, '');
+            f[p.pay + i.dataset.abPf] = v; spChanged(['account']); scheduleSnapshot();
+            const kk = host.querySelector('[data-ab-kk]'); if (kk && i.dataset.abPf === 'Kakao') kk.innerHTML = v && !InviteBlocks.kakaoUrl(v) ? '<div class="spab-st bad">링크를 못 찾았어요 · https://qr.kakaopay.com/… 처럼 생긴 주소를 붙여 넣어 주세요</div>' : ''; }));
+        host.querySelector('#spAbOwn')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); host.querySelector('[data-ab-ownok]').click(); } });
+    };
+    const go = n => { SPAB.step = n; draw(); if (n === 1) setTimeout(() => host.querySelector('#spAbNum')?.focus({ preventScroll: true }), 340); };
+    const pick = k => { SPAB.cur = k; SPAB.own = false; const p = roles.find(x => x.k === k); if (p.opt && !SPAB.shown.includes(k)) SPAB.shown.push(k); SPAB.step = spAbParse(f[k]).bank ? 1 : 0; draw(); };
+    const remove = k => { const p = roles.find(x => x.k === k); SPAB.shown = SPAB.shown.filter(x => x !== k); f[k] = ''; spChanged(['account']); scheduleSnapshot();
+        try { InviteBlocks.toast(`${p.role} 계좌를 뺐어요`); } catch (e3) {}
+        const nx = spAbNext(f, roles, k); if (nx) { pick(nx); return; } SPAB.cur = 'brideBank'; SPAB.step = 3; draw(); };
+    if (host._bound !== true) { host._bound = true;
+        host.addEventListener('click', e => {
+            const w = e.target.closest('[data-ab-who]'); if (w) { const k = w.dataset.abWho, p = roles.find(x => x.k === k);
+                if (p.opt && spAbShown(f, p) && SPAB.cur === k) { remove(k); return; } pick(k); return; }
+            if (e.target.closest('[data-ab-rm]')) { remove(SPAB.cur); return; }
+            const b = e.target.closest('[data-ab-bank]'); if (b) { const cur = spAbParse(f[SPAB.cur]); cur.bank = b.dataset.abBank; SPAB.own = false; save(SPAB.cur, cur); go(1); return; }
+            if (e.target.closest('[data-ab-own]')) { SPAB.own = !SPAB.own; draw(); if (SPAB.own) host.querySelector('#spAbOwn')?.focus({ preventScroll: true }); return; }
+            if (e.target.closest('[data-ab-ownok]')) { const v = (host.querySelector('#spAbOwn')?.value || '').trim(); if (!v) return; const cur = spAbParse(f[SPAB.cur]); cur.bank = v; SPAB.own = false; save(SPAB.cur, cur); go(1); return; }
+            const g = e.target.closest('[data-ab-go]'); if (g && !g.disabled) {
+                if (g.dataset.abGo === '3') { const done = roles.find(x => x.k === SPAB.cur), nx = spAbNext(f, roles, SPAB.cur);
+                    if (nx) { pick(nx); try { InviteBlocks.toast(`${done.role} 계좌 다 적었어요 · 이제 ${roles.find(x => x.k === nx).role} 계좌`); } catch (e3) {} return; } }
+                go(+g.dataset.abGo); }
+        });
+        host.addEventListener('change', e => { const t = e.target.closest('[data-ab-pay]'); if (!t) return; const p = roles.find(x => x.k === SPAB.cur); if (!p.pay) return;
+            const key = p.pay + t.dataset.abPay; SPAB.pay[key] = t.checked; if (!t.checked) { f[key] = ''; spChanged(['account']); scheduleSnapshot(); }
+            draw(); if (t.checked) host.querySelector(`[data-ab-pf="${t.dataset.abPay}"]`)?.focus({ preventScroll: true }); });
+    }
+    draw();
+}
 function spAccount(box) {
     if (!spBlock('account').enabled) { box.innerHTML = spH('마음 전하실 곳', '계좌번호는 하객이 [복사]를 눌러야만 보이고, 서버에는 암호화해서 저장돼요.') + spInclHtml('account') + spOffNote(); return; }
-    const f = spBlock('account').fields, wi = weddingInfo();
+    const f = spBlock('account').fields, wi = weddingInfo(), spaOn = spOpt('account', 'steps'); // 1019z17 B안: 사람 표 + 한 칸씩 차례로
     const roles = [['groomBank', '신랑', wi.groom], ['brideBank', '신부', wi.bride], ['groomFatherBank', '신랑측 아버지'], ['groomMotherBank', '신랑측 어머니'], ['brideFatherBank', '신부측 아버지'], ['brideMotherBank', '신부측 어머니']];
     const parentsOpen = roles.slice(2).some(([k]) => f[k]);
     // 디자인 예시 계좌("국민 000-00-000000 (김민준)")는 빈칸으로 보여줌 - 고르면 새로 채워짐
@@ -13646,11 +13763,11 @@ function spAccount(box) {
             <div class="wz-acc-g"><button type="button" class="wz-bankbtn" data-bank>${a.bank ? wzEsc(a.bank) : '<span class="ph">은행</span>'}${WZ_DOWN_SVG}</button>
             <input class="wz-inp" data-af="holder" value="${wzEsc(a.holder)}" placeholder="${wzEsc(nm || '예금주')}"><input class="wz-inp full" data-af="number" inputmode="numeric" value="${wzEsc(a.number)}" placeholder="계좌번호 (숫자만 적으면 - 는 저절로)">
             <div class="wz-banks">${bankList.map(b => `<button type="button" class="${a.bank === b ? 'on' : ''}" data-pick="${b}">${b}</button>`).join('')}</div></div></div>`; };
-    box.innerHTML = spH('마음 전하실 곳', '계좌번호는 하객이 [복사]를 눌러야만 보이고, 서버에는 암호화해서 저장돼요.') + spInclHtml('account') + (window.LD_ACC_TRIAL ? `<div class="sp-acc-trial">${accTrialNote()}</div>` : '') + roles.slice(0, 2).map(r => card(r)).join('') +
-        (spOpt('account', 'parents') ? `<button type="button" class="wz-addacc" id="spPar">${parentsOpen ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'}</button><div class="wz-parents${parentsOpen ? ' on' : ''}" id="spParents">${roles.slice(2).map(r => card(r, true)).join('')}</div>` : '') +
+    box.innerHTML = spH('마음 전하실 곳', '계좌번호는 하객이 [복사]를 눌러야만 보이고, 서버에는 암호화해서 저장돼요.') + spInclHtml('account') + (window.LD_ACC_TRIAL ? `<div class="sp-acc-trial">${accTrialNote()}</div>` : '') + (spaOn ? '<div class="spa" id="spa"></div>' : roles.slice(0, 2).map(r => card(r)).join('')) +
+        (!spaOn && spOpt('account', 'parents') ? `<button type="button" class="wz-addacc" id="spPar">${parentsOpen ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'}</button><div class="wz-parents${parentsOpen ? ' on' : ''}" id="spParents">${roles.slice(2).map(r => card(r, true)).join('')}</div>` : '') +
         (spOpt('account', 'pics') ? spAccPicsHtml(f) : (spOpt('account', 'display') ? spChoiceRow('표시 방식', 'display', [['free', '자유 배치'], ['cards', '카드형 (복사 버튼)']], f.display === 'cards' ? 'cards' : 'free') +
             (f.display === 'cards' ? spChoiceRow('카드 디자인', 'accStyle', (InviteBlocks.ACC_STYLES || [['basic', '기본 카드']]).map(([v, l]) => [v === 'basic' ? '' : v, l]), f.accStyle || '') + spChoiceRow('보여주기', 'accCollapse', [[false, '펼치기'], [true, '가리기 (눌러서 열기)']], !!f.accCollapse) : '') : '') +
-        (spOpt('account', 'kakao') ? `<div class="wz-field"><div class="wz-lab">카카오페이 송금 링크 <small>선택 · 계좌 아래에 버튼이 생겨요</small></div><input class="wz-inp" data-sp-f="groomKakao" value="${wzEsc(f.groomKakao || '')}" placeholder="신랑 https://qr.kakaopay.com/..." inputmode="url" style="margin-bottom:6px"><input class="wz-inp" data-sp-f="brideKakao" value="${wzEsc(f.brideKakao || '')}" placeholder="신부 https://qr.kakaopay.com/..." inputmode="url"></div>` : ''));
+        (!spaOn && spOpt('account', 'kakao') ? `<div class="wz-field"><div class="wz-lab">카카오페이 송금 링크 <small>선택 · 계좌 아래에 버튼이 생겨요</small></div><input class="wz-inp" data-sp-f="groomKakao" value="${wzEsc(f.groomKakao || '')}" placeholder="신랑 https://qr.kakaopay.com/..." inputmode="url" style="margin-bottom:6px"><input class="wz-inp" data-sp-f="brideKakao" value="${wzEsc(f.brideKakao || '')}" placeholder="신부 https://qr.kakaopay.com/..." inputmode="url"></div>` : ''));
     box.querySelectorAll('.wz-acc').forEach(c => {
         const k = c.dataset.k, nm = (roles.find(r => r[0] === k) || [])[2] || '';
         const get = () => parts(k);
@@ -13666,6 +13783,7 @@ function spAccount(box) {
         const cl = c.querySelector('[data-clear]'); if (cl) cl.addEventListener('click', clear);
     });
     spBindChoice(box, f, 'account');
+    if (spaOn) spAbMount(box.querySelector('#spa'), f);
     if (spOpt('account', 'pics')) spAccPicsBind(box, f);
     box.querySelectorAll('[data-sp-f]').forEach(inp => inp.addEventListener('input', () => { f[inp.dataset.spF] = inp.value.trim(); spChanged(['account']); }));
     box.querySelector('#spPar')?.addEventListener('click', e => { const p = box.querySelector('#spParents'), on = !p.classList.contains('on'); p.classList.toggle('on', on); e.currentTarget.textContent = on ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'; });

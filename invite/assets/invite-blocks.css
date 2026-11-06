@@ -2544,6 +2544,12 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 /* 자유 배치(줄글) 계좌 아래 카카오페이 송금 버튼 (1018z18z9) */
 .ib-kakao-row { display: flex; flex-direction: column; gap: 8px; padding: 4px 24px 18px; }
 .ib-kakao-row .ib-kakaopay { margin: 0; }
+/* 1019z17 토스 송금 버튼 · 카카오페이와 반반 */
+.ib-kakaopay.ib-tosspay { background: #3182F6; color: #FFFFFF; }
+.ib-pay2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 16px 12px; }
+.ib-pay2 .ib-kakaopay { margin: 0; }
+.ib-kakao-row .ib-pay2 { margin: 0; }
+.ib-as-line .ib-pay2, .ib-as-center .ib-pay2 { margin: 10px 0 2px; }
 
 /* ===== 1019 손맛 다듬기 (Emil Kowalski 기준 · 하객 화면 버튼) =====
    누르면 살짝 눌리는 반응(0.97배, 0.16초) - 휴대폰의 회색 깜빡임 대신. transform 대신 따로 쓰는 scale이라
