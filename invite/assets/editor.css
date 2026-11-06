@@ -5445,3 +5445,13 @@ body.fslot-on #addTextTopBtn { display: none !important; }
 @keyframes spabArr { 50% { transform: translateY(-4px); } }
 @media (prefers-reduced-motion: reduce) { .spab-slides, .spab-track { transition: none; } .spab-guide .arr, .spab-t.hint .spab-p.empty { animation: none; } }
 :is(.spab-p, .spab-banks button, .spab-btn, .spab-rm):focus-visible { outline: 2px solid var(--wz-acc, #8A4B55); outline-offset: 1px; }
+
+/* 1019z17b 질문 화면에선 장 안 버튼 대신 아래 [이전] [다음] */
+.spa.spab-q .spab-nav { display: none; }
+.spab-numf { display: grid; gap: 8px; margin: 0; }
+/* 1019z17b 키보드가 올라오면: 아래 [다음]은 키보드 뒤라 적는 칸 바로 밑에 [다음] · 위 사람 표·점은 잠깐 숨겨 칸이 키보드 위에 오게 */
+.spab-kbgo { display: none; }
+html.sp-kb .spa .spab-kbgo { display: block; }
+html.sp-kb .spa:not(.spab-q) .spab-nav { display: none; }
+html.sp-kb .spa .spab-t, html.sp-kb .spa .spab-dots { display: none; }
+html.sp-kb #simplePane:has(.spa.spab-q) .sp-ask-nav { display: none; } /* (키보드 위엔 칸 밑 [다음] 하나만) */

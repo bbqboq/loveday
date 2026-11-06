@@ -13682,25 +13682,26 @@ function spAbMount(host, f) {
             ${SPAB.own ? `<div class="spab-row"><input class="wz-inp" id="spAbOwn" placeholder="은행 이름 (예: 미래에셋증권)" value="${own ? esc(a.bank) : ''}" aria-label="은행 이름"><button type="button" class="spab-btn" data-ab-ownok>다음</button></div>` : ''}`;
         const c = spAbCheck(a.bank, a.number), fmt0 = BANK_ACCT_FMT[String(a.bank).replace(/은행$/, '')];
         const s1 = `${head(`② ${esc(a.bank || '')} 계좌번호`)}
-            <input class="wz-inp spab-num" id="spAbNum" inputmode="numeric" autocomplete="off" value="${esc(acctFmt(a.bank, a.number))}" placeholder="${esc(fmt0 && fmt0[0] ? acctFmt(a.bank, '0'.repeat(fmt0[0].reduce((x, y) => x + y, 0))) : '숫자만 적어도 돼요')}" aria-label="계좌번호">
-            <div data-ab-chk>${c ? `<div class="spab-st ${c.ok ? 'ok' : 'bad'}">${esc(c.t)}</div>` : '<p class="spab-note">숫자만 적으면 \'-\'는 저절로 들어가요</p>'}</div>
-            <div class="spab-row"><button type="button" class="spab-btn ghost" data-ab-go="0">‹ 은행</button><button type="button" class="spab-btn wide" data-ab-go="2" ${c && c.ok ? '' : 'disabled'}>다음</button></div>`;
+            <div class="wz-field spab-numf"><input class="wz-inp spab-num" id="spAbNum" inputmode="numeric" enterkeyhint="next" autocomplete="off" value="${esc(acctFmt(a.bank, a.number))}" placeholder="${esc(fmt0 && fmt0[0] ? acctFmt(a.bank, '0'.repeat(fmt0[0].reduce((x, y) => x + y, 0))) : '숫자만 적어도 돼요')}" aria-label="계좌번호">
+            <div data-ab-chk>${c ? `<div class="spab-st ${c.ok ? 'ok' : 'bad'}">${esc(c.t)}</div>` : '<p class="spab-note">숫자만 적으면 \'-\'는 저절로 들어가요</p>'}</div><button type="button" class="spab-btn wide spab-kbgo" data-ab-kbgo="2">다음 · 예금주 ›</button></div>
+            <div class="spab-row spab-nav"><button type="button" class="spab-btn ghost" data-ab-go="0">‹ 은행</button><button type="button" class="spab-btn wide" data-ab-go="2" ${c && c.ok ? '' : 'disabled'}>다음</button></div>`;
         const nx = spAbNext(f, roles, p.k), nxp = nx && roles.find(x => x.k === nx);
         const payOn = t => !!(p.pay && (String(f[p.pay + t] || '').trim() || SPAB.pay[p.pay + t]));
         const s2 = `${head('③ 예금주' + (p.pay ? ' · 송금 버튼' : ''))}
-            <div class="wz-field"><div class="wz-lab">예금주 <small>비워 두면 '${esc(spAbNameOf(p))}'</small></div><input class="wz-inp" id="spAbHold" value="${esc(a.holder && a.holder !== spAbNameOf(p) ? a.holder : '')}" placeholder="${esc(spAbNameOf(p))}" aria-label="예금주"></div>
+            <div class="wz-field"><div class="wz-lab">예금주 <small>비워 두면 '${esc(spAbNameOf(p))}'</small></div><input class="wz-inp" id="spAbHold" enterkeyhint="done" value="${esc(a.holder && a.holder !== spAbNameOf(p) ? a.holder : '')}" placeholder="${esc(spAbNameOf(p))}" aria-label="예금주"><button type="button" class="spab-btn wide spab-kbgo" data-ab-kbgo="3">${nxp ? `확인 · 다음은 ${esc(nxp.role)} ›` : '확인'}</button></div>
             ${p.pay ? `<div class="spab-pay">
                 <label class="sp-sw"><span><b><i class="k">pay</i>카카오페이 송금 버튼</b></span><input type="checkbox" data-ab-pay="Kakao" ${payOn('Kakao') ? 'checked' : ''}><i></i></label>
                 ${payOn('Kakao') ? `<input class="wz-inp" data-ab-pf="Kakao" value="${esc(f[p.pay + 'Kakao'] || '')}" placeholder="https://qr.kakaopay.com/…" inputmode="url" aria-label="카카오페이 송금 링크"><div data-ab-kk></div>` : ''}
                 <label class="sp-sw"><span><b><i class="s">toss</i>토스 송금 버튼</b></span><input type="checkbox" data-ab-pay="Toss" ${payOn('Toss') ? 'checked' : ''}><i></i></label>
                 ${payOn('Toss') ? `<div class="spab-row"><span class="spab-pre">toss.me/</span><input class="wz-inp" data-ab-pf="Toss" value="${esc(String(f[p.pay + 'Toss'] || '').replace(/^.*toss\.me\//i, ''))}" placeholder="토스 아이디" aria-label="토스 아이디"></div>` : ''}
             </div>` : ''}
-            <div class="spab-row"><button type="button" class="spab-btn ghost" data-ab-go="1">‹ 번호</button><button type="button" class="spab-btn wide" data-ab-go="3">${nxp ? `확인 · 다음은 ${esc(nxp.role)} ›` : '확인'}</button></div>`;
+            <div class="spab-row spab-nav"><button type="button" class="spab-btn ghost" data-ab-go="1">‹ 번호</button><button type="button" class="spab-btn wide" data-ab-go="3">${nxp ? `확인 · 다음은 ${esc(nxp.role)} ›` : '확인'}</button></div>`;
         const filled = roles.filter(x => spAbDone(f, x.k)), parLeft = roles.filter(x => x.opt && !spAbShown(f, x)).length;
         const s3 = `<div class="spab-fin"><div class="spab-fh"><i aria-hidden="true">✓</i><b>${esc(filled.map(x => x.role).join(' · ') || '')} 계좌를 다 적었어요</b></div>
             ${parLeft ? `<div class="spab-guide"><span class="arr" aria-hidden="true">↑</span><span>부모님 계좌도 받으시려면 <b>위 표에서 아버지 · 어머니</b>를 눌러 추가해 주세요.<br><small>추가를 취소하려면 그 칸을 한 번 더 누르면 돼요.</small></span></div>` : ''}
             <p class="spab-note">고칠 분이 있으면 위 표에서 그분을 누르세요.</p></div>`;
         host.innerHTML = ptab() + `<div class="spab-slides"><div class="spab-track" style="transform:translateX(${-100 * (host._step ?? step)}%)">${[s0, s1, s2, s3].map((h, i) => `<div class="spab-sl"${i === step ? '' : ' inert'}>${h}</div>`).join('')}</div></div><div class="spab-dots">${[0, 1, 2, 3].map(i => `<i class="${i <= step ? 'on' : ''}"></i>`).join('')}</div>`;
+        navSync();
         const tr = host.querySelector('.spab-track'), sl = [...host.querySelectorAll('.spab-sl')], box = host.querySelector('.spab-slides');
         const fit = () => { const cur = sl[SPAB.step]; if (cur) box.style.height = cur.offsetHeight + 'px'; };
         requestAnimationFrame(() => { tr.style.transform = `translateX(${-100 * step}%)`; host._step = step; fit(); });
@@ -13710,16 +13711,41 @@ function spAbMount(host, f) {
         const ni = host.querySelector('#spAbNum');
         ni.addEventListener('input', () => { const cur = spAbParse(f[p.k]); cur.number = ni.value.replace(/\D/g, ''); acctFmtInput(ni, cur.bank); save(p.k, cur);
             const c2 = spAbCheck(cur.bank, cur.number); host.querySelector('[data-ab-chk]').innerHTML = c2 ? `<div class="spab-st ${c2.ok ? 'ok' : 'bad'}">${esc(c2.t)}</div>` : '';
-            host.querySelector('[data-ab-go="2"]').disabled = !(c2 && c2.ok); host.querySelector('.spab-t').outerHTML = ptab(); });
-        ni.addEventListener('keydown', e => { if (e.key === 'Enter' && !host.querySelector('[data-ab-go="2"]').disabled) { e.preventDefault(); go(2); } });
+            host.querySelector('[data-ab-go="2"]').disabled = !(c2 && c2.ok); host.querySelector('.spab-t').outerHTML = ptab(); navSync(); });
+        ni.addEventListener('keydown', e => { if (e.key === 'Enter' && !host.querySelector('[data-ab-go="2"]').disabled) { e.preventDefault(); go(2); setTimeout(() => host.querySelector('#spAbHold')?.focus({ preventScroll: true }), 340); } });
         // ③ 예금주 · 송금
         host.querySelector('#spAbHold').addEventListener('input', e => { const cur = spAbParse(f[p.k]); cur.holder = e.target.value; save(p.k, cur); });
+        host.querySelector('#spAbHold').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } }); // (키보드 [완료] = 키보드만 내림)
         host.querySelectorAll('[data-ab-pf]').forEach(i => i.addEventListener('input', () => {
             let v = i.value.trim(); if (i.dataset.abPf === 'Toss') v = v.replace(/^.*toss\.me\//i, '').replace(/^@/, '');
             f[p.pay + i.dataset.abPf] = v; spChanged(['account']); scheduleSnapshot();
             const kk = host.querySelector('[data-ab-kk]'); if (kk && i.dataset.abPf === 'Kakao') kk.innerHTML = v && !InviteBlocks.kakaoUrl(v) ? '<div class="spab-st bad">링크를 못 찾았어요 · https://qr.kakaopay.com/… 처럼 생긴 주소를 붙여 넣어 주세요</div>' : ''; }));
         host.querySelector('#spAbOwn')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); host.querySelector('[data-ab-ownok]').click(); } });
     };
+    // 질문 화면: 아래 [이전] [다음] 하나로 장을 넘김 (장 안 버튼은 숨김 - 버튼이 두 벌이라 헷갈렸고, [이전]이 앞 질문(오시는 길)으로 가 버렸음, 1019z17b)
+    //  [이전] ② ③ → 앞 장 · ① → 앞 사람의 ③ (첫 분이면 원래대로 앞 질문) · 다 적었어요 → 마지막 분의 ③   [다음] ① → ② · ② → ③(자릿수가 맞아야) · ③ → 확인(다음 분으로) · 다 적었어요 → 다음 질문
+    const ORDER = ['groomBank', 'brideBank', 'groomFatherBank', 'groomMotherBank', 'brideFatherBank', 'brideMotherBank'];
+    const prevOf = k => { const sh = ORDER.filter(x => spAbShown(f, roles.find(r => r.k === x))), i = sh.indexOf(k); return i > 0 ? sh[i - 1] : (i < 0 ? sh[sh.length - 1] : ''); };
+    const qNav = () => { const nav = host.isConnected && host.closest('#simplePane') && document.querySelector('#simplePane .sp-ask-nav'); return nav ? { nx: nav.querySelector('#spNext'), pv: nav.querySelector('#spPrev') } : null; };
+    function navSync() { const q = qNav(); host.classList.toggle('spab-q', !!q); if (!q || !q.nx) return;
+        const { nx, pv } = q; if (nx.dataset.abOrig == null) nx.dataset.abOrig = nx.textContent; if (pv && pv.dataset.abOrig == null) pv.dataset.abOrig = pv.textContent;
+        const p = roles.find(x => x.k === SPAB.cur) || roles[0], a = spAbParse(f[p.k]), c = spAbCheck(a.bank, a.number), st = SPAB.step;
+        const nxk = spAbNext(f, roles, p.k), nxp = nxk && roles.find(x => x.k === nxk);
+        const lab = st === 0 ? (a.bank ? '다음 · 계좌번호 ›' : '은행을 골라 주세요') : st === 1 ? (c && c.ok ? '다음 · 예금주 ›' : '계좌번호를 적어 주세요') : st === 2 ? (nxp ? `확인 · 다음은 ${nxp.role} ›` : '확인 ›') : nx.dataset.abOrig;
+        const wait = (st === 0 && !a.bank) || (st === 1 && !(c && c.ok));
+        nx.textContent = lab; nx.classList.toggle('sp-wait', wait); nx.dataset.ab = st < 3 ? '1' : '';
+        if (pv) { pv.dataset.ab = st > 0 || prevOf(p.k) ? '1' : ''; pv.closest('.sp-nav')?.classList.toggle('first', false); }
+        if (!nx._abBound) { nx._abBound = true;
+            nx.addEventListener('click', ev => { if (nx.dataset.ab !== '1' || !host.isConnected) return; ev.preventDefault(); ev.stopImmediatePropagation();
+                const p2 = roles.find(x => x.k === SPAB.cur), a2 = spAbParse(f[p2.k]), c2 = spAbCheck(a2.bank, a2.number);
+                if (SPAB.step === 0) { if (a2.bank) go(1); else try { InviteBlocks.toast('은행을 먼저 골라 주세요'); } catch (e) {} return; }
+                if (SPAB.step === 1) { if (c2 && c2.ok) go(2); else try { InviteBlocks.toast(c2 ? c2.t : '계좌번호를 적어 주세요'); } catch (e) {} return; }
+                host.querySelector('[data-ab-go="3"]')?.click(); }, true); }
+        if (pv && !pv._abBound) { pv._abBound = true;
+            pv.addEventListener('click', ev => { if (pv.dataset.ab !== '1' || !host.isConnected) return; ev.preventDefault(); ev.stopImmediatePropagation();
+                if (SPAB.step === 1 || SPAB.step === 2) { go(SPAB.step - 1); return; }
+                const pk = prevOf(SPAB.cur); if (pk) { SPAB.cur = pk; SPAB.own = false; go(2); } }, true); }
+    }
     const go = n => { SPAB.step = n; draw(); if (n === 1) setTimeout(() => host.querySelector('#spAbNum')?.focus({ preventScroll: true }), 340); };
     const pick = k => { SPAB.cur = k; SPAB.own = false; const p = roles.find(x => x.k === k); if (p.opt && !SPAB.shown.includes(k)) SPAB.shown.push(k); SPAB.step = spAbParse(f[k]).bank ? 1 : 0; draw(); };
     const remove = k => { const p = roles.find(x => x.k === k); SPAB.shown = SPAB.shown.filter(x => x !== k); f[k] = ''; spChanged(['account']); scheduleSnapshot();
@@ -13730,6 +13756,10 @@ function spAbMount(host, f) {
             const w = e.target.closest('[data-ab-who]'); if (w) { const k = w.dataset.abWho, p = roles.find(x => x.k === k);
                 if (p.opt && spAbShown(f, p) && SPAB.cur === k) { remove(k); return; } pick(k); return; }
             if (e.target.closest('[data-ab-rm]')) { remove(SPAB.cur); return; }
+            // 키보드가 올라와 있을 땐 아래 [다음]이 키보드 뒤로 가려서, 적는 칸 바로 밑에 같은 버튼 (1019z17b)
+            const kg = e.target.closest('[data-ab-kbgo]'); if (kg) { const p2 = roles.find(x => x.k === SPAB.cur), a2 = spAbParse(f[p2.k]), c2 = spAbCheck(a2.bank, a2.number);
+                if (kg.dataset.abKbgo === '2') { if (c2 && c2.ok) { go(2); setTimeout(() => host.querySelector('#spAbHold')?.focus({ preventScroll: true }), 340); } else try { InviteBlocks.toast(c2 ? c2.t : '계좌번호를 적어 주세요'); } catch (e3) {} return; }
+                host.querySelector('[data-ab-go="3"]')?.click(); return; }
             const b = e.target.closest('[data-ab-bank]'); if (b) { const cur = spAbParse(f[SPAB.cur]); cur.bank = b.dataset.abBank; SPAB.own = false; save(SPAB.cur, cur); go(1); return; }
             if (e.target.closest('[data-ab-own]')) { SPAB.own = !SPAB.own; draw(); if (SPAB.own) host.querySelector('#spAbOwn')?.focus({ preventScroll: true }); return; }
             if (e.target.closest('[data-ab-ownok]')) { const v = (host.querySelector('#spAbOwn')?.value || '').trim(); if (!v) return; const cur = spAbParse(f[SPAB.cur]); cur.bank = v; SPAB.own = false; save(SPAB.cur, cur); go(1); return; }
