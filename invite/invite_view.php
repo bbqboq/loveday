@@ -228,7 +228,17 @@ if ($lbZoom > 100): ?>
 <style>.col[data-block-id="heroVideo"] .video-cover-wrap iframe[data-cover] { transform: scale(<?= round($lbZoom / 100, 3) ?>); }</style>
 <?php endif; ?>
 <!-- 에디터와 같이 쓰는 공용 섹션(연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
-<link rel="stylesheet" href="<?= ld_asset('invite-blocks.css') ?>">
+<?php
+// 1019z16 꾸밈 CSS 나눠 받기: 공용(core)만 먼저, 이 청첩장에 쓰인 꾸밈은 render-invite가 assets/deco/<꾸밈>.css로 (tools/split-deco.js) - 파일이 없으면 예전처럼 전체
+$ldDeco = null;
+if (is_file(__DIR__ . '/assets/invite-blocks.core.min.css') && is_file(__DIR__ . '/assets/deco/manifest.json')) {
+    $dm = json_decode((string) @file_get_contents(__DIR__ . '/assets/deco/manifest.json'), true);
+    if (is_array($dm) && !empty($dm['keys'])) $ldDeco = ['base' => '/invite/assets/deco/', 'v' => (string) ($dm['v'] ?? ''), 'keys' => array_values($dm['keys'])];
+}
+?>
+<?php if ($ldDeco): ?><link rel="stylesheet" href="/invite/assets/invite-blocks.core.min.css?v=<?= @filemtime(__DIR__ . '/assets/invite-blocks.core.min.css') ?>"><script>window.LD_DECO = <?= json_encode($ldDeco) ?>;</script>
+<?php else: ?><link rel="stylesheet" href="<?= ld_asset('invite-blocks.css') ?>">
+<?php endif; ?>
 <?php if (($design['lookStyle'] ?? '') === 'old'): ?><link rel="stylesheet" href="/invite/assets/invite-blocks-old.css?v=<?= @filemtime(__DIR__ . '/assets/invite-blocks-old.css') ?: time() ?>" data-ib-old="1"><!-- 꾸밈 스타일 '예전' --><?php endif; ?>
 <?php foreach ($customFontUrls as $url): ?><link rel="stylesheet" href="<?= htmlspecialchars($url, ENT_QUOTES, 'UTF-8') ?>"><?php endforeach; ?>
 </head>

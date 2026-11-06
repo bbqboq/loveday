@@ -1151,6 +1151,44 @@ function openLightbox(imgEl) {
  * masked: true면 계좌 관련 파츠를 마스킹 처리(공개 페이지용). 에디터로 다시 불러올 땐 false로.
  * 반환값: 렌더된 rootEl (이벤트 바인딩까지 마친 상태)
  */
+// 1019z16 꾸밈 CSS 나눠 받기 - 하객 화면(invite_view)이 공용 CSS(invite-blocks.core)만 주고 window.LD_DECO {base, v, keys}를 줄 때만.
+//  화면에 쓰인 꾸밈 클래스(ib-th-<k> · ib-tp-<k> · ib-bd-<k>)를 찾아 assets/deco/<k>.css만 받음 (tools/split-deco.js가 나눔).
+//  처음 그릴 땐 받을 때까지(최대 2.5초) 청첩장을 숨겨서 꾸밈 없는 모습이 번쩍이지 않게. 그 뒤 새로 생기는 꾸밈은 바로 받음.
+var LD_DECO_ON = {};
+function ldDecoNeed() {
+    const D = window.LD_DECO; if (!D || !D.keys) return [];
+    const want = [], re = /(?:^|\s)ib-(?:th|tp|bd)-(o?[a-z0-9]+)(?=\s|$)/g;
+    const scan = el => {
+        const c = (el.getAttribute && el.getAttribute('class')) || ''; let m; re.lastIndex = 0;
+        while ((m = re.exec(c))) if (!LD_DECO_ON[m[1]] && D.keys.indexOf(m[1]) >= 0 && want.indexOf(m[1]) < 0) want.push(m[1]);
+    };
+    scan(document.documentElement); if (document.body) scan(document.body);
+    document.querySelectorAll('[class*="ib-th-"],[class*="ib-tp-"],[class*="ib-bd-"]').forEach(scan);
+    return want;
+}
+function ldDecoLoad(keys) {
+    const D = window.LD_DECO;
+    return Promise.all(keys.map(k => new Promise(res => {
+        LD_DECO_ON[k] = 1;
+        const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = D.base + k + '.css?v=' + D.v; l.setAttribute('data-ld-deco', k);
+        l.onload = l.onerror = () => res(); document.head.appendChild(l);
+    })));
+}
+function ldDecoWatch(rootEl) {
+    if (!window.LD_DECO) return;
+    const keys = ldDecoNeed();
+    if (keys.length) {
+        rootEl.classList.add('ld-deco-wait');
+        Promise.race([ldDecoLoad(keys), new Promise(r => setTimeout(r, 2500))]).then(() => rootEl.classList.remove('ld-deco-wait'));
+    }
+    if (ldDecoWatch.mo || !window.MutationObserver) return;
+    ldDecoWatch.mo = new MutationObserver(() => {
+        if (ldDecoWatch.t) return;
+        ldDecoWatch.t = setTimeout(() => { ldDecoWatch.t = 0; const k = ldDecoNeed(); if (k.length) ldDecoLoad(k); }, 120);
+    });
+    ldDecoWatch.mo.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+}
+
 function renderInviteReadOnly(rootEl, design, masked) {
     fixDesignUploadUrls(design);
     applyPinchZoomSetting(design);
@@ -1241,6 +1279,7 @@ function renderInviteReadOnly(rootEl, design, masked) {
     });
     if (window.InviteBlocks && InviteBlocks.pinPhotoItems) InviteBlocks.pinPhotoItems(rootEl);
     if (window.LD_WM && window.InviteBlocks && InviteBlocks.wmOverlay) InviteBlocks.wmOverlay(rootEl, window.LD_WM); // 1019z12 무료체험 워터마크 = 사진 위에 덮기
+    ldDecoWatch(rootEl); // 1019z16 이 청첩장에 쓰인 꾸밈 CSS만 받기
 
     rootEl.querySelectorAll('.blk-gallery .grid:not(.no-lightbox) img').forEach(img => {
         img.addEventListener('click', () => openLightbox(img));

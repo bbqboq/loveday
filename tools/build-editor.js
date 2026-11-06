@@ -20,7 +20,7 @@ const FILES = [
     { src: 'assets/editor.js', out: 'assets/editor.min.js', opt: JS, html: true, split: 'assets/editor-easy.min.js', splitExp: 'assets/editor-exp.min.js' }, // 1019z6·z10 간편 만들기 조각을 떼어 냄 (split-easy.js)
     { src: 'assets/editor-help.js', out: 'assets/editor-help.min.js', opt: JS, html: true }, // 1019s 나중에 불러오는 조각 (HTML window.LD_CHUNKS)
     { src: 'assets/editor-thm.js', out: 'assets/editor-thm.min.js', opt: JS, html: true },
-    { src: 'assets/invite-blocks.css', out: 'assets/invite-blocks.min.css', opt: CSS, html: true }, // 공용 섹션 (에디터 + 하객 화면) - 1019부터 압축본
+    { src: 'assets/invite-blocks.css', out: 'assets/invite-blocks.min.css', opt: CSS, html: true, deco: true }, // 공용 섹션 (에디터 + 하객 화면) - 1019부터 압축본
     { src: 'assets/invite-blocks.js', out: 'assets/invite-blocks.min.js', opt: JS, html: true },
     { src: 'assets/render-invite.css', out: 'assets/render-invite.min.css', opt: CSS, html: false }, // 하객 화면 전용
     { src: 'assets/render-invite.js', out: 'assets/render-invite.min.js', opt: JS, html: false },
@@ -29,6 +29,28 @@ const check = process.argv.includes('--check');
 const noSplit = process.argv.includes('--no-split');
 const hoverGate = process.argv.includes('--no-hover-gate') ? null : require('./hover-gate'); // 1019d 휴대폰 sticky hover 막기 (압축본만)
 let html = fs.readFileSync(HTML, 'utf8'), bad = 0;
+// 1019z16 하객 화면용: 꾸밈 하나에만 쓰이는 규칙을 assets/deco/<꾸밈>.css로 떼고 나머지는 invite-blocks.core.min.css (tools/split-deco.js)
+function decoSplit(code, f) {
+    const sp = require('./split-deco').split(code);
+    const dir = path.join(INV, 'assets/deco');
+    const want = { 'assets/invite-blocks.core.min.css': sp.core };
+    const keys = Object.keys(sp.files).sort();
+    for (const k of keys) want['assets/deco/' + k + '.css'] = sp.files[k];
+    const v = crypto.createHash('sha1').update(Object.values(want).join('|')).digest('hex').slice(0, 10);
+    want['assets/deco/manifest.json'] = JSON.stringify({ v, keys }) + '\n';
+    const stale = fs.existsSync(dir) ? fs.readdirSync(dir).filter(n => !want['assets/deco/' + n]) : [];
+    if (check) {
+        const diff = Object.entries(want).filter(([p, c]) => !fs.existsSync(path.join(INV, p)) || fs.readFileSync(path.join(INV, p), 'utf8') !== c);
+        if (diff.length || stale.length) { console.error(`  꾸밈 CSS 나누기(assets/deco)가 옛날 거예요 → node tools/build-editor.js`); bad++; }
+        else console.log(`  ✓ invite-blocks.core.min.css + 꾸밈 ${keys.length}개`);
+        return;
+    }
+    fs.mkdirSync(dir, { recursive: true });
+    for (const [p, c] of Object.entries(want)) { const fp = path.join(INV, p); if (!fs.existsSync(fp) || fs.readFileSync(fp, 'utf8') !== c) fs.writeFileSync(fp, c); }
+    stale.forEach(n => fs.unlinkSync(path.join(dir, n)));
+    const decoBytes = Object.values(sp.files).reduce((a, c) => a + Buffer.byteLength(c), 0);
+    console.log(`  invite-blocks.core.min.css ${(Buffer.byteLength(sp.core) / 1024).toFixed(0)}KB + 꾸밈 ${keys.length}개 ${(decoBytes / 1024).toFixed(0)}KB (규칙 ${sp.moved}개 옮김) v=${v}`);
+}
 for (const f of FILES) {
     let src = fs.readFileSync(path.join(INV, f.src), 'utf8');
     if (hoverGate && f.opt.loader === 'css') { const g = hoverGate(src); src = g.css; if (!check) console.log(`  ${f.src}: 마우스 효과 ${g.n}곳을 (hover: hover) 안으로`); }
@@ -64,10 +86,12 @@ for (const f of FILES) {
         if (cur !== code) { console.error(`  ${f.out}이(가) ${f.src}과(와) 달라요 → node tools/build-editor.js`); bad++; }
         else if (html2 !== html) { console.error(`  에디터 HTML의 ${f.out}?v= 값이 옛날 거예요 → node tools/build-editor.js`); bad++; }
         else console.log(`  ✓ ${f.out} (${(Buffer.byteLength(code) / 1024).toFixed(0)}KB, v=${v})`);
+        if (f.deco && !noSplit) decoSplit(code, f);
         continue;
     }
     if (cur !== code) fs.writeFileSync(outPath, code);
     html = html2;
+    if (f.deco && !noSplit) decoSplit(code, f);
     console.log(`  ${f.out}  ${(Buffer.byteLength(src) / 1024).toFixed(0)}KB → ${(Buffer.byteLength(code) / 1024).toFixed(0)}KB  v=${v}${cur === code ? ' (그대로)' : ''}`);
 }
 if (!check) fs.writeFileSync(HTML, html);

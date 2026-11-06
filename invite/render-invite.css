@@ -395,3 +395,6 @@ html.ld-snap-soft { scroll-snap-type: y proximity; }
 html.ld-snap-hard { scroll-snap-type: y mandatory; }
 html.ld-snap-soft .row-flex, html.ld-snap-hard .row-flex { scroll-snap-align: start; }
 @media (prefers-reduced-motion: reduce) { html.ld-snap-soft, html.ld-snap-hard { scroll-snap-type: none; } }
+
+/* 1019z16 꾸밈 CSS를 받는 동안(최대 2.5초) 청첩장 숨김 - render-invite ldDecoWatch */
+.ld-deco-wait { visibility: hidden; }
