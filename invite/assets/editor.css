@@ -5429,10 +5429,42 @@ body.fslot-on #addTextTopBtn { display: none !important; }
 .spab-st { font-size: 12.5px; border-radius: 10px; padding: 7px 10px; }
 .spab-st.ok { background: #E4F0E8; color: #3F7A5A; } .spab-st.bad { background: #F6E7E1; color: #A65A3E; }
 .spab-note { font-size: 12px; color: var(--wz-mute, #746D65); margin: 0; }
-.spab-pay { display: grid; gap: 8px; border: 1px solid var(--wz-line, #E4DED6); border-radius: 14px; padding: 8px 12px; }
-.spab-pay .sp-sw b { display: inline-flex; align-items: center; gap: 6px; }
-.spab-pay .sp-sw b i { display: inline-block; font-style: normal; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 6px; }
-.spab-pay .sp-sw b i.k { background: #FEE500; color: #3C1E1E; } .spab-pay .sp-sw b i.s { background: #3182F6; color: #fff; }
+/* 1019z19 송금 버튼 카드 (E안) - 칸을 누르면 아래 창 spAbPaySheet */
+.spab-sl > .wz-field { margin: 0; } /* (예금주 칸 아래가 휑하게 비던 것 - .wz-field 아래 여백 26px) */
+.spab-pc { display: grid; gap: 8px; background: #fff; border: 1px solid var(--wz-line, #E4DED6); border-radius: 16px; padding: 12px; }
+.spab-pch { display: flex; align-items: baseline; gap: 8px; } .spab-pch b { font-size: 14px; } .spab-pch em { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 700; color: var(--wz-acc, #8A4B55); }
+.spab-pc > p { margin: -4px 0 0; font-size: 12.5px; color: var(--wz-mute, #746D65); }
+.spab-pcg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.spab-pcc { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 64px; padding: 10px 12px; border-radius: 12px; border: 1px dashed var(--wz-line, #DCD2CA); background: #fff; color: var(--wz-ink, #2B2622); font: inherit; text-align: left; cursor: pointer; transition: transform .16s cubic-bezier(.23,1,.32,1), background-color .2s; }
+.spab-pcc > span { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; }
+.spab-pcc small { font-size: 12px; color: var(--wz-mute, #746D65); }
+.spab-pcc.on small { color: var(--wz-ink, #2B2622); font-weight: 700; }
+.spab-pcc.k.on { border: 2px solid #E2C800; background: #FFFBE0; padding: 9px 11px; }
+.spab-pcc.s.on { border: 2px solid #3182F6; background: #EEF4FF; padding: 9px 11px; }
+.spab-pcc:active { transform: scale(.97); }
+.spab-pcc:focus-visible { outline: 2px solid var(--wz-acc, #8A4B55); outline-offset: 1px; }
+.spab-bd { display: inline-block; font-style: normal; font-size: 11px; font-weight: 700; line-height: 1.4; border-radius: 6px; padding: 1px 6px; }
+.spab-bd.k { background: #FEE500; color: #3C1E1E; } .spab-bd.s { background: #3182F6; color: #fff; }
+html.sp-kb .spa.spab-q .spab-pc { display: none; } /* (예금주를 적는 동안 키보드 위엔 칸 + [확인]만) */
+.spab-sh { position: fixed; inset: 0; z-index: 100000; background: rgba(31,26,23,0); display: flex; flex-direction: column; justify-content: flex-end; align-items: center; transition: background-color .2s; font-family: inherit; }
+.spab-sh.in { background: rgba(31,26,23,.42); }
+.spab-shp { width: 100%; max-width: 480px; box-sizing: border-box; background: #fff; color: #2B2622; border-radius: 22px 22px 0 0; padding: 10px 18px calc(22px + env(safe-area-inset-bottom)); display: grid; gap: 12px; transform: translateY(100%); transition: transform .26s cubic-bezier(.23,1,.32,1), margin-bottom .12s; }
+.spab-sh.in .spab-shp { transform: none; }
+.spab-shg { justify-self: center; width: 40px; height: 4px; border-radius: 2px; background: #DCD2CA; }
+.spab-sht { display: flex; align-items: center; gap: 8px; } .spab-sht b { font-size: 16px; }
+.spab-shh { margin: 0; font-size: 13px; line-height: 1.6; color: #5E5750; } .spab-shh b { color: #2B2622; }
+.spab-shi { display: flex; align-items: center; gap: 4px; height: 50px; box-sizing: border-box; border: 2px solid #2B2622; border-radius: 14px; padding: 0 14px; background: #fff; }
+.spab-shi span { color: #8C847C; font-size: 15px; flex: none; }
+.spab-shi input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 16px; color: inherit; }
+.spab-shw:empty { display: none; }
+.spab-shb { display: flex; gap: 10px; }
+.spab-shb button { height: 52px; border-radius: 16px; font: inherit; font-size: 15px; cursor: pointer; }
+.spab-sho { flex: none; width: 110px; border: 1px solid #E4DCD5; background: #fff; color: #5E5750; }
+.spab-sho.rm { color: #A33A3A; }
+.spab-shk { flex: 1; border: 0; background: #1F1A17; color: #fff; font-weight: 700; }
+.spab-shb button:active { transform: scale(.97); }
+@media (min-width: 861px) { .spab-sh { justify-content: center; } .spab-shp { border-radius: 20px; padding-bottom: 20px; transform: translateY(16px); opacity: 0; transition: transform .22s cubic-bezier(.23,1,.32,1), opacity .18s; } .spab-sh.in .spab-shp { opacity: 1; } .spab-shg { display: none; } }
+@media (prefers-reduced-motion: reduce) { .spab-sh, .spab-shp, .spab-pcc { transition: none; } }
 .spab-dots { display: flex; gap: 6px; justify-content: center; }
 .spab-dots i { width: 22px; height: 4px; border-radius: 4px; background: var(--wz-line, #E4DED6); }
 .spab-dots i.on { background: var(--wz-acc, #8A4B55); }
