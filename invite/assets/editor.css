@@ -5517,6 +5517,7 @@ html.sp-kb #simplePane .sp-acc-trial { display: none; } /* (키보드가 올라�
 #spAskMore.spab-entering > :is(.sp-accp, .sp-accp-sw) { display: none; }
 /* 1019z20b 예식장 ② 지도 설정 아래 '지도 부분만' 샘플 (venue miniPv) - 청첩장 폭 390px을 0.9배로 (spVenueMsHtml) */
 .spv-ms { margin-top: 6px; display: grid; gap: 6px; }
+.spv-ms, .spv-ms * { pointer-events: none !important; } /* (1019z20c 지도 샘플은 눌리지 않게 - 카카오맵이 손가락을 잡아서 그 위에서 화면이 안 넘어갔음) */
 .spv-ms-fr { width: 351px; max-width: 100%; justify-self: center; box-sizing: border-box; padding: 12px 0 10px; border-radius: 14px; box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 2px 10px rgba(0,0,0,.06); overflow: hidden; }
 .spv-ms-map { position: relative; margin: 0 22px; border-radius: 10px; overflow: hidden; background: #E8EBE8; transition: margin .3s cubic-bezier(.23,1,.32,1), border-radius .3s, height .1s; }
 .spv-ms-map.full { margin: 0; border-radius: 0; }
