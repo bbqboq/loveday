@@ -5499,3 +5499,24 @@ html.sp-kb #simplePane:has(.spa.spab-q) .sp-ask-nav { display: none; } /* (키�
 .spv-dots i.on { background: var(--wz-acc, #8A4B55); }
 @media (prefers-reduced-motion: reduce) { #simplePane .spv-slides, #simplePane .spv-track { transition: none; } }
 html.sp-kb #simplePane .sp-acc-trial { display: none; } /* (키보드가 올라오면 무료체험 안내 상자는 잠깐 숨김 - 칸이 위로) */
+/* 1019z20 휴대폰 계좌 질문: 적는 동안엔 계좌 칸만 (account qFocus) */
+#spBody:has(#spAskMore.spab-foc) .sp-ask-opts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+#spBody:has(#spAskMore.spab-foc) .sp-ask-o { min-height: 0; padding: 10px 12px; gap: 8px; border-radius: 12px; }
+#spBody:has(#spAskMore.spab-foc) .sp-ask-o b { font-size: 14px; }
+#spBody:has(#spAskMore.spab-foc) .sp-ask-o small { display: none; }
+#spBody:has(#spAskMore.spab-foc) .sp-ask-o i { width: 18px; height: 18px; }
+#spBody:has(#spAskMore.spab-foc) .sp-ask-o.on i::after { inset: 3px; }
+#spAskMore.spab-foc .sp-acc-trial { padding: 8px 12px; margin-bottom: 10px; }
+#spAskMore.spab-foc .sp-acc-trial summary { cursor: pointer; list-style: none; font-size: 12.5px; color: var(--wz-sub, #6E625C); }
+#spAskMore.spab-foc .sp-acc-trial summary::-webkit-details-marker { display: none; }
+#spAskMore.spab-foc .sp-acc-trial summary::after { content: ' 자세히'; text-decoration: underline; text-underline-offset: 2px; }
+#spAskMore.spab-foc .sp-acc-trial details[open] summary::after { content: ' 접기'; }
+#spAskMore.spab-foc .sp-acc-trial summary > b { display: inline; margin: 0; font-size: 12.5px; }
+#spAskMore.spab-foc .sp-acc-trial details p { margin: 6px 0 0; }
+#spAskMore.spab-foc .sp-acc-trial details p > b:first-child { display: none; }
+#spAskMore.spab-entering > :is(.sp-accp, .sp-accp-sw) { display: none; }
+/* 1019z20 예식장 ② 지도 설정 아래 진짜 오시는 길 그림 (venue miniPv) */
+.spv-mini { position: relative; overflow: hidden; border-radius: 14px; background: var(--wz-soft, #F1EDE7); margin-top: 4px; transition: height .2s cubic-bezier(.23,1,.32,1); }
+.spv-mini-in > div { box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 2px 10px rgba(0,0,0,.06); } /* (청첩장 폭이 보이게 - 지도 가로 꽉 채우기가 어디까지인지) */
+.spv-mini-in { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }
+.spv-mini-none { display: grid; place-items: center; height: 120px; font-size: 13px; color: var(--wz-mute, #746D65); }
