@@ -5587,9 +5587,13 @@ html.sp-kb .spa.spac-q .spac-top { display: none; }
 .spac-c.g.on .cc { background: var(--g); color: #fff; box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--g); }
 .spac-c.b.on .cc { background: var(--b); color: #fff; box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--b); }
 .spac-c.add .cc { background: transparent !important; border: 1.5px dashed #C9BDB7; color: #8C847C; font-weight: 400; font-size: 20px; }
-.spac-c.dead { cursor: not-allowed; }
-.spac-c.dead .cc { background: #F1EEEB !important; color: #A39D95; border: 1px solid #E4DED6; font-size: 13px; font-weight: 500; }
-.spac-c.dead .cap { color: #B8B1A9; text-decoration: line-through; text-decoration-color: rgba(0,0,0,.18); }
+.spac-c.dead { cursor: default; }
+.spac-c.dead .cc { background: #FBFAF8 !important; color: #9A928A; border: 1px solid #E6E1DB; }
+.spac-c.dead .cap { color: #8C847C; }
+.spac-c .dm-f, .spac-p .dm-f, .spab-p .dm-f { width: 24px; height: 24px; display: block; }
+.spac-c:not(.big) .dm-f { width: 22px; height: 22px; }
+.spac-p .dm-f, .spab-p .dm-f { width: 16px; height: 16px; }
+.dm-h { font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif; font-weight: 500; font-size: 14px; }
 .spac-c .bd { position: absolute; right: -5px; bottom: -3px; min-width: 18px; height: 18px; box-sizing: border-box; border-radius: 9px; border: 2px solid #fff; font-style: normal; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #fff; }
 .spac-c .bd.ok { background: #3F7A5A; } .spac-c .bd.x { background: #A33A3A; }
 .spac-c .cap { font-size: 11px; white-space: nowrap; color: #5E5750; font-weight: 500; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
@@ -5598,6 +5602,6 @@ html.sp-kb .spa.spac-q .spac-top { display: none; }
 .spac-c.add .cap { color: #A39D95; }
 .spac-c:not(.dead):active .cc { transform: scale(.94); }
 .spac-c:focus-visible { outline: none; } .spac-c:focus-visible .cc { outline: 2px solid var(--wz-acc, #8A4B55); outline-offset: 3px; }
-.spab-p.dead, .spac-p.dead { opacity: .55; cursor: not-allowed; }
+.spab-p.dead, .spac-p.dead { opacity: .7; cursor: default; }
 html.sp-kb .spa.spac-q .spac-face { display: none; }
 @media (prefers-reduced-motion: reduce) { .spac-c .cc { transition: none; } }
