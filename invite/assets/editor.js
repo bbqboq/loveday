@@ -13855,6 +13855,142 @@ function spAbPaySheet(f, p, t, after) {
     el.addEventListener('click', e => { if (e.target === el) close(); });
     requestAnimationFrame(() => { el.classList.add('in'); place(); if (!on) inp.focus({ preventScroll: true }); });
 }
+// ===== 1019z21 간편 계좌 칸 '한 사람 = 한 장' B안 (시안 claude.ai 아티팩트 Woc9KsyTnErMww96yVcCSW B, 관리자 마음 전할 곳 옵션 'card' - 끄면 1019z17 장 넘기기) =====
+//  위: [신랑측 | 신부측] 탭(적은 수 · 다 적으면 ✓) + 그쪽 세 칸 [신랑 · 민준] [+ 아버지] [+ 어머니] (점선 칸 = 누르면 넣고 그 칸으로 · 고치는 중인 부모님 칸 ✕ = 한 번 더 누르면 빠짐)
+//  아래: 그분 카드 한 장 = 은행(누르면 아래 창 spAcBankSheet) · 계좌번호('-' 자동 · 자릿수 확인) · 예금주(비우면 이름/호칭) · 송금 버튼(신랑·신부, spAbPaySheet)
+//  [다음 · 신부 계좌 ›] 하나로 사람을 넘김 (휴대폰 질문 화면 = 아래 버튼, 그 밖 = 카드 밑 버튼) → 다 적었어요(정리 + 부모님 안내). 저장 값은 예전 그대로(spAbMount와 같은 SPAB · save)
+var SPAC = { side: 'g', done: false };
+function spAcBankSheet(p, cur, onPick) {
+    document.querySelector('.spab-sh')?.remove();
+    const all = [...SPAB_TOP, ...SPAB_MORE], own = cur && !all.includes(cur);
+    const el = document.createElement('div'); el.className = 'spab-sh'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', `${p.role} 은행 고르기`);
+    el.innerHTML = `<div class="spab-shp"><i class="spab-shg" aria-hidden="true"></i>
+        <div class="spab-sht"><b>${esc(p.role)} 은행</b><button type="button" class="spac-shx" aria-label="닫기">✕</button></div>
+        <div class="spac-banks">${all.map((b, i) => `<button type="button" class="${b === cur ? 'on' : ''}${i < SPAB_TOP.length ? ' top' : ''}" data-b="${esc(b)}">${esc(b)}</button>`).join('')}</div>
+        <div class="spac-own"><input type="text" placeholder="그 밖의 은행 · 증권 (예: 미래에셋증권)" value="${own ? esc(cur) : ''}" aria-label="그 밖의 은행 이름" enterkeyhint="done"><button type="button">확인</button></div></div>`;
+    document.body.appendChild(el);
+    const close = () => { document.removeEventListener('keydown', esc1, true); el.classList.remove('in'); setTimeout(() => el.remove(), 200); };
+    const esc1 = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+    document.addEventListener('keydown', esc1, true);
+    const pick = b => { b = String(b || '').trim(); if (!b) return; close(); onPick(b); };
+    el.querySelectorAll('[data-b]').forEach(x => x.addEventListener('click', () => pick(x.dataset.b)));
+    const oi = el.querySelector('.spac-own input');
+    el.querySelector('.spac-own button').addEventListener('click', () => pick(oi.value));
+    oi.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); pick(oi.value); } });
+    el.querySelector('.spac-shx').addEventListener('click', close);
+    el.addEventListener('click', e => { if (e.target === el) close(); });
+    const vv = window.visualViewport, panel = el.querySelector('.spab-shp'), place = () => { if (vv) panel.style.marginBottom = Math.max(0, window.innerHeight - vv.height - vv.offsetTop) + 'px'; };
+    if (vv) { vv.addEventListener('resize', place); }
+    requestAnimationFrame(() => el.classList.add('in'));
+}
+function spAcMount(host, f) {
+    if (!host) return;
+    const ORDER = ['groomBank', 'groomFatherBank', 'groomMotherBank', 'brideBank', 'brideFatherBank', 'brideMotherBank'];
+    const token = (window.EDIT_TOKEN || '') + '|' + (state.presetId || '');
+    if (SPAB.at !== token) { SPAB.at = token; SPAB.shown = []; SPAB.own = false; SPAB.cur = 'groomBank'; SPAC.side = 'g'; SPAC.done = false; }
+    const roles = spAbRoles(), R = k => roles.find(x => x.k === k);
+    const shownList = () => ORDER.map(R).filter(p => spAbShown(f, p));
+    const save = (k, a) => { const p = R(k);
+        f[k] = a.number ? composeAccountParts({ bank: a.bank, number: acctFmt(a.bank, a.number), holder: (a.holder || '').trim() || spAbNameOf(p) }) : (a.bank || a.holder ? `${a.bank || ''}${a.holder ? ` (${a.holder})` : ''}`.trim() : '');
+        spChanged(['account']); scheduleSnapshot(); };
+    if (!spAbShown(f, R(SPAB.cur))) SPAB.cur = 'groomBank';
+    SPAC.side = R(SPAB.cur).side;
+    const qNav = () => { const nav = window.innerWidth <= 860 && host.isConnected && host.closest('#simplePane') && document.querySelector('#simplePane .sp-ask-nav'); return nav ? { nx: nav.querySelector('#spNext'), pv: nav.querySelector('#spPrev') } : null; };
+    const nextOf = k => { const l = shownList(), i = l.findIndex(p => p.k === k); return l[i + 1] || null; };
+    const prevOf = k => { const l = shownList(), i = l.findIndex(p => p.k === k); return i > 0 ? l[i - 1] : null; };
+    const holderOf = (p, a) => a.holder && a.holder !== spAbNameOf(p) ? a.holder : '';
+    const topHtml = () => {
+        const sl = shownList();
+        const seg = [['g', '신랑측'], ['b', '신부측']].map(([sd, lab]) => { const mine = sl.filter(p => p.side === sd), fin = mine.filter(p => spAbDone(f, p.k)).length, all = mine.length && fin === mine.length, on = !SPAC.done && sd === SPAC.side;
+            return `<button type="button" class="spac-sg${on ? ' on' : ''}" role="tab" aria-selected="${on}" data-ac-side="${sd}">${lab}<i class="${all ? 'ok' : ''}" aria-hidden="true">${all ? '✓' : `${fin}/${mine.length}`}</i></button>`; }).join('');
+        const ppl = roles.filter(p => p.side === SPAC.side).map(p => { const sh = spAbShown(f, p), on = !SPAC.done && sh && p.k === SPAB.cur, fin = sh && spAbDone(f, p.k);
+            const lab = p.opt ? p.role.replace(/^(신랑|신부) /, '') : `${p.role}${p.name ? ` · ${p.name}` : ''}`;
+            return `<button type="button" class="spac-p${sh ? '' : ' add'}${on ? ' on' : ''}${fin ? ' ok' : ''}${p.opt ? ' par' : ''}" data-ac-who="${p.k}" aria-pressed="${on}">${!sh ? '<i class="pl" aria-hidden="true">+</i>' : fin ? '<i class="ck" aria-hidden="true">✓</i>' : ''}<span>${esc(lab)}</span>${on && p.opt ? '<i class="x" aria-label="빼기">✕</i>' : ''}</button>`; }).join('');
+        return `<div class="spac-seg" role="tablist" aria-label="신랑측 · 신부측">${seg}</div><div class="spac-ppl">${ppl}</div>`; };
+    const chkHtml = (bank, num) => { const c = spAbCheck(bank, num); return c ? `<div class="spab-st ${c.ok ? 'ok' : 'bad'}">${esc(c.t)}</div>` : `<p class="spab-note">${bank ? '숫자만 적으면 \'-\'는 저절로 들어가요' : '은행을 먼저 골라 주세요'}</p>`; };
+    const payCell = (p, t) => { const on = !!String(f[p.pay + t] || '').trim();
+        return `<button type="button" class="spab-pcc ${t === 'Kakao' ? 'k' : 's'}${on ? ' on' : ''}" data-ab-pc="${t}" aria-pressed="${on}"><span><i class="spab-bd ${t === 'Kakao' ? 'k' : 's'}" aria-hidden="true">${t === 'Kakao' ? 'pay' : 'toss'}</i>${t === 'Kakao' ? '카카오페이' : '토스'}</span><small>${on ? '✓ 넣었어요 · 고치기' : '+ 넣기'}</small></button>`; };
+    const nextLabel = () => { const n = nextOf(SPAB.cur); return n ? `다음 · ${n.role} 계좌 ›` : '다 적었어요 ›'; };
+    const draw = () => {
+        const q = qNav(); host.classList.add('spac'); host.classList.toggle('spac-q', !!q);
+        let body;
+        if (SPAC.done) {
+            const sl = shownList(), parLeft = roles.filter(p => p.opt && !spAbShown(f, p)).length;
+            body = `<div class="spac-fin"><div class="spab-fh"><i aria-hidden="true">✓</i><b>계좌를 다 적었어요</b></div>
+                ${sl.map(p => { const a = spAbParse(f[p.k]), pays = [f[(p.pay || '_') + 'Kakao'] ? '카카오페이' : '', f[(p.pay || '_') + 'Toss'] ? '토스' : ''].filter(Boolean);
+                    return `<div class="spac-row"><div><small>${esc(p.role)}</small><b>${a.bank ? esc(a.bank + ' ' + acctFmt(a.bank, a.number)) : '아직 안 적었어요'}</b><em>예금주 ${esc(a.holder || spAbNameOf(p))}${pays.length ? ` · 송금 버튼 ${pays.join(' · ')}` : ''}</em></div><button type="button" data-ac-edit="${p.k}">고치기</button></div>`; }).join('')}
+                ${parLeft ? '<div class="spab-guide"><span class="arr" aria-hidden="true">↑</span><span>부모님 계좌도 받으시려면 위에서 <b>신랑측 · 신부측</b>을 고른 뒤 <b>+ 아버지 · + 어머니</b>를 눌러 주세요.</span></div>' : ''}</div>`;
+        } else {
+            const p = R(SPAB.cur), a = spAbParse(f[p.k]), fmt0 = BANK_ACCT_FMT[String(a.bank).replace(/은행$/, '')];
+            body = `<div class="spac-card">
+                <div class="spac-h"><b>${esc(p.role)} 계좌</b>${p.opt ? '<button type="button" class="spab-rm" data-ab-rm>이 계좌 빼기</button>' : ''}</div>
+                <div class="spac-f"><div class="spac-l">은행</div><button type="button" class="spac-bank${a.bank ? ' on' : ''}" data-ac-bank><span>${a.bank ? esc(a.bank) : '은행을 골라 주세요'}</span>${WZ_DOWN_SVG}</button></div>
+                <div class="spac-f"><label class="spac-l" for="spAcNum">계좌번호</label><input class="wz-inp spab-num" id="spAcNum" inputmode="numeric" enterkeyhint="next" autocomplete="off" value="${esc(acctFmt(a.bank, a.number))}" placeholder="${esc(fmt0 && fmt0[0] ? acctFmt(a.bank, '0'.repeat(fmt0[0].reduce((x, y) => x + y, 0))) : (a.bank ? '숫자만 적어도 돼요' : '은행을 먼저 골라 주세요'))}"><div data-ac-chk>${chkHtml(a.bank, a.number)}</div></div>
+                <div class="spac-f"><div class="spac-l"><label for="spAcHold">예금주</label><small>비워 두면 '${esc(spAbNameOf(p))}'</small></div><input class="wz-inp" id="spAcHold" enterkeyhint="done" value="${esc(holderOf(p, a))}" placeholder="${esc(spAbNameOf(p))}"></div>
+                ${p.pay ? `<div class="spab-pc"><div class="spab-pch"><b>앱으로 바로 보내는 버튼</b><em>선택</em></div><div class="spab-pcg">${payCell(p, 'Kakao')}${payCell(p, 'Toss')}</div></div>` : ''}
+            </div><div class="spac-warn" data-ac-warn aria-live="polite"></div>
+            ${q ? '' : `<div class="spab-row spac-nav">${prevOf(SPAB.cur) ? '<button type="button" class="spab-btn ghost" data-ac-prev>‹ 이전 분</button>' : ''}<button type="button" class="spab-btn wide" data-ac-next>${esc(nextLabel())}</button></div>`}`;
+        }
+        host.innerHTML = `<div class="spac-top">${topHtml()}</div>${body}`;
+        navSync();
+        const ni = host.querySelector('#spAcNum');
+        if (ni) {
+            ni.addEventListener('input', () => { const p = R(SPAB.cur), cur = spAbParse(f[p.k]); cur.number = ni.value.replace(/\D/g, ''); acctFmtInput(ni, cur.bank); save(p.k, cur);
+                host.querySelector('[data-ac-chk]').innerHTML = chkHtml(cur.bank, cur.number); host.querySelector('.spac-top').innerHTML = topHtml(); warn(''); });
+            ni.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); host.querySelector('#spAcHold')?.focus(); } });
+            const hi = host.querySelector('#spAcHold');
+            hi.addEventListener('input', () => { const p = R(SPAB.cur), cur = spAbParse(f[p.k]); cur.holder = hi.value; save(p.k, cur); });
+            hi.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); hi.blur(); } });
+        }
+    };
+    const warn = t => { const w = host.querySelector('[data-ac-warn]'); if (w) w.innerHTML = t ? `<div class="spab-st bad">${esc(t)}</div>` : ''; };
+    const goNext = () => { // 지금 분을 다 적어야 넘어감
+        const p = R(SPAB.cur), a = spAbParse(f[p.k]), c = spAbCheck(a.bank, a.number);
+        if (!a.bank) { warn('은행을 골라 주세요'); return false; }
+        if (!(c && c.ok)) { warn(c ? c.t : '계좌번호를 적어 주세요'); host.querySelector('#spAcNum')?.focus(); return false; }
+        document.activeElement?.blur?.();
+        const n = nextOf(p.k); if (n) { SPAB.cur = n.k; SPAC.side = n.side; } else SPAC.done = true;
+        draw(); return true; };
+    const goPrev = () => { if (SPAC.done) { const l = shownList(); SPAC.done = false; SPAB.cur = l[l.length - 1].k; SPAC.side = R(SPAB.cur).side; draw(); return true; }
+        const pp = prevOf(SPAB.cur); if (!pp) return false; SPAB.cur = pp.k; SPAC.side = pp.side; draw(); return true; };
+    const remove = k => { const p = R(k); SPAB.shown = SPAB.shown.filter(x => x !== k); f[k] = ''; spChanged(['account']); scheduleSnapshot();
+        try { InviteBlocks.toast(`${p.role} 계좌를 뺐어요`); } catch (e) {}
+        const todo = shownList().find(x => !spAbDone(f, x.k)); // (뺀 뒤엔 안 적은 분 → 없으면 정리 화면 - 엉뚱하게 신부 칸으로 가지 않게)
+        if (todo) { SPAB.cur = todo.k; SPAC.side = todo.side; SPAC.done = false; } else SPAC.done = true; draw(); };
+    function navSync() {
+        const q = qNav();
+        { const more = host.closest('#spAskMore'), foc = !!(q && spOpt('account', 'qFocus')); // (1019z20 적는 동안엔 계좌 칸만)
+          if (more) { more.classList.toggle('spab-foc', foc); more.classList.toggle('spab-entering', foc && !SPAC.done);
+            const tn = more.querySelector('.sp-acc-trial'); if (foc && tn && !tn.dataset.sm) { tn.dataset.sm = '1'; tn.innerHTML = `<details><summary><b>무료체험 중</b> · 하객 화면엔 계좌번호 일부가 XX로 보여요</summary><p>${accTrialNote()}</p></details>`; } } }
+        const nx0 = document.querySelector('#simplePane .sp-ask-nav #spNext'), pv0 = document.querySelector('#simplePane .sp-ask-nav #spPrev');
+        if (!q || !q.nx || SPAC.done) { if (nx0 && nx0.dataset.ac) { nx0.dataset.ac = ''; if (nx0.dataset.acOrig != null) nx0.textContent = nx0.dataset.acOrig; } if (pv0 && pv0.dataset.ac && !(q && SPAC.done)) pv0.dataset.ac = '';
+            if (q && SPAC.done && pv0) pv0.dataset.ac = '1'; bind(nx0, pv0); return; }
+        const { nx, pv } = q; if (nx.dataset.acOrig == null) nx.dataset.acOrig = nx.textContent;
+        nx.textContent = nextLabel(); nx.dataset.ac = '1'; nx.classList.remove('sp-wait');
+        if (pv) { pv.dataset.ac = prevOf(SPAB.cur) ? '1' : ''; }
+        bind(nx, pv);
+    }
+    function bind(nx, pv) {
+        if (nx && !nx._acBound) { nx._acBound = true; nx.addEventListener('click', ev => { if (nx.dataset.ac !== '1' || !host.isConnected || SPAC.done) return; ev.preventDefault(); ev.stopImmediatePropagation(); goNext(); }, true); }
+        if (pv && !pv._acBound) { pv._acBound = true; pv.addEventListener('click', ev => { if (pv.dataset.ac !== '1' || !host.isConnected) return; ev.preventDefault(); ev.stopImmediatePropagation(); goPrev(); }, true); }
+    }
+    if (host._acBound !== true) { host._acBound = true;
+        host.addEventListener('click', e => {
+            const sd = e.target.closest('[data-ac-side]'); if (sd) { const s = sd.dataset.acSide, l = shownList().filter(p => p.side === s); const first = l.find(p => !spAbDone(f, p.k)) || l[0]; SPAC.side = s; SPAC.done = false; SPAB.cur = first.k; draw(); return; }
+            const w = e.target.closest('[data-ac-who]'); if (w) { const k = w.dataset.acWho, p = R(k);
+                if (!spAbShown(f, p)) { SPAB.shown.push(k); SPAB.cur = k; SPAC.done = false; draw(); return; } // 점선 칸 = 넣고 그 칸으로
+                if (p.opt && SPAB.cur === k && !SPAC.done) { remove(k); return; } // 고치는 중인 부모님 칸 한 번 더 = 빼기
+                SPAB.cur = k; SPAC.done = false; draw(); return; }
+            if (e.target.closest('[data-ab-rm]')) { remove(SPAB.cur); return; }
+            if (e.target.closest('[data-ac-bank]')) { const p = R(SPAB.cur); spAcBankSheet(p, spAbParse(f[p.k]).bank, b => { const cur = spAbParse(f[p.k]); cur.bank = b; save(p.k, cur); draw(); setTimeout(() => host.querySelector('#spAcNum')?.focus({ preventScroll: true }), 260); }); return; }
+            const pc = e.target.closest('[data-ab-pc]'); if (pc) { const p = R(SPAB.cur); if (p && p.pay) spAbPaySheet(f, p, pc.dataset.abPc, draw); return; }
+            if (e.target.closest('[data-ac-next]')) { goNext(); return; }
+            if (e.target.closest('[data-ac-prev]')) { goPrev(); return; }
+            const ed = e.target.closest('[data-ac-edit]'); if (ed) { SPAB.cur = ed.dataset.acEdit; SPAC.side = R(SPAB.cur).side; SPAC.done = false; draw(); return; }
+        });
+    }
+    draw();
+}
 function spAccount(box) {
     if (!spBlock('account').enabled) { box.innerHTML = spH('마음 전하실 곳', '계좌번호는 하객이 [복사]를 눌러야만 보이고, 서버에는 암호화해서 저장돼요.') + spInclHtml('account') + spOffNote(); return; }
     const f = spBlock('account').fields, wi = weddingInfo(), spaOn = spOpt('account', 'steps'); // 1019z17 B안: 사람 표 + 한 칸씩 차례로
@@ -13894,7 +14030,7 @@ function spAccount(box) {
         const cl = c.querySelector('[data-clear]'); if (cl) cl.addEventListener('click', clear);
     });
     spBindChoice(box, f, 'account');
-    if (spaOn) spAbMount(box.querySelector('#spa'), f);
+    if (spaOn) (spOpt('account', 'card') ? spAcMount : spAbMount)(box.querySelector('#spa'), f); // (1019z21 한 사람 = 한 장, 관리자 옵션 card를 끄면 장 넘기기)
     if (spOpt('account', 'pics')) spAccPicsBind(box, f);
     box.querySelectorAll('[data-sp-f]').forEach(inp => inp.addEventListener('input', () => { f[inp.dataset.spF] = inp.value.trim(); spChanged(['account']); }));
     box.querySelector('#spPar')?.addEventListener('click', e => { const p = box.querySelector('#spParents'), on = !p.classList.contains('on'); p.classList.toggle('on', on); e.currentTarget.textContent = on ? '혼주 계좌 접기' : '+ 혼주(부모님) 계좌 추가'; });

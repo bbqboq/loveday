@@ -5527,3 +5527,48 @@ html.sp-kb #simplePane .sp-acc-trial { display: none; } /* (키보드가 올라�
 .spv-ms-nav span { display: inline-flex; align-items: center; gap: 4px; padding: 5px 9px; border: 1px solid rgba(0,0,0,.1); border-radius: 8px; background: #fff; font-size: 11px; color: #333; }
 .spv-ms-nav i { width: 14px; height: 14px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 8px; font-weight: 800; color: #fff; }
 .spv-ms-nav i.n { background: #03C75A; } .spv-ms-nav i.k { background: #FEE500; color: #3C1E1E; } .spv-ms-nav i.t { background: #1A3FA0; }
+/* 1019z21 간편 계좌 칸 '한 사람 = 한 장' B안 (spAcMount · 관리자 account 옵션 card) */
+.spa.spac { display: grid; gap: 12px; }
+.spac-top { display: grid; gap: 8px; }
+.spac-seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: #EEE7E1; }
+.spac-sg { height: 42px; border: 0; border-radius: 11px; background: transparent; color: var(--wz-mute, #746D65); font: inherit; font-size: 14.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: background-color .18s, color .18s, box-shadow .18s; }
+.spac-sg.on { background: #fff; color: var(--wz-ink, #2B2622); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.spac-sg i { min-width: 22px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 10px; font-style: normal; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; background: #E4DCD5; color: #5E5750; }
+.spac-sg i.ok { background: #3F7A5A; color: #fff; }
+.spac-ppl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.spac-p { min-width: 0; height: 44px; border-radius: 12px; border: 1px solid #E2CDD0; background: #F7EEEF; color: var(--wz-ink, #2B2622); font: inherit; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 0 6px; cursor: pointer; transition: transform .14s cubic-bezier(.23,1,.32,1), background-color .18s, border-color .18s; }
+.spac-p span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.spac-p.add { border: 1px dashed #D2C6C0; background: transparent; color: #8C847C; }
+.spac-p.ok { border-color: #CFE0D5; background: #EEF5F0; }
+.spac-p.on { border: 2px solid var(--wz-ink, #2B2622); background: #fff; }
+.spac-p i { font-style: normal; flex: none; }
+.spac-p i.pl { font-size: 15px; }
+.spac-p i.ck { width: 16px; height: 16px; border-radius: 50%; background: #3F7A5A; color: #fff; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; }
+.spac-p i.x { font-size: 12px; color: #A33A3A; margin-left: 1px; }
+.spac-p:active, .spac-sg:active, .spac-bank:active { transform: scale(.97); }
+.spac-card { background: #fff; border: 1px solid var(--wz-line, #E4DED6); border-radius: 18px; padding: 16px; display: grid; gap: 14px; }
+.spac-h { display: flex; align-items: center; gap: 8px; } .spac-h b { font-size: 16px; }
+.spac-f { display: grid; gap: 6px; }
+.spac-l { display: flex; align-items: baseline; font-size: 13px; font-weight: 700; color: #5E5750; } .spac-l small { margin-left: auto; font-size: 12px; font-weight: 400; color: var(--wz-mute, #746D65); }
+.spac-bank { display: flex; align-items: center; height: 50px; box-sizing: border-box; border: 1px solid var(--wz-line2, #DED8CF); border-radius: 12px; background: #fff; padding: 0 14px; font: inherit; font-size: 16px; color: #8C847C; text-align: left; cursor: pointer; }
+.spac-bank.on { color: var(--wz-ink, #2B2622); font-weight: 700; }
+.spac-bank svg { width: 18px; height: 18px; margin-left: auto; color: #8C847C; }
+.spac-warn:empty { display: none; }
+.spac-nav { margin-top: 2px; }
+.spa.spac-q .spac-nav { display: none; }
+.spac-fin { display: grid; gap: 10px; }
+.spac-row { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--wz-line, #E4DED6); border-radius: 14px; padding: 11px 14px; }
+.spac-row > div { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.spac-row small { font-size: 12px; color: var(--wz-mute, #746D65); } .spac-row b { font-size: 14.5px; } .spac-row em { font-style: normal; font-size: 12px; color: #5E5750; }
+.spac-row button { flex: none; height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid var(--wz-line2, #DED8CF); background: #fff; font: inherit; font-size: 13px; cursor: pointer; }
+.spac-banks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.spac-banks button { height: 44px; border: 1px solid transparent; border-radius: 10px; background: #F3EEE9; color: #231C19; font: inherit; font-size: 13px; padding: 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.spac-banks button.top { font-weight: 700; }
+.spac-banks button.on { border: 2px solid #8B4A55; background: #F3E9EA; }
+.spac-own { display: flex; gap: 8px; } .spac-own input { flex: 1; min-width: 0; height: 46px; box-sizing: border-box; border: 1px solid #E4DCD5; border-radius: 12px; padding: 0 12px; font: inherit; font-size: 15px; }
+.spac-own button { flex: none; height: 46px; padding: 0 16px; border: 0; border-radius: 12px; background: #1F1A17; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.spac-shx { margin-left: auto; width: 36px; height: 36px; border-radius: 50%; border: 0; background: #F3EEE9; color: #5E5750; font-size: 15px; cursor: pointer; }
+html.sp-kb #simplePane:has(.spa.spac-q) .sp-ask-nav { display: none; } /* (키보드가 올라오면 아래 버튼은 숨김 - 키보드 [다음]으로 예금주 · [완료]로 내림) */
+html.sp-kb .spa.spac-q .spac-top { display: none; }
+:is(.spac-sg, .spac-p, .spac-bank, .spac-row button):focus-visible { outline: 2px solid var(--wz-acc, #8A4B55); outline-offset: 1px; }
+@media (prefers-reduced-motion: reduce) { .spac-sg, .spac-p { transition: none; } }
