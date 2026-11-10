@@ -5605,3 +5605,8 @@ html.sp-kb .spa.spac-q .spac-top { display: none; }
 .spab-p.dead, .spac-p.dead { opacity: .7; cursor: default; }
 html.sp-kb .spa.spac-q .spac-face { display: none; }
 @media (prefers-reduced-motion: reduce) { .spac-c .cc { transition: none; } }
+/* 1019z22d 좁은 폰(360px 안팎)에서 계좌 칸이 오른쪽으로 잘림: 사람 한 줄(동그라미 여섯)이 최소 폭을 고집해 칸 전체가 넓어졌음 → 칸은 화면 폭을 넘지 않고, 동그라미 자리가 조금씩 줄어듦 */
+#simplePane .spa, .spa.spac, .spac-top, .spac-face, .spac-card { grid-template-columns: minmax(0, 1fr); }
+.spac-fr { min-width: 0; }
+@media (max-width: 359px) { .spac-fr { gap: 0; } .spac-c .cc { width: 38px; height: 38px; } .spac-c.big .cc { width: 48px; height: 48px; font-size: 16px; } }
+.spab-pcc > span { flex-wrap: wrap; row-gap: 4px; word-break: keep-all; } /* 좁으면 '카카오페/이'로 끊지 않고 이름째 다음 줄로 */
