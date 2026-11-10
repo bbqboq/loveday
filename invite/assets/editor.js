@@ -13824,6 +13824,13 @@ function spAbMount(host, f) {
     }
     draw();
 }
+// 1019z22c 아래 창을 '보이는 화면'(visualViewport)에 딱 맞춤 - 안드로이드는 키보드가 올라와도 창 높이(innerHeight)가 그대로이고 화면만 위로 밀려서(offsetTop)
+//  예전 계산(innerHeight - vv.height - offsetTop)이 0이 되어 [넣기] 버튼이 키보드에 가렸고, 화면이 옆으로 밀린 상태면 창이 오른쪽으로 잘렸음
+function spShFit(el, vv) {
+    if (!el || !el.isConnected) return;
+    if (!vv) { el.style.cssText = ''; return; }
+    el.style.top = vv.offsetTop + 'px'; el.style.left = vv.offsetLeft + 'px'; el.style.width = vv.width + 'px'; el.style.height = vv.height + 'px'; el.style.right = 'auto'; el.style.bottom = 'auto';
+}
 // 1019z19 송금 버튼 아래 창 (E안): 카카오페이 송금 링크 / 토스 아이디 - body에 붙음(질문 칸·작은 창과 따로), 키보드가 올라오면 그 위로
 function spAbPaySheet(f, p, t, after) {
     document.querySelector('.spab-sh')?.remove();
@@ -13838,7 +13845,7 @@ function spAbPaySheet(f, p, t, after) {
         <div class="spab-shb"><button type="button" class="spab-sho${on ? ' rm' : ''}">${on ? '버튼 빼기' : '닫기'}</button><button type="button" class="spab-shk">넣기</button></div></div>`;
     document.body.appendChild(el);
     const inp = el.querySelector('input'), warn = el.querySelector('.spab-shw'), panel = el.querySelector('.spab-shp');
-    const vv = window.visualViewport, place = () => { if (!vv) return; const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop); panel.style.marginBottom = kb + 'px'; };
+    const vv = window.visualViewport, place = () => spShFit(el, vv);
     if (vv) { vv.addEventListener('resize', place); vv.addEventListener('scroll', place); }
     const close = () => { if (vv) { vv.removeEventListener('resize', place); vv.removeEventListener('scroll', place); } document.removeEventListener('keydown', esc1, true); el.classList.remove('in'); setTimeout(() => el.remove(), 200); };
     const esc1 = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
@@ -13886,8 +13893,9 @@ function spAcBankSheet(p, cur, onPick) {
     oi.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); pick(oi.value); } });
     el.querySelector('.spac-shx').addEventListener('click', close);
     el.addEventListener('click', e => { if (e.target === el) close(); });
-    const vv = window.visualViewport, panel = el.querySelector('.spab-shp'), place = () => { if (vv) panel.style.marginBottom = Math.max(0, window.innerHeight - vv.height - vv.offsetTop) + 'px'; };
-    if (vv) { vv.addEventListener('resize', place); }
+    const vv = window.visualViewport, place = () => spShFit(el, vv);
+    if (vv) { vv.addEventListener('resize', place); vv.addEventListener('scroll', place); }
+    place();
     requestAnimationFrame(() => el.classList.add('in'));
 }
 function spAcMount(host, f) {
