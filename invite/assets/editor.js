@@ -11056,7 +11056,7 @@ function spLensSnap() { const r = document.documentElement; r.classList.add('sp-
 // 창이 필요 없는 질문 (예식 일시 - 사용자 요청)
 function spHeroPhNow() { try { return spHeroPhase; } catch (e) { return ''; } } // (아래에 let으로 선언 - 그 전에 불려도 멈추지 않게)
 // 스크롤 버튼(↓) 화면은 칸 안에 전·후 비교·버튼 그림이 있어서 작은 창 안 띄움 (사용자 보고 1018z18o: 창이 '알아서 잘 보이게'를 가림) · 첫 화면 꾸미기 질문도 (1018z18u, 칸 안 그림으로 봄 - 관리자 flow.lookNoLens)
-function spLensOff() { return !!(spMv.lensOff || spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick' || spCurSt && spCurSt.k === 'hero' && spHeroPhNow() === 'scroll' && spOpt('flow', 'scrollNoLens') && document.querySelector('#simplePane :is(.shz, .nbx)') || spCurSt && spCurSt.k === 'hero' && spCurSt.part === 'look' && spViewNow() === 'quick' && spHeroPhNow() !== 'scroll' && spOpt('flow', 'lookNoLens') && document.querySelector('#simplePane :is(.hlb, .hl-row, #spCropBox, .hlx-all)') || spCurSt && spCurSt.k === 'finish' && EASY_INTRO !== 'old' && document.querySelector('#simplePane .spi') || spCurSt && spCurSt.k === 'account' && document.querySelector('#simplePane #spAccMini') || spCurSt && spCurSt.k === 'venue' && typeof SPV === 'object' && SPV.step === 1 && document.querySelector('#simplePane #spvMini')); } // (인트로 칸 B·E·F안은 칸 안에 미리보기가 있어서 작은 창 안 띄움) // (머리줄 [청첩장 보기]를 끄면 창 없음)
+function spLensOff() { return !!(spMv.lensOff || spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick' || spCurSt && spCurSt.k === 'hero' && spHeroPhNow() === 'scroll' && spOpt('flow', 'scrollNoLens') && document.querySelector('#simplePane :is(.shz, .nbx)') || spCurSt && spCurSt.k === 'hero' && spCurSt.part === 'look' && spViewNow() === 'quick' && spHeroPhNow() !== 'scroll' && spOpt('flow', 'lookNoLens') && document.querySelector('#simplePane :is(.hlb, .hl-row, #spCropBox, .hlx-all)') || spCurSt && spCurSt.k === 'finish' && EASY_INTRO !== 'old' && document.querySelector('#simplePane .spi') || spCurSt && spCurSt.k === 'account' && document.querySelector('#simplePane #spAccMini') || spCurSt && spCurSt.k === 'venue' && typeof SPV === 'object' && SPV.step === 1 && document.querySelector('#simplePane #spvMs')); } // (인트로 칸 B·E·F안은 칸 안에 미리보기가 있어서 작은 창 안 띄움) // (머리줄 [청첩장 보기]를 끄면 창 없음)
 const SP_LENS_HOLD = 900; // 섹션 전체를 보여 주는 시간 (그다음 글자로 다가감)
 const spLensTxt = { key: '', at: 0, view: '', sec: '', t: 0, z: 0, seen: new Set() };
 // 옵션(적는 칸) 하나 = 지금 질문 + 그 칸 이름 (같은 칸이면 다가가는 모습은 한 번만)
@@ -13532,13 +13532,14 @@ function spVenue(box) {
             ${f.showMap ? `${spOpt('venue', 'mapWide') ? `<label class="sp-sw"><span><b>지도 가로 꽉 채우기</b><small>끄면 좌우 여백 있는 카드 모양</small></span><input type="checkbox" data-sp-map="mapFullWidth"${f.mapFullWidth ? ' checked' : ''}><i></i></label>` : ''}
             ${spOpt('venue', 'mapHeight') ? `<div class="sp-range"><span>지도 높이</span><input type="range" id="spMapH" min="100" max="500" step="10" value="${f.mapHeight ?? 190}"><span id="spMapHV">${f.mapHeight ?? 190}px</span></div>` : ''}
             ${spOpt('venue', 'navPos') && (spViewNow() !== 'quick' || window.innerWidth > 860) ? `<div class="wz-lab sp-lnp-lab">길찾기 버튼 자리</div>${locNavPickHtml(f)}` : ''}
-            ${spOpt('venue', 'mapDemo') ? '' : '<!--'}<div class="sp-mapdemo${f.mapFullWidth ? ' full' : ''}" id="spMapDemo" style="height:${Math.round((f.mapHeight ?? 190) * .8)}px" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b class="pin"></b><span>지도 예시 · 청첩장엔 예식장 지도가 이렇게 들어가요</span></div>${spOpt('venue', 'mapDemo') ? '' : '-->'}` : ''}</div>` : ''}${two && spOpt('venue', 'miniPv') ? '<div class="spv-mini" id="spvMini" aria-hidden="true"></div>' : ''}${two ? '</div></div></div><div class="spv-dots"><i></i><i></i></div>' : ''}`;
+            ${spOpt('venue', 'mapDemo') ? '' : '<!--'}<div class="sp-mapdemo${f.mapFullWidth ? ' full' : ''}" id="spMapDemo" style="height:${Math.round((f.mapHeight ?? 190) * .8)}px" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b class="pin"></b><span>지도 예시 · 청첩장엔 예식장 지도가 이렇게 들어가요</span></div>${spOpt('venue', 'mapDemo') ? '' : '-->'}` : ''}</div>` : ''}${two && spOpt('venue', 'miniPv') && f.showMap ? spVenueMsHtml(f) : ''}${two ? '</div></div></div><div class="spv-dots"><i></i><i></i></div>' : ''}`;
     // 지도 예시: 가로 꽉 채우기·높이를 바꾸면 그 자리에서 바로 (다시 그리지 않고 움직이며)
     const demo = box.querySelector('#spMapDemo');
     box.querySelectorAll('[data-sp-map]').forEach(c => c.addEventListener('change', () => {
         spPvHint = { sel: '.location-map', t: Date.now() }; // 미리보기는 '오시는 길' 글자 말고 지도로
         f[c.dataset.spMap] = c.checked; spChanged(['location']); scheduleSnapshot();
-        if (c.dataset.spMap === 'mapFullWidth' && demo) demo.classList.toggle('full', c.checked); else spRender();
+        const ms = box.querySelector('#spvMs');
+        if (c.dataset.spMap === 'mapFullWidth' && (demo || ms)) { demo?.classList.toggle('full', c.checked); ms?.querySelector('.spv-ms-map')?.classList.toggle('full', c.checked); } else spRender();
     }));
     locNavPickBind(box, f, () => { spPvHint = { sel: '.location-map', t: Date.now() }; spChanged(['location']); scheduleSnapshot(); }); // 길찾기 버튼 자리 (1019g)
     const mh = box.querySelector('#spMapH');
@@ -13546,7 +13547,7 @@ function spVenue(box) {
     if (mh) { mh.addEventListener('input', () => { const v = locSet('mapHeight', parseInt(mh.value, 10) || 200); f.mapHeight = v; box.querySelector('#spMapHV').textContent = v + 'px'; if (demo) demo.style.height = Math.round(v * .8) + 'px';
             if (spMvMode()) spMvFollow('.location-map'); else { clearTimeout(mh._aim); mh._aim = setTimeout(() => spScrollPreview(['location']), 260); } });
         mh.addEventListener('change', () => { renderPreview(); scheduleSnapshot(); setTimeout(() => spMvFollow('.location-map'), 220); });
-        if (box.querySelector('#spvMini')) mh.addEventListener('input', () => { cancelAnimationFrame(mh._mini); mh._mini = requestAnimationFrame(spVenueMiniFill); }); }
+        if (box.querySelector('#spvMs')) mh.addEventListener('input', () => { const m = box.querySelector('#spvMs .spv-ms-map'); if (m) m.style.height = Math.round((f.mapHeight || 190) * SPV_MS_K) + 'px'; }); }
     box.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => {
         f[inp.dataset.f] = inp.value; f.address = [f.addressBase, f.addressDetail].filter(Boolean).join(' '); spChanged(['location']);
     }));
@@ -13559,34 +13560,30 @@ function spVenue(box) {
         new daum.Postcode({ oncomplete: d => { f.addressBase = d.roadAddress || d.jibunAddress; if ((!f.venue || (InviteBlocks.isVenueDemo && InviteBlocks.isVenueDemo(f).v)) && d.buildingName) f.venue = d.buildingName; f.address = [f.addressBase, f.addressDetail].filter(Boolean).join(' '); document.getElementById('addrModal').classList.remove('active'); spChanged(['location']); spRender(); }, width: '100%', height: '100%' }).embed(layer);
     });
     if (two) spVenueSlides(box);
-    if (box.querySelector('#spvMini')) requestAnimationFrame(() => spVenueMiniFill());
+    if (box.querySelector('#spvMs')) spVenueMsBind(box, f);
 }
-// 1019z20 예식장 ② 지도 설정 = 칸 아래에 진짜 오시는 길 그림 (작은 청첩장 창이 팡 뜨는 대신 · 스크롤 없이 남은 자리에 맞춰 줄임, 관리자 venue 옵션 miniPv)
-//  미리보기 '오시는 길' 섹션을 복사해 지도 위 64px ~ 지도 아래 길찾기 줄까지만 보여 줌 (지도를 끄면 섹션 통째)
-let spVenueMiniObs = null, spVenueMiniT = 0;
-function spVenueMiniFill() {
-    const box = document.getElementById('spvMini'), root = document.getElementById('previewRoot'); if (!box || !root) return;
-    const col = root.querySelector('.col[data-block-id="location"]');
-    if (!col) { box.innerHTML = '<span class="spv-mini-none">오시는 길이 꺼져 있어요</span>'; box.style.height = ''; return; }
-    const rs = (root.getAttribute('style') || '').split(';').filter(d => /^\s*--/.test(d)).join(';'), rc = (root.className || '').split(/\s+/).filter(c => /^(invite-preview|ib-dark|dividers-on)$/.test(c)).join(' ') || 'invite-preview';
-    const cl = col.cloneNode(true);
-    cl.querySelectorAll('[id]').forEach(e => e.removeAttribute('id')); cl.removeAttribute('id');
-    [cl, ...cl.querySelectorAll('*')].forEach(e => { if (e.classList) [...e.classList].filter(c => /^reveal-|^sp-|^selected$/.test(c)).forEach(c => e.classList.remove(c)); });
-    cl.querySelectorAll('.section-ruler, .hb-area, .hb-handle, .hh-group, .sticker-gizmo').forEach(e => e.remove());
-    const rcs = getComputedStyle(root), W = root.offsetWidth || 390, bw = box.clientWidth || 340; // (청첩장 틀 좌우 여백까지 같게 - 지도 가로 꽉 채우기는 그 여백만큼 밖으로 나감)
-    box.innerHTML = `<div class="spv-mini-in" style="width:${W}px"><div class="${esc(rc)}" style="${esc(rs)};background:var(--p-bg);box-sizing:border-box;width:${W}px;padding:0 ${rcs.paddingRight} 0 ${rcs.paddingLeft}"></div></div>`;
-    const inn = box.firstElementChild; inn.firstElementChild.appendChild(cl);
-    const top = cl.getBoundingClientRect().top, map = cl.querySelector('.location-map');
-    let bot = 0; const mb = map && map.getClientRects().length ? map.getBoundingClientRect().bottom - top : 0;
-    cl.querySelectorAll('*').forEach(e => { if (e.childElementCount || !e.getClientRects().length) return; const r = e.getBoundingClientRect(); if (mb && r.top - top > mb + 70) return; bot = Math.max(bot, r.bottom - top); });
-    const mt = mb ? Math.max(0, map.getBoundingClientRect().top - top - 64) : 0; // (지도가 있으면 지도 바로 위 예식장·주소 줄부터 - 섹션 제목까지 넣으면 지도가 너무 작아짐)
-    const regionH = Math.max(80, (bot || cl.offsetHeight) + 14 - mt);
-    const nav = document.querySelector('#simplePane .sp-ask-nav'), navH = nav && getComputedStyle(nav).position !== 'static' ? nav.offsetHeight : 0;
-    const avail = Math.max(120, Math.min(460, window.innerHeight - box.getBoundingClientRect().top - navH - 14));
-    const k = Math.min(bw / W, avail / regionH), h = Math.round(regionH * k);
-    inn.style.transform = `translate(${((bw - W * k) / 2).toFixed(1)}px, ${(-mt * k).toFixed(1)}px) scale(${k.toFixed(4)})`;
-    box.style.height = h + 'px';
-    if (!spVenueMiniObs && 'MutationObserver' in window) { spVenueMiniObs = new MutationObserver(() => { if (!document.getElementById('spvMini')) return; clearTimeout(spVenueMiniT); spVenueMiniT = setTimeout(spVenueMiniFill, 160); }); spVenueMiniObs.observe(root, { childList: true, subtree: true, characterData: true }); }
+// 1019z20b 예식장 ② 지도 설정 = 칸 아래에 '지도 부분만' 샘플 (미리보기 복사 대신 - 복사본은 가로 꽉 채우기를 끄도 꽉 차 보이고, 화면을 내리면 남은 높이가 바뀌어 작아졌음)
+//  청첩장 폭(390px)을 칸 폭에 맞춘 비율(SPV_MS_K)로: 좌우 여백 24px · 지도 높이 · 길찾기 줄. 지도는 진짜 카카오맵(움직이지 않게), 못 불러오면 그림 지도
+const SPV_MS_K = 0.9;
+let spMsGeo = { a: '', ll: null };
+function spVenueMsHtml(f) {
+    let bg = '#fff'; try { const r = document.getElementById('previewRoot'); bg = (r && (getComputedStyle(r).getPropertyValue('--p-bg') || '').trim()) || bg; } catch (e) {}
+    return `<div class="spv-ms" id="spvMs" aria-hidden="true"><div class="spv-ms-fr" style="background:${esc(bg)}">
+        <div class="spv-ms-map${f.mapFullWidth ? ' full' : ''}" style="height:${Math.round((f.mapHeight || 190) * SPV_MS_K)}px"><div class="spv-ms-k"><i class="spv-ms-pin"></i></div></div>
+        <div class="spv-ms-nav"><span><i class="n">N</i>네이버맵</span><span><i class="k">K</i>카카오맵</span><span><i class="t">T</i>티맵</span></div></div></div>`;
+}
+function spVenueMsBind(box, f) {
+    const el = box.querySelector('#spvMs .spv-ms-k'), addr = String(f.addressBase || f.address || '').trim(); if (!el || !addr || typeof loadKakaoMapSdk !== 'function') return;
+    const draw = ll => { if (!el.isConnected) return; try {
+        el.innerHTML = ''; const map = new kakao.maps.Map(el, { center: ll, level: 3, draggable: false, scrollwheel: false, disableDoubleClickZoom: true });
+        try { map.setZoomable && map.setZoomable(false); } catch (e) {}
+        new kakao.maps.Marker({ map, position: ll });
+        if (window.ResizeObserver) { let raf = 0; new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { try { map.relayout(); map.setCenter(ll); } catch (e) {} }); }).observe(el); }
+    } catch (e) {} };
+    loadKakaoMapSdk().then(() => {
+        if (spMsGeo.a === addr && spMsGeo.ll) { draw(spMsGeo.ll); return; }
+        new kakao.maps.services.Geocoder().addressSearch(addr, (r, st) => { if (st !== kakao.maps.services.Status.OK || !r[0]) return; spMsGeo = { a: addr, ll: new kakao.maps.LatLng(r[0].y, r[0].x) }; draw(spMsGeo.ll); });
+    }).catch(() => {});
 }
 // 4. 인사말
 // 인사말 예시 묶음: '기본'엔 디자인에 들어 있던 문구(state.greetDemo)도 같이 (WZ_TONES에 없을 때)
