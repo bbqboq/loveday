@@ -13692,7 +13692,7 @@ function spAbRoles() {
     return [['groomBank', 'g', '신랑', wi.groom || '', 0, 'groom'], ['brideBank', 'b', '신부', wi.bride || '', 0, 'bride'],
         ['groomFatherBank', 'g', '신랑 아버지', fam.groomFather || '', 1], ['groomMotherBank', 'g', '신랑 어머니', fam.groomMother || '', 1],
         ['brideFatherBank', 'b', '신부 아버지', fam.brideFather || '', 1], ['brideMotherBank', 'b', '신부 어머니', fam.brideMother || '', 1]]
-        .map(([k, side, role, name, opt, pay]) => ({ k, side, role, name: String(name || '').trim(), opt: !!opt, pay: pay || '' }));
+        .map(([k, side, role, name, opt, pay]) => ({ k, side, role, name: String(name || '').trim(), opt: !!opt, pay: pay || '', dead: !!(opt && fam[k.replace(/Bank$/, 'Deceased')]) })); // (1019z22 혼주 칸에서 고인으로 표시한 부모님은 계좌 칸에서 고를 수 없음)
 }
 const spAbNameOf = p => p.name || p.role; // 예금주를 비우면: 신랑·신부는 이름, 부모님은 혼주 칸 이름 - 없으면 호칭('신랑 아버지')
 function spAbParse(v) {
@@ -13711,7 +13711,7 @@ function spAbCheck(bank, num) {
     return lens.includes(d.length) ? { ok: true, t: `✓ ${bank} ${d.length}자리 · ${acctFmt(bank, d)}` } : { ok: false, t: `${bank}은(는) 보통 ${lens.join(' 또는 ')}자리예요 · 지금 ${d.length}자리` };
 }
 function spAbDone(f, k) { const a = spAbParse(f[k]); return !!(spAbCheck(a.bank, a.number) || {}).ok; }
-function spAbShown(f, p) { return !p.opt || SPAB.shown.includes(p.k) || !!spAbParse(f[p.k]).number || !!spAbParse(f[p.k]).bank; }
+function spAbShown(f, p) { return !p.dead && (!p.opt || SPAB.shown.includes(p.k) || !!spAbParse(f[p.k]).number || !!spAbParse(f[p.k]).bank); }
 function spAbNext(f, roles, cur) { return ['groomBank', 'brideBank', 'groomFatherBank', 'groomMotherBank', 'brideFatherBank', 'brideMotherBank']
     .find(k => { const p = roles.find(x => x.k === k); return k !== cur && spAbShown(f, p) && !spAbDone(f, k); }); }
 function spAbMount(host, f) {
@@ -13723,6 +13723,7 @@ function spAbMount(host, f) {
         spChanged(['account']); scheduleSnapshot(); };
     const ptab = () => { const cell = p => { const a = spAbParse(f[p.k]), sh = spAbShown(f, p), c = spAbCheck(a.bank, a.number);
             const st = !sh ? 'empty' : c && c.ok ? 'ok' : (a.bank || a.number) ? 'half' : '', ic = !sh ? '+' : c && c.ok ? '✓' : (a.bank || a.number) ? '!' : '';
+            if (p.dead) return `<button type="button" class="spab-p empty dead" disabled title="고인으로 표시돼 있어 계좌를 받지 않아요"><i aria-hidden="true">故</i><em>${esc(p.role.replace(/^(신랑|신부) /, ''))}</em></button>`;
             return `<button type="button" class="spab-p ${st}${p.opt && sh ? ' par' : ''}${SPAB.cur === p.k ? ' on' : ''}" data-ab-who="${p.k}" aria-pressed="${SPAB.cur === p.k}"><i aria-hidden="true">${ic}</i><em>${esc(p.role.replace(/^(신랑|신부) /, ''))}${p.opt || !p.name ? '' : ` · ${esc(p.name)}`}</em></button>`; };
         const g = roles.filter(p => p.side === 'g'), b = roles.filter(p => p.side === 'b');
         return `<div class="spab-t${SPAB.step === 3 ? ' hint' : ''}"><h5>신랑측</h5><h5>신부측</h5>${g.map((p, i) => cell(p) + cell(b[i])).join('')}</div>`; };
@@ -13802,7 +13803,7 @@ function spAbMount(host, f) {
         const nx = spAbNext(f, roles, k); if (nx) { pick(nx); return; } SPAB.cur = 'brideBank'; SPAB.step = 3; draw(); };
     if (host._bound !== true) { host._bound = true;
         host.addEventListener('click', e => {
-            const w = e.target.closest('[data-ab-who]'); if (w) { const k = w.dataset.abWho, p = roles.find(x => x.k === k);
+            const w = e.target.closest('[data-ab-who]'); if (w) { const k = w.dataset.abWho, p = roles.find(x => x.k === k); if (p.dead) return;
                 if (p.opt && spAbShown(f, p) && SPAB.cur === k) { remove(k); return; } pick(k); return; }
             if (e.target.closest('[data-ab-rm]')) { remove(SPAB.cur); return; }
             const pc = e.target.closest('[data-ab-pc]'); if (pc) { const p2 = roles.find(x => x.k === SPAB.cur); if (p2 && p2.pay) spAbPaySheet(f, p2, pc.dataset.abPc, draw); return; }
@@ -13899,11 +13900,23 @@ function spAcMount(host, f) {
     const nextOf = k => { const l = shownList(), i = l.findIndex(p => p.k === k); return l[i + 1] || null; };
     const prevOf = k => { const l = shownList(), i = l.findIndex(p => p.k === k); return i > 0 ? l[i - 1] : null; };
     const holderOf = (p, a) => a.holder && a.holder !== spAbNameOf(p) ? a.holder : '';
+    const face = spOpt('account', 'face'); // 1019z22 C-2 '한 줄 마주 보기' (끄면 1019z21 신랑측 | 신부측 탭)
+    const faceHtml = () => {
+        const sl = shownList(), cnt = sd => { const mine = sl.filter(p => p.side === sd), fin = mine.filter(p => spAbDone(f, p.k)).length; return mine.length && fin === mine.length ? '✓' : `${fin}/${mine.length}`; };
+        const c = k => { const p = R(k), sh = spAbShown(f, p), on = !SPAC.done && sh && k === SPAB.cur, fin = sh && spAbDone(f, k);
+            const txt = p.dead ? '故' : !sh ? '+' : p.opt ? p.role.replace(/^(신랑|신부) /, '').slice(0, 1) : (p.name || p.role).slice(0, 1);
+            const cap = p.opt ? p.role.replace(/^(신랑|신부) /, '') : (p.name || p.role);
+            const lab = p.dead ? `${p.role} · 고인이라 계좌를 받지 않아요` : `${p.role}${!sh ? ' 넣기' : fin ? ' · 다 적음' : on ? ' · 적는 중' : ''}`;
+            return `<button type="button" class="spac-c ${p.side}${p.opt ? '' : ' big'}${p.dead ? ' dead' : !sh ? ' add' : ''}${on ? ' on' : ''}${fin ? ' ok' : ''}" ${p.dead ? 'disabled' : `data-ac-who="${k}"`} aria-pressed="${on}" aria-label="${esc(lab)}" title="${esc(lab)}"><span class="cc">${esc(txt)}${fin ? '<i class="bd ok">✓</i>' : on && p.opt ? '<i class="bd x">✕</i>' : ''}</span><span class="cap">${esc(cap)}</span></button>`; };
+        return `<div class="spac-face"><div class="spac-fh"><b class="g">신랑측 <span>${cnt('g')}</span></b><b class="b">신부측 <span>${cnt('b')}</span></b></div>
+            <div class="spac-fr">${['groomMotherBank', 'groomFatherBank', 'groomBank'].map(c).join('')}<i class="hrt" aria-hidden="true">♥</i>${['brideBank', 'brideFatherBank', 'brideMotherBank'].map(c).join('')}</div></div>`; };
     const topHtml = () => {
+        if (face) return faceHtml();
         const sl = shownList();
         const seg = [['g', '신랑측'], ['b', '신부측']].map(([sd, lab]) => { const mine = sl.filter(p => p.side === sd), fin = mine.filter(p => spAbDone(f, p.k)).length, all = mine.length && fin === mine.length, on = !SPAC.done && sd === SPAC.side;
             return `<button type="button" class="spac-sg${on ? ' on' : ''}" role="tab" aria-selected="${on}" data-ac-side="${sd}">${lab}<i class="${all ? 'ok' : ''}" aria-hidden="true">${all ? '✓' : `${fin}/${mine.length}`}</i></button>`; }).join('');
         const ppl = roles.filter(p => p.side === SPAC.side).map(p => { const sh = spAbShown(f, p), on = !SPAC.done && sh && p.k === SPAB.cur, fin = sh && spAbDone(f, p.k);
+            if (p.dead) return `<button type="button" class="spac-p add dead" disabled title="고인으로 표시돼 있어 계좌를 받지 않아요"><i class="pl" aria-hidden="true">故</i><span>${esc(p.role.replace(/^(신랑|신부) /, ''))}</span></button>`;
             const lab = p.opt ? p.role.replace(/^(신랑|신부) /, '') : `${p.role}${p.name ? ` · ${p.name}` : ''}`;
             return `<button type="button" class="spac-p${sh ? '' : ' add'}${on ? ' on' : ''}${fin ? ' ok' : ''}${p.opt ? ' par' : ''}" data-ac-who="${p.k}" aria-pressed="${on}">${!sh ? '<i class="pl" aria-hidden="true">+</i>' : fin ? '<i class="ck" aria-hidden="true">✓</i>' : ''}<span>${esc(lab)}</span>${on && p.opt ? '<i class="x" aria-label="빼기">✕</i>' : ''}</button>`; }).join('');
         return `<div class="spac-seg" role="tablist" aria-label="신랑측 · 신부측">${seg}</div><div class="spac-ppl">${ppl}</div>`; };
@@ -13919,7 +13932,7 @@ function spAcMount(host, f) {
             body = `<div class="spac-fin"><div class="spab-fh"><i aria-hidden="true">✓</i><b>계좌를 다 적었어요</b></div>
                 ${sl.map(p => { const a = spAbParse(f[p.k]), pays = [f[(p.pay || '_') + 'Kakao'] ? '카카오페이' : '', f[(p.pay || '_') + 'Toss'] ? '토스' : ''].filter(Boolean);
                     return `<div class="spac-row"><div><small>${esc(p.role)}</small><b>${a.bank ? esc(a.bank + ' ' + acctFmt(a.bank, a.number)) : '아직 안 적었어요'}</b><em>예금주 ${esc(a.holder || spAbNameOf(p))}${pays.length ? ` · 송금 버튼 ${pays.join(' · ')}` : ''}</em></div><button type="button" data-ac-edit="${p.k}">고치기</button></div>`; }).join('')}
-                ${parLeft ? '<div class="spab-guide"><span class="arr" aria-hidden="true">↑</span><span>부모님 계좌도 받으시려면 위에서 <b>신랑측 · 신부측</b>을 고른 뒤 <b>+ 아버지 · + 어머니</b>를 눌러 주세요.</span></div>' : ''}</div>`;
+                ${parLeft ? `<div class="spab-guide"><span class="arr" aria-hidden="true">↑</span><span>${face ? '부모님 계좌도 받으시려면 위 바깥쪽 <b>점선 동그라미(+)</b>를 눌러 주세요.' : '부모님 계좌도 받으시려면 위에서 <b>신랑측 · 신부측</b>을 고른 뒤 <b>+ 아버지 · + 어머니</b>를 눌러 주세요.'}</span></div>` : ''}</div>`;
         } else {
             const p = R(SPAB.cur), a = spAbParse(f[p.k]), fmt0 = BANK_ACCT_FMT[String(a.bank).replace(/은행$/, '')];
             body = `<div class="spac-card">
@@ -13977,7 +13990,7 @@ function spAcMount(host, f) {
     if (host._acBound !== true) { host._acBound = true;
         host.addEventListener('click', e => {
             const sd = e.target.closest('[data-ac-side]'); if (sd) { const s = sd.dataset.acSide, l = shownList().filter(p => p.side === s); const first = l.find(p => !spAbDone(f, p.k)) || l[0]; SPAC.side = s; SPAC.done = false; SPAB.cur = first.k; draw(); return; }
-            const w = e.target.closest('[data-ac-who]'); if (w) { const k = w.dataset.acWho, p = R(k);
+            const w = e.target.closest('[data-ac-who]'); if (w) { const k = w.dataset.acWho, p = R(k); if (p.dead) return;
                 if (!spAbShown(f, p)) { SPAB.shown.push(k); SPAB.cur = k; SPAC.done = false; draw(); return; } // 점선 칸 = 넣고 그 칸으로
                 if (p.opt && SPAB.cur === k && !SPAC.done) { remove(k); return; } // 고치는 중인 부모님 칸 한 번 더 = 빼기
                 SPAB.cur = k; SPAC.done = false; draw(); return; }

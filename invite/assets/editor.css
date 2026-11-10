@@ -5572,3 +5572,32 @@ html.sp-kb #simplePane:has(.spa.spac-q) .sp-ask-nav { display: none; } /* (키�
 html.sp-kb .spa.spac-q .spac-top { display: none; }
 :is(.spac-sg, .spac-p, .spac-bank, .spac-row button):focus-visible { outline: 2px solid var(--wz-acc, #8A4B55); outline-offset: 1px; }
 @media (prefers-reduced-motion: reduce) { .spac-sg, .spac-p { transition: none; } }
+/* 1019z22 계좌 사람 고르기 C-2 '한 줄 마주 보기' (account 옵션 face) · 고인 부모님은 못 고름 */
+.spac-face { background: #fff; border: 1px solid var(--wz-line, #E4DED6); border-radius: 18px; padding: 12px 6px 10px; display: grid; gap: 8px; --g: #3D5A80; --gt: #E6ECF3; --b: #A85A6C; --bt: #F5E6EA; }
+.spac-fh { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0 8px; font-size: 12px; }
+.spac-fh b.g { color: var(--g); } .spac-fh b.b { color: var(--b); text-align: right; }
+.spac-fh span { font-weight: 500; color: #8C847C; }
+.spac-fr { display: flex; align-items: flex-start; justify-content: center; gap: 2px; }
+.spac-fr .hrt { margin-top: 17px; width: 16px; flex: none; text-align: center; font-style: normal; color: #C9A2AA; font-size: 14px; }
+.spac-c { width: 48px; flex: 0 1 48px; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 0 0; border: 0; background: transparent; font: inherit; cursor: pointer; color: inherit; }
+.spac-c.big { width: 62px; flex-basis: 62px; padding-top: 0; }
+.spac-c .cc { position: relative; width: 42px; height: 42px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; transition: transform .16s cubic-bezier(.23,1,.32,1), box-shadow .2s, background-color .2s; }
+.spac-c.big .cc { width: 54px; height: 54px; font-size: 18px; }
+.spac-c.g .cc { background: var(--gt); color: var(--g); } .spac-c.b .cc { background: var(--bt); color: var(--b); }
+.spac-c.g.on .cc { background: var(--g); color: #fff; box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--g); }
+.spac-c.b.on .cc { background: var(--b); color: #fff; box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--b); }
+.spac-c.add .cc { background: transparent !important; border: 1.5px dashed #C9BDB7; color: #8C847C; font-weight: 400; font-size: 20px; }
+.spac-c.dead { cursor: not-allowed; }
+.spac-c.dead .cc { background: #F1EEEB !important; color: #A39D95; border: 1px solid #E4DED6; font-size: 13px; font-weight: 500; }
+.spac-c.dead .cap { color: #B8B1A9; text-decoration: line-through; text-decoration-color: rgba(0,0,0,.18); }
+.spac-c .bd { position: absolute; right: -5px; bottom: -3px; min-width: 18px; height: 18px; box-sizing: border-box; border-radius: 9px; border: 2px solid #fff; font-style: normal; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #fff; }
+.spac-c .bd.ok { background: #3F7A5A; } .spac-c .bd.x { background: #A33A3A; }
+.spac-c .cap { font-size: 11px; white-space: nowrap; color: #5E5750; font-weight: 500; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.spac-c.big .cap { font-size: 12.5px; }
+.spac-c.on .cap { color: var(--wz-ink, #2B2622); font-weight: 700; }
+.spac-c.add .cap { color: #A39D95; }
+.spac-c:not(.dead):active .cc { transform: scale(.94); }
+.spac-c:focus-visible { outline: none; } .spac-c:focus-visible .cc { outline: 2px solid var(--wz-acc, #8A4B55); outline-offset: 3px; }
+.spab-p.dead, .spac-p.dead { opacity: .55; cursor: not-allowed; }
+html.sp-kb .spa.spac-q .spac-face { display: none; }
+@media (prefers-reduced-motion: reduce) { .spac-c .cc { transition: none; } }
