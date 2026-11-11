@@ -5610,3 +5610,8 @@ html.sp-kb .spa.spac-q .spac-face { display: none; }
 .spac-fr { min-width: 0; }
 @media (max-width: 359px) { .spac-fr { gap: 0; } .spac-c .cc { width: 38px; height: 38px; } .spac-c.big .cc { width: 48px; height: 48px; font-size: 16px; } }
 .spab-pcc > span { flex-wrap: wrap; row-gap: 4px; word-break: keep-all; } /* 좁으면 '카카오페/이'로 끊지 않고 이름째 다음 줄로 */
+/* 1019z22e 작은 청첩장 창 머리: [작게/크게] [✕] 순서로 (사용자: 닫기를 맨 오른쪽 끝에) - 예전엔 ✕가 안쪽, 작게가 바깥 */
+@media (max-width: 860px) {
+    html .sp-lens-x { right: 4px; }
+    html:is(.sp-lens-pinned, .sp-lens-peeking) .sp-lens-z { right: 34px; }
+}
