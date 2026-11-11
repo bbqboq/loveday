@@ -888,6 +888,7 @@
         'gowun-batang': { family: '"Gowun Batang", serif', url: 'https://fonts.googleapis.com/css2?family=Gowun+Batang&display=swap', label: '고운바탕' },
         'noto-serif-kr':  { family: '"Noto Serif KR", serif', url: 'https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap', label: '노토 명조' },
         'nanum-myeongjo': { family: '"Nanum Myeongjo", serif', url: 'https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap', label: '나눔명조' },
+        'hahmlet':        { family: '"Hahmlet", serif', url: 'https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;500;600&display=swap', label: '함렛' },
         'gothic-a1':      { family: '"Gothic A1", sans-serif', url: 'https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;700&display=swap', label: '고딕 A1' },
         'song-myung':     { family: '"Song Myung", serif', url: 'https://fonts.googleapis.com/css2?family=Song+Myung&display=swap', label: '송명체' },
         'bagel-fat-one':  { family: '"Bagel Fat One", sans-serif', url: 'https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap', label: '배글 팻 원' },
@@ -3230,7 +3231,7 @@
         { key: 'brideBank', side: 'bride', role: 'self' }, { key: 'brideFatherBank', side: 'bride', role: 'father' }, { key: 'brideMotherBank', side: 'bride', role: 'mother' }
     ];
     // 카드형 계좌 디자인 (에디터 "마음 전하실 곳" → 카드형 → 디자인). 모양은 invite-blocks.css .ib-as-*
-    const ACC_STYLES = [['theme', '테마 모양'], ['basic', '기본 카드'], ['line', '미니멀'], ['outline', '라인 상자'], ['center', '가운데 정렬'], ['vintage', '빈티지 큐피드']];
+    const ACC_STYLES = [['theme', '테마 모양'], ['basic', '기본 카드'], ['line', '미니멀'], ['outline', '라인 상자'], ['center', '가운데 정렬'], ['vintage', '빈티지 큐피드'], ['envelope', '봉투와 실링'], ['botanical', '보태니컬 아치']]; // 1019z23 봉투 · 보태니컬 (시안 claude.ai 아티팩트 FYKgHY8uVfPiV2w2dWzRiB 2 · 3)
     // 카카오페이 송금 링크 다듬기 (1018z18z9): 앱에서 복사하면 '카카오페이 송금 링크: https://…'처럼 글자가 붙거나 https:// 없이 붙여 넣는 경우가 많아서
     //  - 글 안의 첫 주소만 쓰고, 주소가 없으면 카카오페이 주소(qr.kakaopay.com 등)에 https:// 를 붙임. 아니면 빈 값(버튼 없음)
     function kakaoUrl(v) {
@@ -3274,6 +3275,7 @@
         const g = side('groom', L.groom + '측'), b = side('bride', L.bride + '측');
         const tpx = tpCls(f.accStyle);
         const as = tpx ? 'theme' : ACC_STYLES.some(([k]) => k === f.accStyle) ? f.accStyle : 'basic';
+        if (as === 'envelope') ensureFont('gowun-batang'); else if (as === 'botanical') ensureFont('hahmlet'); // (하객 화면은 청첩장 대표 글꼴만 불러와서)
         return `<div class="ib-block ib-accounts ib-as-${as}${tpx}">${sectionTitle(f.accTitle || '마음 전하실 곳')}
             ${f.accNote ? `<p class="ib-acc-note">${nl2br(f.accNote)}</p>` : ''}
             ${g || b ? `<div class="ib-acc-wrap">${bothSides(g, b)}</div>` : emptyHint('계좌를 입력해주세요')}

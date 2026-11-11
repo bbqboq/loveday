@@ -5615,3 +5615,73 @@ html.sp-kb .spa.spac-q .spac-face { display: none; }
     html .sp-lens-x { right: 4px; }
     html:is(.sp-lens-pinned, .sp-lens-peeking) .sp-lens-z { right: 34px; }
 }
+/* ===== 1019z23 질문 머리 한 줄 (관리자 flow 'slimHead', 시안 claude.ai 아티팩트 EUv6bfWqutkzJNixwt8Ed5 스크롤 A) =====
+   [‹] 4 / 13 [진행 막대] 나중에 [↶][↷] 한 줄 + 제목·설명 촘촘히 (예전: 질문 번호 줄 64px + 진행 막대 줄 33px + 제목·설명 ~95px) */
+.sp-ask-head.sp-slim { gap: 8px !important; padding: 8px 12px 6px 6px !important; }
+.sp-ask-head.sp-slim > b { flex: none; font-size: 12.5px !important; font-weight: 600; color: var(--wz-sub); font-variant-numeric: tabular-nums; }
+.sp-ask-head.sp-slim .sp-ask-back { width: 34px; height: 34px; }
+.sp-ask-head.sp-slim .sp-ask-bar { flex: 1; min-width: 40px; }
+.sp-ask-head.sp-slim .sp-ask-skip { padding: 6px 2px; font-size: 12px; }
+.sp-ask-head.sp-slim .sp-ud { margin-left: 2px; }
+.sp-ask-head.sp-slim .sp-ud button { width: 30px; height: 30px; } .sp-ask-head.sp-slim .sp-ud button svg { width: 14px; height: 14px; }
+#simplePane:has(.sp-slim) .sp-body.sp-ask { padding-top: 10px; }
+#simplePane:has(.sp-slim) .sp-body.sp-ask > .wz-h { font-size: 19px; margin-bottom: 4px; }
+#simplePane:has(.sp-slim) .sp-body.sp-ask > .wz-lead { font-size: 13px; line-height: 1.5; margin-bottom: 14px; }
+@media (max-width: 860px) { #simplePane:has(.sp-slim) .sp-body.sp-ask { padding-top: 8px; } }
+/* 1019z23 스크롤 버튼 화면 한 화면 (관리자 hero 'scrollSide', 시안 C): 제목 줄 + 큰 전·후 그림 | 알아서 · 명암 3×2 · 투명도 + 스크롤 버튼 칸 한 줄 */
+.spv-side .spv-hd { display: flex; align-items: baseline; gap: 8px; }
+.spv-side .spv-hd .wz-h { font-size: 19px; flex: 1; min-width: 0; margin-bottom: 2px !important; white-space: nowrap; }
+.spv-side .spv-hd .sp-link { flex: none; font-size: 12px; white-space: nowrap; }
+.spv-side > .wz-lead { margin-bottom: 10px !important; }
+.spv-side .sp-shade .field { margin-bottom: 10px; }
+.spv-side .sp-shade .shz > label { display: none; }
+.spv-side .shz-top { grid-template-columns: minmax(0, 47%) minmax(0, 1fr); gap: 12px; }
+.spv-side .shz-cmp { width: 100%; border-radius: 14px; }
+.spv-side .shz-side { gap: 8px; align-content: start; }
+.spv-side .shz-side::before { content: '글자 잘 보이게'; font-size: 12.5px; font-weight: 700; color: var(--wz-ink, #2B2622); }
+.spv-side .shz-auto { height: 42px; border-radius: 12px; font-weight: 700; }
+.spv-side .shz-note { display: none; }
+.spv-side .shz-meter { font-size: 11.5px; white-space: nowrap; } .spv-side .shz-meter i { width: 11px; }
+.spv-side .shz-l { margin-top: 2px; }
+.spv-side .shz-seg { grid-template-columns: repeat(3, minmax(0, 1fr)); height: auto; gap: 4px; border: 0; background: none; overflow: visible; }
+.spv-side .shz-seg button { height: 34px; border: 1px solid #ECE5E0 !important; border-radius: 10px; background: #fff; }
+.spv-side .shz-seg button.on { background: #1F1B18; border-color: #1F1B18 !important; }
+.spv-side .shz.is-auto .shz-seg button.on { background: #fff; }
+.spv-side .shz-rng span { display: none; }
+.spv-side .sp-nbx { padding: 10px 12px; }
+.spv-side .nbx-focus { display: grid; grid-template-columns: 148px minmax(0, 1fr); grid-template-areas: "hd pills" "sel pills"; column-gap: 10px; row-gap: 2px; align-items: center; }
+.spv-side .nbx-focus > .nbx-hd { grid-area: hd; justify-content: center; } .spv-side .nbx-focus > .nbx-hd small { display: none; }
+.spv-side .nbx-focus > .nbx-hd b { font-size: 12.5px; }
+.spv-side .nbx-focus > .nbx-sel { grid-area: sel; grid-template-columns: 32px minmax(0, 1fr) 32px; } .spv-side .nbx-sel button { width: 32px; height: 32px; }
+.spv-side .nbx-focus > .nbx-dots { display: none; }
+.spv-side .nbx-focus > .nbx-pills { grid-area: pills; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.spv-side .nbx-focus > .nbx-pills button { height: 36px; }
+.spv-side .nbx-focus > :is(.nbx-pv, .nbx-dr) { grid-column: 1 / -1; }
+/* 1019z23 계좌 모양 고르기 그림: 봉투 · 보태니컬 */
+.sp-acci-envelope { background: linear-gradient(to bottom right, transparent 49%, #D9C9AE 50%, transparent 51%) top left / 50% 45% no-repeat, linear-gradient(to bottom left, transparent 49%, #D9C9AE 50%, transparent 51%) top right / 50% 45% no-repeat, #F3EBDD; border: 1px solid #E2D5BF; position: relative; }
+.sp-acci-envelope::after { content: ''; position: absolute; left: 50%; top: 34%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: #7E2F3A; }
+.sp-acci-envelope s { opacity: 0; }
+.sp-acci-botanical { border: 1px solid #CBD2C2; border-radius: 12px 12px 3px 3px !important; background: #FBFAF7; } .sp-acci-botanical s { background: #DCE1D4; height: 5px; }
+/* ===== 1019z23 완성본 미리보기 막대 1안 (관리자 flow 'pvPill', html.sp-pvp · 시안 claude.ai 아티팩트 F1NmqJekDyDGymtjWPtCkp 1) =====
+   위: 반투명 알약 알림 (펼침 → 2.6초 뒤 '✓ 완성본'만, sp-pvp-mini) · 아래: 떠 있는 반투명 알약 막대 · 내리면 둘 다 숨음(sp-pvp-hide)
+   (막대에 transform · backdrop-filter를 주면 안의 position:fixed 알림이 막대 기준으로 붙어서 → 흐림은 ::before, 숨길 땐 bottom) */
+html.sp-pvp.simple-mode.sp-pv.sp-pv-real .sp-pvreal { inset: 0; }
+html.sp-pvp.simple-mode.sp-pv .sp-pvbar { flex-direction: row; align-items: center; gap: 2px; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom)); width: fit-content; max-width: calc(100% - 32px); height: auto; margin: 0 auto; padding: 5px; border-radius: 28px; background: transparent; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.22); touch-action: auto; transform: none !important; transition: bottom .3s cubic-bezier(.23,1,.32,1), opacity .2s; isolation: isolate; }
+html.sp-pvp.simple-mode.sp-pv .sp-pvbar::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: rgba(28,22,19,.58); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+html.sp-pvp.sp-pvp-hide.simple-mode.sp-pv .sp-pvbar { bottom: -90px; opacity: 0; pointer-events: none; }
+html.sp-pvp .sp-pvbar .pvb-grab { display: none; }
+html.sp-pvp .sp-pvbar .sp-pvbar-b { display: contents; }
+html.sp-pvp .sp-pvbar-b button { flex: none; width: auto; height: 42px; padding: 0 13px; border: 0; border-radius: 21px; background: transparent; color: rgba(255,255,255,.92); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+html.sp-pvp .sp-pvbar-b button:hover { background: rgba(255,255,255,.12); }
+html.sp-pvp #spPvBack { order: 1; color: #fff; } html.sp-pvp #spPvBack::before { content: '‹ '; } html.sp-pvp #spPvKk { order: 2; } html.sp-pvp #spPvOpen { order: 3; }
+html.sp-pvp .sp-pvbar .pvb-main { order: 5; flex: none; min-width: 112px; height: 42px; padding: 0 20px; border-radius: 21px; background: #fff; color: #231C19; font-size: 14.5px; font-weight: 800; }
+html.sp-pvp .sp-pvbar .pvb-main:hover { background: #F4EFEA; }
+html.sp-pvp .sp-pvbar .pvb-msg { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 50%; right: auto; transform: translateX(-50%); z-index: 761; width: max-content; max-width: calc(100% - 32px); box-sizing: border-box; display: flex; align-items: flex-start; gap: 8px; padding: 7px 14px 7px 7px; border-radius: 20px; border: 1px solid rgba(255,255,255,.5); background: rgba(255,255,255,.5); -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3); box-shadow: 0 2px 12px rgba(0,0,0,.1); color: #231C19; cursor: pointer; transition: transform .3s cubic-bezier(.23,1,.32,1), opacity .2s; animation: none; }
+html.sp-pvp .sp-pvbar .pvb-ic { width: 22px; height: 22px; font-size: 11px; }
+html.sp-pvp .sp-pvbar .pvb-tx { gap: 1px; padding-top: 1px; } html.sp-pvp .sp-pvbar .pvb-tx b { font-size: 13.5px; line-height: 20px; }
+html.sp-pvp .sp-pvbar .pvb-tx span { font-size: 12px; line-height: 1.45; color: #3F3833; }
+html.sp-pvp.sp-pvp-mini .sp-pvbar .pvb-msg { align-items: center; padding-right: 14px; }
+html.sp-pvp.sp-pvp-mini .sp-pvbar .pvb-tx span { display: none; }
+html.sp-pvp.sp-pvp-hide .sp-pvbar .pvb-msg { transform: translate(-50%, -160%); opacity: 0; pointer-events: none; }
+html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
+@media (prefers-reduced-motion: reduce) { html.sp-pvp.simple-mode.sp-pv .sp-pvbar, html.sp-pvp .sp-pvbar .pvb-msg { transition: none; } }

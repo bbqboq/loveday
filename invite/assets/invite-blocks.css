@@ -2693,3 +2693,34 @@ body:has(.ib-topmenu.show) .ib-bgm-btn { top: 54px; }
 .ld-wm-set > .ld-wm-ov, .ld-wm-ov.ld-wm-lbx { inset: auto; }
 .ld-wm-ov.ld-wm-lbx { will-change: transform; }
 html.ld-wm-lock img { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
+
+/* ===== 1019z23 계좌 '봉투와 실링' · '보태니컬 아치' (시안 claude.ai 아티팩트 FYKgHY8uVfPiV2w2dWzRiB 2 · 3) - 계좌번호는 고딕(잘 읽히게), 제목만 명조 ===== */
+.ib-as-envelope .ib-acc-val, .ib-as-botanical .ib-acc-val { font-family: 'Pretendard Variable', Pretendard, 'Noto Sans KR', -apple-system, sans-serif; font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+.ib-as-envelope .ib-acc-row, .ib-as-botanical .ib-acc-row { flex-wrap: wrap; row-gap: 3px; }
+.ib-as-envelope .ib-acc-who, .ib-as-botanical .ib-acc-who { width: 100%; }
+.ib-as-envelope .ib-acc-hd, .ib-as-botanical .ib-acc-hd { display: block; margin: 2px 0 0; font-size: 12.5px; font-weight: 400; } /* 예금주는 다음 줄 (계좌번호가 '-'에서 끊기지 않게) */
+/* 봉투와 실링: 한쪽 = 봉투 한 장 (덮개 삼각형 + 가운데 실링 왁스), 열면 편지지 위에 계좌 */
+.ib-accounts.ib-as-envelope .ib-acc-side { position: relative; background: #F3EBDD !important; color: #3A2E26 !important; border: 0 !important; border-radius: 6px; margin-top: 16px; box-shadow: 0 1px 0 #E2D5BF, 0 8px 18px rgba(80,55,30,.08); overflow: hidden; }
+.ib-as-envelope .ib-acc-side::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 58px; background: #EADFCB; clip-path: polygon(0 0, 100% 0, 50% 100%); pointer-events: none; }
+.ib-as-envelope .ib-acc-head, .ib-as-envelope .ib-acc-side summary { position: relative; height: 92px; box-sizing: border-box; padding: 0 16px 10px; display: flex; align-items: flex-end; font-family: 'Gowun Batang', serif; font-size: 15px; font-weight: 700; letter-spacing: 0; text-align: left; color: #3A2E26; }
+.ib-as-envelope .ib-acc-head::after, .ib-as-envelope .ib-acc-side summary::after { content: ''; position: absolute; left: 50%; right: auto; top: 36px; width: 42px; height: 42px; margin-left: -21px; border-radius: 50%; transform: none !important; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F4DCD7' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath d='M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'/%3E%3C/svg%3E") center / 18px no-repeat, radial-gradient(circle at 35% 30%, #9E4552, #7E2F3A 60%, #5E1F29); box-shadow: 0 0 0 3px rgba(126,47,58,.22), 0 2px 4px rgba(0,0,0,.2); }
+.ib-as-envelope .ib-acc-side summary::before { content: '열어 보기 +'; position: absolute; right: 16px; bottom: 12px; font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 12px; font-weight: 500; color: #8B7C6E; }
+.ib-as-envelope .ib-acc-side[open] summary::before { content: '접기 −'; }
+.ib-as-envelope .ib-acc-row { margin: 0 10px; background: #FFFDF9; border-top: 0; border-bottom: 1px dashed #E3D6C0; padding: 12px 14px; }
+.ib-as-envelope .ib-acc-side > :is(summary, .ib-acc-head) + * { border-radius: 4px 4px 0 0; }
+.ib-as-envelope .ib-acc-side > :last-child:not(summary):not(.ib-acc-head) { margin-bottom: 10px; border-radius: 0 0 4px 4px; border-bottom: 0; }
+.ib-as-envelope .ib-acc-who { font-family: 'Gowun Batang', serif; font-size: 13px; color: #7A6A5C; }
+.ib-accounts.ib-as-envelope .ib-copy-btn { border: 0; background: #7E2F3A !important; color: #fff !important; border-radius: 6px; padding: 6px 12px; font-size: 12px; }
+.ib-as-envelope .ib-acc-side > .ib-pay2 { margin: 0 10px; padding: 0 14px 12px; background: #FFFDF9; }
+.ib-as-envelope .ib-acc-side > .ib-kakaopay { margin: 0 10px; border: solid #FFFDF9; border-width: 0 14px 12px; border-radius: 0; background-clip: padding-box; }
+/* 보태니컬 아치: 제목 둘레 아치 선 + 잎 줄기 선 그림, 세이지 · 더스티 로즈, 칸은 흰 카드 */
+.ib-accounts.ib-as-botanical { position: relative; }
+.ib-accounts.ib-as-botanical::before { content: ''; position: absolute; left: 50%; top: -20px; width: 236px; height: 124px; margin-left: -118px; box-sizing: border-box; border: 1px solid #CBD2C2; border-bottom: 0; border-radius: 118px 118px 0 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 28' fill='none' stroke='%236F7E63' stroke-width='1'%3E%3Cg%3E%3Cpath d='M64 26 C 46 24, 26 18, 2 6'/%3E%3Cpath d='M52 23.5c2-6-2-10-6-10 0 5 2 8 6 10z'/%3E%3Cpath d='M40 20.5c1-6-3-10-7-9 1 5 3 8 7 9z'/%3E%3Cpath d='M28 16.5c0-6-4-9-8-8 1 5 4 7 8 8z'/%3E%3Cpath d='M46 24.5c-5 2-9 6-8 8 4 0 7-4 8-8z'/%3E%3C/g%3E%3Cg transform='translate(128 0) scale(-1 1)'%3E%3Cpath d='M64 26 C 46 24, 26 18, 2 6'/%3E%3Cpath d='M52 23.5c2-6-2-10-6-10 0 5 2 8 6 10z'/%3E%3Cpath d='M40 20.5c1-6-3-10-7-9 1 5 3 8 7 9z'/%3E%3Cpath d='M28 16.5c0-6-4-9-8-8 1 5 4 7 8 8z'/%3E%3Cpath d='M46 24.5c-5 2-9 6-8 8 4 0 7-4 8-8z'/%3E%3C/g%3E%3C/svg%3E") center 8px / 104px 23px no-repeat; pointer-events: none; }
+.ib-as-botanical .ib-acc-wrap { margin-top: 22px; }
+.ib-accounts.ib-as-botanical .ib-acc-side { background: #fff !important; color: #33302B !important; border: 1px solid #ECE8E0 !important; border-radius: 14px; margin-top: 10px; }
+.ib-as-botanical .ib-acc-head, .ib-as-botanical .ib-acc-side summary { position: relative; padding: 15px 40px 15px 30px; font-family: 'Hahmlet', serif; font-size: 15.5px; font-weight: 600; letter-spacing: 0; text-align: left; color: #33302B; }
+.ib-as-botanical .ib-acc-head::before, .ib-as-botanical .ib-acc-side summary::before { content: ''; position: absolute; left: 16px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: #B9787C; }
+.ib-as-botanical .ib-acc-side summary::after { top: 13px; color: #6F7E63; }
+.ib-as-botanical .ib-acc-row { border-top: 1px dotted #D8DCCF; padding: 13px 16px; }
+.ib-as-botanical .ib-acc-who { color: #6F7E63; font-weight: 500; font-size: 12px; }
+.ib-accounts.ib-as-botanical .ib-copy-btn { border: 1px solid #DCE1D4; background: #F6F8F2 !important; color: #5F6E54 !important; border-radius: 17px; padding: 6px 13px; font-size: 12.5px; }

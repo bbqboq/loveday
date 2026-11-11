@@ -10170,6 +10170,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
     document.getElementById('spPvPub').hidden = !final || isPublished; // (이미 발행했으면 [발행하기] 없음)
     document.getElementById('spPvCopy').hidden = !(final && isPublished && spPubUrl()); // (발행했으면 그 자리에 [주소 복사하기])
     spPvMin(false); // (열 때는 늘 아래 카드 C안)
+    root.classList.toggle('sp-pvp', spOpt('flow', 'pvPill')); root.classList.remove('sp-pvp-hide');
     document.getElementById('spPvKk').hidden = !(final || isPublished); // 카톡 공유 모양 (발행 전·후)
     document.getElementById('spPvOpen').hidden = true;
     document.getElementById('spPvBack').textContent = final ? '수정하기' : quick ? '닫기' : '돌아가기';
@@ -10219,7 +10220,7 @@ async function spOpenPreview(final, saved) { // final: true = 완성본(발행�
 function spClosePreview() {
     spPvSeq++; stopAllBgm();
     const box = document.getElementById('spPvReal'); if (box) box.innerHTML = ''; // 실제 화면을 지우면 그 음악도 멈춤
-    document.documentElement.classList.remove('sp-pv', 'sp-pv-real', 'sp-pvb-min'); try { renderPreview(); } catch (e) {}
+    clearTimeout(spPvNoteOpen.t); document.documentElement.classList.remove('sp-pv', 'sp-pv-real', 'sp-pvb-min', 'sp-pvp', 'sp-pvp-hide', 'sp-pvp-mini'); try { renderPreview(); } catch (e) {}
     if (spPvMode === 'quick') { spPvMode = null; spRender(); window.scrollTo(0, 0); }
     else if (spPvMode === true && document.getElementById('spReady')) { try { spRender(); } catch (e) {} } // (발행 준비 C안: 완성본을 봤으면 ③ 발행하기로)
 }
@@ -10231,19 +10232,32 @@ document.getElementById('spPvKk').addEventListener('click', () => kkSheetOpen())
 function spPvSay(title, sub, kind) {
     document.getElementById('spPvTitle').textContent = title; const m = document.getElementById('spPvMsg'); m.textContent = sub || ''; m.style.whiteSpace = 'pre-line';
     const r = document.documentElement; r.classList.toggle('sp-pvb-pub', kind === 'pub'); r.classList.toggle('sp-pvb-err', kind === 'err');
+    spPvNoteOpen(kind !== 'err');
+}
+// 1019z23 완성본 미리보기 막대 1안 (시안 claude.ai 아티팩트 F1NmqJekDyDGymtjWPtCkp 1, 관리자 flow 'pvPill', html.sp-pvp)
+//  위 = 반투명 알약 알림: 펼쳐 보였다가 2.6초 뒤 '✓ 완성본'만 남게 줄어듦(sp-pvp-mini) · 누르면 다시 펼침 / 아래 = 떠 있는 반투명 알약 막대 [‹ 수정하기][카톡 미리보기][발행하기]
+//  청첩장을 아래로 넘기면 둘 다 숨고(sp-pvp-hide) 조금이라도 위로 올리면 다시 나옴. 끄면 예전 아래 큰 카드(C안) ↔ 접힘(B안)
+function spPvNoteOpen(autoMini) {
+    const r = document.documentElement; clearTimeout(spPvNoteOpen.t); r.classList.remove('sp-pvp-mini');
+    if (autoMini) spPvNoteOpen.t = setTimeout(() => r.classList.add('sp-pvp-mini'), 2600);
 }
 function spPvMin(on) {
     const r = document.documentElement, g = document.getElementById('spPvGrab'); r.classList.toggle('sp-pvb-min', !!on);
     if (g) { g.setAttribute('aria-label', on ? '안내 크게 보기' : '안내 접기'); g.title = on ? '안내 크게 보기' : '안내 접기'; }
 }
 function spPvWatchScroll(target, getY) { // 청첩장을 아래로 넘기면 접고, 맨 위로 돌아오면 다시 카드
-    let last = 0; target.addEventListener('scroll', () => { const y = getY(); if (y > 60 && y > last) spPvMin(true); else if (y < 8 && !spPvWatchScroll.hand) spPvMin(false); last = y; }, { passive: true });
+    let last = 0; target.addEventListener('scroll', () => { const y = getY(), r = document.documentElement;
+        if (r.classList.contains('sp-pvp')) { if (y > 60 && y > last + 2) { r.classList.add('sp-pvp-hide', 'sp-pvp-mini'); clearTimeout(spPvNoteOpen.t); } else if (y < last - 4 || y < 8) r.classList.remove('sp-pvp-hide'); last = y; return; }
+        if (y > 60 && y > last) spPvMin(true); else if (y < 8 && !spPvWatchScroll.hand) spPvMin(false); last = y; }, { passive: true });
 }
 (function spPvBarBind() {
     const bar = document.getElementById('spPvBar'), grab = document.getElementById('spPvGrab');
     grab.addEventListener('click', () => { spPvWatchScroll.hand = !document.documentElement.classList.contains('sp-pvb-min'); spPvMin(!document.documentElement.classList.contains('sp-pvb-min')); });
     // 카드를 아래로 끌면 접힘 · 접힌 띠를 위로 끌면 펼침 (버튼을 누른 건 그대로 버튼)
+    const note = document.getElementById('spPvNote'); // (1019z23 알약 알림: 누르면 펼치고 / 펼친 걸 누르면 접음)
+    note.addEventListener('click', () => { const r = document.documentElement; if (!r.classList.contains('sp-pvp')) return; if (r.classList.contains('sp-pvp-mini')) spPvNoteOpen(true); else { clearTimeout(spPvNoteOpen.t); r.classList.add('sp-pvp-mini'); } });
     bar.addEventListener('pointerdown', e => {
+        if (document.documentElement.classList.contains('sp-pvp')) return;
         if (e.button > 0 || (e.target.closest('button') && e.target.closest('button') !== grab)) return;
         const y0 = e.clientY, min = document.documentElement.classList.contains('sp-pvb-min'); let dy = 0;
         const mv = ev => { dy = ev.clientY - y0; if (!min && dy > 0) bar.style.transform = `translateY(${Math.min(dy, 160)}px)`; };
@@ -11593,8 +11607,12 @@ function spRenderAsk(pane) {
     if (st.opts) {
         body = spH(esc(st.q), esc(st.sub)) + `<div class="sp-ask-opts">${st.opts.map(([v, t, d]) => `<button type="button" class="sp-ask-o${pick === v ? ' on' : ''}" data-ask="${v}" aria-pressed="${pick === v}"><span><b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ''}</span><i></i></button>`).join('')}</div>${opt && opt[3] ? '<div class="sp-ask-more" id="spAskMore"></div>' : ''}`;
     }
-    pane.innerHTML = `<div class="sp-head sp-ask-head"><button type="button" class="sp-ask-back" id="spBack" aria-label="이전"${spStep === 0 && !scrollPh ? ' disabled' : ''}>${backSvg}</button><b>질문 ${spStep + 1} / ${N}</b>${spUdHtml(true)}</div>
-        <div class="sp-ask-top"><div class="sp-ask-bar" aria-hidden="true"><i style="width:${pct(same || spAskLast < 0 ? spStep : spAskLast)}"></i></div>${!spOpt('flow', 'skip') || spAskMust() ? '' : `<button type="button" class="sp-ask-skip" id="spSkip">나중에 할게요</button>`}</div>
+    const slim = spOpt('flow', 'slimHead'), skipB = !spOpt('flow', 'skip') || spAskMust() ? '' : `<button type="button" class="sp-ask-skip" id="spSkip">${slim ? '나중에' : '나중에 할게요'}</button>`;
+    const barH = `<div class="sp-ask-bar" aria-hidden="true"><i style="width:${pct(same || spAskLast < 0 ? spStep : spAskLast)}"></i></div>`;
+    // 1019z23 머리 한 줄 (스크롤 버튼 화면 시안 A, 관리자 flow 'slimHead'): [‹] 4 / 13 [진행 막대] 나중에 [↶][↷] - 질문 번호 · 진행 막대 · 되돌리기를 한 줄로 (끄면 예전 두 줄)
+    pane.innerHTML = (slim ? `<div class="sp-head sp-ask-head sp-slim"><button type="button" class="sp-ask-back" id="spBack" aria-label="이전"${spStep === 0 && !scrollPh ? ' disabled' : ''}>${backSvg}</button><b aria-label="질문 ${spStep + 1} / ${N}">${spStep + 1} / ${N}</b>${barH}${skipB}${spUdHtml(true)}</div>`
+        : `<div class="sp-head sp-ask-head"><button type="button" class="sp-ask-back" id="spBack" aria-label="이전"${spStep === 0 && !scrollPh ? ' disabled' : ''}>${backSvg}</button><b>질문 ${spStep + 1} / ${N}</b>${spUdHtml(true)}</div>
+        <div class="sp-ask-top">${barH}${skipB}</div>`) + `
         ${spOpt('flow', 'now') ? `<div class="sp-now-wrap">${spNowCardHtml()}</div>` : ''}
         <div class="sp-body sp-ask" id="spBody">${body}</div>
         <div class="sp-nav sp-ask-nav${(same || spAskLast < 0 ? navFirst : spAskLast === 0) ? ' first' : ''}"><button type="button" class="wz-back" id="spPrev" tabindex="${navFirst ? -1 : 0}">이전</button><button type="button" class="wz-next" id="spNext">${spStep === N - 1 ? '다 했어요' : '다음'}</button></div>`;
@@ -12338,14 +12356,19 @@ function spHeroScroll(box) {
             + pick('nextShape', IB.NEXT_SHAPES, shp, '바탕')
             + `<div class="wz-field sp-in"><div class="wz-lab">색</div><div class="sp-cols">${NBP_COLORS.map(c => `<button type="button" class="${col === c ? 'on' : ''}" data-sp-nk="nextColor" data-v="${c}" style="--c:${c}" title="${c}"></button>`).join('')}<label class="sp-colpick" title="직접 고르기"><input type="color" value="${esc(col)}" data-sp-ncol></label></div></div>`;
     }
-    box.innerHTML = spH('↓ 스크롤 버튼', '전체화면 아래쪽에 "아래로 내려보세요" 버튼을 띄울지 골라요. 누르면 다음 섹션으로 넘어가요.') +
-        `<div class="sp-sum sp-in"><span><b>${what}</b> · 전체화면</span><button type="button" class="sp-link" id="spHeroBack">← 다시 고르기</button></div>
+    // 1019z23 한 화면 (시안 C, 관리자 hero 'scrollSide'): 제목 줄 옆 '사진 · 전체화면 바꾸기' · 큰 전·후 그림 옆에 알아서 · 명암 3×2 · 투명도 · 스크롤 버튼 칸 한 줄 (세로 스크롤 없이)
+    const sideV = !!(shadeOn && nbxV === 'focus' && spOpt('hero', 'scrollSide'));
+    box.innerHTML = (sideV ? `<div class="spv-hd sp-in"><h2 class="wz-h">↓ 스크롤 버튼</h2><button type="button" class="sp-link" id="spHeroBack"><b>${what}</b> · 전체화면 바꾸기</button></div><p class="wz-lead">글자 뒤 명암과 '아래로 내려보세요' 버튼을 골라요.</p>`
+        : spH('↓ 스크롤 버튼', '전체화면 아래쪽에 "아래로 내려보세요" 버튼을 띄울지 골라요. 누르면 다음 섹션으로 넘어가요.') +
+        `<div class="sp-sum sp-in"><span><b>${what}</b> · 전체화면</span><button type="button" class="sp-link" id="spHeroBack">← 다시 고르기</button></div>`) + `
         ${shadeOn ? `<div class="sp-shade sp-in" data-blk="${b.id}">${shadeFieldHtml(f, kind === 'video' ? 'video' : 'hero', b)}</div>` : ''}
         ${nbxV ? `<div class="sp-in sp-nbx">${nbxHtml(f, nbxV, { custom: spOpt('hero', 'scrollCustom'), size: spOpt('hero', 'scrollSize'), op: spOpt('hero', 'scrollOpacity'), anim: spOpt('hero', 'scrollMotion'), fx: spOpt('hero', 'scrollFx') })}</div>` : `<div class="wz-field sp-in"><div class="wz-lab"><span><span class="sp-n">4</span>버튼 모양</span></div><div class="sp-nbp">${chip('none', '없음')}${NBP_STY.filter(([k]) => k !== 'custom' || spOpt('hero', 'scrollCustom') || st === 'custom').map(([k, l]) => chip(k, l)).join('')}</div></div>
         ${on ? (spOpt('hero', 'scrollCustom') ? custom : '') + (spOpt('hero', 'scrollSize') ? pick('nextSize', IB.NEXT_SIZES, sz, '버튼 크기') : '')
             + (spOpt('hero', 'scrollOpacity') ? `<div class="wz-field sp-in"><div class="wz-lab"><span>진하기</span><small id="spNbOpV">${f.nextOpacity || 85}%</small></div><div class="sp-range"><span>흐리게</span><input type="range" id="spNbOp" min="30" max="100" step="5" value="${f.nextOpacity || 85}"><span>진하게</span></div></div>` : '')
             + (spOpt('hero', 'scrollMotion') ? pick('nextAnim', IB.NEXT_ANIMS, an, '움직임') : '') + (spOpt('hero', 'scrollFx') ? pick('nextFx', IB.NEXT_FX, fx, '등장 효과 <small>처음 보일 때 한 번</small>') : '') : ''}`}
-        <p class="wz-hint sp-in">누를 때마다 미리보기에서 버튼이 움직여 보여요. 다 골랐으면 <b>다음</b>을 눌러요.</p>`;
+        ${sideV ? '' : '<p class="wz-hint sp-in">누를 때마다 미리보기에서 버튼이 움직여 보여요. 다 골랐으면 <b>다음</b>을 눌러요.</p>'}`;
+    box.classList.toggle('spv-side', sideV);
+    if (sideV) { const sd = box.querySelector('.sp-shade .shz-side'); if (sd) box.querySelectorAll('.sp-shade .shz > :is(.shz-l, .shz-seg, .shz-rng)').forEach(el => sd.appendChild(el)); } // 명암 · 투명도를 전·후 그림 옆으로
     box.querySelectorAll('.sp-in').forEach((el, i) => { el.style.animationDelay = (i * 50) + 'ms'; });
     // 스크롤 버튼을 위 전·후 그림에 바로 (1018z18q, 사용자: '버튼을 고르면 좌측 상단 전·후 그림에 실시간으로') - 버튼 칸 안 따로 미리보기는 뺌 · 관리자 메인 화면 옵션 scrollMini
     const mini = shadeOn && nbxV && spOpt('hero', 'scrollMini') && box.querySelector('.sp-shade .shz-cmp'); // (큰 그림 넘기기는 그 그림이 미리보기)
@@ -13628,7 +13651,7 @@ function spFamily(box) {
 }
 // 6. 마음 전할 곳 (계좌 섹션의 "은행 번호 (예금주)" 칸)
 // 계좌 칸 A안 (시안 5fgXiCRAhiHGahtivSaeKz, 1018z18v): 계좌번호 아래 = '하객에게 이렇게 보여요' 그림 카드 넘기기(진짜로 그린 계좌 섹션) + 스위치 두 줄 (관리자 account.pics - 끄면 예전 글자 버튼 세 줄)
-const SP_ACC_LOOKS = [['theme', '디자인 맞춤'], ['basic', '기본 카드'], ['line', '미니멀'], ['outline', '라인 상자'], ['center', '가운데'], ['vintage', '빈티지'], ['free', '줄글']];
+const SP_ACC_LOOKS = [['theme', '디자인 맞춤'], ['basic', '기본 카드'], ['line', '미니멀'], ['outline', '라인 상자'], ['center', '가운데'], ['vintage', '빈티지'], ['envelope', '봉투'], ['botanical', '보태니컬'], ['free', '줄글']];
 let spAccKk = false; // 카카오페이 스위치를 켰는데 아직 링크를 안 적은 동안
 function spAccLookOf(f) { return f.display !== 'cards' ? 'free' : (f.accStyle || 'basic'); }
 function spAccPicsHtml(f) {
