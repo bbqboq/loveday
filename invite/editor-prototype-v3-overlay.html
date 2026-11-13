@@ -16,8 +16,8 @@ html.ld-late .ld-wait-late { visibility: visible; }
 </style>
 <title>청첩장 에디터 프로토타입 v3 - 오버레이 드래그 &amp; 라이트박스</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-<!-- 1019z23b 우편번호(주소 찾기): t1.daumcdn.net이 2026-11-30에 끝나서 t1.kakaocdn.net으로 (못 불러오면 예전 주소로 한 번 더) -->
-<script src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" onerror="var s=document.createElement('script');s.src='https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';document.head.appendChild(s)"></script>
+<!-- 1019z23b 우편번호(주소 찾기): 카카오 공지(kakao-postcode-QnA #1562) - t1.daumcdn.net은 2026-11-30까지만, 경로·사용법 그대로 t1.kakaocdn.net으로 -->
+<script src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <link rel="stylesheet" href="assets/editor.min.css?v=3559380f42"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
