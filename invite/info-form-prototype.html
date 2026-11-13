@@ -489,9 +489,10 @@ $('addrBtn').onclick = () => {
         new daum.Postcode({ oncomplete: d => { S.addr = d.roadAddress || d.address; $('addr').value = S.addr; if (!S.venue && d.buildingName) { S.venue = d.buildingName; $('venue').value = S.venue; } layer.classList.remove('on'); mapUI(); preview(); save(); }, width: '100%', height: '100%' }).embed(layer);
     };
     if (window.daum && daum.Postcode) return run();
-    const s = document.createElement('script'); s.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
-    s.onload = run; s.onerror = () => { $('addr').focus(); $('addr').placeholder = '주소를 직접 적어주세요'; };
-    document.head.appendChild(s);
+    // 1019z23b t1.daumcdn.net은 2026-11-30에 끝나서 t1.kakaocdn.net 먼저 (못 불러오면 예전 주소 → 그래도 안 되면 직접 적기)
+    const load = (urls) => { const s = document.createElement('script'); s.src = urls[0]; s.onload = run;
+        s.onerror = () => urls.length > 1 ? load(urls.slice(1)) : ($('addr').focus(), $('addr').placeholder = '주소를 직접 적어주세요'); document.head.appendChild(s); };
+    load(['https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js', 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js']);
 };
 $('pcX').onclick = () => $('pcLayer').classList.remove('on');
 
