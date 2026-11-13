@@ -5665,7 +5665,8 @@ html.sp-kb .spa.spac-q .spac-face { display: none; }
 /* ===== 1019z23 완성본 미리보기 막대 1안 (관리자 flow 'pvPill', html.sp-pvp · 시안 claude.ai 아티팩트 F1NmqJekDyDGymtjWPtCkp 1) =====
    위: 반투명 알약 알림 (펼침 → 2.6초 뒤 '✓ 완성본'만, sp-pvp-mini) · 아래: 떠 있는 반투명 알약 막대 · 내리면 둘 다 숨음(sp-pvp-hide)
    (막대에 transform · backdrop-filter를 주면 안의 position:fixed 알림이 막대 기준으로 붙어서 → 흐림은 ::before, 숨길 땐 bottom) */
-html.sp-pvp.simple-mode.sp-pv.sp-pv-real .sp-pvreal { inset: 0; }
+html.sp-pvp.simple-mode.sp-pv.sp-pv-real .sp-pvreal, html.sp-pvp.simple-mode.sp-pv .preview-pane { inset: 0; }
+html.sp-pvp.simple-mode.sp-pv body::after { display: none !important; } /* 1019z23c 아래 68px 띠(예전 카드 자리 가림막, z-index 755)가 청첩장을 가리던 것 - 알약 막대는 떠 있어서 띠 필요 없음 */
 html.sp-pvp.simple-mode.sp-pv .sp-pvbar { flex-direction: row; align-items: center; gap: 2px; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom)); width: fit-content; max-width: calc(100% - 32px); height: auto; margin: 0 auto; padding: 5px; border-radius: 28px; background: transparent; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.22); touch-action: auto; transform: none !important; transition: bottom .3s cubic-bezier(.23,1,.32,1), opacity .2s; isolation: isolate; }
 html.sp-pvp.simple-mode.sp-pv .sp-pvbar::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: rgba(28,22,19,.58); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
 html.sp-pvp.sp-pvp-hide.simple-mode.sp-pv .sp-pvbar { bottom: -90px; opacity: 0; pointer-events: none; }
