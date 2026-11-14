@@ -3276,7 +3276,8 @@
         const tpx = tpCls(f.accStyle);
         const as = tpx ? 'theme' : ACC_STYLES.some(([k]) => k === f.accStyle) ? f.accStyle : 'basic';
         if (as === 'envelope') ensureFont('gowun-batang'); else if (as === 'botanical') ensureFont('hahmlet'); // (하객 화면은 청첩장 대표 글꼴만 불러와서)
-        return `<div class="ib-block ib-accounts ib-as-${as}${tpx}">${sectionTitle(f.accTitle || '마음 전하실 곳')}
+        const mgE = as === 'envelope' && !((global.LD_MG_OFF || []).includes('mgEnvelope')) ? ' ib-mg-env' : ''; // 1019z25 봉투 열림 움직임
+        return `<div class="ib-block ib-accounts ib-as-${as}${tpx}${mgE}">${sectionTitle(f.accTitle || '마음 전하실 곳')}
             ${f.accNote ? `<p class="ib-acc-note">${nl2br(f.accNote)}</p>` : ''}
             ${g || b ? `<div class="ib-acc-wrap">${bothSides(g, b)}</div>` : emptyHint('계좌를 입력해주세요')}
         </div>`;

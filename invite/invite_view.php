@@ -251,6 +251,7 @@ if (is_file(__DIR__ . '/assets/invite-blocks.core.min.css') && is_file(__DIR__ .
 <script src="<?= ld_asset('invite-blocks.js') ?>"></script>
 <script src="<?= ld_asset('render-invite.js') ?>"></script>
 <script>
+    window.LD_MG_OFF = <?= json_encode(array_values(array_filter((function () { try { require_once __DIR__ . '/section_defaults.php'; $o = section_defaults_easy_off(); return is_array($o['flow'] ?? null) ? $o['flow'] : []; } catch (\Throwable $e) { return []; } })(), fn($k) => is_string($k) && strncmp($k, 'mg', 2) === 0))) ?>; // 1019z25 관리자가 끈 모션 그래픽
     window.INVITE_SLUG = <?= json_encode($slug) ?>; // 게스트스냅 "사진 올리기" 버튼, 참석여부·방명록 전송 주소용
     window.INVITE_PREVIEW_T = <?= json_encode($previewToken) ?>; // 신랑신부 미리보기일 때만 - 신혼여행 라이브의 공개 전 소식까지 보여줌
     window.INVITE_CSRF = <?= json_encode($csrfForGuests) ?>; // 참석여부·방명록 전송 시 확인용

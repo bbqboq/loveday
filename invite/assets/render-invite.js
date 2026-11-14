@@ -554,11 +554,38 @@ function introBgImgCss(intro) {
 //  예전엔 본문 등장 효과가 페이지를 여는 즉시 인트로 뒤에서 재생돼 버려서, 인트로가 걷혔을 땐 이미 끝나 있었다.
 //  인트로가 없으면 바로 부른다.
 const escHtml = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// ===== 1019z25 모션 그래픽 (관리자 손쉬운 제작 → 간편 만들기 전체: mgIntro 여는 장면 · mgScroll 스크롤 움직임 · mgEnvelope 봉투 열림 · mgEditor 편집 화면 안내) =====
+//  하객 화면은 invite_view.php가 window.LD_MG_OFF(끈 것 목록)를 내려 줌. '움직임 줄이기'를 켠 기기는 모두 안 함.
+const mgOn = k => !((window.LD_MG_OFF || []).includes(k)) && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+// 여는 장면 (인트로를 안 넣은 청첩장): 종이 색 막 위에 가는 선이 그어지고 제목 글자가 한 자씩 떠오른 뒤, 막이 위아래로 갈라지며 청첩장이 드러남 (약 2초)
+function mgOpening(design, reveal) {
+    if (!mgOn('mgIntro') || window.INVITE_SAMPLE) return false;
+    let sk = {}; try { sk = resolveSkin(design) || {}; } catch (e) {}
+    const bg = design.customBg || sk.bg || '#FAF7F2', ink = sk.text || sk.ink || '#3A302A', acc = sk.accent || '#B08A5A';
+    const raw = String(document.title || '').replace(/\s*[|·\-–—]\s*(LOVE ?DAY|러브데이).*$/i, '').trim(), title = raw && raw.length <= 28 ? raw : 'Wedding Invitation';
+    const ov = document.createElement('div'); ov.className = 'mg-open'; ov.setAttribute('aria-hidden', 'true'); ov.style.setProperty('--mg-bg', bg); ov.style.setProperty('--mg-ink', ink); ov.style.setProperty('--mg-acc', acc); if (sk.headFont) ov.style.fontFamily = sk.headFont;
+    ov.innerHTML = `<i class="mg-h t"></i><i class="mg-h b"></i><div class="mg-c"><i class="mg-ln"></i><p class="mg-t">${[...title].map((c, i) => `<span style="animation-delay:${(.35 + i * .045).toFixed(3)}s">${c === ' ' ? '&nbsp;' : escHtml(c)}</span>`).join('')}</p><i class="mg-ln"></i></div>`;
+    document.body.appendChild(ov); window.scrollTo(0, 0);
+    const hold = 1150 + Math.min(600, [...title].length * 45);
+    setTimeout(() => { ov.classList.add('out'); reveal(); }, hold);
+    setTimeout(() => ov.remove(), hold + 900);
+    ov.addEventListener('click', () => { ov.classList.add('out'); reveal(); setTimeout(() => ov.remove(), 700); }); // 누르면 바로 넘어감
+    return true;
+}
+// 스크롤 움직임: 첫 화면 사진이 천천히 다가왔다 멈추고(Ken Burns), 섹션 제목 · 계좌 칸이 화면에 들어올 때 부드럽게 떠오름 (기존 섹션 등장 효과와 따로 - 제목 · 칸 단위)
+function mgScrollInit(root) {
+    if (!root || !mgOn('mgScroll') || typeof IntersectionObserver === 'undefined') return;
+    const els = root.querySelectorAll('.col:not([data-block-id="hero"]):not([data-block-id="heroVideo"]) .ib-title-layer, .ib-acc-side, .ib-acc-note');
+    const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add('mg-in'); io.unobserve(en.target); } }), { threshold: .15, rootMargin: '0px 0px -6% 0px' });
+    els.forEach((el, i) => { el.classList.add('mg-w'); io.observe(el); });
+    document.documentElement.classList.add('ld-mg-scroll');
+    setTimeout(() => els.forEach(el => el.classList.add('mg-in')), 9000); // (감시가 안 불려도 끝내 보이게)
+}
 function playIntroAnimation(design, onReveal) {
     fixDesignUploadUrls(design);
     let revealed = false;
     const reveal = () => { if (revealed) return; revealed = true; if (typeof onReveal === 'function') onReveal(); };
-    if (!design.intro || !design.intro.enabled) { reveal(); return; }
+    if (!design.intro || !design.intro.enabled) { if (!mgOpening(design, reveal)) reveal(); return; }
     window.scrollTo(0, 0);
     const intro = design.intro;
     const s = resolveSkin(design);
@@ -1318,7 +1345,7 @@ function renderInviteReadOnly(rootEl, design, masked) {
     // 스크롤바 모양 (에디터 화면 설정 → 부가기능). 페이지 전체 스크롤바라 html에 붙이고, 색은 청첩장 색을 복사
     if (window.InviteBlocks && InviteBlocks.applyScrollbar) InviteBlocks.applyScrollbar(document.documentElement, design.extras && design.extras.scrollbar, rootEl, { color: design.extras && design.extras.scrollbarColor, opacity: design.extras && design.extras.scrollbarOpacity }); // 스크롤바 모양·색·진하기
     // 등장 효과는 인트로가 걷히는 순간부터 감시·재생 (인트로가 없으면 바로)
-    playIntroAnimation(design, () => initScrollReveal(rootEl));
+    playIntroAnimation(design, () => { initScrollReveal(rootEl); try { mgScrollInit(rootEl); } catch (e) {} });
 }
 
 // 계좌번호·연락처 채우기 (봇 수집 방지) - invite_view.php / guest_secure.php 참고

@@ -5704,3 +5704,15 @@ html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
     html.sp-ltidy.sp-mv-lens:is(.sp-lens-tucked, .sp-lens-auto-hide):not(.sp-pv) .sp-lens-tab:not(.fold) { top: auto; bottom: 92px; right: 12px; left: auto; width: 56px; height: 56px; border-radius: 50%; writing-mode: horizontal-tb; letter-spacing: 0; font-size: 11px; box-shadow: 0 6px 18px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.18); }
     html.sp-ltidy .sp-lens-tab.l:not(.fold) { left: 12px !important; right: auto !important; }
 }
+/* ===== 1019z25 편집 화면 안내 움직임 (관리자 flow 'mgEditor', #simplePane.sp-mg) ===== */
+@keyframes spMgRing { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ui-point, #B8925A) 45%, transparent); } 55% { box-shadow: 0 0 0 7px transparent; } }
+@keyframes spMgNudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+@keyframes spMgCheck { from { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.15); } to { transform: scale(1); opacity: 1; } }
+@keyframes spMgFall { 0% { transform: translate3d(0, -12vh, 0) rotate(0); opacity: 1; } 100% { transform: translate3d(var(--dx), 108vh, 0) rotate(var(--r)); opacity: .9; } }
+.sp-mg .spb-li.spb-now .spb-st { animation: spMgRing 1.8s ease-out infinite; }
+.sp-mg .sp-dock.dk-tidy .dk-main b::after { content: ' ›'; display: inline-block; animation: spMgNudge 1.2s ease-in-out infinite; }
+.sp-mg .spb-li.done:not(.spb-leave) .spb-st.spb-done { animation: spMgCheck .45s cubic-bezier(.23,1,.32,1) both; }
+.sp-same.sp-mg .spb-li.done .spb-st.spb-done { animation: none; }
+.sp-mg-conf { position: fixed; inset: 0; z-index: 99999; pointer-events: none; overflow: hidden; }
+.sp-mg-conf i { position: absolute; top: 0; display: block; animation: spMgFall 1.9s cubic-bezier(.3,.5,.5,1) both; }
+@media (prefers-reduced-motion: reduce) { .sp-mg .spb-li.spb-now .spb-st, .sp-mg .sp-dock.dk-tidy .dk-main b::after, .sp-mg .spb-st.spb-done { animation: none !important; } }

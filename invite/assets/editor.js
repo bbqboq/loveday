@@ -185,6 +185,7 @@ fetch('section_defaults.php', { cache: 'no-store' }).then(r => r.ok ? r.json() :
     if (j && j.start && typeof j.start === 'object') Object.keys(j.start).forEach(id => { if (j.start[id] === 'on' || j.start[id] === 'off') SECTION_START[id] = j.start[id]; }); // 새 청첩장 섹션 시작 상태
     if (j && j.prefs && typeof j.prefs === 'object') setUipPrefs(j.prefs); // 사진 칸·위치·사용법 버튼 모양
     if (j && j.easy && j.easy.off && typeof j.easy.off === 'object') EASY_OFF = j.easy.off;
+    try { window.LD_MG_OFF = ((EASY_OFF && EASY_OFF.flow) || []).filter(k => /^mg/.test(k)); } catch (e) {} // 1019z25 모션 그래픽 (미리보기의 봉투 열림도 관리자 설정대로)
     if (j && j.easy && Array.isArray(j.easy.ask)) EASY_ASK = j.easy.ask; // 처음 만들 때 질문 순서·켜기
     if (j && j.easy) EASY_SHOWOFF = !!j.easy.showOff;
     if (j && j.easy && ['peek'].includes(j.easy.mobileView)) { EASY_MOBILE_VIEW = j.easy.mobileView; try { spMvApply(); } catch (e) {} } // 휴대폰 보기 방식 (관리자 손쉬운 제작)
@@ -11841,6 +11842,15 @@ function spListTidy(pane, fill) {
             bar.querySelectorAll('[data-lt]').forEach(b => b.addEventListener('click', () => { spListTab = b.dataset.lt; spRender(); }));
             spb.classList.add('spb-tab-' + (spListTab === 'must' ? 'must' : 'more')); } }
 }
+function spMgConfetti() { // 화면 위에서 색종이가 흩날리며 떨어짐 (1.8초 뒤 지움 · 움직임 줄이기면 안 함)
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    document.querySelector('.sp-mg-conf')?.remove();
+    const box = document.createElement('div'); box.className = 'sp-mg-conf'; box.setAttribute('aria-hidden', 'true');
+    const C = ['#E9C98F', '#B97C88', '#8FA8D9', '#6E9A74', '#F2B5A0', '#fff'];
+    box.innerHTML = Array.from({ length: 42 }, (_, i) => { const x = Math.random() * 100, d = Math.random() * .5, r = Math.random() * 720 - 360, dx = Math.random() * 120 - 60, w = 6 + Math.random() * 6;
+        return `<i style="left:${x.toFixed(1)}%;width:${w.toFixed(0)}px;height:${(w * (i % 3 ? .45 : 1)).toFixed(0)}px;background:${C[i % C.length]};border-radius:${i % 3 ? 1 : 50}${i % 3 ? 'px' : '%'};animation-delay:${d.toFixed(2)}s;--r:${r.toFixed(0)}deg;--dx:${dx.toFixed(0)}px"></i>`; }).join('');
+    document.body.appendChild(box); setTimeout(() => box.remove(), 2600);
+}
 function spNextBind(pane) {
     const box = pane.querySelector('#spReady.spb-next'), dock = pane.querySelector('#spDock'); if (!box && !dock) return;
     [...(box ? box.querySelectorAll('[data-nx]') : []), ...(dock ? dock.querySelectorAll('[data-nx]') : [])].forEach(b => b.addEventListener('click', async () => {
@@ -12104,6 +12114,11 @@ function spRenderList() {
     pane.querySelectorAll('#spReady [data-pc-go]').forEach(b => b.addEventListener('click', () => { spPvCur = b.dataset.pcGo; pubGo(b.dataset.pcGo); }));
     spNextBind(pane);
     try { spListTidy(pane, fill); } catch (e) { console.warn(e); }
+    try { // 1019z25 편집 화면 안내 움직임 (관리자 flow 'mgEditor'): 지금 할 칸 번호 · 다음 버튼 화살표 · 남은 칸이 0이 되는 순간 축하 꽃가루 한 번
+        const mg = spOpt('flow', 'mgEditor'); pane.classList.toggle('sp-mg', mg);
+        const was = spRenderList._left; spRenderList._left = fill.length;
+        if (mg && was > 0 && fill.length === 0 && !isPublished) spMgConfetti();
+    } catch (e) {}
     if (EASY_READY === 'todo' && fill.length) { const w = pane.querySelector('.spb-must .spb-li.warn, .spb-must .spb-li.todo'); if (w) { w.classList.add('spb-now'); const b = w.querySelector('.spb-tx b'); if (b) b.insertAdjacentHTML('beforeend', '<em class="spb-nowtag">지금 할 차례</em>'); } } // 1안: 번호 첫 칸 (1019g)
     pane.querySelectorAll('[data-sp-add]').forEach(b => b.addEventListener('click', () => spAddGo(b.dataset.spAdd)));
     pane.querySelector('#spAddMore')?.addEventListener('click', () => { spAddMore = true; spRender(); });

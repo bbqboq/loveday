@@ -2703,7 +2703,7 @@ html.ld-wm-lock img { -webkit-touch-callout: none; -webkit-user-select: none; us
 .ib-accounts.ib-as-envelope .ib-acc-side { position: relative; background: #F3EBDD !important; color: #3A2E26 !important; border: 0 !important; border-radius: 6px; margin-top: 16px; box-shadow: 0 1px 0 #E2D5BF, 0 8px 18px rgba(80,55,30,.08); overflow: hidden; }
 .ib-as-envelope .ib-acc-side::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 58px; background: #EADFCB; clip-path: polygon(0 0, 100% 0, 50% 100%); pointer-events: none; }
 .ib-as-envelope .ib-acc-head, .ib-as-envelope .ib-acc-side summary { position: relative; height: 92px; box-sizing: border-box; padding: 0 16px 10px; display: flex; align-items: flex-end; font-family: 'Gowun Batang', serif; font-size: 15px; font-weight: 700; letter-spacing: 0; text-align: left; color: #3A2E26; }
-.ib-as-envelope .ib-acc-head::after, .ib-as-envelope .ib-acc-side summary::after { content: ''; position: absolute; left: 50%; right: auto; top: 36px; width: 42px; height: 42px; margin-left: -21px; border-radius: 50%; transform: none !important; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F4DCD7' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath d='M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'/%3E%3C/svg%3E") center / 18px no-repeat, radial-gradient(circle at 35% 30%, #9E4552, #7E2F3A 60%, #5E1F29); box-shadow: 0 0 0 3px rgba(126,47,58,.22), 0 2px 4px rgba(0,0,0,.2); }
+.ib-as-envelope .ib-acc-head::after, .ib-as-envelope .ib-acc-side summary::after { content: ''; position: absolute; left: 50%; right: auto; top: 36px; width: 42px; height: 42px; margin-left: -21px; border-radius: 50%; transform: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F4DCD7' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath d='M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'/%3E%3C/svg%3E") center / 18px no-repeat, radial-gradient(circle at 35% 30%, #9E4552, #7E2F3A 60%, #5E1F29); box-shadow: 0 0 0 3px rgba(126,47,58,.22), 0 2px 4px rgba(0,0,0,.2); }
 .ib-as-envelope .ib-acc-side summary::before { content: '열어 보기 +'; position: absolute; right: 16px; bottom: 12px; font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 12px; font-weight: 500; color: #8B7C6E; }
 .ib-as-envelope .ib-acc-side[open] summary::before { content: '접기 −'; }
 .ib-as-envelope .ib-acc-row { margin: 0 10px; background: #FFFDF9; border-top: 0; border-bottom: 1px dashed #E3D6C0; padding: 12px 14px; }
@@ -2724,3 +2724,38 @@ html.ld-wm-lock img { -webkit-touch-callout: none; -webkit-user-select: none; us
 .ib-as-botanical .ib-acc-row { border-top: 1px dotted #D8DCCF; padding: 13px 16px; }
 .ib-as-botanical .ib-acc-who { color: #6F7E63; font-weight: 500; font-size: 12px; }
 .ib-accounts.ib-as-botanical .ib-copy-btn { border: 1px solid #DCE1D4; background: #F6F8F2 !important; color: #5F6E54 !important; border-radius: 17px; padding: 6px 13px; font-size: 12.5px; }
+/* ===== 1019z25 모션 그래픽 (관리자: mgIntro · mgScroll · mgEnvelope) ===== */
+/* 여는 장면 - render-invite.js mgOpening */
+.mg-open { position: fixed; inset: 0; z-index: 99990; display: grid; place-items: center; cursor: pointer; }
+.mg-open .mg-h { position: absolute; left: 0; right: 0; height: 50.5%; background: var(--mg-bg, #FAF7F2); transition: transform .8s cubic-bezier(.77,0,.18,1); }
+.mg-open .mg-h.t { top: 0; } .mg-open .mg-h.b { bottom: 0; }
+.mg-open .mg-c { position: relative; display: grid; justify-items: center; gap: 16px; padding: 0 28px; color: var(--mg-ink, #3A302A); transition: opacity .35s, transform .5s; }
+.mg-open .mg-ln { display: block; width: 72px; height: 1px; background: var(--mg-acc, #B08A5A); transform: scaleX(0); animation: mgLine .7s cubic-bezier(.23,1,.32,1) .1s forwards; }
+.mg-open .mg-ln:last-child { animation-delay: .25s; }
+.mg-open .mg-t { margin: 0; font-size: 21px; line-height: 1.5; letter-spacing: .06em; text-align: center; word-break: keep-all; }
+.mg-open .mg-t span { display: inline-block; opacity: 0; transform: translateY(14px); filter: blur(4px); animation: mgRise .6s cubic-bezier(.23,1,.32,1) forwards; }
+.mg-open.out { pointer-events: none; } .mg-open.out .mg-h.t { transform: translateY(-101%); } .mg-open.out .mg-h.b { transform: translateY(101%); }
+.mg-open.out .mg-c { opacity: 0; transform: scale(1.04); }
+@keyframes mgLine { to { transform: scaleX(1); } }
+@keyframes mgRise { to { opacity: 1; transform: none; filter: none; } }
+/* 스크롤 움직임 - mgScrollInit (하객 화면만) */
+@keyframes mgKen { from { scale: 1.09; } to { scale: 1; } }
+.ld-mg-scroll .hero-full-wrap { overflow: hidden; }
+.ld-mg-scroll .hero-full-wrap > img.hero-photo { animation: mgKen 7s cubic-bezier(.2,.6,.3,1) both; }
+.ld-mg-scroll .mg-w { opacity: 0; translate: 0 14px; filter: blur(3px); transition: opacity .7s ease, translate .8s cubic-bezier(.23,1,.32,1), filter .7s ease; }
+.ld-mg-scroll .mg-w.mg-in { opacity: 1; translate: 0 0; filter: none; }
+.ld-mg-scroll .ib-acc-side.mg-w + .ib-acc-side.mg-w { transition-delay: .12s; }
+/* 봉투 열림 - .ib-as-envelope.ib-mg-env (접어 두기일 때: 누르면 실링이 떨어지고 덮개가 넘어가며 편지가 올라옴) */
+@keyframes mgSealOff { 0% { transform: none; opacity: 1; } 35% { transform: scale(1.18) rotate(-8deg); opacity: 1; } 100% { transform: translateY(18px) scale(.6) rotate(24deg); opacity: 0; } }
+@keyframes mgFlap { from { transform: rotateX(0); } to { transform: rotateX(-172deg); } }
+@keyframes mgLetter { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+.ib-mg-env .ib-acc-side { perspective: 600px; }
+.ib-mg-env details.ib-acc-side::before { transform-origin: 50% 0; backface-visibility: hidden; }
+.ib-mg-env details.ib-acc-side[open]::before { animation: mgFlap .6s cubic-bezier(.5,0,.2,1) .18s both; }
+.ib-mg-env details.ib-acc-side[open] summary::after { animation: mgSealOff .5s cubic-bezier(.4,0,.2,1) both; }
+.ib-mg-env details.ib-acc-side[open] > :not(summary) { animation: mgLetter .55s cubic-bezier(.23,1,.32,1) both; animation-delay: .42s; }
+.ib-mg-env details.ib-acc-side[open] > :not(summary):nth-child(3) { animation-delay: .5s; } .ib-mg-env details.ib-acc-side[open] > :not(summary):nth-child(4) { animation-delay: .58s; } .ib-mg-env details.ib-acc-side[open] > :not(summary):nth-child(n+5) { animation-delay: .66s; }
+.ib-mg-env details.ib-acc-side:not([open]) summary:active::after { transform: scale(.92) !important; }
+@media (prefers-reduced-motion: reduce) { .ib-mg-env details.ib-acc-side[open]::before, .ib-mg-env details.ib-acc-side[open] summary::after, .ib-mg-env details.ib-acc-side[open] > :not(summary), .ld-mg-scroll .hero-full-wrap > img.hero-photo { animation: none !important; } .ld-mg-scroll .mg-w { opacity: 1; translate: none; filter: none; transition: none; } }
+.ib-mg-env details.ib-acc-side summary { transition: height .4s cubic-bezier(.23,1,.32,1) .35s; }
+.ib-mg-env details.ib-acc-side[open] summary { height: 54px; } /* 열린 뒤엔 덮개 자리(빈 칸)를 줄임 */
