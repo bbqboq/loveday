@@ -448,6 +448,11 @@ function section_defaults_easy_stk(): string { return section_defaults_easy_pick
 /** 간편 만들기 계좌 모양 고르기 'chips'(이름 칩 - 바로 뜸, 기본 1018z18w) | 'pics'(진짜로 그린 그림 카드 1018z18v) */
 const SECTION_EASY_ACCS = ['chips']; // 1019z7 pics 지움
 function section_defaults_easy_acc(): string { return section_defaults_easy_pick('accPanel', SECTION_EASY_ACCS); }
+// 1019z24 메뉴 이름 (easy 쉬운 이름 + 그림 + 설명 · ask 질문으로 · old 원본) · 정리 화면 모양 (tidy 가지런히 · tabs 탭 둘 · old 원본) - 맨 앞이 기본
+const SECTION_EASY_NAMES = ['easy', 'ask', 'old'];
+function section_defaults_easy_names(): string { return section_defaults_easy_pick('menuNames', SECTION_EASY_NAMES); }
+const SECTION_EASY_LISTS = ['tidy', 'tabs', 'old'];
+function section_defaults_easy_list(): string { return section_defaults_easy_pick('listLook', SECTION_EASY_LISTS); }
 const SECTION_EASY_NBS = ['focus', 'rows', 'tiles', 'old']; // 1019z7 swipe 지움 (rows·tiles·focus는 전문가 R1~R3와 같은 코드라 남김)
 /** 간편 만들기 ↓ 스크롤 버튼 칸 모양 (기본 'swipe' = 첫 화면 큰 그림 옆으로 넘기기, 1018z18r) */
 function section_defaults_easy_nb(): string
@@ -540,6 +545,12 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     $easyStk = ($easyMore !== null && array_key_exists('stkEdit', $easyMore)) ? (string) $easyMore['stkEdit'] : section_defaults_easy_stk(); // 인트로 스티커 고치기
     if (!in_array($easyStk, SECTION_EASY_STKS, true)) $easyStk = 'bubble';
     $easyStkSet = $easyStk !== 'bubble';
+    $easyNm = ($easyMore !== null && array_key_exists('menuNames', $easyMore)) ? (string) $easyMore['menuNames'] : section_defaults_easy_names(); // 메뉴 이름 (1019z24)
+    if (!in_array($easyNm, SECTION_EASY_NAMES, true)) $easyNm = 'easy';
+    $easyNmSet = $easyNm !== 'easy';
+    $easyLs = ($easyMore !== null && array_key_exists('listLook', $easyMore)) ? (string) $easyMore['listLook'] : section_defaults_easy_list(); // 정리 화면 모양 (1019z24)
+    if (!in_array($easyLs, SECTION_EASY_LISTS, true)) $easyLs = 'tidy';
+    $easyLsSet = $easyLs !== 'tidy';
     $easyVideo = ($easyMore !== null && array_key_exists('videoSample', $easyMore)) ? (string) $easyMore['videoSample'] : section_defaults_easy_video(); // 메인 영상 예시
     if (!preg_match(SECTION_YT_ID_RE, $easyVideo)) $easyVideo = '';
     // $easyOff: null = 저장된 값 그대로, [] = 모두 켬, {step:[key]} = 새로 저장
@@ -563,7 +574,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     $hid = [];
     foreach ($hidden as $id) if (is_string($id) && preg_match(SECTION_ID_RE, $id) && !in_array($id, $hid, true)) $hid[] = $id;
     $f = section_defaults_file();
-    if (!$clean && !$hid && !$groups && !$labels && !$start && !$easy && !$easyOff && !$easyAsk && !$easyShowOff && $easyHero === '' && $easyVideo === '' && !$easyMviewSet && !$easyPcSet && !$easyRdSet && !$easyNbSet && !$easyIpSet && !$easyFxSet && !$easyAccSet && !$easyStkSet && $panel === SECTION_PANEL_DEFAULT && $prefs === SECTION_PREF_DEFAULTS) return !is_file($f) || @unlink($f);
+    if (!$clean && !$hid && !$groups && !$labels && !$start && !$easy && !$easyOff && !$easyAsk && !$easyShowOff && $easyHero === '' && $easyVideo === '' && !$easyMviewSet && !$easyPcSet && !$easyRdSet && !$easyNbSet && !$easyIpSet && !$easyFxSet && !$easyAccSet && !$easyStkSet && !$easyNmSet && !$easyLsSet && $panel === SECTION_PANEL_DEFAULT && $prefs === SECTION_PREF_DEFAULTS) return !is_file($f) || @unlink($f);
     $dir = dirname($f);
     if (!is_dir($dir) && !@mkdir($dir, 0755, true)) return false;
     $tmp = $f . '.' . bin2hex(random_bytes(4)) . '.tmp';
@@ -571,7 +582,7 @@ function section_defaults_save(array $order, ?array $hidden = null, ?string $pan
     if ($groups) { $data['groups'] = $groups['groups']; $data['groupEtc'] = $groups['etc']; }
     if ($labels) $data['labels'] = $labels;
     if ($start) $data['start'] = $start;
-    if ($easy || $easyOff || $easyAsk || $easyShowOff || $easyHero !== '' || $easyVideo !== '' || $easyMviewSet || $easyPcSet || $easyRdSet || $easyNbSet || $easyIpSet || $easyFxSet || $easyAccSet || $easyStkSet) $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []) + ($easyHero !== '' ? ['heroSample' => $easyHero] : []) + ($easyHeroPos ? ['heroPos' => $easyHeroPos] : []) + ($easyMviewSet ? ['mobileView' => $easyMview] : []) + ($easyPcSet ? ['pcPick' => $easyPc] : []) + ($easyRdSet ? ['readyStyle' => $easyRd] : []) + ($easyNbSet ? ['nbPanel' => $easyNb] : []) + ($easyIpSet ? ['introPanel' => $easyIp] : []) + ($easyFxSet ? ['fxPanel' => $easyFx] : []) + ($easyAccSet ? ['accPanel' => $easyAcc] : []) + ($easyStkSet ? ['stkEdit' => $easyStk] : []) + ($easyVideo !== '' ? ['videoSample' => $easyVideo] : []);
+    if ($easy || $easyOff || $easyAsk || $easyShowOff || $easyHero !== '' || $easyVideo !== '' || $easyMviewSet || $easyPcSet || $easyRdSet || $easyNbSet || $easyIpSet || $easyFxSet || $easyAccSet || $easyStkSet || $easyNmSet || $easyLsSet) $data['easy'] = ['steps' => $easy ?: section_easy_default()] + ($easyOff ? ['off' => $easyOff] : []) + ($easyAsk ? ['ask' => $easyAsk] : []) + ($easyShowOff ? ['showOff' => true] : []) + ($easyHero !== '' ? ['heroSample' => $easyHero] : []) + ($easyHeroPos ? ['heroPos' => $easyHeroPos] : []) + ($easyMviewSet ? ['mobileView' => $easyMview] : []) + ($easyPcSet ? ['pcPick' => $easyPc] : []) + ($easyRdSet ? ['readyStyle' => $easyRd] : []) + ($easyNbSet ? ['nbPanel' => $easyNb] : []) + ($easyIpSet ? ['introPanel' => $easyIp] : []) + ($easyFxSet ? ['fxPanel' => $easyFx] : []) + ($easyAccSet ? ['accPanel' => $easyAcc] : []) + ($easyStkSet ? ['stkEdit' => $easyStk] : []) + ($easyNmSet ? ['menuNames' => $easyNm] : []) + ($easyLsSet ? ['listLook' => $easyLs] : []) + ($easyVideo !== '' ? ['videoSample' => $easyVideo] : []);
     $data['updated_at'] = date('c');
     $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     if (@file_put_contents($tmp, $json, LOCK_EX) === false) return false;
@@ -584,5 +595,5 @@ if (realpath((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
     header('Cache-Control: no-store');
     header('X-Content-Type-Options: nosniff');
     $grp = section_defaults_groups();
-    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'scope' => device_scope_get() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos(), 'mobileView' => section_defaults_easy_mview(), 'pcPick' => section_defaults_easy_pcpick(), 'readyStyle' => section_defaults_easy_ready(), 'nbPanel' => section_defaults_easy_nb(), 'introPanel' => section_defaults_easy_intro(), 'fxPanel' => section_defaults_easy_fx(), 'accPanel' => section_defaults_easy_acc(), 'stkEdit' => section_defaults_easy_stk(), 'videoSample' => section_defaults_easy_video()]], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['order' => section_defaults_get(), 'hidden' => section_defaults_hidden(), 'panelStyle' => section_defaults_panel_style(), 'prefs' => section_defaults_prefs(), 'groups' => $grp['groups'], 'groupEtc' => $grp['etc'], 'labels' => section_defaults_labels() ?: new stdClass(), 'start' => section_defaults_start() ?: new stdClass(), 'scope' => device_scope_get() ?: new stdClass(), 'easy' => ['steps' => section_defaults_easy(), 'off' => section_defaults_easy_off() ?: new stdClass(), 'ask' => section_defaults_easy_ask(), 'showOff' => section_defaults_easy_show_off(), 'heroSample' => section_defaults_easy_hero(), 'heroPos' => section_defaults_easy_hero_pos(), 'mobileView' => section_defaults_easy_mview(), 'pcPick' => section_defaults_easy_pcpick(), 'readyStyle' => section_defaults_easy_ready(), 'nbPanel' => section_defaults_easy_nb(), 'menuNames' => section_defaults_easy_names(), 'listLook' => section_defaults_easy_list(), 'introPanel' => section_defaults_easy_intro(), 'fxPanel' => section_defaults_easy_fx(), 'accPanel' => section_defaults_easy_acc(), 'stkEdit' => section_defaults_easy_stk(), 'videoSample' => section_defaults_easy_video()]], JSON_UNESCAPED_UNICODE);
 }

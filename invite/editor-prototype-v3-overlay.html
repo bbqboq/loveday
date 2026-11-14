@@ -18,7 +18,7 @@ html.ld-late .ld-wait-late { visibility: visible; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <!-- 1019z23b 우편번호(주소 찾기): 카카오 공지(kakao-postcode-QnA #1562) - t1.daumcdn.net은 2026-11-30까지만, 경로·사용법 그대로 t1.kakaocdn.net으로 -->
 <script src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-<link rel="stylesheet" href="assets/editor.min.css?v=3559380f42"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
+<link rel="stylesheet" href="assets/editor.min.css?v=0cda65b9b5"><!-- 에디터 화면 모양 (원본 assets/editor.css → node tools/build-editor.js) -->
 <!-- 에디터와 공개페이지가 같이 쓰는 공용 섹션 (연락하기/프로필/손편지/영상/교통수단/안내문/함께한 시간/엔딩) -->
 <!-- ?v= : 공용 파일을 바꿔 올리면 이 숫자도 바꿔서 휴대폰 브라우저가 예전 파일을 그대로 쓰지 않게 -->
 <link rel="stylesheet" href="assets/invite-blocks.min.css?v=bdd0239a3d">
@@ -588,8 +588,8 @@ html.ld-late .ld-wait-late { visibility: visible; }
     </div>
 </div><!-- /screenIntroSettings -->
 
-<script>window.LD_CHUNKS = { help: 'assets/editor-help.min.js?v=d856875789', thm: 'assets/editor-thm.min.js?v=32d7e6cda6', easy: 'assets/editor-easy.min.js?v=df7a26a3ec', exp: 'assets/editor-exp.min.js?v=48553876dd' }; /* 나중에 불러오는 조각 (1019s, ?v=는 build-editor.js가 맞춤) */</script>
-<script src="assets/editor.min.js?v=72c5fb30ca" onerror="document.documentElement.classList.remove('ld-boot')"></script><!-- 에디터 기능 (원본 assets/editor.js → node tools/build-editor.js) -->
+<script>window.LD_CHUNKS = { help: 'assets/editor-help.min.js?v=d856875789', thm: 'assets/editor-thm.min.js?v=32d7e6cda6', easy: 'assets/editor-easy.min.js?v=78796aa0a8', exp: 'assets/editor-exp.min.js?v=48553876dd' }; /* 나중에 불러오는 조각 (1019s, ?v=는 build-editor.js가 맞춤) */</script>
+<script src="assets/editor.min.js?v=38ce1f65d7" onerror="document.documentElement.classList.remove('ld-boot')"></script><!-- 에디터 기능 (원본 assets/editor.js → node tools/build-editor.js) -->
 </body>
 </html>
 <!-- 아래 줄은 지우지 말 것: 서버에 올릴 때 예전(더 큰) 파일 뒷부분이 남아도 화면에 글자로 나오거나 실행되지 않게 숨김 (2026-10-20 실서버에서 CSS가 글자로 보였음) -->

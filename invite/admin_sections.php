@@ -116,6 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 간편 만들기 인트로 칸 모양 (재생 막대 + 효과 카드 / 재생 막대 / 인트로 화면 그대로 / 예전) - 누르면 바로 저장
         $v = (string) ($_POST['view'] ?? '');
         $ok = defined('SECTION_EASY_INTROS') && in_array($v, SECTION_EASY_INTROS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, ['introPanel' => $v]);
+    } elseif ($act === 'easy_names' || $act === 'easy_list') {
+        // 1019z24 메뉴 이름 (쉬운 이름 / 질문 / 원본) · 정리 화면 모양 (가지런히 / 탭 둘 / 원본) - 누르면 바로 저장
+        $v = (string) ($_POST['view'] ?? ''); $isNm = $act === 'easy_names';
+        $ok = defined('SECTION_EASY_NAMES') && in_array($v, $isNm ? SECTION_EASY_NAMES : SECTION_EASY_LISTS, true) && section_defaults_save(section_defaults_get(), null, null, null, null, null, null, null, null, [($isNm ? 'menuNames' : 'listLook') => $v]);
     } elseif ($act === 'easy_acc') {
         // 계좌 모양 고르기 (이름 칩 / 그림 카드) - 누르면 바로 저장 (1018z18w)
         $v = (string) ($_POST['view'] ?? '');
@@ -170,7 +174,7 @@ $easyOff = section_defaults_easy_off();
 $easyAsk = section_defaults_easy_ask();
 $easyShowOff = section_defaults_easy_show_off();
 $easyHero = section_defaults_easy_hero(); $easyHeroPos = section_defaults_easy_hero_pos(); $easyMview = section_defaults_easy_mview(); $easyPcPick = section_defaults_easy_pcpick(); $easyReady = section_defaults_easy_ready(); $easyNb = function_exists('section_defaults_easy_nb') ? section_defaults_easy_nb() : 'swipe'; $easyIntro = function_exists('section_defaults_easy_intro') ? section_defaults_easy_intro() : 'f'; // (section_defaults.php를 같이 안 올렸어도 페이지가 열리게)
-$easyFx = function_exists('section_defaults_easy_fx') ? section_defaults_easy_fx() : 'pic'; $easyAcc = function_exists('section_defaults_easy_acc') ? section_defaults_easy_acc() : 'chips'; $easyStk = function_exists('section_defaults_easy_stk') ? section_defaults_easy_stk() : 'gizmo';
+$easyFx = function_exists('section_defaults_easy_fx') ? section_defaults_easy_fx() : 'pic'; $easyAcc = function_exists('section_defaults_easy_acc') ? section_defaults_easy_acc() : 'chips'; $easyStk = function_exists('section_defaults_easy_stk') ? section_defaults_easy_stk() : 'gizmo'; $easyNm = function_exists('section_defaults_easy_names') ? section_defaults_easy_names() : 'old'; $easyLs = function_exists('section_defaults_easy_list') ? section_defaults_easy_list() : 'old';
 $easyVideo = section_defaults_easy_video(); // (1018z18o: 예전엔 이 줄이 위 주석 안에 들어가 메인 영상 예시 칸이 늘 비어 보였음)
 $easyCustom = section_defaults_easy_saved() !== null || $easyOff || section_defaults_easy_ask_saved() !== null || $easyShowOff;
 // 손쉬운 제작 단계마다: [아이콘, 고객이 그 단계에서 하는 일, 연결된 섹션]
@@ -917,6 +921,28 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
                     <?php foreach (array_filter([['bubble', '말풍선 메뉴 + 두 손가락', '누르면 위에 [✨ 움직임 · 뒤집기 · 지우기]만. 크기 · 돌리기는 두 손가락으로 (PC는 − + 단추 · 마우스 휠).', '추천'], ['gizmo', '조작 틀 (예전)', '전문가 모드와 같은 노란 틀 + 작은 동그라미 단추들.', '']], fn($c) => in_array($c[0], SECTION_EASY_STKS, true)) as [$mk, $mt, $md, $mb]): ?>
                     <button type="button" class="ez-mview-c<?= $easyStk === $mk ? ' on' : '' ?>" data-stkp="<?= $mk ?>" role="radio" aria-checked="<?= $easyStk === $mk ? 'true' : 'false' ?>">
                         <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk === 'bubble' ? 'focus' : 'tiles' ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
+                        <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
+                    </button>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="ez-mview" id="ezNames">
+                <div class="ez-mview-h"><b>메뉴 이름</b><small>간편 만들기 정리 화면 칸 이름이에요 (두 사람 · 메인 화면 · 갤러리 …). 누르면 바로 저장돼요.</small></div>
+                <div class="ez-mview-g" role="radiogroup" aria-label="메뉴 이름">
+                    <?php foreach ([['easy', '쉬운 이름 + 그림 + 설명', '신랑 · 신부 이름 / 첫 화면 / 사진첩 / 축의금 계좌 … 이름 앞에 작은 그림, 아래에 하객이 보는 것 한 줄.', '추천'], ['ask', '질문으로', '누가 결혼하나요? / 어디서 하나요? / 축의금 계좌를 넣을까요? … 무엇을 정하는 칸인지 질문으로.', ''], ['old', '원본', '두 사람 / 메인 화면 / 갤러리 / 마음 전할 곳 … 예전 이름 그대로.', '']] as [$mk, $mt, $md, $mb]): ?>
+                    <button type="button" class="ez-mview-c<?= $easyNm === $mk ? ' on' : '' ?>" data-nmp="<?= $mk ?>" role="radio" aria-checked="<?= $easyNm === $mk ? 'true' : 'false' ?>">
+                        <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk === 'easy' ? 'tiles' : ($mk === 'ask' ? 'focus' : 'rows') ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
+                        <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
+                    </button>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="ez-mview" id="ezList">
+                <div class="ez-mview-h"><b>정리 화면 모양</b><small>간편 만들기에서 칸들이 죽 나오는 화면이에요. 누르면 바로 저장돼요.</small></div>
+                <div class="ez-mview-g" role="radiogroup" aria-label="정리 화면 모양">
+                    <?php foreach ([['tidy', '가지런히 (두 묶음)', '남은 곳 수 = 번호 칸 수 · 발행을 막는 칸은 모두 \'남은 것\'으로 · 안내 글 한 가지 · 아래 큰 버튼 = 다음 할 일 · 옆 청첩장 탭은 아래로.', '추천'], ['tabs', '탭 둘', '가지런히 + [꼭 채울 것 | 넣고 빼는 칸] 탭으로 한 번에 한 종류만.', ''], ['old', '원본', '예전 화면 그대로.', '']] as [$mk, $mt, $md, $mb]): ?>
+                    <button type="button" class="ez-mview-c<?= $easyLs === $mk ? ' on' : '' ?>" data-lsp="<?= $mk ?>" role="radio" aria-checked="<?= $easyLs === $mk ? 'true' : 'false' ?>">
+                        <span class="ez-mview-ph ez-rd ez-nb ez-nb-<?= $mk === 'tidy' ? 'rows' : ($mk === 'tabs' ? 'tiles' : 'focus') ?>" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
                         <span class="ez-mview-tx"><b><?= $h($mt) ?><?= $mb ? ' <em>' . $h($mb) . '</em>' : '' ?></b><small><?= $h($md) ?></small></span>
                     </button>
                     <?php endforeach; ?>
@@ -1838,7 +1864,7 @@ body[data-so-tab]:not([data-so-tab="order"]) #saveBar { display: none; }
             post({ act: 'easy_intro', view: b.dataset.ipp }).then(() => toast('인트로 칸 모양을 저장했어요')).catch(err => { say(err.message); pick(prev); });
         }));
     })();
-    [['ezFxp', 'fxp', 'easy_fx', '글자 효과 고르기를 저장했어요'], ['ezAccp', 'accp', 'easy_acc', '계좌 모양 고르기를 저장했어요'], ['ezStk', 'stkp', 'easy_stk', '스티커 고치기 모양을 저장했어요']].forEach(([id, key, act, msg]) => { // (1018z18p)
+    [['ezFxp', 'fxp', 'easy_fx', '글자 효과 고르기를 저장했어요'], ['ezAccp', 'accp', 'easy_acc', '계좌 모양 고르기를 저장했어요'], ['ezStk', 'stkp', 'easy_stk', '스티커 고치기 모양을 저장했어요'], ['ezNames', 'nmp', 'easy_names', '메뉴 이름을 저장했어요'], ['ezList', 'lsp', 'easy_list', '정리 화면 모양을 저장했어요']].forEach(([id, key, act, msg]) => { // (1018z18p)
         const box = document.getElementById(id); if (!box) return;
         box.querySelectorAll('[data-' + key + ']').forEach(b => b.addEventListener('click', () => {
             if (readonly) return;
