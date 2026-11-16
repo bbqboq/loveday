@@ -92,7 +92,7 @@ $termsUrl = preg_match('#^https?://#i', $S['terms_url'] ?? '') ? $S['terms_url']
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <style>
-:root{--bg:#F6F4F1;--surface:#fff;--ink:#1B1A18;--sub:#6F6A63;--faint:#A39D95;--line:#EAE6E0;--soft:#F1EEEA;--accent:#8A4B55;--accent-soft:#F4ECEC}
+:root{--bg:var(--ui-page,#F6F4F1);--surface:#fff;--ink:#1B1A18;--sub:#6F6A63;--faint:#A39D95;--line:var(--ui-line,#EAE6E0);--soft:var(--ui-soft,#F1EEEA);--accent:#8A4B55;--accent-soft:#F4ECEC}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:72px}
 body{margin:0;background:var(--bg);font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.6;word-break:keep-all}
@@ -111,7 +111,7 @@ p.lead{color:var(--sub);font-size:16px;margin:0}
 .nv{width:20px;height:20px;border-radius:6px;background:#03C75A;color:#fff;font:800 12px/20px sans-serif;text-align:center}
 .notice{max-width:1120px;margin:16px auto 0;padding:12px 16px;border-radius:12px;background:#F1EEE6;color:#6B675F;font-size:13.5px;text-align:center}
 /* nav */
-header{position:sticky;top:0;z-index:10;background:rgba(246,244,241,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 header .wrap{height:64px;display:flex;align-items:center;gap:30px}
 .logo{font-weight:800;letter-spacing:.22em;font-size:14px}.logo span{color:var(--accent)}
 nav{display:flex;gap:26px;font-size:14px;color:var(--sub)}nav a:hover{color:var(--ink)}
@@ -301,6 +301,7 @@ footer .biz span b{font-weight:500;color:var(--sub);margin-right:5px}
   .final{margin:0 18px;padding:40px 22px;border-radius:22px}.final h2{font-size:26px}
 }
 </style>
+<?php if (function_exists('site_colors_link')) { try { echo site_colors_link(); } catch (Throwable $e) {} } ?><!-- 1019z27g 관리자 → 사이트 색상 (바탕 · 선 · 칸 - 랜덤이면 열 때마다) -->
 </head>
 <body>
 <svg style="display:none" aria-hidden="true">
