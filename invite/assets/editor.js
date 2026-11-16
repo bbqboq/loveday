@@ -11586,7 +11586,7 @@ function spResumeStep() {
     return i >= 0 ? i : 0;
 }
 // 간편 만들기 진행 상태 (질문 화면/목록, 지금 질문, 답, 질문이 켠 섹션, 디자인에서 꺼 둔 섹션, 목록 묶음·순서) - 디자인과 같이 저장
-const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spPvSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom', 'spTaskOk', 'timeDemo', 'greetDemo', 'spUserOff', 'spChat', 'spStartPicked']; // (1019z27b 왕초보 대화형 · 첫 팝업을 골랐는지도 저장 - 새로고침하면 기존 방식으로 돌아가던 것)
+const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spPvSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom', 'spTaskOk', 'timeDemo', 'greetDemo', 'spUserOff', 'spChat', 'spStartPicked', 'namesPriv', 'galleryKeep']; // (1019z27b 왕초보 대화형 · 첫 팝업을 골랐는지도 저장 - 새로고침하면 기존 방식으로 돌아가던 것)
 function spAddGo(k) {
     if (k === '#stk') { state.spView = 'list'; spOpenSet = new Set(['theme']); spRender(); setTimeout(() => { const el = document.getElementById('spStkSets'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 140); return; }
     const st = spSteps().find(x => x.k === k); if (!st) return;
@@ -11765,7 +11765,7 @@ function spSum(st) { // 접힌 칸의 한 줄 요약 [글, 채웠나]
                 const has = kind === 'video' ? spRealYt(f.youtubeId) : spIsReal(f.heroImage);
                 return [(kind === 'video' ? (has ? '유튜브 영상' : f.youtubeId ? '아직 예시 영상이에요' : '영상 주소가 아직 없어요') : (has ? '사진 1장' : '사진을 아직 안 넣었어요')) + (lay ? ' · ' + lay.label : ''), has]; }
             case 'venue': { const f = F('location'), v = f.venue || f.address; return [v || '예식장을 아직 안 정했어요', !!v]; }
-            case 'gallery': { const n = cnt(F('gallery').images, x => spIsReal(x)); return [n ? `사진 ${n}장` : '사진을 아직 안 넣었어요', n > 0]; }
+            case 'gallery': { const n = cnt(F('gallery').images, x => spIsReal(x)), all = (F('gallery').images || []).length; if (!n && all && state.galleryKeep) return [`예시 사진 ${all}장 그대로 사용`, true]; return [n ? `사진 ${n}장` : '사진을 아직 안 넣었어요', n > 0]; }
             case 'transport': { const n = cnt(F('transport').items, x => x && String(x.text || '').trim()); return [n ? `안내 ${n}개` : '지하철·버스·주차 안내를 적어요', n > 0]; }
             case 'notice': { const n = cnt(F('notice').items, x => x && String(x.text || '').trim()); return [n ? `안내 ${n}개` : '포토부스·주차·답례품 같은 안내', n > 0]; }
             case 'greet': { const t = String(F('greeting').text || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(); return [t ? (t.length > 24 ? t.slice(0, 24) + '…' : t) : '인사말을 아직 안 적었어요', !!t]; }
@@ -11884,7 +11884,9 @@ function spDockHtml(bads) {
 //  ⑤ tabs: [꼭 채울 것 n | 넣고 빼는 칸] 탭 ⑥ html.sp-ltidy: 옆 '청첩장' 탭을 아래 동그라미로 (스위치 · 머리 글을 안 가리게)
 function spListTidy(pane, fill) {
     const root = document.documentElement, on = spTidy(); root.classList.toggle('sp-ltidy', on);
-    const spb = pane.querySelector('.spb'); if (!spb) return; spb.classList.toggle('spb-tidy', on); if (!on) return;
+    const spb = pane.querySelector('.spb'); if (!spb) return; spb.classList.toggle('spb-tidy', on);
+    spPassBtns(spb); // 1019z27k 마지막 화면 넘어가기 버튼 (이름 비공개 · 갤러리 이대로)
+    if (!on) return;
     const rows = [...spb.querySelectorAll('.spb-must .spb-li:is(.warn, .todo)')], n = rows.length;
     spb.querySelectorAll('.spb-li.warn .spb-tx small').forEach(el => { if (/예시/.test(el.textContent)) el.textContent = '아직 예시 그대로예요'; });
     const rd = spb.querySelector('#spReady.s1');
@@ -11898,6 +11900,19 @@ function spListTidy(pane, fill) {
             (rd || spb.firstElementChild).insertAdjacentElement(rd ? 'afterend' : 'beforebegin', bar);
             bar.querySelectorAll('[data-lt]').forEach(b => b.addEventListener('click', () => { spListTab = b.dataset.lt; spRender(); }));
             spb.classList.add('spb-tab-' + (spListTab === 'must' ? 'must' : 'more')); } }
+}
+// 1019z27k 마지막 화면: 꼭 채울 칸이 예시 그대로여도 고객이 원하면 그대로 넘어가기 - 이름 비공개(예시 이름 그대로) · 갤러리 예시 사진 이대로 사용
+function spPassBtns(spb) {
+    const P = [['names', () => spChecksBad('names') && !state.namesPriv, '이름 비공개로 넘어가기', () => { state.namesPriv = true; }],
+        ['gallery', () => spChecksBad('gallery') && !state.galleryKeep && ((spBlock('gallery') || {}).fields || {}).images?.length, '이대로 사용하기', () => { state.galleryKeep = true; }]];
+    P.forEach(([k, want, label, act]) => {
+        if (!want()) return;
+        const li = spb.querySelector(`.spb-li[data-li="${k}"]:is(.warn, .todo)`) || spb.querySelector(`.spb-li[data-k="${k}"]:is(.warn, .todo)`); if (!li || li.querySelector('.spb-pass')) return;
+        const w = document.createElement('div'); w.className = 'spb-passw';
+        w.innerHTML = `<button type="button" class="spb-pass">${esc(label)} <span aria-hidden="true">›</span></button>`;
+        w.querySelector('button').addEventListener('click', e => { e.stopPropagation(); act(); try { spLastChecks = pubChecks(); } catch (er) {} spChanged(); scheduleSnapshot(); spRender(); });
+        li.querySelector('.spb-h')?.after(w);
+    });
 }
 function spMgConfetti() { // 화면 위에서 색종이가 흩날리며 떨어짐 (1.8초 뒤 지움 · 움직임 줄이기면 안 함)
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -11998,11 +12013,15 @@ const spKeepOnly = (body, keep) => [...body.children].forEach(c => { if (!keep(c
 const spTaskOk = id => Array.isArray(state.spTaskOk) && state.spTaskOk.includes(id);
 const spLocF = () => (spBlock('location') || {}).fields || {};
 const SP_TASKS = [
-    { id: 'names:name', k: 'names', ask: 'names:name', t: () => '두 분 이름', chk: 'names', sum: () => { const w = weddingInfo(); return `${w.groom} · ${w.bride}`; },
-      cut: b => spKeepOnly(b, spFldHas('[data-wi="groom"]')) },
+    { id: 'names:name', k: 'names', ask: 'names:name', t: () => '두 분 이름', chk: 'names', sum: () => { const w = weddingInfo(); return state.namesPriv && !(NAME_SET.has('groom') && NAME_SET.has('bride')) ? `이름 비공개 · ${w.groom} · ${w.bride} 그대로` : `${w.groom} · ${w.bride}`; },
+      cut: b => spKeepOnly(b, spFldHas('[data-wi="groom"]')),
+      after: b => { if (state.namesPriv || !spChecksBad('names')) return; // 1019z27k 마지막 화면: 이름을 안 밝히고 싶으면 예시 이름 그대로 넘어가기
+        const x = document.createElement('button'); x.type = 'button'; x.className = 'wz-next ghost sp-task-ok'; x.textContent = '이름 비공개로 넘어가기';
+        x.addEventListener('click', () => { state.namesPriv = true; try { spLastChecks = pubChecks(); } catch (e) {} spChanged(); scheduleSnapshot(); spRender(); });
+        b.appendChild(x); } },
     { id: 'names:date', k: 'names', ask: 'names:date', t: () => '예식 날짜', chk: 'date', sum: () => { const w = weddingInfo(); return w.undecided ? '예식 일정 미정' : w.date ? dtDateText(w.date) : ''; },
       cut: b => spKeepOnly(b, spFldHas('#spDateBtn, #spTbd')) },
-    { id: 'names:time', k: 'names', ask: 'names:date', t: () => '예식 시간', chk: 'time', sum: () => weddingInfo().time || '', // (앞에서 시간을 골랐으면 다 채운 칸으로 - 디자인 예시 시간은 고른 게 아님)
+    { id: 'names:time', k: 'names', ask: 'names:date', t: () => '예식 시간', chk: 'time', show: () => !(weddingInfo().undecided || state.dateTbd), sum: () => weddingInfo().time || '', // (앞에서 시간을 골랐으면 다 채운 칸으로 - 디자인 예시 시간은 고른 게 아님)
       cut: b => spKeepOnly(b, spFldHas('#spTime')) },
     { id: 'venue:name', k: 'venue', ask: 'venue', t: () => '예식장 이름', bad: () => { const f = spLocF(), vd = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; return vd.v ? '예식장이 디자인 예시 그대로예요' : !f.venue ? '예식장 이름을 적어 주세요' : ''; }, sum: () => spLocF().venue,
       cut: b => spKeepOnly(b, spFldHas('[data-f="venue"]')) },
@@ -12011,7 +12030,7 @@ const SP_TASKS = [
       cut: b => spKeepOnly(b, spFldHas('[data-f="addressBase"]')), after: b => { if (!(spLocF().address || spLocF().addressBase)) spTaskOkBtn(b, 'venue:addr', '주소 없이 둘게요'); } },
     { id: 'hero:photo', k: 'hero', ask: 'hero:media', part: 'media', t: () => spHeroKind() === 'video' ? '첫 화면 영상' : '첫 화면 사진', chk: 'hero', sum: () => spHeroKind() === 'video' ? '영상을 넣었어요' : '사진을 넣었어요',
       cut: b => b.querySelectorAll(':scope > .wz-h, :scope > .wz-lead').forEach(x => x.remove()) },
-    { id: 'hero:edit', k: 'hero', ask: 'hero:media', t: () => '사진 보일 부분 · 확대', show: () => spHeroKind() !== 'video' && !spChecksBad('hero'), todo: () => !spTaskOk('hero:edit'), hint: '사진을 끌어서 얼굴이 잘 보이게 맞춰요 · 그대로 둬도 돼요', sum: () => '맞췄어요',
+    { id: 'hero:edit', k: 'hero', ask: 'hero:media', t: () => '사진 보일 부분 · 확대', show: () => spHeroKind() !== 'video' && !spChecksBad('hero'), todo: () => false, hint: '사진을 끌어서 얼굴이 잘 보이게 맞춰요 · 그대로 둬도 돼요', sum: () => { const hp = spBlock('hero'), k = hp && hp.fields.heroImage ? InviteBlocks.imgKey(hp.fields.heroImage) : ''; return k && ((state.imgFocus || {})[k] || InviteBlocks.zoomOf(state.imgZoom, k) > 1) ? '맞췄어요' : '그대로 써요 · 누르면 맞춰요'; }, // (1019z27k 안 만졌으면 그냥 넘어감 - 마지막 화면에서 다시 묻지 않음)
       cut: b => spKeepOnly(b, c => c.matches('.wz-field') && /보일 부분/.test((c.querySelector('.wz-lab') || {}).textContent || '')), after: b => spTaskOkBtn(b, 'hero:edit', '이대로 좋아요') },
     // (extra = 할 일이 아님 - 채우기에 안 셈, 목록 아래 '다른 테마가 더 있어요' 묶음에 늘 보임)
     { id: 'hero:layout', k: 'hero', ask: 'hero:look', extra: true, t: () => '첫 화면 테마', show: () => !spChecksBad('hero'), sum: () => '사진 위 글자 모양을 바꿀 수 있어요',
@@ -16125,7 +16144,7 @@ function timeTyped(wi) { wi = wi || weddingInfo() || {}; return !!wi.time && (TI
 // 예식 날짜를 정했는지: 달력에서 골랐거나 · 디자인 예시 날짜와 다르거나 · '아직 일정을 잡지 않았어요'를 골랐음
 function dateTyped(wi) { wi = wi || weddingInfo() || {}; if (wi.undecided) return true; const d = String(wi.date || ''); return !!d && (DATE_SET || (DATE_DEMO != null && d !== DATE_DEMO)); }
 // 그 이름 칸을 고객이 정했는지: 직접 적었거나(어느 칸이든) 디자인 예시 이름과 다름 (예전엔 '직접 적었는지'만 봐서, 지켜보지 않는 칸에 적으면 발행까지 막혔음)
-function nameTyped(k, wi) { if (NAME_SET.has(k)) return true; const v = String((wi || weddingInfo() || {})[k] || '').trim(); return !!v && NAME_DEMO[k] != null && v !== NAME_DEMO[k]; }
+function nameTyped(k, wi) { if (NAME_SET.has(k) || state.namesPriv) return true; /* (1019z27k 마지막 화면 [이름 비공개로 넘어가기]) */ const v = String((wi || weddingInfo() || {})[k] || '').trim(); return !!v && NAME_DEMO[k] != null && v !== NAME_DEMO[k]; }
 function saveGateOk(loose) { // loose = [발행하기] (발행 전 점검에서 '예시 이름'을 보여 준 뒤 - 그래도 발행하면 이름이 있기만 하면 됨)
     if (SAVE_OK || SAMPLE_ID) return true; // 관리자 디자인 샘플 편집은 이름·날짜와 상관없이 늘 저장
     if (onboardingActive) return false; // 아직 디자인을 고르는 중
@@ -16211,7 +16230,7 @@ function pubChecks() {
         : !SAVE_OK && !(nameTyped('groom', wi) && nameTyped('bride', wi)) ? { id: 'names', t: '두 분 이름이 아직 디자인 예시 이름이에요', s: `${wi.groom} · ${wi.bride} · 우리 이름으로 바꿔 주세요`, go: '이름 적기' }
         : { id: 'names', ok: 1, t: '두 분 이름', s: `${wi.groom} · ${wi.bride}` });
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    if (wi.undecided || state.dateTbd) out.push({ id: 'date', t: "예식 날짜가 아직 '미정'이에요", s: '날짜를 정했으면 적어 주세요 · 디데이·달력이 저절로 만들어져요', go: '날짜 적기' });
+    if (wi.undecided || state.dateTbd) out.push({ id: 'date', ok: 1, t: '예식 날짜', s: '아직 일정을 잡지 않았어요 · 날짜를 정하면 그때 골라요' }); // (1019z27k 고객이 '아직 일정을 잡지 않았어요'를 골랐으면 마지막 화면 · 발행 전 점검에서 다시 묻지 않음)
     else if (!wi.date) out.push({ id: 'date', t: '예식 날짜가 비어 있어요', s: '날짜를 적으면 디데이·달력이 저절로 만들어져요', go: '날짜 적기' });
     else if (new Date(wi.date + 'T00:00:00') < today) out.push({ id: 'date', t: '예식 날짜가 이미 지났어요', s: dtDateText(wi.date) + ' · 날짜를 다시 확인해 주세요', go: '날짜 고치기' });
     else if (!SAVE_OK && !dateTyped(wi)) out.push({ id: 'date', t: '예식 날짜가 아직 디자인 예시 날짜예요', s: dtDateText(wi.date) + ' · 우리 예식 날짜로 골라 주세요', go: '날짜 고르기' });
@@ -16227,7 +16246,7 @@ function pubChecks() {
     const hk = spHeroKind();
     if (hk === 'video') { const f = F('heroVideo'); out.push(spRealYt(f.youtubeId) ? { id: 'hero', ok: 1, t: '첫 화면 영상', s: '유튜브 영상' } : f.youtubeId ? { id: 'hero', t: '첫 화면 영상이 아직 예시 영상이에요', s: '두 분 영상 주소로 바꾸거나 사진으로 바꿔 주세요', go: '영상 넣기' } : { id: 'hero', t: '첫 화면 영상 주소가 없어요', s: '유튜브 주소를 넣거나 사진으로 바꿔 주세요', go: '영상 넣기' }); }
     else if (on('hero')) { const f = F('hero'); out.push(spIsReal(f.heroImage) ? { id: 'hero', ok: 1, t: '첫 화면 사진', s: '두 분 사진' } : { id: 'hero', t: f.heroImage ? '첫 화면 사진이 아직 예시 사진이에요' : '첫 화면 사진이 없어요', s: '두 분 사진으로 바꾸면 훨씬 좋아요', go: '사진 넣기' }); }
-    if (on('gallery')) { const im = F('gallery').images || [], n = im.filter(x => spIsReal(x)).length; out.push(n ? { id: 'gallery', ok: 1, t: '갤러리', s: `사진 ${n}장` } : { id: 'gallery', t: im.length ? '갤러리가 예시 사진 그대로예요' : '갤러리에 사진이 없어요', s: '사진을 넣거나 갤러리를 빼 주세요', go: '사진 넣기' }); }
+    if (on('gallery')) { const im = F('gallery').images || [], n = im.filter(x => spIsReal(x)).length; out.push(n ? { id: 'gallery', ok: 1, t: '갤러리', s: `사진 ${n}장` } : im.length && state.galleryKeep ? { id: 'gallery', ok: 1, t: '갤러리', s: `예시 사진 ${im.length}장 그대로 사용` } /* 1019z27k 마지막 화면 [이대로 사용하기] */ : { id: 'gallery', t: im.length ? '갤러리가 예시 사진 그대로예요' : '갤러리에 사진이 없어요', s: '사진을 넣거나 갤러리를 빼 주세요', go: '사진 넣기' }); }
     if (on('greeting')) { const t = String(F('greeting').text || '').replace(/<[^>]+>/g, '').trim(); if (!t) out.push({ id: 'greet', t: '인사말이 비어 있어요', s: '예시 문구에서 골라도 돼요', go: '인사말 쓰기' }); else if (state.spAsk && state.spAsk.greet === 'ex') out.push({ id: 'greet', info: 1, t: '인사말은 예시 문구예요', s: '그대로 써도 괜찮아요 · 바꾸려면 눌러요', go: '보기' }); }
     if (on('account')) {
         const f = F('account'), probs = [];

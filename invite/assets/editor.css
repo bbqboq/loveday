@@ -5831,3 +5831,7 @@ html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
 @media (prefers-reduced-motion: reduce) { .sp-chat .spc-typing { display: none; } }
 .sp-chat #spBody > .wz-h .spc-sub { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 400; line-height: 1.45; color: #8C847C; }
 @media (max-width: 860px) { .sp-chat .spc-top { top: var(--sp-topbar-h, 51px); } }
+/* 1019z27k 마지막 화면 넘어가기 버튼 (이름 비공개 · 갤러리 이대로 사용) */
+.spb-passw { padding: 0 16px 12px 72px; }
+.spb-pass { height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid var(--wz-line, #E4DCD5); background: #fff; color: #5E5750; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.spb-li.open .spb-passw { display: none; }
