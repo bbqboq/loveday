@@ -44,10 +44,30 @@ function featured_presets_save(array $ids): array
     $ids = featured_presets_clean($ids);
     $f = featured_presets_file();
     if (!is_dir(dirname($f))) @mkdir(dirname($f), 0750, true);
-    if (@file_put_contents($f, json_encode(['ids' => $ids, 'saved_at' => date('c')], JSON_UNESCAPED_UNICODE), LOCK_EX) === false) {
+    if (@file_put_contents($f, json_encode(['ids' => $ids, 'order' => featured_order_get(), 'saved_at' => date('c')], JSON_UNESCAPED_UNICODE), LOCK_EX) === false) {
         throw new RuntimeException('저장 파일을 쓸 수 없어요 (uploads/site 폴더 권한 확인).');
     }
     return $ids;
+}
+
+// ---- 1019z27e 추천 디자인 보이는 순서: '' 정한 순서 · 'shuffle' 추천을 열 때마다 섞어서 · 'all' 전체 디자인에서 무작위로 (추천 개수만큼, 3~6개) ----
+const FEATURED_ORDERS = ['', 'shuffle', 'all'];
+function featured_order_get(): string
+{
+    $f = featured_presets_file();
+    if (is_file($f)) { $j = json_decode((string) @file_get_contents($f, false, null, 0, 8192), true); $o = is_array($j) ? (string) ($j['order'] ?? '') : ''; if (in_array($o, FEATURED_ORDERS, true)) return $o; }
+    return '';
+}
+function featured_order_save(string $o): string
+{
+    if (!in_array($o, FEATURED_ORDERS, true)) $o = '';
+    $f = featured_presets_file(); $j = [];
+    if (is_file($f)) { $j = json_decode((string) @file_get_contents($f, false, null, 0, 8192), true); if (!is_array($j)) $j = []; }
+    if (!array_key_exists('ids', $j)) $j['ids'] = FEATURED_DEFAULT;
+    $j['order'] = $o; $j['saved_at'] = date('c');
+    if (!is_dir(dirname($f))) @mkdir(dirname($f), 0750, true);
+    if (@file_put_contents($f, json_encode($j, JSON_UNESCAPED_UNICODE), LOCK_EX) === false) throw new RuntimeException('저장 파일을 쓸 수 없어요 (uploads/site 폴더 권한 확인).');
+    return $o;
 }
 
 // ---- 디자인 켜고 끄기 (관리자 → 추천 디자인 · 카드마다 [고객에게 보이기] 스위치) ----
@@ -272,5 +292,5 @@ if (basename((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === basename(__FILE__
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
     header('X-Content-Type-Options: nosniff');
-    echo json_encode(['ids' => featured_presets_get()], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['ids' => featured_presets_get(), 'order' => featured_order_get()], JSON_UNESCAPED_UNICODE);
 }

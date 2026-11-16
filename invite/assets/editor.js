@@ -9338,6 +9338,18 @@ function renderOnbSteps() {
 let presetFilter = 'all';
 // 추천 디자인 (관리자 → 추천 디자인, featured_presets.php) - 못 불러오면 기본 넷
 let FEATURED_IDS = ['modern', 'classic', 'p-cinema', 'p-photos'], fpAllOpen = false;
+// 1019z27e 추천 디자인 보이는 순서 (관리자 → 디자인 → 추천 디자인 [정한 순서 | 추천을 섞어서 | 전체에서 무작위]) - 한 번 섞으면 그 화면을 보는 동안은 그대로
+let FEATURED_ORDER = '', FEAT_NOW = null;
+function featIdsNow(ALL) {
+    const ids = FEATURED_IDS || []; if (FEATURED_ORDER !== 'shuffle' && FEATURED_ORDER !== 'all') return ids;
+    if (FEAT_NOW) return FEAT_NOW;
+    ALL = ALL || allDesigns(); if (!ALL.length) return ids;
+    const mix = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const wx = p => p.ambient === 'weather' || p.id === 'p-weather' || p.__base === 'p-weather';
+    FEAT_NOW = FEATURED_ORDER === 'shuffle' ? mix(ids.filter(id => ALL.some(p => p.id === id)))
+        : mix(ALL.filter(p => !wx(p)).map(p => p.id)).slice(0, Math.max(3, Math.min(6, ids.length || 4)));
+    return FEAT_NOW;
+}
 // 관리자가 에디터로 꾸며 저장한 디자인 샘플 (sample_api.php?a=list) - id → {label, desc, base, custom}
 let SAMPLE_LIST = {}, SAMPLE_LIST_OK = false;
 fetch('sample_api.php?a=list', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
@@ -9446,7 +9458,7 @@ function appendHeroLayoutAdmin(wrap, block) {
 }
 fetch('featured_presets.php', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
     if (!j || !Array.isArray(j.ids)) return;
-    FEATURED_IDS = j.ids;
+    FEATURED_IDS = j.ids; FEATURED_ORDER = j.order || ''; FEAT_NOW = null;
     if (document.getElementById('screenDesign').classList.contains('active')) renderDesignScreen();
 }).catch(() => {});
 function presetThumbHtml(p) {
@@ -9482,7 +9494,7 @@ function renderDesignScreen() {
     document.getElementById('pickSub').textContent = custom ? '기본 구성에서 하나씩 채우거나, 마음에 드는 디자인을 바탕으로 고쳐 나가요.' : '고른 뒤에도 색·글꼴·사진은 전부 바꿀 수 있어요.';
     // 추천 디자인만 크게 (관리자가 하나도 안 골랐으면 예전처럼 전체 목록만)
     const ALL = allDesigns();
-    const feat = (FEATURED_IDS || []).map(id => ALL.find(p => p.id === id)).filter(Boolean).slice(0, custom ? 3 : 6); // 직접 만들기는 기본 구성 카드 + 3개 (한 줄)
+    const feat = featIdsNow(ALL).map(id => ALL.find(p => p.id === id)).filter(Boolean).slice(0, custom ? 3 : 6); // 직접 만들기는 기본 구성 카드 + 3개 (한 줄)
     { // 간편 만들기: 큰 휴대폰 넘겨 보기 (추천 디자인 먼저, 나머지 뒤에)
         const on = dpkOn() && ALL.length > 0, sp = document.getElementById('startPick');
         sp.classList.toggle('dpk-on', on); document.getElementById('dpk').hidden = !on;
@@ -9490,7 +9502,7 @@ function renderDesignScreen() {
             document.getElementById('pickTitle').textContent = LOOK_MODE ? '샘플 청첩장 둘러보기' : '마음에 드는 디자인을 골라주세요';
             const pm = dpkMode();
             document.getElementById('pickSub').textContent = LOOK_MODE ? (pm === 'car' ? '옆으로 넘기고, 휴대폰을 누르면 청첩장 전체를 볼 수 있어요' : '그림을 누르고 [크게 보기]로 청첩장 전체를 볼 수 있어요') : pm === 'grid' ? '그림을 누르면 오른쪽 휴대폰에서 크게 보여요. 고른 뒤에도 다 바꿀 수 있어요' : pm === 'film' ? '아래 그림을 누르거나 ← → 로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요' : '옆으로 넘겨 보세요. 고른 뒤에도 다 바꿀 수 있어요';
-            const fids = (FEATURED_IDS || []).filter(id => ALL.some(p => p.id === id));
+            const fids = featIdsNow(ALL).filter(id => ALL.some(p => p.id === id));
             const ord = fids.map(id => ALL.find(p => p.id === id)).concat(ALL.filter(p => !fids.includes(p.id))), wx = p => p.ambient === 'weather' || p.id === 'p-weather' || p.__base === 'p-weather';
             dpkBuild(ord.filter(p => !wx(p)).concat(ord.filter(wx))); // 추천 디자인 먼저 · 날씨 따라 바뀌는 청첩장은 추천이어도 맨 끝
             return;
@@ -9580,7 +9592,7 @@ function dpkFit(id, f) {
     if (f === 'all') return true;
     const p = allDesigns().find(x => x.id === id); if (!p) return false;
     const m = dpkMeta(p);
-    return f === 'feat' ? (FEATURED_IDS || []).includes(id) : f === 'light' ? !m.dark : f === 'dark' ? m.dark : f === 'video' ? m.video : true;
+    return f === 'feat' ? featIdsNow().includes(id) : f === 'light' ? !m.dark : f === 'dark' ? m.dark : f === 'video' ? m.video : true;
 }
 const dpkVis = () => DPK.ids.filter(id => dpkFit(id, DPK.filt));
 // 샘플 디자인 JSON (관리자가 꾸민 모습) - 한 번만 받아 둠
@@ -9880,7 +9892,7 @@ function dpkBuild(list) {
         ? list.map(p => { const m = dpkMeta(p), src = dpkCoverSrc(p.id); return `<button type="button" class="dpk-sw fc" data-id="${esc(p.id)}" title="${esc(p.label)}" style="--sw-bg:${esc(m.bg)};--sw-acc:${esc(m.acc)}"${hid(p)}>${src ? `<img src="${esc(src)}" alt="" loading="lazy" decoding="async">` : '<i></i>'}<span>${esc(p.label)}</span></button>`; }).join('')
         : list.map(p => { const m = dpkMeta(p); return `<button type="button" class="dpk-sw" data-id="${esc(p.id)}" title="${esc(p.label)}" style="--sw-bg:${esc(m.bg)};--sw-acc:${esc(m.acc)}${m.cover ? `;--sw-img:url('${esc(m.cover)}')` : ''}"${hid(p)}><i></i><span>${esc(p.label)}</span></button>`; }).join('');
     document.getElementById('dpkGrid').innerHTML = mode !== 'grid' ? '' : list.map(p => { // 격자: 첫 화면 그림 카드 (마우스를 올리면 카드 안에서 아래까지 흘러감)
-        const m = dpkMeta(p), src = dpkCoverSrc(p.id), feat = (FEATURED_IDS || []).includes(p.id);
+        const m = dpkMeta(p), src = dpkCoverSrc(p.id), feat = featIdsNow().includes(p.id);
         return `<button type="button" class="dpk-card" data-id="${esc(p.id)}" aria-pressed="false" title="${esc(p.label)}"${hid(p)}><span class="cv" style="--sk-bg:${esc(m.bg)};--sk-acc:${esc(m.acc)}">${src ? `<img src="${esc(src)}" alt="" loading="lazy" decoding="async">` : '<i></i>'}${m.video ? '<em>영상</em>' : ''}${feat ? '<u>추천</u>' : ''}</span><b>${esc(p.label)}</b></button>`;
     }).join('');
     dpkBind();

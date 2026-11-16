@@ -47,6 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['ok' => true, 'trash' => design_trash_get() ?: new stdClass(), 'ids' => featured_presets_get()], JSON_UNESCAPED_UNICODE);
         exit;
     }
+    if (($_POST['act'] ?? '') === 'order') { // 1019z27e 추천 디자인 보이는 순서 (바로 저장): '' 정한 순서 · shuffle 섞어서 · all 전체에서 무작위
+        try { $o = featured_order_save((string) ($_POST['order'] ?? '')); }
+        catch (Throwable $e) { echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit; }
+        echo json_encode(['ok' => true, 'order' => $o], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     if (($_POST['act'] ?? '') === 'name') { // 기본 디자인 이름·설명 바꾸기 (바로 저장, 빈 값 = 원래대로)
         try { $names = preset_name_set((string) ($_POST['id'] ?? ''), (string) ($_POST['label'] ?? ''), (string) ($_POST['desc'] ?? '')); }
         catch (Throwable $e) { echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE); exit; }
@@ -88,6 +94,10 @@ body { background: var(--ui-page, #F6F4F1); }
 .fd-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 12px; }
 .fd-h b { font-size: 15px; }
 .fd-h small { font-size: 12.5px; color: #8A847B; }
+.fd-ord { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 12px 0 0; } .fd-ord > span { width: 100%; font-size: 12.5px; color: #6F675F; font-weight: 600; }
+.fd-ord button { flex: 1 1 160px; display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid #E4DCD5; background: #fff; cursor: pointer; font: inherit; }
+.fd-ord button b { font-size: 13.5px; } .fd-ord button small { font-size: 11.5px; color: #8A847B; line-height: 1.4; }
+.fd-ord button.on { border: 2px solid #231C19; padding: 9px 11px; }
 .fd-sel { display: flex; gap: 10px; flex-wrap: wrap; min-height: 64px; }
 .fd-sel .empty { font-size: 13px; color: #A29C94; padding: 18px 4px; }
 .fd-chip { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 8px; border: 1px solid #2B2320; border-radius: 14px; background: #fff; }
@@ -197,6 +207,11 @@ body { background: var(--ui-page, #F6F4F1); }
         <div class="fd-card">
             <div class="fd-h"><b>추천 디자인 · 고객에게 보이는 순서</b><small id="fdCount"></small></div>
             <div class="fd-sel" id="fdSel"></div>
+            <?php $fOrd = featured_order_get(); ?>
+            <div class="fd-ord" id="fdOrd" role="radiogroup" aria-label="추천 디자인 보이는 순서"><span>고객에게 보여 주기</span>
+                <?php foreach ([['', '정한 순서 그대로', '위 순서대로 늘 같게'], ['shuffle', '추천을 랜덤 순서로', '고객이 열 때마다 위 추천 디자인 순서를 섞어요'], ['all', '전체에서 랜덤', '열 때마다 전체 디자인 중 무작위로 골라 추천 자리에 (위 개수만큼, 3~6개)']] as [$ov, $ol, $od]): ?>
+                <button type="button" data-ord="<?= $h($ov) ?>" class="<?= $fOrd === $ov ? 'on' : '' ?>" aria-pressed="<?= $fOrd === $ov ? 'true' : 'false' ?>"><b><?= $h($ol) ?></b><small><?= $h($od) ?></small></button>
+                <?php endforeach; ?></div>
         </div>
         <div class="fd-card">
             <div class="fd-h"><b>전체 디자인</b><button type="button" class="fd-addbtn" id="fdAdd">+ 새 디자인 만들기</button></div>
@@ -439,6 +454,14 @@ Promise.all([
 ]).then(() => { $('fdBase').innerHTML = presets.map(p => `<option value="${esc(p.id)}">${esc(p.label)}</option>`).join(''); draw(); drawThumbs(); })
   .catch(() => { $('fdGrid').innerHTML = '<p style="color:#B24A4A;font-size:13px">디자인 목록(preset_list.php)을 불러오지 못했어요.</p>'; });
 window.addEventListener('beforeunload', e => { if (JSON.stringify(sel) !== saved) { e.preventDefault(); e.returnValue = ''; } });
+document.querySelectorAll('#fdOrd [data-ord]').forEach(b => b.addEventListener('click', () => { // 1019z27e 추천 디자인 보이는 순서 (바로 저장)
+    const fd = new FormData(); fd.append('csrf_token', CSRF); fd.append('act', 'order'); fd.append('order', b.dataset.ord);
+    fetch('admin_designs.php', { method: 'POST', body: fd }).then(r => r.json()).then(d => {
+        if (!d.ok) throw new Error(d.error || '저장하지 못했어요');
+        document.querySelectorAll('#fdOrd [data-ord]').forEach(x => { const on = x.dataset.ord === d.order; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+        toast(d.order === 'shuffle' ? '추천 디자인을 열 때마다 섞어서 보여요' : d.order === 'all' ? '열 때마다 전체 디자인에서 무작위로 골라 보여요' : '정한 순서 그대로 보여요');
+    }).catch(e => toast(e.message));
+}));
 })();
 </script>
 </body>
