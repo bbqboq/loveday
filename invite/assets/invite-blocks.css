@@ -2741,7 +2741,7 @@ html.ld-wm-lock img { -webkit-touch-callout: none; -webkit-user-select: none; us
 /* 스크롤 움직임 - mgScrollInit (하객 화면만) */
 @keyframes mgKen { from { scale: 1.09; } to { scale: 1; } }
 .ld-mg-scroll .hero-full-wrap { overflow: hidden; }
-.ld-mg-scroll .hero-full-wrap > img.hero-photo { animation: mgKen 7s cubic-bezier(.2,.6,.3,1) both; }
+.ld-mg-scroll .hero-full-wrap > img.hero-photo:not([data-fz]) { animation: mgKen 7s cubic-bezier(.2,.6,.3,1) both; } /* 1019z25b 확대해 둔 사진(data-fz: scale + clip-path)은 건드리지 않음 - 확대값이 1로 덮여 사진이 잘리고 밀렸음 */
 .ld-mg-scroll .mg-w { opacity: 0; translate: 0 14px; filter: blur(3px); transition: opacity .7s ease, translate .8s cubic-bezier(.23,1,.32,1), filter .7s ease; }
 .ld-mg-scroll .mg-w.mg-in { opacity: 1; translate: 0 0; filter: none; }
 .ld-mg-scroll .ib-acc-side.mg-w + .ib-acc-side.mg-w { transition-delay: .12s; }
