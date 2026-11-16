@@ -11574,7 +11574,7 @@ function spResumeStep() {
     return i >= 0 ? i : 0;
 }
 // 간편 만들기 진행 상태 (질문 화면/목록, 지금 질문, 답, 질문이 켠 섹션, 디자인에서 꺼 둔 섹션, 목록 묶음·순서) - 디자인과 같이 저장
-const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spPvSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom', 'spTaskOk', 'timeDemo', 'greetDemo', 'spUserOff'];
+const SP_KEEP = ['venueDemo', 'venueDemoAddr', 'spMoreSeen', 'spPvSeen', 'spView', 'spAt', 'spAsk', 'spRevealed', 'spDesignOff', 'spDesignOn', 'spListG', 'spOrderCustom', 'spTaskOk', 'timeDemo', 'greetDemo', 'spUserOff', 'spChat', 'spStartPicked']; // (1019z27b 왕초보 대화형 · 첫 팝업을 골랐는지도 저장 - 새로고침하면 기존 방식으로 돌아가던 것)
 function spAddGo(k) {
     if (k === '#stk') { state.spView = 'list'; spOpenSet = new Set(['theme']); spRender(); setTimeout(() => { const el = document.getElementById('spStkSets'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 140); return; }
     const st = spSteps().find(x => x.k === k); if (!st) return;
