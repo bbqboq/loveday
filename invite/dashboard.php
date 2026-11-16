@@ -91,7 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($action === 'create' && $mode === 'customer') {
         if (count_active_invitations($pdo, $customerId) >= MAX_SLOTS) { header('Location: dashboard.php?full=1'); exit; }
         $newToken = create_new_invitation_for_customer($pdo, $customerId);
-        header('Location: editor-prototype-v3-overlay.html?t=' . $newToken);
+        $start = (string) ($_POST['start'] ?? ''); // 1019z26b 휴대폰 '어떻게 만들까요?' 고른 것 → 에디터가 다시 묻지 않음
+        header('Location: editor-prototype-v3-overlay.html?t=' . $newToken . (in_array($start, ['chat', 'std'], true) ? '&start=' . $start : ''));
         exit;
     }
     $id = (int) ($_POST['id'] ?? 0);
@@ -602,7 +603,38 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 </div>
 
 <form method="post" id="delForm" style="display:none"><input type="hidden" name="csrf_token" value="<?= $h($csrf) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value=""></form>
-<form method="post" id="newForm" style="display:none"><input type="hidden" name="csrf_token" value="<?= $h($csrf) ?>"><input type="hidden" name="action" value="create"></form>
+<?php $ldStartPick = true; try { require_once __DIR__ . '/section_defaults.php'; $o = section_defaults_easy_off(); $f = is_array($o['flow'] ?? null) ? $o['flow'] : []; $ldStartPick = !in_array('startPick', $f, true) && !in_array('ask', $f, true); } catch (\Throwable $e) {} ?>
+<div class="ld-sp" id="ldSp" role="dialog" aria-modal="true" aria-label="어떻게 만들까요?" hidden><div class="ld-sp-p"><i class="ld-sp-g" aria-hidden="true"></i><b class="ld-sp-t">어떻게 만들까요?</b><p class="ld-sp-s">나중에 언제든 바꿀 수 있어요</p>
+    <button type="button" class="ld-sp-o on" data-sv="chat"><span class="n">처음이라 쉽게 · 대화로 만들기 <em>추천</em></span><span class="d">카톡처럼 하나씩 물어보면 답만 하면 돼요</span><i aria-hidden="true">›</i></button>
+    <button type="button" class="ld-sp-o" data-sv="std"><span class="n">기존 방식 그대로</span><span class="d">질문 화면 · 정리 화면에서 직접 골라 만들어요</span><i aria-hidden="true">›</i></button></div></div>
+<style>
+.ld-sp { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; justify-content: flex-end; background: rgba(31,26,23,0); transition: background-color .22s; }
+.ld-sp[hidden] { display: none; } .ld-sp.in { background: rgba(31,26,23,.45); }
+.ld-sp-p { background: #fff; color: #231C19; border-radius: 24px 24px 0 0; padding: 10px 18px calc(22px + env(safe-area-inset-bottom)); display: grid; gap: 10px; transform: translateY(100%); transition: transform .3s cubic-bezier(.23,1,.32,1); }
+.ld-sp.in .ld-sp-p { transform: none; }
+.ld-sp-g { justify-self: center; width: 40px; height: 4px; border-radius: 2px; background: #DCD2CA; }
+.ld-sp-t { font-size: 21px; font-weight: 800; margin-top: 6px; } .ld-sp-s { margin: -6px 0 4px; font-size: 13px; color: #8C847C; }
+.ld-sp-o { position: relative; display: grid; gap: 4px; text-align: left; padding: 16px 40px 16px 16px; border-radius: 18px; border: 1px solid #E8DFDA; background: #fff; color: #231C19; font: inherit; cursor: pointer; }
+.ld-sp-o.on { border: 2px solid #231C19; padding: 15px 39px 15px 15px; }
+.ld-sp-o .n { font-size: 17px; font-weight: 800; } .ld-sp-o em { font-style: normal; font-size: 11.5px; font-weight: 700; color: #fff; background: #9C5A68; border-radius: 10px; padding: 2px 8px; margin-left: 6px; vertical-align: 2px; }
+.ld-sp-o .d { font-size: 13px; color: #5E5750; line-height: 1.5; }
+.ld-sp-o i { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 22px; color: #A39D95; }
+.ld-sp-o:disabled { opacity: .6; }
+@media (prefers-reduced-motion: reduce) { .ld-sp, .ld-sp-p { transition: none; } }
+</style>
+<script>
+// 1019z26b 휴대폰에서 [새 청첩장 만들기] → 바로 '어떻게 만들까요?' (고른 걸 start로 넘겨 에디터는 다시 묻지 않음 · PC나 관리자가 끄면 바로 만들기)
+function ldNewPick() {
+    const form = document.getElementById('newForm'), sp = document.getElementById('ldSp');
+    const mob = window.matchMedia('(max-width: 860px), (pointer: coarse) and (max-width: 1100px)').matches;
+    if (!<?= $ldStartPick ? 'true' : 'false' ?> || !mob || !sp) { form.submit(); return; }
+    sp.hidden = false; requestAnimationFrame(() => sp.classList.add('in'));
+    const close = () => { sp.classList.remove('in'); setTimeout(() => { sp.hidden = true; }, 260); };
+    sp.onclick = e => { if (e.target === sp) close(); }; // (바깥을 누르면 그냥 닫음 - 만들지 않음)
+    sp.querySelectorAll('[data-sv]').forEach(b => { b.onclick = () => { sp.querySelectorAll('[data-sv]').forEach(x => x.disabled = true); b.querySelector('.n').firstChild.textContent = '만드는 중… '; document.getElementById('newStart').value = b.dataset.sv; form.submit(); }; });
+}
+</script>
+<form method="post" id="newForm" style="display:none"><input type="hidden" name="csrf_token" value="<?= $h($csrf) ?>"><input type="hidden" name="action" value="create"><input type="hidden" name="start" id="newStart" value=""></form>
 <div class="toast" id="toast"></div>
 <!-- 결제 창 (시계 카드의 "💳 결제하기") - 스마트스토어 상품을 새 창으로 열고, 결제가 반영되면 여기서 바로 알려준다 -->
 <div class="pay" id="pay" hidden><div class="pay-box" role="dialog" aria-modal="true" aria-labelledby="payTitle">
@@ -894,7 +926,7 @@ function renderPcList() {
 }
 function renderPcDetail() {
     const el = document.getElementById('pcDetail'); const c = CARDS[cur];
-    if (!c) { el.innerHTML = `<div style="padding:80px 20px;text-align:center;color:var(--sub)"><p style="font-size:18px;color:var(--ink);font-weight:600">첫 청첩장을 만들어 보세요</p><p>디자인을 고르고 바로 시작해요. 먼저 무료로 만들어 보고 마음에 들 때 결정하면 돼요.</p><button class="b1" onclick="document.getElementById('newForm').submit()">${ic('plus')}새 청첩장 만들기</button></div>`; return; }
+    if (!c) { el.innerHTML = `<div style="padding:80px 20px;text-align:center;color:var(--sub)"><p style="font-size:18px;color:var(--ink);font-weight:600">첫 청첩장을 만들어 보세요</p><p>디자인을 고르고 바로 시작해요. 먼저 무료로 만들어 보고 마음에 들 때 결정하면 돼요.</p><button class="b1" onclick="ldNewPick()">${ic('plus')}새 청첩장 만들기</button></div>`; return; }
     const exp = c.status === 'expired';
     el.innerHTML = `
       <div class="hero">
@@ -936,7 +968,7 @@ function renderMo() {
         ${coverZoom(c)}<i class="gl"></i>${c.cover ? '<i class="shade"></i>' : `<div class="empty"><span class="ic">${ic('img', 'width:22px;height:22px')}</span>${c.noDesign ? '아직 디자인을 고르지 않았어요' : '대표 사진을 넣으면 여기에 보여요'}</div><i class="shade" style="opacity:.5"></i>`}
         <div class="tp">${c.dday != null ? `<span class="dday">${ddayText(c.dday)}</span>` : ''}<span class="sp"></span><span class="pill ${c.status === 'expired' ? 'bad' : c.published ? 'ok' : ''}"><i></i>${c.status === 'expired' ? '만료' : c.published ? '발행됨' : '편집중'}</span></div>
         <div class="bt"><h2>${esc(c.nick || c.title)}</h2><p>${esc([c.date, c.venue].filter(Boolean).join(' · ') || c.created)}</p></div></div>`).join('')
-      + (canCreate ? `<div class="slide newslide" data-i="new" onclick="${SLOTS.used < SLOTS.max ? "document.getElementById('newForm').submit()" : ''}"><span class="ic">${ic('plus', 'width:26px;height:26px')}</span><b>${SLOTS.used < SLOTS.max ? '새 청첩장 만들기' : '자리가 가득 찼어요'}</b><span>${SLOTS.used < SLOTS.max ? '디자인을 고르고 바로 시작해요' : '청첩장은 최대 ' + SLOTS.max + '개까지예요.<br>안 쓰는 청첩장을 지우면 새로 만들 수 있어요'}</span></div>` : '');
+      + (canCreate ? `<div class="slide newslide" data-i="new" onclick="${SLOTS.used < SLOTS.max ? "ldNewPick()" : ''}"><span class="ic">${ic('plus', 'width:26px;height:26px')}</span><b>${SLOTS.used < SLOTS.max ? '새 청첩장 만들기' : '자리가 가득 찼어요'}</b><span>${SLOTS.used < SLOTS.max ? '디자인을 고르고 바로 시작해요' : '청첩장은 최대 ' + SLOTS.max + '개까지예요.<br>안 쓰는 청첩장을 지우면 새로 만들 수 있어요'}</span></div>` : '');
     document.getElementById('moDots').innerHTML = CARDS.map((c, i) => `<i data-i="${i}"></i>`).join('') + (canCreate ? '<i class="plus" data-i="new"></i>' : '');
     // 가운데 온 카드를 "지금 카드"로
     if (window._moIo) window._moIo.disconnect();
@@ -957,7 +989,7 @@ function moSet(key) {
     const el = document.getElementById('moAct');
     if (key === 'new' || !total) {
         el.innerHTML = canCreate ? (SLOTS.used < SLOTS.max
-            ? `<button class="medit" onclick="document.getElementById('newForm').submit()">${ic('plus')}새 청첩장 만들기</button><p class="mnote">${SLOTS.max - SLOTS.used}자리 남았어요 · 만들면 무료체험으로 시작해요<br>마음에 들 때 결제하면 워터마크가 사라져요</p>`
+            ? `<button class="medit" onclick="ldNewPick()">${ic('plus')}새 청첩장 만들기</button><p class="mnote">${SLOTS.max - SLOTS.used}자리 남았어요 · 만들면 무료체험으로 시작해요<br>마음에 들 때 결제하면 워터마크가 사라져요</p>`
             : `<p class="mnote">청첩장은 최대 ${SLOTS.max}개까지 만들 수 있어요.</p>`) : '';
         return;
     }

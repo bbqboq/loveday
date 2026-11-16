@@ -10783,17 +10783,20 @@ function spMarkDesignOff() { state.spDesignOff = state.blocks.filter(b => !b.ena
 // 1019z26 휴대폰에서 새로 만들 때 첫 화면 팝업 (관리자 flow 'startPick'): [처음이라 하나씩 물어봐 주세요(질문 화면) / 한 화면에서 바로 할게요(정리 화면)]
 //  바깥을 누르거나 닫으면 질문 화면(쉬운 쪽) · 한 청첩장에 한 번만(state.spStartPicked)
 function spStartPick() {
+    try { const u = new URL(location.href), sv = u.searchParams.get('start'); if (sv) { // (1019z26b 대시보드에서 이미 고름 → 다시 묻지 않음)
+        u.searchParams.delete('start'); history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+        if (sv === 'chat' || sv === 'std') { state.spStartPicked = true; state.spChat = sv === 'chat'; spRender(); window.scrollTo(0, 0); scheduleSnapshot(); return; } } } catch (e) {}
     if (!spOpt('flow', 'startPick') || !spOpt('flow', 'ask') || state.spStartPicked || spInPlace || SAMPLE_ID) return;
     if (!window.matchMedia('(max-width: 860px), (pointer: coarse) and (max-width: 1100px)').matches) return;
     state.spStartPicked = true; document.querySelector('.sp-start-pick')?.remove();
     const el = document.createElement('div'); el.className = 'sp-start-pick'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', '어떻게 만들까요?');
     el.innerHTML = `<div class="ssp-p"><i class="ssp-g" aria-hidden="true"></i><b class="ssp-t">어떻게 만들까요?</b><p class="ssp-s">나중에 언제든 바꿀 수 있어요</p>
-        <button type="button" class="ssp-o on" data-sv="quick"><span class="ssp-n">처음이라 쉽게 <em>추천</em></span><span class="ssp-d">하나씩 물어보면 답만 하면 돼요 · 이름 → 날짜 → 장소 → 사진</span><i aria-hidden="true">›</i></button>
-        <button type="button" class="ssp-o" data-sv="list"><span class="ssp-n">한 화면에서 바로 할게요</span><span class="ssp-d">채울 칸이 한눈에 보이고 원하는 곳부터 고쳐요</span><i aria-hidden="true">›</i></button></div>`;
+        <button type="button" class="ssp-o on" data-sv="chat"><span class="ssp-n">처음이라 쉽게 · 대화로 만들기 <em>추천</em></span><span class="ssp-d">카톡처럼 하나씩 물어보면 답만 하면 돼요</span><i aria-hidden="true">›</i></button>
+        <button type="button" class="ssp-o" data-sv="std"><span class="ssp-n">기존 방식 그대로</span><span class="ssp-d">질문 화면 · 정리 화면에서 직접 골라 만들어요</span><i aria-hidden="true">›</i></button></div>`;
     document.body.appendChild(el); requestAnimationFrame(() => el.classList.add('in'));
-    const done = v => { el.classList.remove('in'); setTimeout(() => el.remove(), 260); if (v === 'list') { state.spView = 'list'; spRender(); window.scrollTo(0, 0); } scheduleSnapshot(); };
+    const done = v => { el.classList.remove('in'); setTimeout(() => el.remove(), 260); state.spChat = v === 'chat'; spRender(); window.scrollTo(0, 0); scheduleSnapshot(); };
     el.querySelectorAll('[data-sv]').forEach(b => b.addEventListener('click', () => done(b.dataset.sv)));
-    el.addEventListener('click', e => { if (e.target === el) done('quick'); });
+    el.addEventListener('click', e => { if (e.target === el) done('chat'); });
 }
 function openSimpleEditor(step, inPlace) {
     spInPlace = !!inPlace;
@@ -11662,6 +11665,17 @@ function spRenderAsk(pane) {
         : st && st.k === 'finish' && SPI.dstep === 'pick' && spOpt('finish', 'introSteps') && spOpt('finish', 'introAsk') && !spOpt('finish', 'intro2') ? (SPI.dstep = 'ask', spRender()) // ① 분위기 고르기에서 [이전] = '넣을까요?' (그 단계를 쓸 때만)
         : go(spStep - 1);
     pane.querySelector('#spBack').addEventListener('click', prev);
+    // 1019z26b 왕초보 대화형 (휴대폰 첫 팝업 '대화로 만들기' → state.spChat): 같은 질문 화면을 대화 모양으로 - 앞 질문들은 말풍선(물음 + 내 답)으로 쌓이고 내 답을 누르면 그 질문으로
+    pane.classList.toggle('sp-chat', !!state.spChat);
+    if (state.spChat) { const body0 = pane.querySelector('#spBody'), wi = (() => { try { return weddingInfo(); } catch (e) { return {}; } })(), L = spSteps();
+        const ansOf = (x, j) => { if (x.opts) { const o = x.opts.find(o => o[0] === ask[x.k]); return o ? o[1] : '넘어갔어요'; }
+            if (x.k === 'names' && x.part === 'name') return (wi.groom || '') + ' ♥ ' + (wi.bride || '');
+            if (x.k === 'names' && x.part === 'date') { try { return spSum(L.find(y => y.k === 'names'))[0].split(' · ').slice(2).join(' · ') || '정했어요'; } catch (e) { return '정했어요'; } }
+            const ls = L.find(y => y.k === x.k); try { return ls ? spSum(ls)[0] || '정했어요' : '정했어요'; } catch (e) { return '정했어요'; } };
+        const log = steps.slice(0, spStep).map((x, j) => `<div class="spc-q">${esc(x.q)}</div><button type="button" class="spc-a" data-spc-go="${j}">${esc(ansOf(x, j))}<small>고치기</small></button>`).join('');
+        if (body0) body0.insertAdjacentHTML('beforebegin', `<div class="spc-log"><div class="spc-q spc-hi">안녕하세요! 몇 가지만 물어볼게요.<br>답만 하면 청첩장이 완성돼요.</div>${log}</div>`);
+        pane.querySelectorAll('[data-spc-go]').forEach(b => b.addEventListener('click', () => go(+b.dataset.spcGo)));
+        if (!same) setTimeout(() => { const bb = pane.querySelector('#spBody'); if (!bb) return; const y = bb.getBoundingClientRect().top + window.scrollY - 110; if (window.innerWidth <= 860) window.scrollTo(0, Math.max(0, y)); else pane.scrollTop = bb.offsetTop - 110; }, 30); }
     pane.querySelector('#spNow')?.addEventListener('click', () => spOpenPreview(false));
     pane.querySelector('#spPrev')?.addEventListener('click', prev);
     pane.querySelector('#spNext')?.addEventListener('click', next);
