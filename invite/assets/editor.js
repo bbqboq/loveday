@@ -10920,7 +10920,7 @@ function spPvTargetEl(st) {
 }
 function spPvTargetRaw(st) {
     const root = document.getElementById('previewRoot'); if (!root || !st) return null;
-    if (st.k === 'music') return ((state.spAsk || {}).music !== 'no' && root.querySelector('.sp-bgm-spot')) || root.querySelector('.col[data-block-id]'); // 배경음악 질문 (넣지 않을게요 = 확대 없이 첫 화면 전체) = 첫 화면 오른쪽 위 음악 버튼 자리 (spBgmSpot)
+    if (st.k === 'music') return root.querySelector('.sp-bgm-spot') || root.querySelector('.col[data-block-id]'); // (1019z27j 넣지 않을게요도 같은 자리 · 같은 높이 창 - 점선 자리 '배경음악 버튼이 없어져요') // 배경음악 질문 (넣지 않을게요 = 확대 없이 첫 화면 전체) = 첫 화면 오른쪽 위 음악 버튼 자리 (spBgmSpot)
     const col = (st.s || []).map(id => root.querySelector(`.col[data-block-id="${id}"]`)).find(Boolean); if (!col) return spPvGhost(st.s);
     if (spPvHint && Date.now() - spPvHint.t < 3000) { const h = col.querySelector(spPvHint.sel); if (h && h.offsetWidth) return h; }
     // 지금 적고 있는 칸 (신부 이름을 적는데 신랑 이름이 빛나던 것 - 포커스된 칸 기준으로)
