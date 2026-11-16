@@ -5807,3 +5807,27 @@ html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
 .hlC-slot .hl-fxb, .hlC-slot .hl-pop { display: none !important; }
 .hlC-slot textarea { width: 100%; box-sizing: border-box; min-height: 50px; border-radius: 14px; border: 2px solid var(--wz-ink, #231C19); padding: 12px 14px; font-size: 16px; resize: none; }
 .hlC-ok { height: 52px; border-radius: 16px; border: 0; background: #1F1A17; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
+/* ===== 1019z27d 왕초보 대화형을 목업(Chat.dc.html)처럼: 메신저 머리 · 아래부터 쌓이는 대화 · 내 쪽 답 칸 · 입력 중 점 ===== */
+#simplePane.sp-chat { display: flex; flex-direction: column; min-height: calc(100dvh - 60px); }
+.sp-chat .sp-ask-head, .sp-chat .sp-ask-top, .sp-chat .sp-now-wrap { display: none !important; }
+.sp-chat .spc-top { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 10px 14px 12px; background: #fff; border-bottom: 1px solid #EFE8E2; }
+.sp-chat .spc-av { width: 34px; height: 34px; border-radius: 50%; background: #231C19; color: #fff; display: grid; place-items: center; font: 600 12px/1 'Playfair Display', Georgia, serif; font-style: normal; }
+.sp-chat .spc-tt { display: flex; flex-direction: column; gap: 1px; min-width: 0; } .sp-chat .spc-tt b { font-size: 15px; } .sp-chat .spc-tt small { font-size: 11.5px; color: #8C847C; }
+.sp-chat .spc-pv { height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid #E2D8D0; background: #fff; color: #231C19; font-size: 13px; font-weight: 600; cursor: pointer; }
+.sp-chat .spc-bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: #EFE8E2; overflow: hidden; margin-top: 2px; } .sp-chat .spc-bar i { display: block; height: 100%; background: #231C19; border-radius: 2px; transition: width .4s; }
+.sp-chat .spc-log { margin-top: auto; padding-top: 18px; }
+.sp-chat .spc-typing { display: flex; gap: 4px; align-items: center; padding: 12px 14px; animation: spcTy .6s steps(1, end) forwards; }
+.sp-chat .spc-typing i { width: 6px; height: 6px; border-radius: 50%; background: #B5ADA5; animation: spcDot .6s ease-in-out infinite; } .sp-chat .spc-typing i:nth-child(2) { animation-delay: .12s; } .sp-chat .spc-typing i:nth-child(3) { animation-delay: .24s; }
+@keyframes spcDot { 50% { transform: translateY(-3px); opacity: .5; } }
+@keyframes spcTy { to { display: none; } }
+.sp-chat:not(.sp-same) #spBody > .wz-h, .sp-chat:not(.sp-same) #spBody > .wz-lead { animation-delay: .6s; }
+.sp-chat:not(.sp-same) #spBody > :not(.wz-h):not(.wz-lead) { animation-delay: .75s; }
+.sp-chat #spBody > :not(.wz-h):not(.wz-lead):not(.spc-skip) { margin-left: 36px; }
+.sp-chat #spBody { padding-bottom: 8px; flex: none !important; min-height: 0 !important; }
+.sp-chat #spBody .spv-h { display: none; }
+.sp-chat .spc-skip { display: block; margin: 8px 0 0 36px; width: calc(100% - 36px); height: 46px; border-radius: 14px; border: 1px dashed #D9CFC7; background: transparent; color: #6F675F; font: inherit; font-size: 14px; cursor: pointer; }
+.sp-chat .sp-ask-nav .wz-back { display: none; }
+.sp-chat .sp-ask-nav .wz-next { flex: 1; }
+@media (prefers-reduced-motion: reduce) { .sp-chat .spc-typing { display: none; } }
+.sp-chat #spBody > .wz-h .spc-sub { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 400; line-height: 1.45; color: #8C847C; }
+@media (max-width: 860px) { .sp-chat .spc-top { top: var(--sp-topbar-h, 51px); } }

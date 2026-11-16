@@ -11673,9 +11673,12 @@ function spRenderAsk(pane) {
             if (x.k === 'names' && x.part === 'date') { try { return spSum(L.find(y => y.k === 'names'))[0].split(' · ').slice(2).join(' · ') || '정했어요'; } catch (e) { return '정했어요'; } }
             const ls = L.find(y => y.k === x.k); try { return ls ? spSum(ls)[0] || '정했어요' : '정했어요'; } catch (e) { return '정했어요'; } };
         const log = steps.slice(0, spStep).map((x, j) => `<div class="spc-q">${esc(x.q)}</div><button type="button" class="spc-a" data-spc-go="${j}">${esc(ansOf(x, j))}<small>고치기</small></button>`).join('');
-        if (body0) body0.insertAdjacentHTML('beforebegin', `<div class="spc-log"><div class="spc-q spc-hi">안녕하세요! 몇 가지만 물어볼게요.<br>답만 하면 청첩장이 완성돼요.</div>${log}</div>`);
+        if (body0) body0.insertAdjacentHTML('beforebegin', `<div class="spc-log"><div class="spc-q spc-hi">안녕하세요! 몇 가지만 물어볼게요.<br>답만 하면 청첩장이 완성돼요.</div>${log}${same ? '' : '<div class="spc-q spc-typing" aria-hidden="true"><i></i><i></i><i></i></div>'}</div>`);
+        // 1019z27d 목업(Chat.dc.html)처럼: 위 [LD 청첩장 만들기 · n / N · 꼭 필요해요 | 미리보기] + 얇은 진행 막대 (원래 머리 줄은 숨김 - [‹]·되돌리기 대신 내 답 '고치기')
+        const hd0 = pane.querySelector('.sp-ask-head'); if (hd0) hd0.insertAdjacentHTML('beforebegin', `<div class="spc-top"><i class="spc-av">LD</i><div class="spc-tt"><b>청첩장 만들기</b><small>${spStep + 1} / ${N} · ${pane.querySelector('#spSkip') ? '안 해도 돼요' : '꼭 필요해요'}</small></div><button type="button" class="spc-pv" id="spcPv">미리보기</button><div class="spc-bar"><i style="width:${Math.round(spStep / N * 100)}%"></i></div></div>`);
+        pane.querySelector('#spcPv')?.addEventListener('click', () => spOpenPreview(false));
         pane.querySelectorAll('[data-spc-go]').forEach(b => b.addEventListener('click', () => go(+b.dataset.spcGo)));
-        if (!same) setTimeout(() => { const bb = pane.querySelector('#spBody'); if (!bb) return; const y = bb.getBoundingClientRect().top + window.scrollY - 110; if (window.innerWidth <= 860) window.scrollTo(0, Math.max(0, y)); else pane.scrollTop = bb.offsetTop - 110; }, 30); }
+        if (!same) setTimeout(() => { if (window.innerWidth <= 860) window.scrollTo(0, document.documentElement.scrollHeight); else pane.scrollTop = pane.scrollHeight; }, 30); } // (대화는 아래부터 - 맨 아래 지금 질문이 보이게)
     pane.querySelector('#spNow')?.addEventListener('click', () => spOpenPreview(false));
     pane.querySelector('#spPrev')?.addEventListener('click', prev);
     pane.querySelector('#spNext')?.addEventListener('click', next);
@@ -11703,6 +11706,14 @@ function spRenderAsk(pane) {
             if (st.k === 'greet' && v === 'self') { const ta = document.getElementById('spGreet'); if (ta) { ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length); } } // (누르자마자 적을 수 있게 - 손가락으로 누른 그 순간에 해야 휴대폰 키보드가 올라옴)
             if (o && o[3]) setTimeout(() => { const m = document.getElementById('spAskMore'); if (m) m.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60);
         }));
+    }
+    if (state.spChat && bodyEl) { // 1019z27d 대화형: [나중에 할게요]는 답 칸 아래 · 아래 버튼은 '이렇게 할게요' · 예식장은 이름 · 주소만
+        const must = st && (st.k === 'names' || st.k === 'venue' || st.k === 'hero' && st.part === 'media'); // (목업처럼 이름 · 날짜 · 예식장 · 첫 화면 사진은 '꼭 필요해요' - [나중에] 없음)
+        if (must) { pane.querySelector('#spSkip')?.remove(); const tg = pane.querySelector('.spc-tt small'); if (tg) tg.textContent = tg.textContent.replace('안 해도 돼요', '꼭 필요해요'); }
+        const sk = pane.querySelector('#spSkip'); if (sk) { sk.textContent = '나중에 할게요'; sk.className = 'spc-skip'; bodyEl.appendChild(sk); }
+        const nx = pane.querySelector('#spNext'); if (nx && nx.textContent === '다음') nx.textContent = '이렇게 할게요';
+        const qh = bodyEl.querySelector(':scope > .wz-h'), ql = bodyEl.querySelector(':scope > .wz-lead'); if (qh && ql && ql.textContent.trim()) { qh.insertAdjacentHTML('beforeend', `<small class="spc-sub">${esc(ql.textContent.trim())}</small>`); ql.remove(); } // (설명은 질문 말풍선 안에)
+        if (st && st.k === 'venue') bodyEl.querySelectorAll('.wz-field').forEach(x => { if (!x.querySelector('[data-f="venue"], [data-f="addressBase"]') && !x.closest('.sp-incl')) x.remove(); });
     }
     if (st) spSelectStep(st);
     if (same) { pane.scrollTop = keepPane; window.scrollTo(0, keepWin); requestAnimationFrame(() => { pane.style.minHeight = ''; pane.scrollTop = keepPane; window.scrollTo(0, keepWin); }); }
@@ -13735,7 +13746,7 @@ function spVenueSlides(box) {
 function spVenue(box) {
     const lb = spBlock('location'), f = lb.fields, vdm = InviteBlocks.isVenueDemo ? InviteBlocks.isVenueDemo(f) : {}; // (디자인 예시 예식장·주소면 칸은 비워서 시작)
     if (!lb.enabled) { box.innerHTML = spH('어디에서 예식을 올리나요?', '주소를 찾으면 지도와 길찾기 버튼이 자동으로 만들어져요.') + spInclHtml('location') + spOffNote(); return; }
-    const two = spOpt('venue', 'steps') && spViewNow() === 'quick' && window.innerWidth <= 860 && !!box.closest('#simplePane') && spOpt('venue', 'map'); // (휴대폰만 - PC는 예전 한 화면)
+    const two = !state.spChat && spOpt('venue', 'steps') && spViewNow() === 'quick' && window.innerWidth <= 860 && !!box.closest('#simplePane') && spOpt('venue', 'map'); // (휴대폰만 - PC는 예전 한 화면)
     box.innerHTML = spH('어디에서 예식을 올리나요?', '주소를 찾으면 지도와 길찾기 버튼이 자동으로 만들어져요.') + `${two ? '<div class="spv-slides"><div class="spv-track"><div class="spv-sl"><div class="spv-h"><b>① 예식장 · 주소</b></div>' : ''}
         <div class="wz-field"><div class="wz-lab">예식장 이름</div><input class="wz-inp" data-f="venue" value="${vdm.v ? '' : wzEsc(f.venue)}" placeholder="예: ○○웨딩홀, ○○호텔"></div>
         <div class="wz-field"><div class="wz-lab">주소</div><div class="wz-addr"><input class="wz-inp sp-addr-in" data-f="addressBase" value="${vdm.a ? '' : wzEsc(f.addressBase || f.address)}" placeholder="주소 찾기를 눌러주세요"${spPostcodeOk() ? ' readonly' : ''}><button type="button" class="wz-btn2" id="spAddr">주소 찾기</button></div></div>
