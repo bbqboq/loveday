@@ -11093,7 +11093,7 @@ function spLensSnap() { const r = document.documentElement; r.classList.add('sp-
 // 창이 필요 없는 질문 (예식 일시 - 사용자 요청)
 function spHeroPhNow() { try { return spHeroPhase; } catch (e) { return ''; } } // (아래에 let으로 선언 - 그 전에 불려도 멈추지 않게)
 // 스크롤 버튼(↓) 화면은 칸 안에 전·후 비교·버튼 그림이 있어서 작은 창 안 띄움 (사용자 보고 1018z18o: 창이 '알아서 잘 보이게'를 가림) · 첫 화면 꾸미기 질문도 (1018z18u, 칸 안 그림으로 봄 - 관리자 flow.lookNoLens)
-function spLensOff() { return !!(spMv.lensOff || state.spChat && spViewNow() === 'quick' /* 1019z26g 왕초보 대화형은 작은 창 · 옆 탭 없음 */ || spCurSt && spCurSt.k === 'hero' && spViewNow() !== 'quick' && document.querySelector('#simplePane .spb-li.open :is(#spCropBox, #spVfpBox, .sp-bigup, .hl-row, .hlb, .shz, .hsl)') /* 1019z26e 정리 화면에서 첫 화면 사진 · 보일 부분 · 글자를 고칠 땐 칸 안 그림으로 봄 - 작은 창이 사진 칸을 가려 끌 수 없었음 */ || spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick' || spCurSt && spCurSt.k === 'hero' && spHeroPhNow() === 'scroll' && spOpt('flow', 'scrollNoLens') && document.querySelector('#simplePane :is(.shz, .nbx)') || spCurSt && spCurSt.k === 'hero' && spCurSt.part === 'look' && spViewNow() === 'quick' && spHeroPhNow() !== 'scroll' && spOpt('flow', 'lookNoLens') && document.querySelector('#simplePane :is(.hlb, .hl-row, #spCropBox, .hlx-all)') || spCurSt && spCurSt.k === 'finish' && EASY_INTRO !== 'old' && document.querySelector('#simplePane .spi') || spCurSt && spCurSt.k === 'account' && document.querySelector('#simplePane #spAccMini') || spCurSt && spCurSt.k === 'venue' && typeof SPV === 'object' && SPV.step === 1 && document.querySelector('#simplePane #spvMs')); } // (인트로 칸 B·E·F안은 칸 안에 미리보기가 있어서 작은 창 안 띄움) // (머리줄 [청첩장 보기]를 끄면 창 없음)
+function spLensOff() { return !!(spMv.lensOff || state.spChat && spViewNow() === 'quick' /* 1019z26g 왕초보 대화형은 작은 창 · 옆 탭 없음 */ || spCurSt && spCurSt.k === 'hero' && spViewNow() !== 'quick' && document.querySelector('#simplePane .spb-li.open :is(#spCropBox, #spVfpBox, .sp-bigup, .hl-row, .hlb, .shz, .hsl)') /* 1019z26e 정리 화면에서 첫 화면 사진 · 보일 부분 · 글자를 고칠 땐 칸 안 그림으로 봄 - 작은 창이 사진 칸을 가려 끌 수 없었음 */ || spCurSt && spCurSt.k === 'names' && spCurSt.part === 'date' && spViewNow() === 'quick' || spCurSt && spCurSt.k === 'hero' && spHeroPhNow() === 'scroll' && spOpt('flow', 'scrollNoLens') && document.querySelector('#simplePane :is(.shz, .nbx)') || spCurSt && spCurSt.k === 'hero' && spCurSt.part === 'look' && spViewNow() === 'quick' && spHeroPhNow() !== 'scroll' && spOpt('flow', 'lookNoLens') && document.querySelector('#simplePane :is(.hlb, .hl-row, #spCropBox, .hlx-all, .hlC)') || spCurSt && spCurSt.k === 'finish' && EASY_INTRO !== 'old' && document.querySelector('#simplePane .spi') || spCurSt && spCurSt.k === 'account' && document.querySelector('#simplePane #spAccMini') || spCurSt && spCurSt.k === 'venue' && typeof SPV === 'object' && SPV.step === 1 && document.querySelector('#simplePane #spvMs')); } // (인트로 칸 B·E·F안은 칸 안에 미리보기가 있어서 작은 창 안 띄움) // (머리줄 [청첩장 보기]를 끄면 창 없음)
 const SP_LENS_HOLD = 900; // 섹션 전체를 보여 주는 시간 (그다음 글자로 다가감)
 const spLensTxt = { key: '', at: 0, view: '', sec: '', t: 0, z: 0, seen: new Set() };
 // 옵션(적는 칸) 하나 = 지금 질문 + 그 칸 이름 (같은 칸이면 다가가는 모습은 한 번만)
@@ -12878,6 +12878,7 @@ function spHero(box) {
     if (spViewNow() !== 'quick') html += '<p class="wz-hint">글자 위치·그림자 같은 세부 모양은 <b>전문가 모드</b>에서 바꿀 수 있어요.</p>'; // (질문 화면에선 뺌 - 세로 줄이기)
     box.innerHTML = html;
     box.querySelector('#spToScroll')?.addEventListener('click', () => { spHeroPhase = 'scroll'; spRender(); setTimeout(spScrollToNextBtn, 80); });
+    if (hb && part === 'look' && kind === 'photo' && HO('bigLook')) { try { spHeroBigLook(box, hb); } catch (e) { console.warn(e); } } // 1019z27 시안 C
     if (hb) spBindHeroLayout(box, hb);
     if (part) { // 질문 하나에 필요한 칸만 남김
         const fieldOf = sel => [...box.querySelectorAll(sel)].map(x => x.closest('.wz-field') || x);
@@ -12903,6 +12904,105 @@ function spHero(box) {
         });
         input.click();
     });
+}
+// ===== 1019z27 첫 화면 꾸미기 시안 C (claude.ai 아티팩트 EUv6bfWqutkzJNixwt8Ed5 C, 관리자 hero 옵션 bigLook) =====
+//  질문 화면 '첫 화면을 꾸며요': 칸 목록(글자 네 칸 · 효과 그림 · 보일 부분 칸) 대신 큰 청첩장 그림 하나
+//  · 그림 속 글자를 누르면 아래 창에서 그 줄 고치기 (원래 글자 칸을 창으로 옮겨 씀 - 이름·날짜 저절로 바뀌기 그대로)
+//  · 아래 [‹ 효과 ›] = 원래 data-hlc-step · [보일 부분] = 그림 위에서 한 손가락 끌기 · 두 손가락 벌려 확대 (PC 끌기 + 휠, 막대도)
+let spBigCrop = false;
+function spBigLookMini(hb) {
+    const f = hb.fields, lay = spHeroLayouts().find(l => l.id === f.heroLayout) || { parts: {} }, L = f.layout || {};
+    const keys = (f.heroLayers || []).filter(k => L[k] && !L[k].stk);
+    const P = {}; Object.keys(lay.parts || {}).forEach(k => { P[k] = Object.assign({}, lay.parts[k], L[k] || {}); });
+    const lay2 = Object.assign({}, lay, { parts: P, layers: keys.map(k => Object.assign({}, L[k], { text: f[k] || '', anim: '' })) });
+    const t = document.createElement('template'); t.innerHTML = spHeroLayoutMini(lay2, hb, 'photo');
+    const sp = [...t.content.querySelectorAll('.hl-m > span')], ls = sp.slice(Math.max(0, sp.length - keys.length));
+    ls.forEach((el, i) => { const k = keys[i], a = (L[k] || {}).anim || ''; el.dataset.hlk = k; el.removeAttribute('aria-hidden'); if (a) el.classList.add('hlx-a-' + a); el.style.animationDelay = ((Number(L[k].animDelay) || 0) * .6 + i * .05).toFixed(2) + 's'; });
+    const m = t.content.querySelector('.hl-m'); if (m) m.removeAttribute('aria-hidden');
+    return t.innerHTML;
+}
+function spHeroBigLook(box, hb) {
+    const hlc = box.querySelector('.hlc'); if (!hlc) return; // (효과 고르기가 그림 모양일 때만)
+    const f = hb.fields, real = spIsReal(f.heroImage), key = real ? InviteBlocks.imgKey(f.heroImage) : '';
+    const lines = box.querySelector('.hl-lines'), linesF = lines && (lines.closest('.wz-field') || lines);
+    const cropF = box.querySelector('#spCropBox'); if (cropF) (cropF.closest('.wz-field') || cropF).remove(); // 보일 부분은 그림 위에서
+    if (!real) spBigCrop = false;
+    const pill = hlc.querySelector('.hlc-pill b'), pos = (hlc.querySelector('.hlc-pill') || {}).textContent || '';
+    const fxName = pill ? pill.textContent : '', fxPos = (/(\d+ \/ \d+)/.exec(pos) || [])[1] || '';
+    const replay = box.querySelector('[data-hl-replay]');
+    const el = document.createElement('div'); el.className = 'hlC' + (spBigCrop ? ' crop' : '');
+    el.innerHTML = `<div class="hlC-hd"><b>${spBigCrop ? '사진을 손가락으로 끌어요' : '글자를 누르면 고쳐요'}</b>${spBigCrop ? '' : '<button type="button" class="hlC-rp" data-hlc-rp>▶ 다시 보기</button>'}</div>
+        <div class="hlC-pv"><div class="hlC-ph">${spBigLookMini(hb)}</div>
+            <div class="hlC-ov"${spBigCrop ? '' : ' hidden'}><i class="hlC-tip">✋ 끌어서 옮겨요<br>두 손가락으로 벌리면 확대</i><span class="hlC-sp"></span>
+                <div class="hlC-zr"><span>확대</span><input type="range" min="100" max="400" step="5" aria-label="확대"><button type="button" data-hlc-reset>처음대로</button></div></div></div>
+        <div class="hlC-bar"><div class="hlC-fx"><button type="button" data-hlc-step="-1" aria-label="앞 효과">‹</button><button type="button" class="hlC-fxn" data-hlc-step="1"><b>${esc(fxName)}</b><small>글자 효과${fxPos ? ' · ' + esc(fxPos) : ''}</small></button><button type="button" data-hlc-step="1" aria-label="다음 효과">›</button></div>
+            ${real && spOpt('hero', 'crop') ? `<button type="button" class="hlC-cb${spBigCrop ? ' on' : ''}" data-hlc-crop aria-pressed="${spBigCrop}">${spBigCrop ? '✓ 다 했어요' : '보일 부분'}</button>` : ''}</div>`;
+    const hlcF = hlc.closest('.wz-field') || hlc;
+    (linesF || hlcF).before(el);
+    if (linesF) { linesF.classList.add('hlC-src'); linesF.hidden = true; }
+    if (hlcF !== linesF) hlcF.remove(); else hlc.remove();
+    if (replay && replay.closest('.hlC-src') == null) replay.remove();
+    const ph = el.querySelector('.hlC-ph');
+    requestAnimationFrame(() => { // 아래 [이전][다음] 위에 효과 막대까지 다 보이게 그림 크기를 맞춤 (낮은 휴대폰)
+        const pv = el.querySelector('.hlC-pv'), nx = document.getElementById('spNext'), bar = el.querySelector('.hlC-bar'); if (!pv || !nx || !pv.isConnected) return;
+        const top = pv.getBoundingClientRect().top + scrollY, dock = nx.getBoundingClientRect().top + scrollY - 14;
+        const h = dock - top - (bar ? bar.offsetHeight : 50) - 12 - 10, w = Math.round(Math.max(130, Math.min(250, innerWidth * .64, h * 9 / 19.5 + 10)));
+        if (w > 0) pv.style.width = w + 'px';
+    });
+    const redraw = () => { ph.innerHTML = spBigLookMini(hb); if (key) spMiniFocus(key); };
+    const replayNow = () => { ph.classList.remove('play'); void ph.offsetWidth; ph.classList.add('play'); };
+    replayNow();
+    el.querySelector('[data-hlc-rp]')?.addEventListener('click', () => { replayNow(); try { const r = document.getElementById('previewRoot'); if (r) InviteBlocks.playHeroAnimsTwice(r); } catch (e) {} });
+    el.querySelector('[data-hlc-crop]')?.addEventListener('click', () => { spBigCrop = !spBigCrop; if (!spBigCrop) scheduleSnapshot(); spRender(); });
+    // 글자 고치기 창: 원래 글자 칸 줄을 창으로 옮김 (입력 · [효과 ▾]가 그대로 동작)
+    const openEd = k => {
+        const line = linesF && linesF.querySelector(`[data-hl-line="${CSS.escape(k)}"]`); if (!line) return;
+        document.querySelectorAll('.hlC-sheet').forEach(x => x.remove());
+        const home = document.createComment('hlC'); line.before(home);
+        const sh = document.createElement('div'); sh.className = 'hlC-sheet';
+        sh.innerHTML = `<div class="hlC-sbg" data-hlc-done></div><div class="hlC-sc" role="dialog" aria-label="첫 화면 글자 고치기"><i class="hlC-grip"></i><b class="hlC-st">첫 화면 글자 고치기</b><div class="hlC-slot"></div><p>이름 · 날짜는 앞 질문에서 바꾸면 여기도 저절로 바뀌어요</p><button type="button" class="hlC-ok" data-hlc-done>완료</button></div>`;
+        sh.querySelector('.hlC-slot').appendChild(line);
+        document.body.appendChild(sh);
+        const vv = window.visualViewport, place = () => spShFit(sh, vv); place(); // 키보드가 올라오면 보이는 화면에 맞춤 (1019z22c와 같게)
+        if (vv) { vv.addEventListener('resize', place); vv.addEventListener('scroll', place); }
+        ph.querySelectorAll('[data-hlk]').forEach(x => x.classList.toggle('on', x.dataset.hlk === k));
+        const ta = line.querySelector('textarea'); ta && ta.addEventListener('input', () => { redraw(); ph.querySelectorAll('[data-hlk]').forEach(x => x.classList.toggle('on', x.dataset.hlk === k)); });
+        const done = () => { if (!sh.isConnected) return; if (vv) { vv.removeEventListener('resize', place); vv.removeEventListener('scroll', place); } if (home.isConnected) home.replaceWith(line); sh.remove(); scheduleSnapshot(); spRender(); };
+        sh.querySelectorAll('[data-hlc-done]').forEach(b => b.addEventListener('click', done));
+        setTimeout(() => { try { ta.focus(); const n = ta.value.length; ta.setSelectionRange(n, n); } catch (e) {} }, 60);
+    };
+    const ov = el.querySelector('.hlC-ov');
+    ph.addEventListener('click', e => { if (spBigCrop) return; const t = e.target.closest('[data-hlk]'); if (t) openEd(t.dataset.hlk); });
+    if (!real || !key) return;
+    // 보일 부분: 그림 위에서 끌기 · 두 손가락 확대 (값은 spPhotoCrop과 같은 state.imgFocus / imgZoom)
+    state.imgFocus = state.imgFocus || {}; state.imgZoom = state.imgZoom || {};
+    const rng = ov.querySelector('input'), nat = { w: 0, h: 0 };
+    { const im = new Image(); im.onload = () => { nat.w = im.naturalWidth; nat.h = im.naturalHeight; }; im.src = InviteBlocks.imgUrl(f.heroImage); }
+    const live = () => { const r = document.getElementById('previewRoot'); if (r) InviteBlocks.applyImgFocus(r, state.imgFocus, state.imgZoom); spMiniFocus(key); };
+    const zNow = () => InviteBlocks.zoomOf(state.imgZoom, key);
+    const setZ = z => { z = Math.max(1, Math.min(4, Math.round(z * 100) / 100)); if (z > 1.001) state.imgZoom[key] = z; else delete state.imgZoom[key]; rng.value = Math.round(z * 100); live(); };
+    rng.value = Math.round(zNow() * 100);
+    rng.addEventListener('input', () => setZ(rng.value / 100)); rng.addEventListener('change', () => { spTaskMark('hero:edit', true); scheduleSnapshot(); });
+    ov.querySelector('[data-hlc-reset]').addEventListener('click', () => { delete state.imgFocus[key]; setZ(1); spTaskMark('hero:edit', true); scheduleSnapshot(); });
+    const fpos = () => { const v = state.imgFocus[key]; return v && /%/.test(v) ? v.split(' ').map(parseFloat) : [50, 50]; };
+    const pts = new Map(); let g = null;
+    const base = () => { const arr = [...pts.values()], tgt = ph.querySelector('.hl-mb em') || ph.querySelector('.hl-m'); const W = tgt ? tgt.clientWidth : ph.clientWidth, H = tgt ? tgt.clientHeight : ph.clientHeight;
+        g = arr.length ? { p: arr.map(p => ({ x: p.x, y: p.y })), f: fpos(), z: zNow(), W, H } : null; };
+    const dist = a => a.length > 1 ? Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) : 0;
+    ov.addEventListener('pointerdown', e => { if (e.target.closest('.hlC-zr') || e.button > 0) return; e.preventDefault(); try { ov.setPointerCapture(e.pointerId); } catch (x) {} pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); base(); ov.classList.add('drag'); });
+    ov.addEventListener('pointermove', e => {
+        if (!g || !pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        const now = [...pts.values()];
+        if (now.length > 1 && g.p.length > 1) { const d0 = dist(g.p); if (d0 > 8) setZ(g.z * dist(now) / d0); return; }
+        const W = g.W, H = g.H, nw = nat.w || W, nh = nat.h || H, sc = Math.max(W / nw, H / nh), ox = nw * sc - W, oy = nh * sc - H, z = zNow();
+        const kx = ox * z + (z - 1) * W, ky = oy * z + (z - 1) * H, dx = now[0].x - g.p[0].x, dy = now[0].y - g.p[0].y;
+        const nx = kx > 1 ? g.f[0] - dx / kx * 100 : g.f[0], ny = ky > 1 ? g.f[1] - dy / ky * 100 : g.f[1];
+        state.imgFocus[key] = `${Math.round(Math.max(0, Math.min(100, nx)) * 10) / 10}% ${Math.round(Math.max(0, Math.min(100, ny)) * 10) / 10}%`; live();
+    });
+    const up = e => { if (!pts.delete(e.pointerId)) return; base(); if (!pts.size) { ov.classList.remove('drag'); spTaskMark('hero:edit', true); scheduleSnapshot(); } };
+    ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
+    ov.addEventListener('wheel', e => { e.preventDefault(); setZ(zNow() - e.deltaY * .002); clearTimeout(ov._wt); ov._wt = setTimeout(() => scheduleSnapshot(), 400); }, { passive: false });
+    live();
 }
 // 색 이름 (테마 카드용) - 디자인 이름("모던 화이트")을 그대로 쓰면 첫 화면 디자인 고르기와 같은 메뉴처럼 보여서, 바탕·포인트 색 이름으로
 function spHexName(hex, role) {
