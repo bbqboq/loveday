@@ -10060,6 +10060,7 @@ async function startWithPreset(presetId) {
         spRenderAll();
         onboardingActive = false;
         openSimpleEditor(0);
+        spStartPick(); // 1019z26 휴대폰에서 처음 만들 때: 어떻게 만들지 고르는 창
         const myPrev = ((spBlock('hero') || {}).fields || {}).heroImage;
         if (DPK.my && dpkMyPut()) { // 디자인 고르기에서 '내 사진으로 보기'로 고른 사진 → 메인 사진으로 올림 (올리는 동안은 이 기기 사진을 보여 줌)
             const my = DPK.my;
@@ -10779,6 +10780,21 @@ function spAskReveal(st) {
 }
 // 디자인에서 꺼 둔 섹션 (간편 만들기 목록에서 숨김 - 관리자 "손쉬운 제작 → 목록 화면"). 고객이 켜면 보이고, 목록에서 직접 끄면 계속 보임
 function spMarkDesignOff() { state.spDesignOff = state.blocks.filter(b => !b.enabled).map(b => b.id); }
+// 1019z26 휴대폰에서 새로 만들 때 첫 화면 팝업 (관리자 flow 'startPick'): [처음이라 하나씩 물어봐 주세요(질문 화면) / 한 화면에서 바로 할게요(정리 화면)]
+//  바깥을 누르거나 닫으면 질문 화면(쉬운 쪽) · 한 청첩장에 한 번만(state.spStartPicked)
+function spStartPick() {
+    if (!spOpt('flow', 'startPick') || !spOpt('flow', 'ask') || state.spStartPicked || spInPlace || SAMPLE_ID) return;
+    if (!window.matchMedia('(max-width: 860px), (pointer: coarse) and (max-width: 1100px)').matches) return;
+    state.spStartPicked = true; document.querySelector('.sp-start-pick')?.remove();
+    const el = document.createElement('div'); el.className = 'sp-start-pick'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', '어떻게 만들까요?');
+    el.innerHTML = `<div class="ssp-p"><i class="ssp-g" aria-hidden="true"></i><b class="ssp-t">어떻게 만들까요?</b><p class="ssp-s">나중에 언제든 바꿀 수 있어요</p>
+        <button type="button" class="ssp-o on" data-sv="quick"><span class="ssp-n">처음이라 쉽게 <em>추천</em></span><span class="ssp-d">하나씩 물어보면 답만 하면 돼요 · 이름 → 날짜 → 장소 → 사진</span><i aria-hidden="true">›</i></button>
+        <button type="button" class="ssp-o" data-sv="list"><span class="ssp-n">한 화면에서 바로 할게요</span><span class="ssp-d">채울 칸이 한눈에 보이고 원하는 곳부터 고쳐요</span><i aria-hidden="true">›</i></button></div>`;
+    document.body.appendChild(el); requestAnimationFrame(() => el.classList.add('in'));
+    const done = v => { el.classList.remove('in'); setTimeout(() => el.remove(), 260); if (v === 'list') { state.spView = 'list'; spRender(); window.scrollTo(0, 0); } scheduleSnapshot(); };
+    el.querySelectorAll('[data-sv]').forEach(b => b.addEventListener('click', () => done(b.dataset.sv)));
+    el.addEventListener('click', e => { if (e.target === el) done('quick'); });
+}
 function openSimpleEditor(step, inPlace) {
     spInPlace = !!inPlace;
     { const pn = document.getElementById('simplePane'); if (pn) pn._spKey = null; }
@@ -11816,6 +11832,7 @@ function spDockHtml(bads) {
         let nextK = ''; const r0 = step < 3 && document.querySelector('#simplePane .spb-must .spb-li:is(.warn, .todo)'); if (r0) nextK = r0.dataset.k || r0.dataset.li || ''; // (화면의 첫 번호 칸 - 없으면 고칠 것 순서로)
         if (!nextK && step < 3 && bads.length) { const ks = new Set(bads.map(c => c.task ? ((SP_TASKS.find(t => t.id === c.task) || {}).k) : ((PUB_GO[c.id] || [])[1])).filter(Boolean)); const st = spSteps().find(x => ks.has(x.k)); nextK = st ? st.k : ''; }
         const nm = nextK ? (SP_MENU[nextK] && EASY_NAMES !== 'old' ? SP_MENU[nextK][0] : (spSteps().find(x => x.k === nextK) || {}).t || '') : '';
+        if (step >= 2 && !bads.length && spOpt('flow', 'finPic')) return `<div class="sp-dock dk-tidy dk-fin s${step}" id="spDock">${b2}${step >= 4 ? '<button type="button" class="dk-sub" data-nx="copy"><b>주소 복사</b></button><button type="button" class="dk-main dk-send" data-nx="share"><b>카톡 · 문자로 보내기</b></button>' : '<button type="button" class="dk-main dk-pub" data-nx="pub"><b>발행하기</b></button>'}</div>`; // (1019z26 마지막 화면 - 미리보기는 위 큰 그림)
         const main = step < 3 ? (nextK ? `<button type="button" class="dk-main" data-nx="next" data-k="${nextK}"><b>다음 · ${esc(nm)} 채우기</b></button>` : pv('dk-main', '완성본 보기'))
             : step === 3 ? '<button type="button" class="dk-main" data-nx="pub"><b>발행하기</b></button>' : '<button type="button" class="dk-main" data-nx="copy"><b>주소 복사하기</b></button>';
         return `<div class="sp-dock dk-tidy s${step}" id="spDock">${b2}${step < 3 && !nextK ? '' : pv('dk-sub', '미리보기')}${main}</div>`;
@@ -11836,7 +11853,7 @@ function spListTidy(pane, fill) {
     const rd = spb.querySelector('#spReady.s1');
     if (rd && n) { const b = rd.querySelector('.td-t b'), sp = rd.querySelector('.td-t span'), sub = rd.querySelector('.td-s'); if (b) b.textContent = n + '곳'; if (sp) sp.textContent = '만 채우면 발행할 수 있어요'; if (sub) sub.textContent = '아래 번호 칸을 위에서부터 누르면 돼요'; }
     const gh = (g, t, sm) => { const h = spb.querySelector(`.spb-${g} > .spb-gh`); if (!h) return; const b = h.querySelector('b'), s2 = h.querySelector('small'); if (b && t) b.textContent = t; if (s2) s2.textContent = sm; };
-    gh('must', n ? '꼭 채울 것' : '', n ? '번호 순서대로' : ''); gh('more', '넣고 빼는 칸', '스위치를 끄면 빠져요');
+    gh('must', n ? '꼭 채울 것' : '내가 적은 것', n ? '번호 순서대로' : '누르면 고쳐요'); gh('more', '넣고 빼는 칸', '스위치를 끄면 빠져요');
     if (EASY_LIST === 'tabs') { const rest = spb.querySelectorAll(':scope > .spb-grp:not(.spb-must), :scope > .spb-later, :scope > #spDoneRow, :scope > .spb-order').length;
         if (!n) spListTab = 'more'; if (!rest) spListTab = 'must';
         if (n && rest) { const bar = document.createElement('div'); bar.className = 'spb-tabs'; bar.setAttribute('role', 'tablist');
@@ -11866,7 +11883,7 @@ function spNextBind(pane) {
         else if (k === 'pub') pubCheckThen(async () => { b.disabled = true; const bb = b.querySelector('b'); if (bb) bb.textContent = '발행 중…'; let ok = false; try { ok = await saveToServer(true); } finally { b.disabled = false; } if (ok || isPublished) spRender(); else if (bb) bb.textContent = '발행하기'; });
         else if (k === 'copy') { const u = spPubUrl(); if (!u) return; let ok = false; try { await navigator.clipboard.writeText(u); ok = true; } catch (e) { try { const ta = document.createElement('textarea'); ta.value = u; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (e2) {} }
             const bb = b.querySelector('b'); if (bb) { bb.textContent = ok ? '주소를 복사했어요 ✓' : '복사하지 못했어요 · 주소를 길게 눌러 복사해 주세요'; clearTimeout(b._t); b._t = setTimeout(() => { if (bb.isConnected) bb.textContent = '주소 복사하기'; }, 2600); } }
-        else if (k === 'share') { const u = spPubUrl(); if (u) try { await navigator.share({ title: document.title, url: u }); } catch (e) {} }
+        else if (k === 'share') { const u = spPubUrl(); if (!u) return; if (navigator.share) { try { await navigator.share({ title: document.title, url: u }); } catch (e) {} } else { try { await navigator.clipboard.writeText(u); } catch (e) {} const bb = b.querySelector('b'); if (bb) { bb.textContent = '주소를 복사했어요 · 카톡에 붙여 넣어요'; clearTimeout(b._t); b._t = setTimeout(() => { if (bb.isConnected) bb.textContent = '카톡 · 문자로 보내기'; }, 2600); } } }
     }));
 }
 function spMoreTipHtml() {
@@ -11882,10 +11899,19 @@ function spMoreTipHtml() {
 function spReadyHtmlOf(checks, bads) {
     const all = checks.filter(c => !c.info).length + bads.filter(b => b.task).length, nOk = all - bads.length, ready = spOpt('flow', 'summary') && all > 0;
     const short = { names: '이름', date: '날짜', time: '시간', venue: '예식장', hero: spHeroKind() === 'video' ? '첫 화면 영상' : '첫 화면 사진', gallery: '갤러리', greet: '인사말', account: '계좌', contact: '연락처' };
+    if (ready && !bads.length && spTidy() && spOpt('flow', 'finPic')) return spFinCardHtml(); // 1019z26 다 채웠으면 큰 청첩장 그림 (마지막 화면 1안 + 2안)
     const readyHtml = ready ? spTodoHtml(bads, all, nOk) : '';
     return readyHtml;
 }
 // 목록 칸 하나의 상태 (켜짐·고칠 것·채움) + 한 줄 요약
+// 1019z26 마지막 화면 (관리자 flow 'finPic', 시안 claude.ai 아티팩트 ES8vi4Mjr8ZZfKHjqEFAGQ 마지막 1 + 2): 다 채우면 맨 위에 진짜 첫 화면 레이아웃으로 그린 큰 그림
+//  + '청첩장이 다 됐어요 / 발행했어요' · 그림을 누르면 완성본 · 아래 목록은 '내가 적은 것 · 누르면 고쳐요' · 아래 버튼 줄 = [‹ 질문][발행하기] → [주소 복사][카톡 · 문자로 보내기]
+function spFinCardHtml() {
+    let mini = ''; try { const { b, kind } = spHeroCur(); const lay = spHeroLayouts().find(l => l.id === b.fields.heroLayout) || { parts: {} }; mini = spHeroLayoutMini(lay, b, kind === 'video' ? 'video' : 'photo'); } catch (e) {}
+    const pub = isPublished;
+    return `<div class="spb-ready spb-next spb-fin${pub ? ' pub' : ''}" id="spReady"><p class="fin-t">${pub ? '발행했어요!' : '청첩장이 다 됐어요'}</p><p class="fin-s">${pub ? '이제 하객에게 보내기만 하면 돼요.' : '확인하고 발행하면 하객에게 보낼 주소가 생겨요.'}</p>
+        <button type="button" class="fin-pic" data-nx="pv" aria-label="완성본 크게 보기">${mini || '<i class="fin-ph"></i>'}</button><p class="fin-h">그림을 누르면 하객이 보는 화면 그대로 크게 보여요</p></div>`;
+}
 function spLiState(st, sw, warnOf) {
     const on = sw ? spBlock(sw).enabled : true, [sum0, ok0] = spSum(st), warn = on && warnOf[st.k];
     return { on, sum: warn || sum0, stt: !on ? 'off' : warn ? 'warn' : !warn && ok0 ? 'done' : 'todo' };
