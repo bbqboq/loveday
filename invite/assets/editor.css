@@ -5717,9 +5717,9 @@ html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
 .sp-mg-conf i { position: absolute; top: 0; display: block; animation: spMgFall 1.9s cubic-bezier(.3,.5,.5,1) both; }
 @media (prefers-reduced-motion: reduce) { .sp-mg .spb-li.spb-now .spb-st, .sp-mg .sp-dock.dk-tidy .dk-main b::after, .sp-mg .spb-st.spb-done { animation: none !important; } }
 /* 1019z25b 스크롤 버튼 '없음'일 때 오른쪽 빈자리: 버튼이 통통 튀는 작은 그림 + 안내 (네 칸이 없을 때만) */
-@keyframes nbxEmptyBob { 0%, 100% { background-position: center 10px, 0 0; } 50% { background-position: center 18px, 0 0; } }
-.spv-side .nbx-focus:not(:has(.nbx-pills))::after { grid-area: pills; align-self: stretch; content: '버튼을 넣으면\A하객이 아래로 넘기기 쉬워요'; white-space: pre; display: flex; align-items: flex-end; justify-content: center; min-height: 96px; padding: 0 6px 10px; box-sizing: border-box; border: 1px dashed #E2D8D0; border-radius: 12px; text-align: center; font-size: 11.5px; line-height: 1.45; color: #8C847C;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23F3ECE7' stroke='%23C9B8AC'/%3E%3Cpath d='M10 13l6 6 6-6' fill='none' stroke='%237A6A5E' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center 10px / 30px no-repeat, linear-gradient(#fff, #fff);
+@keyframes nbxEmptyBob { 0%, 100% { background-position: center 6px, 0 0; } 50% { background-position: center 12px, 0 0; } }
+.spv-side .nbx-focus:not(:has(.nbx-pills))::after { grid-area: pills; align-self: stretch; content: '버튼을 넣으면\A하객이 아래로 넘기기 쉬워요'; white-space: pre; display: flex; align-items: flex-end; justify-content: center; height: 77px; min-height: 0; padding: 0 6px 7px; box-sizing: border-box; border: 1px dashed #E2D8D0; border-radius: 12px; text-align: center; font-size: 11px; line-height: 1.35; color: #8C847C;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23F3ECE7' stroke='%23C9B8AC'/%3E%3Cpath d='M10 13l6 6 6-6' fill='none' stroke='%237A6A5E' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center 6px / 24px no-repeat, linear-gradient(#fff, #fff);
     animation: nbxEmptyBob 1.3s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .spv-side .nbx-focus:not(:has(.nbx-pills))::after { animation: none; } }
 /* ===== 1019z26 마지막 화면 (관리자 flow 'finPic'): 큰 청첩장 그림 카드 + 아래 버튼 줄 ===== */
@@ -5764,3 +5764,5 @@ html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
 .sp-chat.sp-same #spBody > * { animation: none !important; }
 @keyframes spcIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sp-chat #spBody > * { animation: none !important; } }
+
+.spv-side .nbx-focus > .nbx-pills { gap: 5px; } .spv-side .nbx-focus > .nbx-pills button { height: 36px; } /* 1019z26c '없음' 빈 칸(77px) = 네 칸 2줄(36 + 5 + 36) */
