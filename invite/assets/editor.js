@@ -11811,6 +11811,15 @@ function spDockHtml(bads) {
     if (!spRdDock() || !spOpt('flow', 'summary')) return '';
     const step = spReadyStep(bads), pv = (cls, t) => `<button type="button" class="${cls}" data-nx="pv">${t}</button>`;
     const back = spOpt('flow', 'ask') && !spInPlace && spAskSteps().length ? '<button type="button" class="dk-back" data-nx="back">이전</button>' : ''; // 질문 화면 마지막 질문으로
+    if (spTidy()) { // 1019z25c 가지런히: [‹ 질문으로][미리보기][다음 · ○○ 채우기 | 발행하기 | 주소 복사하기] - 한 줄에서 늘 '다음에 할 일' 하나 (예전엔 칸을 채울 때마다 버튼 줄을 새로 그려 덧붙인 '다음' 버튼이 사라졌음)
+        const b2 = spOpt('flow', 'ask') && !spInPlace && spAskSteps().length ? '<button type="button" class="dk-back" data-nx="back" aria-label="질문 화면으로">‹ 질문</button>' : '';
+        let nextK = ''; const r0 = step < 3 && document.querySelector('#simplePane .spb-must .spb-li:is(.warn, .todo)'); if (r0) nextK = r0.dataset.k || r0.dataset.li || ''; // (화면의 첫 번호 칸 - 없으면 고칠 것 순서로)
+        if (!nextK && step < 3 && bads.length) { const ks = new Set(bads.map(c => c.task ? ((SP_TASKS.find(t => t.id === c.task) || {}).k) : ((PUB_GO[c.id] || [])[1])).filter(Boolean)); const st = spSteps().find(x => ks.has(x.k)); nextK = st ? st.k : ''; }
+        const nm = nextK ? (SP_MENU[nextK] && EASY_NAMES !== 'old' ? SP_MENU[nextK][0] : (spSteps().find(x => x.k === nextK) || {}).t || '') : '';
+        const main = step < 3 ? (nextK ? `<button type="button" class="dk-main" data-nx="next" data-k="${nextK}"><b>다음 · ${esc(nm)} 채우기</b></button>` : pv('dk-main', '완성본 보기'))
+            : step === 3 ? '<button type="button" class="dk-main" data-nx="pub"><b>발행하기</b></button>' : '<button type="button" class="dk-main" data-nx="copy"><b>주소 복사하기</b></button>';
+        return `<div class="sp-dock dk-tidy s${step}" id="spDock">${b2}${step < 3 && !nextK ? '' : pv('dk-sub', '미리보기')}${main}</div>`;
+    }
     const btns = back + (step < 3 ? pv('dk-main', '완성본 보기')
         : step === 3 ? pv('dk-sub', '완성본 보기') + '<button type="button" class="dk-main" data-nx="pub"><b>발행하기</b></button>'
         : pv('dk-sub', '완성본 보기') + '<button type="button" class="dk-main" data-nx="copy"><b>주소 복사하기</b></button>');
@@ -11828,12 +11837,6 @@ function spListTidy(pane, fill) {
     if (rd && n) { const b = rd.querySelector('.td-t b'), sp = rd.querySelector('.td-t span'), sub = rd.querySelector('.td-s'); if (b) b.textContent = n + '곳'; if (sp) sp.textContent = '만 채우면 발행할 수 있어요'; if (sub) sub.textContent = '아래 번호 칸을 위에서부터 누르면 돼요'; }
     const gh = (g, t, sm) => { const h = spb.querySelector(`.spb-${g} > .spb-gh`); if (!h) return; const b = h.querySelector('b'), s2 = h.querySelector('small'); if (b && t) b.textContent = t; if (s2) s2.textContent = sm; };
     gh('must', n ? '꼭 채울 것' : '', n ? '번호 순서대로' : ''); gh('more', '넣고 빼는 칸', '스위치를 끄면 빠져요');
-    // 아래 큰 버튼: 남은 칸이 있으면 '다음 · ○○ 채우기'
-    const dock = pane.querySelector('#spDock'), main = dock && dock.querySelector('.dk-main[data-nx="pv"]');
-    if (main && n) { const nm = (rows[0].querySelector('.spb-tx b') || {}).firstChild; main.className = 'dk-sub'; main.textContent = '미리보기';
-        const nx = document.createElement('button'); nx.type = 'button'; nx.className = 'dk-main'; const mk = SP_MENU[rows[0].dataset.k || rows[0].dataset.li], lab = EASY_NAMES === 'ask' && mk ? mk[0] : (nm ? nm.textContent : ''); nx.innerHTML = `<b>다음 · ${esc(lab)} 채우기</b>`; // (질문 이름일 땐 버튼엔 짧은 쉬운 이름) dock.appendChild(nx); dock.classList.add('dk-tidy');
-        nx.addEventListener('click', () => { const li = pane.querySelector('.spb-must .spb-li:is(.warn, .todo)'); if (!li) return; if (EASY_LIST === 'tabs' && spListTab !== 'must') { spListTab = 'must'; spRender(); return; }
-            if (li.classList.contains('open')) li.scrollIntoView({ block: 'start', behavior: 'smooth' }); else { const t = li.querySelector('[data-li-tog]'); if (t) t.click(); } }); }
     if (EASY_LIST === 'tabs') { const rest = spb.querySelectorAll(':scope > .spb-grp:not(.spb-must), :scope > .spb-later, :scope > #spDoneRow, :scope > .spb-order').length;
         if (!n) spListTab = 'more'; if (!rest) spListTab = 'must';
         if (n && rest) { const bar = document.createElement('div'); bar.className = 'spb-tabs'; bar.setAttribute('role', 'tablist');
@@ -11856,6 +11859,8 @@ function spNextBind(pane) {
     [...(box ? box.querySelectorAll('[data-nx]') : []), ...(dock ? dock.querySelectorAll('[data-nx]') : [])].forEach(b => b.addEventListener('click', async () => {
         const k = b.dataset.nx;
         if (k === 'pv') pane.querySelector('#spListDone').click();
+        else if (k === 'next') { if (EASY_LIST === 'tabs' && spListTab !== 'must') { spListTab = 'must'; spRender(); } const li = pane.querySelector(`.spb-must .spb-li:is(.warn, .todo)[data-k="${b.dataset.k}"], .spb-must .spb-li:is(.warn, .todo)[data-li="${b.dataset.k}"]`) || pane.querySelector('.spb-must .spb-li:is(.warn, .todo)'); if (!li) return;
+            if (li.classList.contains('open')) li.scrollIntoView({ block: 'start', behavior: 'smooth' }); else { const t = li.querySelector('[data-li-tog]'); if (t) t.click(); } }
         else if (k === 'back') { stopAllBgm(); const L = spAskSteps(); state.spView = 'quick'; spStep = Math.max(0, L.length - 1); spAskLast = -1; pane._spKey = null; spRender(); window.scrollTo(0, 0); spAskAutoSave(); }
         else if (k === 'kk') kkSheetOpen();
         else if (k === 'pub') pubCheckThen(async () => { b.disabled = true; const bb = b.querySelector('b'); if (bb) bb.textContent = '발행 중…'; let ok = false; try { ok = await saveToServer(true); } finally { b.disabled = false; } if (ok || isPublished) spRender(); else if (bb) bb.textContent = '발행하기'; });
@@ -12112,6 +12117,7 @@ function spRenderList() {
     pane.querySelector('#spMtGo')?.addEventListener('click', () => { state.spMoreSeen = true; simpleToFull(); });
     pane.querySelectorAll('#spMtX, #spMtOk').forEach(b => b.addEventListener('click', () => { state.spMoreSeen = true; const c = pane.querySelector('#spMoreTip'); if (c) c.remove(); scheduleSnapshot(); }));
     pane.querySelectorAll('#spReady [data-pc-go]').forEach(b => b.addEventListener('click', () => { spPvCur = b.dataset.pcGo; pubGo(b.dataset.pcGo); }));
+    { const od = pane.querySelector('#spDock'), dh = spDockHtml(fill); if (od && dh && od.outerHTML !== dh) { const t = document.createElement('div'); t.innerHTML = dh; od.replaceWith(t.firstElementChild); } } // (1019z25c 그린 뒤 첫 번호 칸으로 '다음 · ○○' 맞춤)
     spNextBind(pane);
     try { spListTidy(pane, fill); } catch (e) { console.warn(e); }
     try { // 1019z25 편집 화면 안내 움직임 (관리자 flow 'mgEditor'): 지금 할 칸 번호 · 다음 버튼 화살표 · 남은 칸이 0이 되는 순간 축하 꽃가루 한 번

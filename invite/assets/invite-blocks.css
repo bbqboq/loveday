@@ -2759,3 +2759,14 @@ html.ld-wm-lock img { -webkit-touch-callout: none; -webkit-user-select: none; us
 @media (prefers-reduced-motion: reduce) { .ib-mg-env details.ib-acc-side[open]::before, .ib-mg-env details.ib-acc-side[open] summary::after, .ib-mg-env details.ib-acc-side[open] > :not(summary), .ld-mg-scroll .hero-full-wrap > img.hero-photo { animation: none !important; } .ld-mg-scroll .mg-w { opacity: 1; translate: none; filter: none; transition: none; } }
 .ib-mg-env details.ib-acc-side summary { transition: height .4s cubic-bezier(.23,1,.32,1) .35s; }
 .ib-mg-env details.ib-acc-side[open] summary { height: 54px; } /* 열린 뒤엔 덮개 자리(빈 칸)를 줄임 */
+/* 1019z25c 봉투 닫기 (JS가 .mg-closing을 붙이고 0.46초 뒤 닫음): 편지 줄이 내려가며 사라지고 · 덮개가 내려오고 · 실링이 다시 붙고 · 칸 높이가 부드럽게 줄어듦 */
+@keyframes mgLetterOut { to { opacity: 0; transform: translateY(18px); } }
+@keyframes mgFlapBack { from { transform: rotateX(-172deg); } to { transform: rotateX(0); } }
+@keyframes mgSealOn { from { transform: translateY(14px) scale(.6); opacity: 0; } 70% { transform: scale(1.08); opacity: 1; } to { transform: none; opacity: 1; } }
+.ib-mg-env details.ib-acc-side { transition: height .42s cubic-bezier(.4,0,.2,1); }
+.ib-mg-env details.ib-acc-side.mg-closing { overflow: hidden; }
+.ib-mg-env details.ib-acc-side.mg-closing > :not(summary) { animation: mgLetterOut .26s ease-in both !important; }
+.ib-mg-env details.ib-acc-side.mg-closing::before { animation: mgFlapBack .4s cubic-bezier(.5,0,.2,1) .06s both !important; }
+.ib-mg-env details.ib-acc-side.mg-closing summary { height: 92px; transition: height .38s cubic-bezier(.4,0,.2,1); }
+.ib-mg-env details.ib-acc-side.mg-closing summary::after { animation: mgSealOn .4s cubic-bezier(.23,1,.32,1) .08s both !important; }
+.ib-mg-env details.ib-acc-side:not([open]) summary { transition: none; } /* (닫힌 뒤 54→92 되돌아가는 늦은 전환 없음 - 이미 92) */

@@ -3284,6 +3284,17 @@
     }
 
     // ---------- 공개페이지 동작 (복사 버튼, 슬라이드 진행바) - 한 번만 연결 ----------
+    if (typeof document !== 'undefined') {
+    // 1019z25c 봉투 닫기: 바로 접히면 높이가 '틱' 줄어서 → 편지가 내려가며 사라지고 덮개 · 실링이 돌아온 뒤 닫힘 (.mg-closing 0.45초)
+    document.addEventListener('click', e => {
+        const sm = e.target.closest && e.target.closest('.ib-mg-env details.ib-acc-side[open] > summary'); if (!sm) return;
+        const d = sm.parentElement; if (d.classList.contains('mg-closing')) { e.preventDefault(); return; }
+        if (global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        e.preventDefault(); d.style.height = d.offsetHeight + 'px'; d.classList.add('mg-closing'); void d.offsetHeight;
+        d.style.height = '92px'; // (열린 높이 → 닫힌 봉투 높이로 부드럽게 · 닫힌 머리 = 92px, invite-blocks.css .ib-as-envelope summary)
+        setTimeout(() => { d.open = false; d.classList.remove('mg-closing'); d.style.height = ''; }, 460);
+    });
+    }
     let interactionsBound = false;
     function toast(msg) {
         let el = document.querySelector('.ib-toast');

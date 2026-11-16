@@ -5692,7 +5692,7 @@ html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
 .spb-li.off .spb-ic { opacity: .5; }
 .spb-tidy .spb-must .spb-li[data-li="venue"] .sp-li-sw, .spb-tidy .spb-must .spb-li[data-k="venue"] .sp-li-sw { display: none; } /* 꼭 채울 칸엔 끄는 스위치 없음 (갤러리처럼 뺄 수 있는 칸만 남김) */
 .spb-tidy .spb-gh small { white-space: nowrap; }
-.sp-dock.dk-tidy .dk-back { width: 56px; padding: 0; font-size: 13px; }
+.sp-dock.dk-tidy .dk-back { width: 64px; padding: 0; font-size: 13.5px; }
 .sp-dock.dk-tidy .dk-sub { flex: 0 0 auto; width: 84px; padding: 0; font-size: 13.5px; }
 .sp-dock.dk-tidy .dk-main { min-width: 0; } .sp-dock.dk-tidy .dk-main b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; }
 .spb-tabs { display: flex; gap: 4px; padding: 4px; margin: 0 0 14px; border-radius: 16px; background: color-mix(in srgb, var(--wz-ink, #1B1A18) 7%, transparent); }
