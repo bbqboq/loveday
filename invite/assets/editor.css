@@ -5778,7 +5778,7 @@ html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
 .hlC-ph .hl-m > span[data-hlk].on { outline: 1.5px solid #fff; background-color: rgba(255,255,255,.16); }
 .hlC-ph:not(.play) .hl-m > span { animation: none !important; }
 .hlC-ph.play .hl-m > span[class*="hlx-a-"] { animation-iteration-count: 1; animation-fill-mode: both; }
-.hlC.crop .hlC-ph .hl-m > span { pointer-events: none; outline: 0; opacity: .55; }
+.hlC.crop .hlC-ph .hl-m > span { pointer-events: none; outline: 0; } /* (1019z27h 글자는 그대로 진하게 - 보일 부분을 맞추면서 효과도 보이게) */
 .hlC-ov { position: absolute; inset: 5px; border-radius: 21px; border: 2px dashed rgba(255,255,255,.92); background: rgba(0,0,0,.1); display: flex; flex-direction: column; align-items: center; padding: 10px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
 .hlC-ov[hidden] { display: none; }
 .hlC-ov.drag { cursor: grabbing; background: rgba(0,0,0,.04); }

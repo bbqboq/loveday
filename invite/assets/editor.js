@@ -12954,9 +12954,9 @@ function spHeroBigLook(box, hb) {
     const fxName = pill ? pill.textContent : '', fxPos = (/(\d+ \/ \d+)/.exec(pos) || [])[1] || '';
     const replay = box.querySelector('[data-hl-replay]');
     const el = document.createElement('div'); el.className = 'hlC' + (spBigCrop ? ' crop' : '');
-    el.innerHTML = `<div class="hlC-hd"><b>${spBigCrop ? '사진을 손가락으로 끌어요' : '글자를 누르면 고쳐요'}</b>${spBigCrop ? '' : '<button type="button" class="hlC-rp" data-hlc-rp>▶ 다시 보기</button>'}</div>
+    el.innerHTML = `<div class="hlC-hd"><b>${spBigCrop ? '✋ 사진을 끌어서 옮기고, 두 손가락으로 벌리면 확대' : '글자를 누르면 고쳐요'}</b>${spBigCrop ? '' : '<button type="button" class="hlC-rp" data-hlc-rp>▶ 다시 보기</button>'}</div>
         <div class="hlC-pv"><div class="hlC-ph">${spBigLookMini(hb)}</div>
-            <div class="hlC-ov"${spBigCrop ? '' : ' hidden'}><i class="hlC-tip">✋ 끌어서 옮겨요<br>두 손가락으로 벌리면 확대</i><span class="hlC-sp"></span>
+            <div class="hlC-ov"${spBigCrop ? '' : ' hidden'}><span class="hlC-sp"></span>
                 <div class="hlC-zr"><span>확대</span><input type="range" min="100" max="400" step="5" aria-label="확대"><button type="button" data-hlc-reset>처음대로</button></div></div></div>
         <div class="hlC-bar"><div class="hlC-fx"><button type="button" data-hlc-step="-1" aria-label="앞 효과">‹</button><button type="button" class="hlC-fxn" data-hlc-step="1"><b>${esc(fxName)}</b><small>글자 효과${fxPos ? ' · ' + esc(fxPos) : ''}</small></button><button type="button" data-hlc-step="1" aria-label="다음 효과">›</button></div>
             ${real && spOpt('hero', 'crop') ? `<button type="button" class="hlC-cb${spBigCrop ? ' on' : ''}" data-hlc-crop aria-pressed="${spBigCrop}">${spBigCrop ? '✓ 다 했어요' : '보일 부분'}</button>` : ''}</div>`;
