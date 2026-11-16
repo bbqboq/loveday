@@ -10,5 +10,5 @@ declare(strict_types=1);
 require_once __DIR__ . '/functions.php';
 
 header('Content-Type: text/css; charset=utf-8');
-header('Cache-Control: public, max-age=300');
+header((site_colors_get()['preset'] ?? '') === 'random' ? 'Cache-Control: no-store' : 'Cache-Control: public, max-age=300'); // (랜덤이면 열 때마다 새 색)
 echo site_colors_css();

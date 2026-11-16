@@ -41,7 +41,7 @@ $notice = ''; $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ui_form'])) {
     csrf_verify($_POST['csrf_token'] ?? null);
     $preset = (string) ($_POST['ui_preset'] ?? 'warm');
-    $val = ['preset' => isset(SITE_COLOR_PRESETS[$preset]) || $preset === 'custom' ? $preset : 'warm'];
+    $val = ['preset' => isset(SITE_COLOR_PRESETS[$preset]) || $preset === 'custom' || $preset === 'random' ? $preset : 'warm'];
     if ($val['preset'] === 'custom') foreach (array_keys(SITE_COLOR_KEYS) as $k) {
         $v = strtoupper(trim((string) ($_POST['ui_' . $k] ?? '')));
         $val[$k] = preg_match('/^#[0-9A-F]{6}$/', $v) ? $v : SITE_COLOR_PRESETS['warm'][$k];
@@ -154,6 +154,9 @@ $cur = fn(string $k) => $error ? (string) ($_POST[$k] ?? '') : app_setting($k);
                 <label class="ui-p"><input type="radio" name="ui_preset" value="<?= $pk ?>" <?= $uiPreset === $pk ? 'checked' : '' ?> data-c='<?= snap_h(json_encode(array_intersect_key($pk === 'custom' ? $uiVals : $pv, SITE_COLOR_KEYS))) ?>'>
                     <span class="ui-sw"><?php foreach (array_keys(SITE_COLOR_KEYS) as $k): ?><i style="background:<?= snap_h(($pk === 'custom' ? $uiVals : $pv)[$k]) ?>"></i><?php endforeach; ?></span><b><?= snap_h($pv['label']) ?></b></label>
                 <?php endforeach; ?>
+                <?php $uiRnd = array_values(SITE_COLOR_PRESETS); ?>
+                <label class="ui-p ui-rnd"><input type="radio" name="ui_preset" value="random" <?= $uiPreset === 'random' ? 'checked' : '' ?> data-rnd='<?= snap_h(json_encode(array_map(fn($x) => array_intersect_key($x, SITE_COLOR_KEYS), $uiRnd))) ?>'>
+                    <span class="ui-sw"><?php foreach ($uiRnd as $x): ?><i style="background:<?= snap_h($x['point']) ?>"></i><?php endforeach; ?></span><b>랜덤 (열 때마다 위 색 중 하나)</b></label>
             </div>
             <p class="help" style="font-size:12.5px;color:#666;margin:10px 0 0;"><b>직접 바꾸기</b> · 위에서 고른 색을 바탕으로 하나씩 바꿀 수 있어요. 하나라도 바꾸면 "직접 고르기"로 저장돼요.</p>
             <div class="ui-custom" id="uiCustom">
@@ -169,7 +172,7 @@ $cur = fn(string $k) => $error ? (string) ($_POST[$k] ?? '') : app_setting($k);
             const show = c => Object.keys(c).forEach(k => demo.style.setProperty('--d-' + k.toLowerCase(), c[k]));
             const fromPicks = () => Object.fromEntries(ins.map(i => [i.dataset.k, i.value]));
             // 프리셋을 고르면 아래 색 칸도 그 색으로 → 거기서 하나씩 바꾸면 "직접 고르기"
-            f.querySelectorAll('[name=ui_preset]').forEach(r => r.addEventListener('change', () => { if (r.value !== 'custom') { const c = JSON.parse(r.dataset.c); ins.forEach(i => { if (c[i.dataset.k]) i.value = c[i.dataset.k]; }); } show(fromPicks()); }));
+            f.querySelectorAll('[name=ui_preset]').forEach(r => r.addEventListener('change', () => { if (r.value === 'random') { const L = JSON.parse(r.dataset.rnd), c = L[Math.floor(Math.random() * L.length)]; show(c); return; } if (r.value !== 'custom') { const c = JSON.parse(r.dataset.c); ins.forEach(i => { if (c[i.dataset.k]) i.value = c[i.dataset.k]; }); } show(fromPicks()); }));
             ins.forEach(i => i.addEventListener('input', () => { if (custom) custom.checked = true; show(fromPicks()); }));
             show(fromPicks());
         })();

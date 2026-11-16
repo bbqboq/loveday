@@ -733,7 +733,7 @@ function site_colors_values(?array $c = null): array
 {
     $c = $c ?? site_colors_get();
     $base = SITE_COLOR_PRESETS['warm'];
-    $p = SITE_COLOR_PRESETS[$c['preset'] ?? ''] ?? null;
+    $p = SITE_COLOR_PRESETS[$c['preset'] ?? ''] ?? (($c['preset'] ?? '') === 'random' ? SITE_COLOR_PRESETS['warm'] : null);
     $out = [];
     foreach (array_keys(SITE_COLOR_KEYS) as $k) {
         $v = $p ? $p[$k] : (string) ($c[$k] ?? '');
@@ -744,6 +744,7 @@ function site_colors_values(?array $c = null): array
 function site_colors_css(): string
 {
     $c = site_colors_get();
+    if (($c['preset'] ?? '') === 'random') $c = ['preset' => array_rand(SITE_COLOR_PRESETS)]; // 1019z27f 랜덤: 화면을 열 때마다 프리셋 다섯 가지 중 하나 (site_colors.php는 이때 캐시 안 함)
     if (($c['preset'] ?? 'warm') === 'warm') return "/* 사이트 색상: 처음 색 그대로 */\n";
     $v = site_colors_values($c);
     // 포인트 옅은 면 위 글자색 = 포인트 색을 진하게 (간편 만들기 [미리보기] 버튼 글자 등)
@@ -754,5 +755,6 @@ function site_colors_css(): string
 /** 각 화면 <head>에 넣는 링크 (색이 바뀌면 주소가 바뀌어 바로 반영) */
 function site_colors_link(): string
 {
+    if ((site_colors_get()['preset'] ?? '') === 'random') return '<style>' . site_colors_css() . '</style>'; // 랜덤은 화면마다 바로 넣음 (주소가 같으면 브라우저가 같은 색을 다시 씀)
     return '<link rel="stylesheet" href="/invite/site_colors.php?v=' . substr(md5(json_encode(site_colors_get())), 0, 8) . '">';
 }
