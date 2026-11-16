@@ -2196,7 +2196,7 @@
         ending: {
             label: '엔딩', color: '#34495E',
             defaults: { image: '', text: '저희의 새로운 시작을\n함께해 주셔서 감사합니다.', align: 'bottom', overlay: 35,
-                credits: false, creditText: true, creditTextPos: 'bottom', creditRows: CREDIT_ROWS_DEFAULT.map(r => Object.assign({}, r)), creditSpeed: 45, creditAlign: 'left', creditTop: 24, creditH: 46 },
+                credits: true, creditText: true, creditTextPos: 'bottom', creditRows: CREDIT_ROWS_DEFAULT.map(r => Object.assign({}, r)), creditSpeed: 45, creditAlign: 'left', creditTop: 24, creditH: 46 },
             editor: [
                 { key: 'credits', label: '', type: 'check', checkLabel: '엔딩 크레딧(스탭롤)로 보여주기',
                   hint: '사진을 화면 가득 깔고, 그 위 정해진 칸 안에서만 글자가 영화 엔딩처럼 아주 천천히 올라가요.' },
