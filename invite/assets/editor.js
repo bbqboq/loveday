@@ -11903,13 +11903,13 @@ function spListTidy(pane, fill) {
 }
 // 1019z27k 마지막 화면: 꼭 채울 칸이 예시 그대로여도 고객이 원하면 그대로 넘어가기 - 이름 비공개(예시 이름 그대로) · 갤러리 예시 사진 이대로 사용
 function spPassBtns(spb) {
-    const P = [['names', () => spChecksBad('names') && !state.namesPriv, '이름 비공개로 넘어가기', () => { state.namesPriv = true; }],
-        ['gallery', () => spChecksBad('gallery') && !state.galleryKeep && ((spBlock('gallery') || {}).fields || {}).images?.length, '이대로 사용하기', () => { state.galleryKeep = true; }]];
-    P.forEach(([k, want, label, act]) => {
+    const P = [['names', () => spChecksBad('names') && !state.namesPriv, '비공개로 넘어가기', () => { state.namesPriv = true; }, '이름을 밝히기 싫으세요?'],
+        ['gallery', () => spChecksBad('gallery') && !state.galleryKeep && ((spBlock('gallery') || {}).fields || {}).images?.length, '이대로 사용하기', () => { state.galleryKeep = true; }, '예시 사진도 마음에 드세요?']];
+    P.forEach(([k, want, label, act, q]) => {
         if (!want()) return;
         const li = spb.querySelector(`.spb-li[data-li="${k}"]:is(.warn, .todo)`) || spb.querySelector(`.spb-li[data-k="${k}"]:is(.warn, .todo)`); if (!li || li.querySelector('.spb-pass')) return;
         const w = document.createElement('div'); w.className = 'spb-passw';
-        w.innerHTML = `<button type="button" class="spb-pass">${esc(label)} <span aria-hidden="true">›</span></button>`;
+        w.innerHTML = `<button type="button" class="spb-pass"><span class="spb-pq">${esc(q)}</span><b>${esc(label)}</b><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></button>`; // (1019z27l 시안 D 옅은 물음 띠)
         w.querySelector('button').addEventListener('click', e => { e.stopPropagation(); act(); try { spLastChecks = pubChecks(); } catch (er) {} spChanged(); scheduleSnapshot(); spRender(); });
         li.querySelector('.spb-h')?.after(w);
     });
