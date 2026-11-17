@@ -516,7 +516,7 @@
     // 직접 꾸미기 (nextStyle: 'custom') - nextIcon 아이콘 · nextShape 바탕 · nextColor 색(#RRGGBB) · nextAnim 움직임
     const NEXT_ICONS = [['chev', '꺾쇠'], ['arrow', '화살표'], ['dbl', '두 줄'], ['mouse', '마우스'], ['heart', '하트']];
     const NEXT_SHAPES = [['none', '없음'], ['circle', '원'], ['square', '둥근 네모'], ['ring', '테두리']];
-    const NEXT_ANIMS = [['bob', '통통'], ['fade', '깜빡'], ['wave', '웨이브'], ['none', '멈춤']]; // (1019z33 웨이브 = 버튼 둘레로 물결이 계속 퍼짐 - 음악과 상관없이, 어떤 모양에도)
+    const NEXT_ANIMS = [['bob', '통통'], ['fade', '깜빡'], ['none', '멈춤']]; // (1019z33의 움직임 '웨이브'는 1019z34에서 뺌 - 사용자가 말한 건 모양 '음악 웨이브'. 예전에 저장한 nextAnim 'wave'는 nbPick이 통통으로)
     const NEXT_ICON_PATHS = {
         chev: '<path d="M6 9l6 6 6-6"/>',
         arrow: '<path d="M12 4.5v15M6.5 14L12 19.5 17.5 14"/>',

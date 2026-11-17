@@ -3593,7 +3593,7 @@ function bindShadeField(scope, block) {
 //  N6 타일: 타일 줄의 "↓ 버튼" 타일로 켜고 끄고, 켜지면 "↓ 버튼 모양" 타일 (C 타일형에서만, 아니면 N5)
 //  old: 예전 긴 체크 + 색·크기·진하기 버튼
 //  ※ 전체화면 + 글자를 사진/영상 위로 켰을 때만 칸이 나옴
-const NBP_STY = [['glass', '유리'], ['dark', '어둡게'], ['light', '밝게'], ['accent', '포인트'], ['line', '선'], ['wave', '웨이브'], ['custom', '직접']];
+const NBP_STY = [['glass', '유리'], ['wave', '음악 웨이브'], ['dark', '어둡게'], ['light', '밝게'], ['accent', '포인트'], ['line', '선'], ['custom', '직접']]; // (1019z34 음악 웨이브를 두 번째로 · 이름 그대로 - 사용자: '음악 누르면 물결치는 웨이브')
 const NBP_COLORS = ['#FFFFFF', '#2B2320', '#E0A72E', '#7A3B41', '#7C9A82', '#B7A4C9'];
 const NBP_TILE_SPEC = { name: '↓ 스크롤', onL: '켜짐', offL: '꺼짐', icOn: 'nextOn', icOff: 'nextOff' };
 function nbpMini(f, st) { // 작은 실제 모양 (어두운 화면 위) - 미리보기 ↓ 버튼과 같은 함수로 그림
