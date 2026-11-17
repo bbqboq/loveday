@@ -12987,8 +12987,9 @@ function spHeroBigLook(box, hb) {
     const ph = el.querySelector('.hlC-ph');
     requestAnimationFrame(() => { // 아래 [이전][다음] 위에 효과 막대까지 다 보이게 그림 크기를 맞춤 (낮은 휴대폰)
         const pv = el.querySelector('.hlC-pv'), nx = document.getElementById('spNext'), bar = el.querySelector('.hlC-bar'); if (!pv || !nx || !pv.isConnected) return;
-        const top = pv.getBoundingClientRect().top + scrollY, dock = nx.getBoundingClientRect().top + scrollY - 14;
-        const h = dock - top - (bar ? bar.offsetHeight : 50) - 12 - 10, w = Math.round(Math.max(130, Math.min(250, innerWidth * .64, h * 9 / 19.5 + 10)));
+        // (1019z27m 화면 높이로만 계산 - 예전엔 [다음] 버튼까지 거리로 재서, 대화형처럼 버튼이 그림 아래 붙어 있으면 다시 그릴 때마다 그림이 점점 커졌음)
+        const navH = (nx.closest('.sp-nav') || nx).offsetHeight || 70, headB = Math.max(...[...document.querySelectorAll('.topbar, #simplePane .spc-top')].map(x => x.getBoundingClientRect().bottom).filter(v => v > 0 && v < innerHeight / 2), 0);
+        const hd = el.querySelector('.hlC-hd'), h = innerHeight - headB - navH - 24 - (hd ? hd.offsetHeight + 10 : 40) - (bar ? bar.offsetHeight : 50) - 22, w = Math.round(Math.max(130, Math.min(250, innerWidth * .64, h * 9 / 19.5 + 10)));
         if (w > 0) pv.style.width = w + 'px';
     });
     const redraw = () => { ph.innerHTML = spBigLookMini(hb); if (key) spMiniFocus(key); };
