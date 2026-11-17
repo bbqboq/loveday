@@ -516,7 +516,7 @@
     // 직접 꾸미기 (nextStyle: 'custom') - nextIcon 아이콘 · nextShape 바탕 · nextColor 색(#RRGGBB) · nextAnim 움직임
     const NEXT_ICONS = [['chev', '꺾쇠'], ['arrow', '화살표'], ['dbl', '두 줄'], ['mouse', '마우스'], ['heart', '하트']];
     const NEXT_SHAPES = [['none', '없음'], ['circle', '원'], ['square', '둥근 네모'], ['ring', '테두리']];
-    const NEXT_ANIMS = [['bob', '통통'], ['fade', '깜빡'], ['none', '멈춤']];
+    const NEXT_ANIMS = [['bob', '통통'], ['fade', '깜빡'], ['wave', '웨이브'], ['none', '멈춤']]; // (1019z33 웨이브 = 버튼 둘레로 물결이 계속 퍼짐 - 음악과 상관없이, 어떤 모양에도)
     const NEXT_ICON_PATHS = {
         chev: '<path d="M6 9l6 6 6-6"/>',
         arrow: '<path d="M12 4.5v15M6.5 14L12 19.5 17.5 14"/>',
@@ -565,7 +565,7 @@
         }
         cls += ` ib-next-an-${nbPick(NEXT_ANIMS, f.nextAnim, 'bob')}`; // 움직임(통통·깜빡·멈춤)은 모든 모양에 (예전엔 직접 꾸미기에서만)
         const fx = nextFxOf(f);
-        const wave = st === 'wave' ? '<span class="ib-wv" aria-hidden="true"><i></i><i></i><i></i></span>' : ''; // 음악 웨이브: 배경음악 박자에 맞춰 물결이 퍼짐 (음악이 없으면 잔잔하게)
+        const wave = st === 'wave' || nbPick(NEXT_ANIMS, f.nextAnim, 'bob') === 'wave' ? '<span class="ib-wv" aria-hidden="true"><i></i><i></i><i></i></span>' : ''; // 음악 웨이브: 배경음악 박자에 맞춰 물결이 퍼짐 (음악이 없으면 잔잔하게)
         return `<button type="button" class="${cls}" data-ib-next${fx !== 'none' ? ` data-fx="${fx}"` : ''} aria-label="다음 내용 보기" style="${css}">${wave}<svg viewBox="0 0 24 24" aria-hidden="true">${NEXT_ICON_PATHS[icon]}</svg></button>`;
     }
     // ---- 배경음악 박자 읽기 (스크롤 버튼 "음악 웨이브"용): --ib-beat(0~1)를 웨이브 버튼에만 넣어 줌 ----

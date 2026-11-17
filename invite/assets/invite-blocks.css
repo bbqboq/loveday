@@ -2770,3 +2770,13 @@ html.ld-wm-lock img { -webkit-touch-callout: none; -webkit-user-select: none; us
 .ib-mg-env details.ib-acc-side.mg-closing summary { height: 92px; transition: height .38s cubic-bezier(.4,0,.2,1); }
 .ib-mg-env details.ib-acc-side.mg-closing summary::after { animation: mgSealOn .4s cubic-bezier(.23,1,.32,1) .08s both !important; }
 .ib-mg-env details.ib-acc-side:not([open]) summary { transition: none; } /* (닫힌 뒤 54→92 되돌아가는 늦은 전환 없음 - 이미 92) */
+
+/* 1019z33 스크롤 버튼 움직임 '웨이브' (nextAnim wave): 버튼 둘레로 물결이 계속 퍼짐 - 음악과 상관없이 · 어떤 모양에도 */
+.ib-next-an-wave { overflow: visible; }
+.ib-next-an-wave svg { animation: none; }
+.ib-next-an-wave .ib-wv { position: absolute; inset: 0; pointer-events: none; }
+.ib-next-an-wave .ib-wv i { position: absolute; inset: 0; border-radius: inherit; border: 1.5px solid var(--next-wv, rgba(255,255,255,.8)); opacity: 0; animation: ibWave 2.4s ease-out infinite; }
+.ib-next-an-wave .ib-wv i:nth-child(2) { animation-delay: .8s; } .ib-next-an-wave .ib-wv i:nth-child(3) { animation-delay: 1.6s; }
+.ib-next-an-wave.ib-next-light .ib-wv i, .ib-next-an-wave.ib-next-line .ib-wv i { border-color: rgba(43,35,32,.45); }
+.ib-next-an-wave.ib-next-accent .ib-wv i { border-color: var(--p-accent, #B08A5A); }
+@media (prefers-reduced-motion: reduce) { .ib-next-an-wave .ib-wv i { animation: none; } }
