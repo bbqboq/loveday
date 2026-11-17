@@ -7391,7 +7391,8 @@ function syncPreviewFab() {
     const sb = state.blocks.find(b => b.id === 'share');
     const on = !!(window.InviteBlocks && InviteBlocks.createShareFab && sb && sb.enabled && sb.fields && sb.fields.fab !== false);
     if (!on) { if (pvFabEl) { pvFabEl.remove(); pvFabEl = null; pvFabKey = ''; } return; }
-    const accent = getComputedStyle(root).getPropertyValue('--p-accent').trim();
+    // (인라인 값만 읽음 - getComputedStyle은 그릴 때마다 화면 전체 스타일 계산을 강제해 느린 PC에서 100ms+ 걸렸음, 1019z37)
+    const accent = (root.style.getPropertyValue('--p-accent') || getComputedStyle(root).getPropertyValue('--p-accent')).trim();
     const key = JSON.stringify([sb.fields, accent]);
     if (!pvFabEl || key !== pvFabKey) {
         const wasOpen = !!(pvFabEl && pvFabEl.classList.contains('open'));
@@ -7403,7 +7404,7 @@ function syncPreviewFab() {
         document.body.appendChild(pvFabEl);
         if (wasOpen) pvFabEl._setOpen(true);
     }
-    placePreviewFab();
+    if (!pvFabRaf) pvFabRaf = requestAnimationFrame(() => { pvFabRaf = 0; placePreviewFab(); }); // 다음 프레임에 (그리자마자 크기 재면 강제 배치 계산)
 }
 function placePreviewFab() {
     if (!pvFabEl) return;
@@ -7425,12 +7426,12 @@ function placePreviewFab() {
     else { pvFabEl.style.right = Math.round(document.documentElement.clientWidth - r.right + 14 * sc) + 'px'; pvFabEl.style.left = 'auto'; }
 }
 // (페이지·미리보기 칸이 위아래로 넘어갈 때만, 한 프레임에 한 번 - 옆으로 넘기는 고르기 줄까지 받으면 넘길 때마다 화면 전체를 다시 쟀음, 1018z18z8)
-let pvFabRaf = 0;
+var pvFabRaf = 0;
 document.addEventListener('scroll', e => { const t = e.target; if (t !== document && t !== document.scrollingElement && !(t.classList && t.classList.contains('preview-pane'))) return;
     if (!pvFabRaf) pvFabRaf = requestAnimationFrame(() => { pvFabRaf = 0; placePreviewFab(); }); }, { capture: true, passive: true });
 window.addEventListener('resize', placePreviewFab);
 document.addEventListener('click', () => { if (pvFabEl && pvFabEl._setOpen) pvFabEl._setOpen(false); });
-setInterval(placePreviewFab, 400); // 화면 전환·확대/축소 애니메이션 뒤에도 자리를 맞춘다 (가벼운 위치 계산만)
+setInterval(() => { if (pvFabEl && !document.hidden) placePreviewFab(); }, 400); // 화면 전환·확대/축소 애니메이션 뒤에도 자리를 맞춘다 (가벼운 위치 계산만)
 
 // 섹션(블록)을 선택하면 미리보기 위에 그 섹션의 위/아래 경계선을 점선 눈금자로 표시해서
 // 위치를 한눈에 구분할 수 있게 한다. 선택 해제되거나 다른 섹션을 고르면 다시 그려진다.
@@ -10774,6 +10775,7 @@ function spSetMode(on) {
     if (was !== !!on || !spSetMode._done) { spSetMode._done = true; setTimeout(() => mobViewFor(!!on), 0); }
     try { spMvApply(); } catch (e) {}
     try { if (typeof ldhPlaceBtn === 'function') { ldhPlaceBtn(); ldhMaybeIntro(); } } catch (e) {}
+    if (!on) { document.getElementById('simplePane')?.classList.remove('sp-chat'); } // (1019z37 대화형 칸이 전문가 모드에서도 남아 보이던 것)
     if (!on) { document.documentElement.classList.remove('sp-pv', 'sp-pv-real'); const bx = document.getElementById('spPvReal'); if (bx) bx.innerHTML = ''; }
 }
 // 간편 화면 열기 (새로 만들 때·저장된 간편 청첩장을 열 때·직접 만들기에서 돌아올 때)
@@ -11124,7 +11126,7 @@ function spLensSnap() { const r = document.documentElement; r.classList.add('sp-
 // 창이 필요 없는 질문 (예식 일시 - 사용자 요청)
 function spHeroPhNow() { try { return spHeroPhase; } catch (e) { return ''; } } // (아래에 let으로 선언 - 그 전에 불려도 멈추지 않게)
 // 스크롤 버튼(↓) 화면은 칸 안에 전·후 비교·버튼 그림이 있어서 작은 창 안 띄움 (사용자 보고 1018z18o: 창이 '알아서 잘 보이게'를 가림) · 첫 화면 꾸미기 질문도 (1018z18u, 칸 안 그림으로 봄 - 관리자 flow.lookNoLens)
-function spLensOff() { return !!(spMv.lensOff || spViewNow() !== 'quick' && spOpt('flow', 'listNoLens') /* 1019z36 마지막(목록) 화면에선 칸을 눌러도 작은 창 안 띄움 */ || state.spChat && spViewNow() === 'quick' /* 1019z26g 왕초보 대화형은 작은 창 · 옆 탭 없음 */ || spCurSt && spCurSt.k === 'hero' && spCurSt.part === 'media' && spViewNow() === 'quick' && spOpt('flow', 'mediaNoLens') /* 1019z27h 첫 화면 사진 고르기 질문은 큰 사진 칸이 있어서 작은 창 없이 */ || spCurSt && spCurSt.k === 'venue' && spViewNow() === 'quick' && spOpt('flow', 'venueNoLens') /* 1019z27c 예식장 질문(① 이름·주소 · ② 지도)은 작은 창 없이 - 주소 칸을 가렸음, 지도는 ②에서 칸 안에 */ || spCurSt && spCurSt.k === 'hero' && spViewNow() !== 'quick' && document.querySelector('#simplePane .spb-li.open :is(#spCropBox, #spVfpBox, .sp-bigup, .hl-row, .hlb, .shz, .hsl)') /* 1019z26e 정리 화면에서 첫 화면 사진 · 보일 부분 · 글자를 고칠 땐 칸 안 그림으로 봄 - 작은 창이 사진 칸을 가려 끌 수 없었음 */ || spCurSt && spCurSt.k === 'names' && (spCurSt.part === 'date' || spCurSt.part === 'name' && spOpt('flow', 'nameNoLens')) && spViewNow() === 'quick' || spCurSt && spCurSt.k === 'hero' && spHeroPhNow() === 'scroll' && spOpt('flow', 'scrollNoLens') && document.querySelector('#simplePane :is(.shz, .nbx)') || spCurSt && spCurSt.k === 'hero' && spCurSt.part === 'look' && spViewNow() === 'quick' && spHeroPhNow() !== 'scroll' && spOpt('flow', 'lookNoLens') && document.querySelector('#simplePane :is(.hlb, .hl-row, #spCropBox, .hlx-all, .hlC)') || spCurSt && spCurSt.k === 'finish' && EASY_INTRO !== 'old' && document.querySelector('#simplePane .spi') || spCurSt && spCurSt.k === 'account' && document.querySelector('#simplePane #spAccMini') || spCurSt && spCurSt.k === 'venue' && typeof SPV === 'object' && SPV.step === 1 && document.querySelector('#simplePane #spvMs')); } // (인트로 칸 B·E·F안은 칸 안에 미리보기가 있어서 작은 창 안 띄움) // (머리줄 [청첩장 보기]를 끄면 창 없음)
+function spLensOff() { return !!(spMv.lensOff || spViewNow() !== 'quick' && spOpt('flow', 'listNoLens') && spOpt('flow', 'lensNew') /* 1019z36 마지막(목록) 화면에선 칸을 눌러도 작은 창 안 띄움 */ || state.spChat && spViewNow() === 'quick' && spOpt('flow', 'lensNew') /* 1019z26g 왕초보 대화형은 작은 창 · 옆 탭 없음 */ || spCurSt && spCurSt.k === 'hero' && spCurSt.part === 'media' && spViewNow() === 'quick' && spOpt('flow', 'mediaNoLens') && spOpt('flow', 'lensNew') /* 1019z27h 첫 화면 사진 고르기 질문은 큰 사진 칸이 있어서 작은 창 없이 */ || spCurSt && spCurSt.k === 'venue' && spViewNow() === 'quick' && spOpt('flow', 'venueNoLens') && spOpt('flow', 'lensNew') /* 1019z27c 예식장 질문(① 이름·주소 · ② 지도)은 작은 창 없이 - 주소 칸을 가렸음, 지도는 ②에서 칸 안에 */ || spCurSt && spCurSt.k === 'hero' && spViewNow() !== 'quick' && spOpt('flow', 'lensNew') && document.querySelector('#simplePane .spb-li.open :is(#spCropBox, #spVfpBox, .sp-bigup, .hl-row, .hlb, .shz, .hsl)') /* 1019z26e 정리 화면에서 첫 화면 사진 · 보일 부분 · 글자를 고칠 땐 칸 안 그림으로 봄 - 작은 창이 사진 칸을 가려 끌 수 없었음 */ || spCurSt && spCurSt.k === 'names' && (spCurSt.part === 'date' || spCurSt.part === 'name' && spOpt('flow', 'nameNoLens') && spOpt('flow', 'lensNew')) && spViewNow() === 'quick' || spCurSt && spCurSt.k === 'hero' && spHeroPhNow() === 'scroll' && spOpt('flow', 'scrollNoLens') && document.querySelector('#simplePane :is(.shz, .nbx)') || spCurSt && spCurSt.k === 'hero' && spCurSt.part === 'look' && spViewNow() === 'quick' && spHeroPhNow() !== 'scroll' && spOpt('flow', 'lookNoLens') && document.querySelector('#simplePane :is(.hlb, .hl-row, #spCropBox, .hlx-all, .hlC)') || spCurSt && spCurSt.k === 'finish' && EASY_INTRO !== 'old' && document.querySelector('#simplePane .spi') || spCurSt && spCurSt.k === 'account' && document.querySelector('#simplePane #spAccMini') || spCurSt && spCurSt.k === 'venue' && typeof SPV === 'object' && SPV.step === 1 && document.querySelector('#simplePane #spvMs')); } // (인트로 칸 B·E·F안은 칸 안에 미리보기가 있어서 작은 창 안 띄움) // (머리줄 [청첩장 보기]를 끄면 창 없음)
 const SP_LENS_HOLD = 900; // 섹션 전체를 보여 주는 시간 (그다음 글자로 다가감)
 const spLensTxt = { key: '', at: 0, view: '', sec: '', t: 0, z: 0, seen: new Set() };
 // 옵션(적는 칸) 하나 = 지금 질문 + 그 칸 이름 (같은 칸이면 다가가는 모습은 한 번만)

@@ -135,8 +135,8 @@
         return WM.tile;
     }
     const WM_IMG = /\/uploads\/\d+\/|^uploads\/\d+\//; // 고객이 올린 사진만 (스티커·예시 사진·디자인 그림 빼고)
-    function wmPaint(ov, host, c) {
-        const tl = wmTile(c), wd = host.clientWidth || host.offsetWidth || 0; if (!wd) return;
+    function wmPaint(ov, host, c, wd0) {
+        const tl = wmTile(c), wd = wd0 != null ? wd0 : (host.clientWidth || host.offsetWidth || 0); if (!wd) return;
         let fs = tl.F * (wd * (Number(c.w) || 0.5)) / tl.tw; fs = Math.max(8, Math.min(140, fs)); const k = fs / tl.F;
         ov.style.backgroundImage = tl.url; ov.style.backgroundSize = `${(tl.w * k).toFixed(1)}px ${(tl.h * k).toFixed(1)}px`;
     }
@@ -169,25 +169,29 @@
             sync();
             if (!im._wmMo) { im._wmMo = new MutationObserver(sync); im._wmMo.observe(im, { attributes: true, attributeFilter: ['style', 'src'] }); im.addEventListener('load', sync); }
         });
-        singles.forEach((im, h) => {
-            let ov = h.querySelector(':scope > .ld-wm-ov');
-            if (!ov) { ov = document.createElement('i'); ov.className = 'ld-wm-ov'; ov.setAttribute('aria-hidden', 'true'); if (getComputedStyle(h).position === 'static') h.style.position = 'relative'; }
+        // (1019z37) 먼저 다 재고 → 나중에 다 고침 (하나 고치고 재고를 번갈아 하면 그때마다 화면 배치를 새로 계산해서 느린 PC에서 무거웠음)
+        const sRead = [...singles].map(([h, im]) => [h, im, h.querySelector(':scope > .ld-wm-ov'), getComputedStyle(h).position === 'static', h.clientWidth || h.offsetWidth || 0]);
+        sRead.forEach(([h, im, ov, stat, wd]) => {
+            if (!ov) { ov = document.createElement('i'); ov.className = 'ld-wm-ov'; ov.setAttribute('aria-hidden', 'true'); if (stat) h.style.position = 'relative'; }
             if (im.nextSibling !== ov) h.insertBefore(ov, im.nextSibling); // 사진 바로 뒤 = 사진 위 글자 칸보다 아래
-            wmPaint(ov, h, c);
+            wmPaint(ov, h, c, wd);
         });
         // 갤러리: 사진마다 그 크기의 덮개 (사진 폭 기준 글자 크기 - 서버가 새기던 것과 같게), 칸 끝 한 묶음 안에 둬서 갤러리 줄 모양(nth-child)을 안 건드림
-        grids.forEach((ims, g) => {
-            if (getComputedStyle(g).position === 'static') g.style.position = 'relative';
+        // (덮개 묶음은 절대 위치라 갤러리 배치를 바꾸지 않음 → 모든 갤러리를 먼저 재고 나중에 고침)
+        const gRead = [...grids].map(([g, ims]) => { const gr = g.getBoundingClientRect();
+            return { g, ims, stat: getComputedStyle(g).position === 'static', gr, bl: g.clientLeft, bt: g.clientTop, sl: g.scrollLeft, st: g.scrollTop,
+                rs: ims.map(im => [im.getBoundingClientRect(), getComputedStyle(im).borderRadius, im.clientWidth || im.offsetWidth || 0]) }; });
+        gRead.forEach(({ g, ims, stat, gr, bl, bt, sl, st, rs }) => {
+            if (stat) g.style.position = 'relative';
             let set = g.querySelector(':scope > .ld-wm-set');
             if (!set) { set = document.createElement('i'); set.className = 'ld-wm-set'; set.setAttribute('aria-hidden', 'true'); }
             if (g.lastElementChild !== set) g.appendChild(set);
-            const gr = g.getBoundingClientRect(), bl = g.clientLeft, bt = g.clientTop;
             while (set.children.length > ims.length) set.lastElementChild.remove();
             ims.forEach((im, i) => {
                 let ov = set.children[i]; if (!ov) { ov = document.createElement('i'); ov.className = 'ld-wm-ov'; set.appendChild(ov); }
-                const r = im.getBoundingClientRect();
-                ov.style.cssText += `;left:${(r.left - gr.left - bl + g.scrollLeft).toFixed(1)}px;top:${(r.top - gr.top - bt + g.scrollTop).toFixed(1)}px;width:${r.width.toFixed(1)}px;height:${r.height.toFixed(1)}px;border-radius:${getComputedStyle(im).borderRadius}`;
-                wmPaint(ov, im, c);
+                const [r, br, wd] = rs[i];
+                ov.style.cssText += `;left:${(r.left - gr.left - bl + sl).toFixed(1)}px;top:${(r.top - gr.top - bt + st).toFixed(1)}px;width:${r.width.toFixed(1)}px;height:${r.height.toFixed(1)}px;border-radius:${br}`;
+                wmPaint(ov, im, c, wd);
                 if (!im._wmLd) { im._wmLd = 1; im.addEventListener('load', () => { const rt = g.closest('[data-wm-root]') || root; wmSoon(rt); }); }
             });
         });
@@ -200,8 +204,9 @@
         wmLock(!!c);
         const soon = () => wmSoon(root);
         try { wmApply(root, root._wmCfg); } catch (e) {}
+        if (root._wmMoObj) { try { root._wmMoObj.takeRecords(); } catch (e) {} } // 방금 다 맞췄으니 이번에 다시 그린 변화로 한 번 더 돌지 않게 (1019z37)
         if (root._wmOn || !c) return; root._wmOn = true;
-        try { new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && !(n.classList && (n.classList.contains('ld-wm-ov') || n.classList.contains('ld-wm-set')))))) soon(); }).observe(root, { childList: true, subtree: true }); } catch (e) {}
+        try { root._wmMoObj = new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && !(n.classList && (n.classList.contains('ld-wm-ov') || n.classList.contains('ld-wm-set')))))) soon(); }); root._wmMoObj.observe(root, { childList: true, subtree: true }); } catch (e) {}
         try { new ResizeObserver(soon).observe(root); } catch (e) { addEventListener('resize', soon); }
     }
     // 1019z12 무료체험 사진 꾹 눌러 저장 · 오른쪽 클릭 저장 · 끌어서 저장 막기 (html.ld-wm-lock + CSS -webkit-touch-callout) - 끄기: window.LD_WM_SAVE_OK = true
