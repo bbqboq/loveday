@@ -5921,3 +5921,50 @@ html.simple-mode #simplePane.sp-chat { display: flex; flex-direction: column; mi
 .sp-chat .spac-fr::before { position: absolute; left: 0; right: 0; top: 0; text-align: center; font-size: 11.5px; font-weight: 700; letter-spacing: .02em; }
 .sp-chat .spac-fr:has(.spac-c.g.on)::before { content: '신랑측 계좌 · 1 / 2'; color: #3F5A86; }
 .sp-chat .spac-fr:has(.spac-c.b.on)::before { content: '신부측 계좌 · 2 / 2'; color: #A2546A; }
+
+/* 1019z38 아래 창(토스 아이디 · 카카오페이 · 은행 고르기) 가로로 밀리지 않게 */
+.spab-sh { left: 0 !important; right: 0 !important; width: auto !important; }
+.spab-shp { width: min(100%, 480px); overflow-x: hidden; grid-template-columns: minmax(0, 1fr); }
+.spab-shp > * { min-width: 0; }
+/* 1019z38 계좌 다 적은 뒤 다음 장 = 하객에게 이렇게 보여요 (정리 장엔 안 보이고, 이 장엔 이것만) */
+#spAskMore.spab-look > :not(.sp-accp):not(.sp-accp-sw) { display: none !important; }
+#spBody:has(#spAskMore.spab-look) .sp-ask-opts { display: none; }
+/* ===== 1019z38 휴대폰 간편 만들기 한 화면에 (html.sp-vh = 관리자 flow vhFit, 큰 그림 줄이기는 editor.js spVhFit) ===== */
+@media (max-width: 860px) {
+    html.sp-vh.simple-mode .simple-pane { min-height: calc(100vh - 51px); min-height: calc(100dvh - 51px); }
+    html.sp-vh #simplePane:not(.sp-chat) .sp-head { padding: 8px 16px 6px; }
+    html.sp-vh #simplePane:not(.sp-chat) .sp-body { padding: 8px 16px 12px; }
+    html.sp-vh #simplePane:not(.sp-chat) .sp-body > .wz-h { font-size: 21px; margin: 0 0 4px; }
+    html.sp-vh #simplePane:not(.sp-chat) .sp-body > .wz-lead { font-size: 13px; line-height: 1.5; margin: 0 0 12px; }
+    html.sp-vh #simplePane:not(.sp-chat) .sp-nav { padding: 6px 16px 10px; }
+    html.sp-vh #simplePane:not(.sp-chat) .sp-nav :is(.wz-next, .wz-back) { height: 48px; border-radius: 14px; }
+    html.sp-vh #simplePane .hsl-tabs { padding-bottom: 8px; }
+    html.sp-vh #simplePane .hsl-tabs button { height: 32px; }
+    html.sp-vh #simplePane .hsl-pg .spv-hd { display: none; } /* (장 이름이 위 탭에 있음 - '↓ 스크롤 버튼' 큰 제목 두 번) */
+    html.sp-vh #simplePane .spb-li.open [data-hsl-rest].wz-hint { display: none; } /* ('세부 모양은 전문가 모드에서' 안내) */
+    html.sp-vh #simplePane .hsl-nav { padding-top: 6px; }
+    html.sp-vh #simplePane .hsl-nav button { height: 42px; }
+}
+@media (max-width: 860px) { /* 1019z38 계좌 카드 촘촘히 (대화형 1019z29와 같은 모양: 은행 | 계좌번호 한 줄 · 예금주 아래) */
+    html.sp-vh #simplePane:not(.sp-chat) .spac-card { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 6px 10px; align-items: end; padding: 12px 14px; }
+    html.sp-vh #simplePane:not(.sp-chat) .spac-card > :not(.spac-f) { grid-column: 1 / -1; }
+    html.sp-vh #simplePane:not(.sp-chat) .spac-card > .spac-f:has(input:not(.spab-num)) { grid-column: 1 / -1; }
+    html.sp-vh #simplePane:not(.sp-chat) .spac-card .spac-bank { width: 100%; }
+    html.sp-vh #simplePane:not(.sp-chat) .spac-card .spab-num + div { display: none !important; }
+    html.sp-vh #simplePane:not(.sp-chat) .spac-card .spac-l { margin-bottom: 2px; }
+    html.sp-vh #simplePane:not(.sp-chat) .spac-card :is(.wz-inp, .spac-bank) { height: 44px; font-size: 15px; }
+    html.sp-vh #simplePane:not(.sp-chat) .spac-card > .spac-h b { font-size: 14px; }
+    html.sp-vh #simplePane:not(.sp-chat) .spac-face { padding-top: 8px; padding-bottom: 6px; }
+    html.sp-vh #simplePane:not(.sp-chat) .spac-fr { zoom: .86; }
+    html.sp-vh #simplePane:not(.sp-chat) #spAskMore.spab-entering .sp-acc-trial { display: none; } /* (무료체험 안내는 다 적은 정리 장에) */
+    html.sp-vh #simplePane:not(.sp-chat) .spac-row { padding: 8px 12px; }
+    html.sp-vh #simplePane:not(.sp-chat) .spac-fin { gap: 7px; }
+}
+@media (max-width: 860px) { /* 1019z38 목록 첫 화면 칸 '글자' 장 촘촘히 */
+    html.sp-vh #simplePane .hsl-pg[data-k="text"] > .wz-field > .wz-lab { margin-bottom: 4px; min-height: 0; }
+    html.sp-vh #simplePane .hsl-pg[data-k="text"] [data-hl-replay] { height: 26px; padding: 0 10px; font-size: 12px; }
+    html.sp-vh #simplePane .hsl-pg .hl-lines { gap: 4px; }
+    html.sp-vh #simplePane .hsl-pg .hl-line textarea { padding: 4px 10px; font-size: 13.5px; }
+    html.sp-vh #simplePane .hsl-pg .hlb.hlc { margin-top: 6px; }
+}
+@media (max-width: 860px) { html.sp-vh #simplePane .hsl-pg > :last-child { margin-bottom: 0; } }

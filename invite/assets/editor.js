@@ -11478,8 +11478,60 @@ function spRender() {
     const pane = document.getElementById('simplePane'); if (!pane) return;
     const r = spViewNow() === 'quick' ? spRenderAsk(pane) : spOrderMode ? spRenderOrder(pane) : spRenderList();
     if (spViewNow() === 'quick' || spOrderMode) document.documentElement.classList.remove('sp-ltidy');
-    spIntroMvSync(); return r;
+    spIntroMvSync(); spVhFitSoon(); return r;
 }
+// ===== 1019z38 휴대폰 간편 만들기: 한 화면에 다 들어오게 (스크롤 없이) =====
+//  질문 화면 = [다음] 줄 위까지 · 목록 '첫 화면' 칸의 장 = 칸 머리 ~ 장 아래 버튼이 머리줄과 아래 고정 줄 사이에
+//  넘치면 그 화면의 큰 그림부터 줄임 (SP_VH: 선택자 · 줄이는 방식 w 폭(비율 그대로)/h 높이/z 통째로 · 최소) - 관리자 간편 flow 'vhFit' (끄면 예전)
+var SP_VH = [['.hlC-pv', 'w', 116], ['.hlc-pv', 'w', 96], ['.sp-crop-st', 'w', 120], ['.spv-ms-fr', 'z', .5], ['.nbx-pv.big', 'h', 70], ['.spi-win', 'h', 220], ['#spAccMini', 'h', 120], ['.shz-cmp', 'w', 70]];
+var spVhT = 0;
+function spVhFitSoon() { document.documentElement.classList.toggle('sp-vh', !!spOpt('flow', 'vhFit')); clearTimeout(spVhT); spVhT = setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(() => { spVhFit(); spVhT = setTimeout(spVhFit, 450); })), 60); } // (두 번: 넘기는 움직임 · 칸 높이가 다 자리 잡은 뒤 한 번 더)
+function spVhShrink(scope, over) { // over > 0 = 그만큼 줄임 · over < 0 = 남는 자리 → 전에 줄인 것을 다시 키움(원래 크기까지)
+    for (const [sel, mode, min] of SP_VH) {
+        if (Math.abs(over) <= 2) break;
+        const el = [...scope.querySelectorAll(sel)].find(x => x.offsetParent !== null); if (!el) continue;
+        if (over < 0 && !el.dataset.vh) continue;
+        const r = el.getBoundingClientRect(); if (r.height < 30 || r.width < 20) continue;
+        if (mode === 'w') { const k = r.height / r.width, w0 = Number(el.dataset.vh0) || r.width; if (!el.dataset.vh0) el.dataset.vh0 = r.width;
+            let w = Math.floor(r.width - over / k); w = Math.max(min, Math.min(w0, w)); if (Math.abs(w - r.width) < 1) continue;
+            if (w >= w0) { el.style.width = ''; el.style.flex = ''; delete el.dataset.vh; } else { el.style.width = w + 'px'; el.style.flex = 'none'; el.dataset.vh = '1'; } over -= (r.width - w) * k; }
+        else if (mode === 'h') { const h0 = Number(el.dataset.vh0) || r.height; if (!el.dataset.vh0) el.dataset.vh0 = r.height;
+            const h = Math.max(min, Math.min(h0, Math.floor(r.height - over))); if (Math.abs(h - r.height) < 1) continue;
+            if (h >= h0) { el.style.height = ''; delete el.dataset.vh; } else { el.style.height = h + 'px'; el.dataset.vh = '1'; } over -= r.height - h; }
+        else { const z0 = parseFloat(el.style.zoom) || 1, z = Math.max(min, Math.min(1, z0 * (r.height - over) / r.height)); if (Math.abs(z - z0) < .005) continue;
+            el.style.zoom = z >= 1 ? '' : z.toFixed(3); if (z < 1) el.dataset.vh = '1'; else delete el.dataset.vh; over -= r.height * (1 - z / z0); }
+    }
+    return over;
+}
+function spVhFit() {
+    if (!spOpt('flow', 'vhFit') || window.innerWidth > 860 || !document.documentElement.classList.contains('simple-mode') || document.documentElement.classList.contains('sp-pv') || state.spChat) return;
+    const ae = document.activeElement; if (ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName) && ae.closest('#simplePane')) return; // (키보드가 올라와 있을 땐 그대로)
+    const pane = document.getElementById('simplePane'); if (!pane) return;
+    if (spViewNow() === 'quick') {
+        const body = pane.querySelector('.sp-body'), nav = pane.querySelector('.sp-ask-nav, .sp-nav'); if (!body) return;
+        const vh = window.visualViewport ? visualViewport.height : innerHeight, kids = [...body.children].filter(c => c.offsetParent !== null);
+        const bot = kids.length ? Math.max(...kids.map(c => c.getBoundingClientRect().bottom)) + window.scrollY : 0, navH = nav ? nav.offsetHeight : 64;
+        const over = bot + 8 + navH - vh; // (넘침 · 남는 자리 둘 다 - 남으면 전에 줄인 그림을 다시 키움)
+        if (over > 1 || body.querySelector('[data-vh]')) spVhShrink(body, over + 2);
+        return;
+    }
+    spVhFitHsl();
+}
+function spVhFitHsl() {
+    if (!spOpt('flow', 'vhFit') || window.innerWidth > 860) return;
+    const li = document.querySelector('#simplePane .spb-li.open'), box = li && li.querySelector('.hsl'); if (!box) return;
+    const pg = [...box.querySelectorAll('.hsl-pg')][spHslPage] || box.querySelector('.hsl-pg'), nav = box.querySelector('.hsl-nav'); if (!pg || !nav) return;
+    const trk = box.querySelector('.hsl-track'), trH = () => { if (trk) trk.style.height = pg.offsetHeight + 'px'; }; trH(); // (장 높이를 먼저 맞춰야 다시 잴 때 또 줄이지 않음)
+    const tb = document.querySelector('.topbar'), dock = document.querySelector('#spDock:not([hidden]), .sp-dock'), dr = dock && dock.getBoundingClientRect();
+    const avail = (dr && dr.height ? dr.top : innerHeight) - (tb ? tb.getBoundingClientRect().bottom : 0) - 8;
+    const head = li.querySelector('.spb-h') || li.firstElementChild;
+    const need = nav.getBoundingClientRect().bottom - (head ? head.getBoundingClientRect().top : li.getBoundingClientRect().top);
+    if (need - avail > 1 || pg.querySelector('[data-vh]')) { spVhShrink(pg, need - avail + 2); trH(); }
+    // 칸 머리 ~ 장 아래 버튼이 다 보이게 화면을 옮김 (머리를 머리줄 바로 아래로)
+    const hr = (head || li).getBoundingClientRect(), tbB = tb ? tb.getBoundingClientRect().bottom : 0, nb = nav.getBoundingClientRect().bottom, db = dr && dr.height ? dr.top : innerHeight;
+    if (hr.top < tbB - 1 || nb > db + 1) { const dy = Math.min(hr.top - tbB - 4, Math.max(0, nb - db + 4)); if (Math.abs(dy) > 2) window.scrollBy({ top: dy, behavior: 'smooth' }); }
+}
+window.addEventListener('resize', () => { if (window.innerWidth <= 860) spVhFitSoon(); });
 // 인트로 칸(B·E·F안)이 보이는 동안은 휴대폰 미리보기(반반 화면 위 칸 · 작은 창)를 안 띄움 - 칸 안에 인트로 미리보기가 있어서 (사용자 보고: 버튼 누를 때마다 미리보기가 뜸)
 var SP_INTRO_MV = false;
 function spIntroMvSync() { const on = !!(typeof EASY_INTRO !== 'undefined' && EASY_INTRO !== 'old' && document.querySelector('#simplePane .spi')); if (on !== SP_INTRO_MV) { SP_INTRO_MV = on; try { spMvApply(); } catch (e) {} } }
@@ -12364,14 +12416,16 @@ function spHeroSlides(body) {
     const tabs = [...box.querySelectorAll('[data-hsl]')], pgs = [...track.children];
     let ro = null, on = -1;
     const fitH = () => { const p = pgs[on]; if (p) track.style.height = p.offsetHeight + 'px'; };
-    const settle = () => pgs.forEach((p, j) => { p.inert = j !== on; }); // (안 보이는 장 칸으로 Tab·읽기 프로그램이 들어가지 않게 - 멈춘 뒤에만, 밀어 넘기는 동안은 풀어 둠)
+    const pgX = i => pgs[i] ? pgs[i].offsetLeft - pgs[0].offsetLeft : 0; // (1019z38 장 자리 = 진짜 위치로 - 폭에 소수점이 있으면 i × 폭이 조금씩 어긋나 앞 장이 비치고 오른쪽이 잘렸음)
+    const snap = () => { if (on < 0) return; const x = pgX(on); if (Math.abs(track.scrollLeft - x) > 1) track.scrollLeft = x; };
+    const settle = () => { snap(); pgs.forEach((p, j) => { p.inert = j !== on; }); }; // (안 보이는 장 칸으로 Tab·읽기 프로그램이 들어가지 않게 - 멈춘 뒤에만, 밀어 넘기는 동안은 풀어 둠)
     let st = 0; const settleSoon = () => { pgs.forEach(p => { p.inert = false; }); clearTimeout(st); st = setTimeout(settle, 160); };
     const nmOf = j => (SP_HSL.find(x => x[0] === ks[j]) || [])[1] || '';
     const navUp = () => { const pv = box.querySelector('.hsl-prev'), nx = box.querySelector('.hsl-next'); if (pv) pv.hidden = on <= 0; if (nx) { const last = on >= pgs.length - 1; nx.classList.toggle('last', last); nx.textContent = last ? '다 했어요 · 다음 할 일로' : `다음 · ${nmOf(on + 1)}`; } };
-    const mark = i => { if (i === on) return; on = i; spHslPage = i; tabs.forEach((t, j) => { t.classList.toggle('on', j === i); t.setAttribute('aria-selected', j === i); }); fitH(); navUp();
+    const mark = i => { if (i === on) return; on = i; spHslPage = i; tabs.forEach((t, j) => { t.classList.toggle('on', j === i); t.setAttribute('aria-selected', j === i); }); fitH(); navUp(); requestAnimationFrame(() => { spVhFitHsl(); fitH(); });
         if (ro) { ro.disconnect(); ro.observe(pgs[i]); } const t = tabs[i], tb = box.querySelector('.hsl-tabs'); if (t && tb) { const r = t.getBoundingClientRect(), R = tb.getBoundingClientRect(); if (r.left < R.left + 8 || r.right > R.right - 8) tb.scrollTo({ left: tb.scrollLeft + r.left - R.left - 16, behavior: 'smooth' }); } };
     if ('ResizeObserver' in window) ro = new ResizeObserver(fitH);
-    const goPg = i => { i = Math.max(0, Math.min(pgs.length - 1, i)); track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' }); mark(i); const li = box.closest('.spb-li'); if (li) { const r = li.getBoundingClientRect(), P = document.getElementById('simplePane'); if (P && r.top < P.getBoundingClientRect().top) li.scrollIntoView({ block: 'start', behavior: 'smooth' }); } };
+    const goPg = i => { i = Math.max(0, Math.min(pgs.length - 1, i)); track.scrollTo({ left: pgX(i), behavior: 'smooth' }); mark(i); const li = box.closest('.spb-li'); if (li) { const r = li.getBoundingClientRect(), P = document.getElementById('simplePane'); if (P && r.top < P.getBoundingClientRect().top) li.scrollIntoView({ block: 'start', behavior: 'smooth' }); } };
     tabs.forEach((t, i) => t.addEventListener('click', () => goPg(i)));
     box.querySelector('.hsl-prev')?.addEventListener('click', () => goPg(on - 1));
     box.querySelector('.hsl-next')?.addEventListener('click', () => {
@@ -12385,7 +12439,8 @@ function spHeroSlides(body) {
     });
     let raf = 0; track.addEventListener('scroll', () => { settleSoon(); cancelAnimationFrame(raf); raf = requestAnimationFrame(() => mark(Math.round(track.scrollLeft / Math.max(1, track.clientWidth)))); }, { passive: true });
     const start = Math.min(spHslPage, pgs.length - 1);
-    requestAnimationFrame(() => { track.scrollLeft = start * track.clientWidth; mark(start); settle(); });
+    requestAnimationFrame(() => { track.scrollLeft = pgX(start); mark(start); settle(); });
+    if ('ResizeObserver' in window) new ResizeObserver(() => { if (on >= 0) snap(); }).observe(track);
     // 칸이 스스로 다시 그리면(body.innerHTML) 다시 나눔
     if (!body._hslObs) { body._hslObs = new MutationObserver(() => { if ([...body.children].some(c => !c.classList.contains('hsl') && !c.hasAttribute('data-hsl-rest'))) { clearTimeout(body._hslT); body._hslT = setTimeout(() => spHeroSlides(body), 0); } }); body._hslObs.observe(body, { childList: true }); }
 }
@@ -13837,7 +13892,7 @@ function spVenueSlides(box) {
     const sl = [...box.querySelectorAll('.spv-sl')], tr = box.querySelector('.spv-track'), wrap = box.querySelector('.spv-slides'); if (!tr) return;
     const fit = () => { const c = sl[SPV.step]; if (c) wrap.style.height = c.offsetHeight + 'px'; };
     const show = (n, anim) => { SPV.step = n; if (!anim) tr.style.transition = 'none'; tr.style.transform = `translateX(${-100 * n}%)`; if (!anim) { tr.offsetHeight; tr.style.transition = ''; }
-        sl.forEach((x, i) => { x.inert = i !== n; }); box.querySelectorAll('.spv-dots i').forEach((d, i) => d.classList.toggle('on', i <= n)); fit(); navSync();
+        sl.forEach((x, i) => { x.inert = i !== n; }); box.querySelectorAll('.spv-dots i').forEach((d, i) => d.classList.toggle('on', i <= n)); fit(); navSync(); spVhFitSoon();
         if (n === 1) { spPvHint = { sel: '.location-map', t: Date.now() }; try { spScrollPreview(['location']); } catch (e) {} } };
     if (box._spvRo) box._spvRo.disconnect(); if (window.ResizeObserver) { box._spvRo = new ResizeObserver(fit); sl.forEach(x => box._spvRo.observe(x)); }
     wrap.addEventListener('scroll', () => { wrap.scrollLeft = 0; });
@@ -14163,7 +14218,9 @@ function spAbMount(host, f) {
 function spShFit(el, vv) {
     if (!el || !el.isConnected) return;
     if (!vv) { el.style.cssText = ''; return; }
-    el.style.top = vv.offsetTop + 'px'; el.style.left = vv.offsetLeft + 'px'; el.style.width = vv.width + 'px'; el.style.height = vv.height + 'px'; el.style.right = 'auto'; el.style.bottom = 'auto';
+    // (1019z38 위·높이만 보이는 화면에 맞춤 - 가로는 늘 화면 폭(left 0 · right 0). 예전엔 vv.width·offsetLeft도 넣었는데
+    //  삼성 키보드가 올라올 때 vv.width가 화면보다 넓게 와서 창이 양옆으로 잘렸음 = 토스 아이디 창)
+    el.style.top = Math.max(0, vv.offsetTop) + 'px'; el.style.height = vv.height + 'px'; el.style.left = '0'; el.style.right = '0'; el.style.width = 'auto'; el.style.bottom = 'auto';
 }
 // 1019z19 송금 버튼 아래 창 (E안): 카카오페이 송금 링크 / 토스 아이디 - body에 붙음(질문 칸·작은 창과 따로), 키보드가 올라오면 그 위로
 function spAbPaySheet(f, p, t, after) {
@@ -14201,7 +14258,7 @@ function spAbPaySheet(f, p, t, after) {
 //  위: [신랑측 | 신부측] 탭(적은 수 · 다 적으면 ✓) + 그쪽 세 칸 [신랑 · 민준] [+ 아버지] [+ 어머니] (점선 칸 = 누르면 넣고 그 칸으로 · 고치는 중인 부모님 칸 ✕ = 한 번 더 누르면 빠짐)
 //  아래: 그분 카드 한 장 = 은행(누르면 아래 창 spAcBankSheet) · 계좌번호('-' 자동 · 자릿수 확인) · 예금주(비우면 이름/호칭) · 송금 버튼(신랑·신부, spAbPaySheet)
 //  [다음 · 신부 계좌 ›] 하나로 사람을 넘김 (휴대폰 질문 화면 = 아래 버튼, 그 밖 = 카드 밑 버튼) → 다 적었어요(정리 + 부모님 안내). 저장 값은 예전 그대로(spAbMount와 같은 SPAB · save)
-var SPAC = { side: 'g', done: false };
+var SPAC = { side: 'g', done: false, look: false }; // look = (1019z38) 다 적은 뒤 다음 장 '하객에게 이렇게 보여요'
 // 고인 표시 (1019z22b): 혼주 칸에서 고른 표시를 그대로 - 국화(선 그림, 기본) / 故. 줄 긋기 같은 건 하지 않음
 function spAcDeadMark() {
     const fam = ((state.blocks.find(b => b.id === 'family') || {}).fields) || {}, t = fam.deceasedMark || (state.labels && state.labels.deceasedMark) || 'flower';
@@ -14248,6 +14305,7 @@ function spAcMount(host, f) {
     const nextOf = k => { const l = shownList(), i = l.findIndex(p => p.k === k); return l[i + 1] || null; };
     const prevOf = k => { const l = shownList(), i = l.findIndex(p => p.k === k); return i > 0 ? l[i - 1] : null; };
     const holderOf = (p, a) => a.holder && a.holder !== spAbNameOf(p) ? a.holder : '';
+    const lookPage = () => spOpt('account', 'lookPage') && !!(host.closest('#spAskMore') || document).querySelector('#spAskMore > .sp-accp');
     const face = spOpt('account', 'face'); // 1019z22 C-2 '한 줄 마주 보기' (끄면 1019z21 신랑측 | 신부측 탭)
     const faceHtml = () => {
         const sl = shownList(), cnt = sd => { const mine = sl.filter(p => p.side === sd), fin = mine.filter(p => spAbDone(f, p.k)).length; return mine.length && fin === mine.length ? '✓' : `${fin}/${mine.length}`; };
@@ -14274,6 +14332,7 @@ function spAcMount(host, f) {
     const nextLabel = () => { const n = nextOf(SPAB.cur); return n ? `다음 · ${n.role} 계좌 ›` : '다 적었어요 ›'; };
     const draw = () => {
         const q = qNav(); host.classList.add('spac'); host.classList.toggle('spac-q', !!q);
+        if (!SPAC.done) SPAC.look = false;
         let body;
         if (SPAC.done) {
             const sl = shownList(), parLeft = roles.filter(p => p.opt && !spAbShown(f, p)).length;
@@ -14293,7 +14352,7 @@ function spAcMount(host, f) {
             ${q ? '' : `<div class="spab-row spac-nav">${prevOf(SPAB.cur) ? '<button type="button" class="spab-btn ghost" data-ac-prev>‹ 이전 분</button>' : ''}<button type="button" class="spab-btn wide" data-ac-next>${esc(nextLabel())}</button></div>`}`;
         }
         host.innerHTML = `<div class="spac-top">${topHtml()}</div>${body}`;
-        navSync();
+        navSync(); spVhFitSoon();
         const ni = host.querySelector('#spAcNum');
         if (ni) {
             ni.addEventListener('input', () => { const p = R(SPAB.cur), cur = spAbParse(f[p.k]); cur.number = ni.value.replace(/\D/g, ''); acctFmtInput(ni, cur.bank); save(p.k, cur);
@@ -14312,7 +14371,8 @@ function spAcMount(host, f) {
         document.activeElement?.blur?.();
         const n = nextOf(p.k); if (n) { SPAB.cur = n.k; SPAC.side = n.side; } else SPAC.done = true;
         draw(); return true; };
-    const goPrev = () => { if (SPAC.done) { const l = shownList(); SPAC.done = false; SPAB.cur = l[l.length - 1].k; SPAC.side = R(SPAB.cur).side; draw(); return true; }
+    const goPrev = () => { if (SPAC.done && SPAC.look) { SPAC.look = false; draw(); try { window.scrollTo(0, 0); } catch (e) {} return true; }
+        if (SPAC.done) { const l = shownList(); SPAC.done = false; SPAB.cur = l[l.length - 1].k; SPAC.side = R(SPAB.cur).side; draw(); return true; }
         const pp = prevOf(SPAB.cur); if (!pp) return false; SPAB.cur = pp.k; SPAC.side = pp.side; draw(); return true; };
     const remove = k => { const p = R(k); SPAB.shown = SPAB.shown.filter(x => x !== k); f[k] = ''; spChanged(['account']); scheduleSnapshot();
         try { InviteBlocks.toast(`${p.role} 계좌를 뺐어요`); } catch (e) {}
@@ -14321,9 +14381,13 @@ function spAcMount(host, f) {
     function navSync() {
         const q = qNav();
         { const more = host.closest('#spAskMore'), foc = !!(q && spOpt('account', 'qFocus')); // (1019z20 적는 동안엔 계좌 칸만)
-          if (more) { more.classList.toggle('spab-foc', foc); more.classList.toggle('spab-entering', foc && !SPAC.done);
+          // (1019z38 다 적은 뒤: 정리 한 장 → [다음] → '하객에게 이렇게 보여요' 한 장, 관리자 account 옵션 lookPage)
+          const lp = foc && lookPage(); if (more) { more.classList.toggle('spab-foc', foc); more.classList.toggle('spab-entering', foc && (!SPAC.done || (lp && !SPAC.look))); more.classList.toggle('spab-look', !!(lp && SPAC.done && SPAC.look));
             const tn = more.querySelector('.sp-acc-trial'); if (foc && tn && !tn.dataset.sm) { tn.dataset.sm = '1'; tn.innerHTML = `<details><summary><b>무료체험 중</b> · 하객 화면엔 계좌번호 일부가 XX로 보여요</summary><p>${accTrialNote()}</p></details>`; } } }
         const nx0 = document.querySelector('#simplePane .sp-ask-nav #spNext'), pv0 = document.querySelector('#simplePane .sp-ask-nav #spPrev');
+        if (q && q.nx && SPAC.done && lookPage() && spOpt('account', 'qFocus')) { const { nx, pv } = q; if (nx.dataset.acOrig == null) nx.dataset.acOrig = nx.textContent;
+            if (!SPAC.look) { nx.textContent = '다음 · 하객에게 보이는 모양 ›'; nx.dataset.ac = '1'; } else { nx.dataset.ac = ''; nx.textContent = nx.dataset.acOrig; }
+            nx.classList.remove('sp-wait'); if (pv) pv.dataset.ac = '1'; bind(nx, pv); return; }
         if (!q || !q.nx || SPAC.done) { if (nx0 && nx0.dataset.ac) { nx0.dataset.ac = ''; if (nx0.dataset.acOrig != null) nx0.textContent = nx0.dataset.acOrig; } if (pv0 && pv0.dataset.ac && !(q && SPAC.done)) pv0.dataset.ac = '';
             if (q && SPAC.done && pv0) pv0.dataset.ac = '1'; bind(nx0, pv0); return; }
         const { nx, pv } = q; if (nx.dataset.acOrig == null) nx.dataset.acOrig = nx.textContent;
@@ -14332,7 +14396,8 @@ function spAcMount(host, f) {
         bind(nx, pv);
     }
     function bind(nx, pv) {
-        if (nx && !nx._acBound) { nx._acBound = true; nx.addEventListener('click', ev => { if (nx.dataset.ac !== '1' || !host.isConnected || SPAC.done) return; ev.preventDefault(); ev.stopImmediatePropagation(); goNext(); }, true); }
+        if (nx && !nx._acBound) { nx._acBound = true; nx.addEventListener('click', ev => { if (nx.dataset.ac !== '1' || !host.isConnected || (SPAC.done && SPAC.look)) return; ev.preventDefault(); ev.stopImmediatePropagation();
+            if (SPAC.done) { SPAC.look = true; draw(); try { window.scrollTo(0, 0); } catch (e) {} return; } goNext(); }, true); }
         if (pv && !pv._acBound) { pv._acBound = true; pv.addEventListener('click', ev => { if (pv.dataset.ac !== '1' || !host.isConnected) return; ev.preventDefault(); ev.stopImmediatePropagation(); goPrev(); }, true); }
     }
     if (host._acBound !== true) { host._acBound = true;
