@@ -581,6 +581,42 @@ function mgScrollInit(root) {
     document.documentElement.classList.add('ld-mg-scroll');
     setTimeout(() => els.forEach(el => el.classList.add('mg-in')), 9000); // (감시가 안 불려도 끝내 보이게)
 }
+// ===== 1019z28 인트로 '열리는 방법' (intro.open, 시안 claude.ai 아티팩트 ToyMD6eVgkjZt9qRPK19Ya) =====
+//  '' 서서히 사라짐(예전 그대로) · split 위아래로 갈라짐 · doors 양옆 문이 열림 · mist 안개처럼 밝아짐 · iris 가운데 동그라미로 퍼짐 · lift 종이가 위로 걷힘
+//  갈라짐 · 문 = 인트로 화면을 둘로 복제해 반씩 잘라 밀어냄 (영상 배경은 복제에서 뺌) · 동그라미 = mask + 등록한 --ld-iris (못 쓰는 브라우저는 서서히)
+const INTRO_OPENS = ['split', 'doors', 'mist', 'iris', 'lift'];
+const INTRO_OPEN_MS = { split: 900, doors: 1000, mist: 1100, iris: 1000, lift: 950 };
+function rmIntroEarly() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function introOpenFx(ov, kind) {
+    const D = INTRO_OPEN_MS[kind] || 900, clones = [], anims = [];
+    const ease = kind === 'doors' ? 'cubic-bezier(.65,0,.25,1)' : 'cubic-bezier(.77,0,.18,1)';
+    const base = (() => { const t = getComputedStyle(ov).transform; return t && t !== 'none' ? t + ' ' : ''; })();
+    const go = (el, frames) => { try { anims.push(el.animate(frames, { duration: D, easing: ease, fill: 'forwards' })); } catch (e) { el.style.opacity = '0'; } };
+    if (kind === 'split' || kind === 'doors') {
+        const v = kind === 'split';
+        [0, 1].forEach(i => {
+            const c = ov.cloneNode(true); c.querySelectorAll('iframe, video').forEach(x => x.remove());
+            c.style.animation = 'none'; c.style.pointerEvents = 'none'; c.removeAttribute('id');
+            c.style.clipPath = v ? (i ? 'inset(50% 0 0 0)' : 'inset(0 0 50% 0)') : (i ? 'inset(0 0 0 50%)' : 'inset(0 50% 0 0)');
+            ov.after(c); clones.push(c);
+            const to = v ? `translateY(${i ? 101 : -101}%)` : `perspective(1200px) translateX(${i ? 96 : -96}%) rotateY(${i ? -24 : 24}deg)`;
+            if (!v) c.style.transformOrigin = i ? '100% 50%' : '0 50%';
+            go(c, [{ transform: base + (v ? 'translateY(0)' : 'perspective(1200px) translateX(0) rotateY(0deg)'), opacity: 1 }, { transform: base + to, opacity: v ? 1 : .2 }]);
+        });
+        ov.style.visibility = 'hidden';
+    } else if (kind === 'lift') {
+        ov.style.boxShadow = '0 14px 40px rgba(40,25,15,.3)';
+        go(ov, [{ transform: base + 'translateY(0)', borderRadius: '0' }, { transform: base + 'translateY(-60%)', borderRadius: '0 0 50% 50% / 0 0 10% 10%', offset: .55 }, { transform: base + 'translateY(-112%)', borderRadius: '0 0 50% 50% / 0 0 22% 22%' }]);
+    } else if (kind === 'iris' && window.CSS && CSS.registerProperty) {
+        try { CSS.registerProperty({ name: '--ld-iris', syntax: '<percentage>', inherits: false, initialValue: '0%' }); } catch (e) {}
+        const m = 'radial-gradient(circle at 50% 50%, transparent var(--ld-iris), #000 calc(var(--ld-iris) + .5%))';
+        ov.style.webkitMaskImage = m; ov.style.maskImage = m;
+        go(ov, [{ '--ld-iris': '0%' }, { '--ld-iris': '80%' }]);
+    } else { // mist (또는 동그라미를 못 쓰면)
+        go(ov, [{ opacity: 1, filter: 'blur(0) brightness(1)', transform: base + 'scale(1)' }, { opacity: 0, filter: 'blur(14px) brightness(1.15)', transform: base + 'scale(1.06)' }]);
+    }
+    return { clean: () => { anims.forEach(a => { try { a.cancel(); } catch (e) {} }); clones.forEach(c => c.remove()); } };
+}
 function playIntroAnimation(design, onReveal) {
     fixDesignUploadUrls(design);
     let revealed = false;
@@ -591,6 +627,9 @@ function playIntroAnimation(design, onReveal) {
     const s = resolveSkin(design);
     const overlay = document.createElement('div');
     overlay.className = 'intro-overlay';
+    const openKind = INTRO_OPENS.includes(intro.open) && !rmIntroEarly() ? intro.open : ''; // 1019z28 열리는 방법
+    if (openKind) overlay.style.animation = 'none'; // (기본 '서서히 사라짐'은 CSS introFadeOut 그대로)
+    if (intro.lines) overlay.classList.add('intro-lines'); // 금빛 선 두 줄 (여는 장면 분위기)
     // 휴대폰 '동작 줄이기'면 글자를 움직이지 않고 짧게 보여 줌 (1019)
     const rmIntro = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const duration = rmIntro ? Math.min(intro.duration || 2.5, 1.5) : (intro.duration || 2.5);
@@ -726,20 +765,23 @@ function playIntroAnimation(design, onReveal) {
         else if (anim !== 'type' && RT && RT.animate) RT.animate(typedEl, intro.html || escHtml(intro.text || ''), anim, duration); // 글자 효과 (천천히·한 글자씩·흐림·크게서 작게·톡톡·한 줄씩·손글씨)
         else if (intro.html && RT) RT.type(typedEl, intro.html, duration);
         else { if (RT) RT.resetCursor(typedEl); typewriterInto(typedEl, intro.text || '', duration); }
-        let done = false;
+        let done = false, fx = null, tFx = 0;
         const finish = () => {
             if (done) return; done = true;
+            clearTimeout(tFx); if (fx) fx.clean();
             overlay.remove();
             freeScroll(); window.scrollTo(0, 0);
             reveal(); // 혹시 위 타이머가 밀렸을 때 대비
         };
-        const tReveal = setTimeout(reveal, (duration + 0.3) * 1000); // 인트로가 반쯤 걷힌 순간 - 이보다 빠르면 효과의 앞부분이 인트로에 가려진다
-        const tEnd = setTimeout(finish, (duration + 0.6) * 1000);
+        const fxMs = openKind ? INTRO_OPEN_MS[openKind] : 0;
+        if (openKind) tFx = setTimeout(() => { fx = introOpenFx(overlay, openKind); }, duration * 1000);
+        const tReveal = setTimeout(reveal, (duration + (openKind ? 0.15 : 0.3)) * 1000); // 인트로가 반쯤 걷힌 순간 - 이보다 빠르면 효과의 앞부분이 인트로에 가려진다
+        const tEnd = setTimeout(finish, openKind ? duration * 1000 + fxMs + 80 : (duration + 0.6) * 1000);
         // 화면을 톡 누르면(또는 Enter·Esc) 바로 넘어가기 - 다시 여는 하객은 기다리지 않게 (1019). 실수로 닿는 걸 막으려고 0.4초 뒤부터
         const t0 = Date.now();
         const skip = () => {
             if (done || Date.now() - t0 < 400) return;
-            clearTimeout(tReveal); clearTimeout(tEnd);
+            clearTimeout(tReveal); clearTimeout(tEnd); clearTimeout(tFx); if (fx) { fx.clean(); fx = null; }
             overlay.removeEventListener('click', skip); window.removeEventListener('keydown', skipKey);
             overlay.style.animation = 'none'; overlay.style.transition = 'opacity .28s cubic-bezier(.23,1,.32,1)'; overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none';
             reveal(); setTimeout(finish, 300);

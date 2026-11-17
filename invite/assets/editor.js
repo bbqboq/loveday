@@ -6116,8 +6116,19 @@ window.__introDebug = () => {
         '찾은 fontOption': fontOptions.find(f => f.id === state.intro.font),
     });
 };
+const INTRO_OPEN_LIST = [['', '서서히 사라짐'], ['split', '위아래로 갈라짐'], ['doors', '양옆 문이 열림'], ['mist', '안개처럼 밝아짐'], ['iris', '동그라미로 퍼짐'], ['lift', '종이가 위로 걷힘']]; // 1019z28 인트로 열리는 방법 (render-invite.js INTRO_OPENS와 같게)
+const INTRO_OPEN_IDS = INTRO_OPEN_LIST.map(x => x[0]).filter(Boolean);
+let introOpenTimer = 0;
+function introOpenPv(on) { // 전문가 인트로 화면 미리보기: 글자가 다 나온 뒤 열리는 방법 한 번
+    const ov = document.getElementById('introOverlayStatic'); if (!ov) return;
+    clearTimeout(introOpenTimer); ov.classList.remove('spo-run', ...INTRO_OPEN_IDS.map(k => 'spo-' + k));
+    ov.classList.toggle('intro-lines', !!state.intro.lines);
+    const k = INTRO_OPEN_IDS.includes(state.intro.open) ? state.intro.open : '';
+    if (on && k) introOpenTimer = setTimeout(() => { if (!introTextSelected) ov.classList.add('spo-run', 'spo-' + k); }, ((state.intro.duration || 2.5) + 0.2) * 1000);
+}
 function loopIntroPreview() {
     stopIntroLoop();
+    introOpenPv(!introTextSelected);
     if (introTextSelected) { showIntroFullText(); window.__imtSync?.(); return; }
     const typedEl = document.querySelector('#introPreviewText .intro-typed');
     const anim = state.intro.anim || 'type';
@@ -6141,7 +6152,7 @@ function loopIntroPreview() {
         startTyping();
     }
     document.querySelectorAll('#introOverlayStatic .sticker-el.ib-isk:not(.selected)').forEach(el => { el.classList.remove('ib-isk-run'); void el.offsetWidth; el.classList.add('ib-isk-run'); }); // 스티커 등장 효과도 다시
-    const cycle = (state.intro.duration + 1.2) * 1000;
+    const cycle = (state.intro.duration + (INTRO_OPEN_IDS.includes(state.intro.open) ? 1.9 : 1.2)) * 1000;
     introLoopTimer = setTimeout(loopIntroPreview, cycle);
 }
 function renderIntroSettingsScreen() {
@@ -6156,7 +6167,7 @@ function renderIntroSettingsScreen() {
     document.getElementById('is2RotationVal').textContent = state.intro.rotation + '°';
     document.getElementById('is2Duration').value = state.intro.duration;
     document.getElementById('is2DurationVal').textContent = state.intro.duration + '초';
-    renderIntroAnims();
+    renderIntroAnims(); renderIntroOpens();
     document.getElementById('is2Color').value = state.intro.color || curPalOf().ink;
     document.getElementById('is2Bg').value = state.intro.bg || curPalOf().bg;
     document.getElementById('is2BgYoutube').value = state.intro.bgYoutubeId || '';
@@ -6431,6 +6442,13 @@ document.getElementById('is2Rotation').addEventListener('input', e => {
     updateIntroAndRestart();
 });
 // 인트로 글자 효과 칩 (타자 · 천천히 · 한 글자씩 · 흐림 · 크게서 작게 · 톡톡 · 한 줄씩 · 손글씨)
+function renderIntroOpens() { // 1019z28 열리는 방법 칩
+    const box = document.getElementById('is2Opens'); if (!box) return;
+    const cur = INTRO_OPEN_IDS.includes(state.intro.open) ? state.intro.open : '';
+    box.innerHTML = INTRO_OPEN_LIST.map(([k, l]) => `<button type="button" class="width-btn${cur === k ? ' active' : ''}" data-intro-open="${k}">${esc(l)}</button>`).join('');
+    box.querySelectorAll('[data-intro-open]').forEach(b => b.addEventListener('click', () => { delete state.intro.spiOpen; if (b.dataset.introOpen) state.intro.open = b.dataset.introOpen; else delete state.intro.open; renderIntroOpens(); updateIntroAndRestart(); }));
+    const ln = document.getElementById('is2Lines'); if (ln) { ln.checked = !!state.intro.lines; if (!ln._b) { ln._b = 1; ln.addEventListener('change', () => { if (ln.checked) state.intro.lines = 1; else delete state.intro.lines; updateIntroAndRestart(); }); } }
+}
 function renderIntroAnims() {
     const box = document.getElementById('is2Anims'); if (!box || !window.InviteBlocks) return;
     const cur = state.intro.anim || 'type';
@@ -14503,6 +14521,7 @@ function spiFill(ov, still) { // still = 멈춘 화면(스티커 고치기 · �
     spiOneLine(tx, i);
     if (textEdge(i)) tx.style.textShadow = textEdge(i);
     const typed = document.createElement('span'); typed.className = 'intro-typed'; tx.appendChild(typed); ov.appendChild(tx);
+    ov.classList.toggle('intro-lines', !!i.lines); // 1019z28 금빛 선 두 줄
     (i.stickers || []).forEach(st => {
         const el = document.createElement(st.image ? 'img' : 'span'); el.className = 'spi-stk'; el.dataset.ix = String((i.stickers || []).indexOf(st)); el.draggable = false;
         if (!st.id) st.id = 'sk' + Date.now() + Math.random().toString(36).slice(2, 6);
@@ -14540,7 +14559,7 @@ function spiRun(box) {
         try { spiAnimate(typed, state.intro.html || esc(state.intro.text || '우리 결혼합니다'), state.intro.anim || 'type', dur); } catch (e) {}
         if (bar) { bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = `spiBar ${T}s linear forwards`; }
         if (!SPI.play) return spiPause(box, true);
-        st._t1 = setTimeout(() => { if (st.isConnected && SPI.play) ov.classList.add('spi-out'); }, (dur + 0.5) * 1000);
+        st._t1 = setTimeout(() => { if (!st.isConnected || !SPI.play) return; const k = INTRO_OPEN_IDS.includes(state.intro.open) ? state.intro.open : ''; if (k) ov.classList.add('spo-run', 'spo-' + k); else ov.classList.add('spi-out'); }, (dur + 0.5) * 1000); // 1019z28 열리는 방법
         st._t2 = setTimeout(() => { if (st.isConnected && SPI.play) go(); }, T * 1000);
     };
     go();
@@ -14792,6 +14811,8 @@ function spiSetApply(id, quiet) { // quiet = 칸을 그리는 중에 추천을 �
     if (!i.textWidthManual) delete i.textWidthPct;
     if (set.bg === 'dim') { i.bg = '#000000'; i.bgOpacity = 35; } else if (set.bg) { i.bg = set.bg; if (set.op != null && set.op < 100) i.bgOpacity = set.op; else delete i.bgOpacity; } else { delete i.bg; if (set.op != null && set.op < 100) i.bgOpacity = set.op; else delete i.bgOpacity; }
     if (set.color) i.color = set.color; else delete i.color;
+    if (set.open) { i.open = set.open; i.spiOpen = 1; } else if (i.spiOpen) { delete i.open; delete i.spiOpen; } // 1019z28 분위기가 정한 열리는 방법 · 금빛 선 (고객이 고른 열리는 방법은 그대로)
+    if (set.lines) i.lines = 1; else delete i.lines;
     // 관리자가 정한 글자 크기 · 자리 · 정렬 (1018z18u) - 분위기가 넣은 값만 다음 분위기에서 되돌림 (고객이 옮긴 건 그대로)
     const pos = { fontSize: set.fs, x: set.tx, y: set.ty, align: set.align };
     if (Object.values(pos).some(v => v != null)) { Object.entries(pos).forEach(([k, v]) => { if (v != null) i[k] = v; else delete i[k]; }); i.spiPos = 1; }
@@ -14813,6 +14834,7 @@ function spIntroPanel(box, kind) {
         fx: (fx ? `<div class="wz-field spi-sec"><div class="wz-lab"><span>글자 효과</span>${kind === 'f' ? `<small>${SPI_RM() ? '휴대폰 \'동작 줄이기\'가 켜져 있어 움직이지 않아요' : '카드마다 실제로 움직여요'}</small>` : ''}</div>${kind === 'f' ? spiFxCardsHtml() : spiFxChipsHtml()}</div>` : '') + spiDurHtml(),
         text: spiTextHtml(), stk: spiStkHtml()
     };
+    if (fx) { const co = INTRO_OPEN_IDS.includes(i.open) ? i.open : ''; sections.fx += `<div class="wz-field spi-sec"><div class="wz-lab"><span>열리는 방법</span><small>글자가 다 나온 뒤 청첩장이 열리는 모습</small></div><div class="sp-chips">${INTRO_OPEN_LIST.map(([v, l]) => `<button type="button" class="${co === v ? 'on' : ''}" data-sp-iopen="${v}">${esc(l)}</button>`).join('')}</div></div>`; } // 1019z28
     const stage = kind === 'b' ? `<div class="spi-win big">${spiPhoneHtml()}<button type="button" class="spi-re" id="spiRe">↻ 처음부터</button><span class="spi-cap">글자·사진은 끌어서 옮겨요</span></div>`
         : `<div class="spi-box"><div class="spi-win">${spiPhoneHtml()}</div><p class="spi-tip">하객이 열면 이렇게 나와요 · 글자·사진은 끌어서 옮겨요</p><div class="spi-ctl"><button type="button" class="spi-pp" id="spiPP" aria-label="${SPI.play ? '멈추기' : '재생'}">${SPI.play ? 'Ⅱ' : '▶'}</button><div class="spi-tl"><div class="spi-track"><i data-spi-bar></i><u style="left:${Math.round((spiDur() + 0.5) / (spiDur() + 1.6) * 100)}%"></u></div><div class="spi-tl-l"><span>글자가 나타나요</span><span>첫 화면으로 넘어가요 ›</span></div></div><button type="button" class="spi-re2" id="spiRe" aria-label="처음부터">↻</button></div></div>`;
     let body;
@@ -15270,6 +15292,7 @@ function spiBindCommon(box) {
     box.querySelector('#spIbgYt')?.addEventListener('change', e => { state.intro.bgYoutubeId = e.target.value.trim(); scheduleSnapshot(); spRender(); });
     spIntroOpBind(box);
     box.querySelectorAll('[data-sp-ianim]').forEach(b => b.addEventListener('click', () => { state.intro.anim = b.dataset.spIanim; scheduleSnapshot(); spRender(); }));
+    box.querySelectorAll('[data-sp-iopen]').forEach(b => b.addEventListener('click', () => { delete state.intro.spiOpen; if (b.dataset.spIopen) state.intro.open = b.dataset.spIopen; else delete state.intro.open; SPI.play = true; scheduleSnapshot(); spRender(); })); // 1019z28 열리는 방법
     box.querySelectorAll('[data-spi-font]').forEach(b => b.addEventListener('click', () => { const v = b.dataset.spiFont; if (v) { state.intro.font = v; loadFontCss(v); } else delete state.intro.font; if (!state.intro.textWidthManual) delete state.intro.textWidthPct; try { applyIntroPreviewStyle(); } catch (e) {} scheduleSnapshot(); spRender(); }));
     box.querySelectorAll('[data-spi-stg]').forEach(b => b.addEventListener('click', () => { SPI.stg = b.dataset.spiStg; spRender(); }));
     box.querySelectorAll('[data-spi-stk]').forEach(b => b.addEventListener('click', () => {

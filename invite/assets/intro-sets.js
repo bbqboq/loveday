@@ -3,9 +3,11 @@
  *  관리자가 고친 값은 intro_sets.php → uploads/site/intro_sets.json 이 이 위에 덮어씀.
  *  항목: id · n 이름 · d 설명 · anim 글자 효과(RichText.ANIMS) · bg 바탕(''=디자인 바탕, 'dim'=사진 위 검정 35%, #색) · op 바탕 진하기 0~100(없으면 100)
  *        color 글자 색 · font 글꼴 id · fs 글자 크기(390px 기준 px) · tx/ty 글자 자리(%) · align
+ *        open 열리는 방법(split · doors · mist · iris · lift, 없으면 서서히) · lines 1 = 글자 위아래 금빛 선 (1019z28)
  *        stk [[테마, 그림, 가로%, 세로%, 나타날 때, 크기(390px 기준), 계속 움직임, 기울기°, 뒤집기 1]]
  */
 window.LD_INTRO_SETS = [
+    { id: 'curtain', n: '여는 장면', d: '금빛 선 사이로 이름이 떠오르고 막이 열려요', anim: 'rise', bg: '', open: 'split', lines: 1, stk: [] }, // 1019z28 (모션 '여는 장면'을 인트로 분위기로 · open = 열리는 방법 · lines = 글자 위아래 금빛 선)
     { id: 'type', n: '타자기', d: '한 글자씩 또박또박', anim: 'type', bg: '', stk: [['classic', 'ring-shine', 50, 24, 'pop', 96, 'beat'], ['classic', 'gold-letter', 20, 76, 'up', 78, 'float'], ['classic', 'dove', 82, 74, 'right', 74, 'sway'], ['romantic', 'bow', 18, 18, 'drop', 56, 'sway'], ['cosmos', 'sparkles', 82, 20, 'zoom', 54, 'twinkle']] },
     { id: 'draw', n: '손글씨', d: '펜으로 쓰듯 그려져요', anim: 'draw', bg: '', font: 'nanum-pen', stk: [['garden', 'flower-sway', 24, 76, 'up', 96], ['garden', 'butterfly-flap', 78, 24, 'left', 72, 'float'], ['garden', 'sprig', 20, 20, 'bloom', 70, 'sway'], ['garden', 'tulip-bunch', 80, 76, 'rise', 86, 'breathe'], ['garden', 'bee', 54, 16, 'swirl', 48, 'float']] },
     { id: 'photo', n: '사진 위에', d: '첫 화면 사진 위로', anim: 'fade', bg: 'dim', color: '#FFFFFF', stk: [['romantic', 'hearts-rise', 50, 78, 'fade', 96], ['cosmos', 'sparkles', 20, 22, 'zoom', 60, 'twinkle'], ['cosmos', 'sparkles', 82, 30, 'zoom', 46, 'twinkle'], ['romantic', 'twin-hearts', 80, 80, 'pop', 58, 'beat']] },

@@ -398,3 +398,9 @@ html.ld-snap-soft .row-flex, html.ld-snap-hard .row-flex { scroll-snap-align: st
 
 /* 1019z16 꾸밈 CSS를 받는 동안(최대 2.5초) 청첩장 숨김 - render-invite ldDecoWatch */
 .ld-deco-wait { visibility: hidden; }
+
+/* 1019z28 인트로 '여는 장면' 분위기: 글자 위아래 금빛 선 두 줄 (intro.lines) */
+.intro-lines .intro-text::before, .intro-lines .intro-text::after, .intro-lines .spi-tx::before, .intro-lines .spi-tx::after { content: ''; display: block; width: 64px; height: 1px; margin: .55em auto; background: var(--p-accent, #B08A5A); transform: scaleX(0); animation: introLine .7s cubic-bezier(.23,1,.32,1) .1s forwards; }
+.intro-lines .intro-text::after, .intro-lines .spi-tx::after { animation-delay: .25s; }
+@keyframes introLine { to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .intro-lines .intro-text::before, .intro-lines .intro-text::after { animation: none; transform: none; } }
