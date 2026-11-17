@@ -5879,3 +5879,28 @@ html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
 .sp-chat .sp-ask-more { margin-top: 10px !important; padding-top: 10px !important; } .sp-chat .sp-ask-opts .sp-ask-o, .sp-chat .sp-ask-opts > button { min-height: 44px; }
 .sp-chat .spac-card > .spac-h { font-size: 13px; margin: -2px 0 -4px; }
 .sp-chat .spac-card { gap: 6px 10px; } .sp-chat .spac-q { gap: 8px; }
+/* ===== 1019z30 대화형: 답 칸 · 버튼 작게 (사용자: '대화 컨셉 안에 버튼 · 창이 커') ===== */
+.sp-chat .spc-q, .sp-chat .spc-a { padding: 8px 12px; font-size: 13.5px; }
+.sp-chat .spc-q.spc-hi { font-size: 14px; }
+.sp-chat #spBody > .wz-h { padding: 10px 14px; font-size: 16px !important; border-width: 1.5px; }
+.sp-chat #spBody > .wz-h .spc-sub { font-size: 12px; margin-top: 3px; }
+.sp-chat #spBody .wz-field { margin-bottom: 12px; }
+.sp-chat #spBody .wz-lab { font-size: 12px; margin-bottom: 5px; }
+.sp-chat #spBody .wz-inp { height: 42px; border-radius: 11px; padding: 0 12px; } /* (글자 16px은 그대로 - 아이폰이 칸을 누를 때 확대하지 않게) */
+.sp-chat #spBody textarea.wz-inp, .sp-chat #spBody textarea { padding: 9px 12px; border-radius: 11px; }
+.sp-chat #spBody .wz-btn2, .sp-chat #spBody #spAddr { height: 42px; padding: 0 12px; border-radius: 11px; font-size: 13.5px; }
+.sp-chat .sp-ask-opts { gap: 7px; }
+.sp-chat .sp-ask-o { min-height: 46px; padding: 8px 13px; border-radius: 12px; gap: 10px; }
+.sp-chat .sp-ask-o b { font-size: 14px; } .sp-chat .sp-ask-o small { font-size: 11.5px; } .sp-chat .sp-ask-o i { width: 18px; height: 18px; }
+.sp-chat .sp-seg button { padding: 8px 11px; border-radius: 11px; }
+.sp-chat .sp-seg button b { font-size: 13px; } .sp-chat .sp-seg button small { font-size: 11px; }
+.sp-chat .sp-sw { padding: 9px 13px; border-radius: 12px; margin-bottom: 7px; gap: 10px; }
+.sp-chat .sp-sw b { font-size: 13.5px; } .sp-chat .sp-sw small { font-size: 11.5px; }
+.sp-chat .dt-chips { gap: 5px; } .sp-chat .dt-chip { height: 34px; border-radius: 9px; font-size: 13px; }
+.sp-chat .dt-seg button { padding: 5px 14px; font-size: 12.5px; }
+.sp-chat .sp-tbd { padding: 9px 13px !important; border-radius: 12px; } .sp-chat .sp-tbd b { font-size: 13.5px; } .sp-chat .sp-tbd small { font-size: 11.5px; }
+.sp-chat .sp-chips button { height: 30px; padding: 0 11px; font-size: 12px; }
+.sp-chat .sp-bigup { min-height: 0; padding: 14px; border-radius: 12px; }
+.sp-chat .spc-skip { height: 38px; border-radius: 11px; font-size: 13px; margin-top: 6px; }
+.sp-chat .sp-ask-nav .wz-next { height: 48px; border-radius: 14px; font-size: 15px; }
+.sp-chat .hlC-fx { height: 42px; } .sp-chat .hlC-cb { height: 42px; width: 92px; font-size: 13px; } .sp-chat .hlC-rp { height: 28px; font-size: 12px; }
