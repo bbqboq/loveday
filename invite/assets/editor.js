@@ -11750,6 +11750,11 @@ function spRenderAsk(pane) {
         if (st && st.k === 'venue') bodyEl.querySelectorAll('.wz-field').forEach(x => { if (!x.querySelector('[data-f="venue"], [data-f="addressBase"]') && !x.closest('.sp-incl')) x.remove(); });
     }
     if (state.spChat && bodyEl && st && st.k !== 'account') spChatPaginate(pane, bodyEl, spStep + ':' + spAskId(st)); // 1019z29 대화형: 한 장 500px 넘으면 나눠 보기
+    else if (!state.spChat && bodyEl && st && window.innerWidth > 860 && spOpt('flow', 'pcPage')) { // 1019z32 PC 오른쪽 칸: [다음] 위까지 넘으면 같은 방법으로 장을 나눔 (스크롤 없이)
+        const nav = pane.querySelector('.sp-ask-nav'), pr = pane.getBoundingClientRect(), bt = bodyEl.getBoundingClientRect().top + pane.scrollTop - pr.top;
+        const navTop = nav ? nav.getBoundingClientRect().top + pane.scrollTop - pr.top : pane.clientHeight;
+        spChatPaginate(pane, bodyEl, spStep + ':' + spAskId(st), Math.max(300, navTop - bt - 18));
+    }
     if (st) spSelectStep(st);
     if (same) { pane.scrollTop = keepPane; window.scrollTo(0, keepWin); requestAnimationFrame(() => { pane.style.minHeight = ''; pane.scrollTop = keepPane; window.scrollTo(0, keepWin); }); }
     else {
@@ -11929,33 +11934,37 @@ function spListTidy(pane, fill) {
 //  [이렇게 할게요] = 다음 장 (마지막 장에서 다음 질문) · 말풍선 오른쪽 '1 / 3' + [‹ 앞 장]. 다시 그려도 같은 질문이면 그 장 그대로
 const SPC_BUDGET = 500, SPC_ATOM = '.hlC, .sp-gal, .hl-row, .hl-grid, .sp-chips, .sp-seg, .spac-face, .spa-face, .sp-bigup, .wz-addr, textarea, input, select, label.sp-sw, .sp-time, .wz-times, img, svg, canvas, iframe';
 let SPC_PG = { key: '', pg: 0, n: 1 };
-function spChatPaginate(pane, bodyEl, key) {
+function spChatPaginate(pane, bodyEl, key, budget) {
+    const B = budget || SPC_BUDGET, chat = !!state.spChat;
     if (SPC_PG.key !== key) SPC_PG = { key, pg: 0, n: 1 };
     const nx = pane.querySelector('#spNext');
-    const pages = [];
+    const pages = [], ancs = new Map();
     const apply = scroll => {
         const n = pages.length; SPC_PG.n = n || 1; if (SPC_PG.pg > n - 1) SPC_PG.pg = Math.max(0, n - 1);
         pages.forEach((pg, i) => pg.forEach(u => u.classList.toggle('spc-pg-off', i !== SPC_PG.pg)));
+        const onSet = new Set(pages[SPC_PG.pg] || []); ancs.forEach((us, a) => a.classList.toggle('spc-pg-off', n > 1 && !us.some(u => onSet.has(u)))); // (안의 칸이 모두 다른 장이면 빈 상자도 숨김)
         const head = bodyEl.querySelector(':scope > .wz-h'); head?.querySelector('.spc-pgi')?.remove();
         pane.classList.toggle('spc-paged', n > 1);
         if (n > 1 && head) head.insertAdjacentHTML('beforeend', `<span class="spc-pgi">${SPC_PG.pg > 0 ? '<button type="button" data-spc-pgb>‹ 앞 장</button>' : ''}<b>${SPC_PG.pg + 1} / ${n}</b></span>`);
         head?.querySelector('[data-spc-pgb]')?.addEventListener('click', () => { SPC_PG.pg = Math.max(0, SPC_PG.pg - 1); apply(true); });
         if (nx && n > 1) nx.textContent = SPC_PG.pg < n - 1 ? '다음 장 ›' : (nx.dataset.spcTx || nx.textContent);
-        if (scroll) { if (window.innerWidth <= 860) window.scrollTo(0, document.documentElement.scrollHeight); else pane.scrollTop = pane.scrollHeight; }
+        if (scroll) { if (!chat) pane.scrollTop = 0; else if (window.innerWidth <= 860) window.scrollTo(0, document.documentElement.scrollHeight); else pane.scrollTop = pane.scrollHeight; }
     };
     const build = () => {
         if (!bodyEl.isConnected) return;
-        bodyEl.querySelectorAll('.spc-pg-off').forEach(x => x.classList.remove('spc-pg-off')); pages.length = 0;
+        bodyEl.querySelectorAll('.spc-pg-off').forEach(x => x.classList.remove('spc-pg-off')); pages.length = 0; ancs.clear();
         const head = bodyEl.querySelector(':scope > .wz-h'), skip = bodyEl.querySelector(':scope > .spc-skip');
         head?.querySelector('.spc-pgi')?.remove();
-        if (bodyEl.offsetHeight <= SPC_BUDGET) { apply(false); return; }
-        const fixed = (head ? head.offsetHeight + 14 : 0) + 30 /* 1 / n 줄 */ + (skip ? skip.offsetHeight + 10 : 0) + 12, bud = Math.max(200, SPC_BUDGET - 16 - fixed), units = [];
+        if (bodyEl.offsetHeight <= B) { apply(false); return; }
+        const fixed = (head ? head.offsetHeight + 14 : 0) + 30 /* 1 / n 줄 */ + (skip ? skip.offsetHeight + 10 : 0) + 12, bud = Math.max(200, B - 16 - fixed), units = [];
         const vis = c => c.offsetHeight > 0 && !c.matches('script, style, .spc-pg-skip');
         const walk = el => { const kids = [...el.children].filter(vis); if (el.offsetHeight > bud && kids.length > 1 && !el.matches(SPC_ATOM)) kids.forEach(walk); else units.push(el); };
         [...bodyEl.children].filter(c => c !== head && c !== skip && vis(c)).forEach(walk);
         let cur = [], top = null;
         units.forEach(u => { const r = u.getBoundingClientRect(); if (top === null) top = r.top; if (cur.length && r.bottom - top > bud) { pages.push(cur); cur = []; top = r.top; } cur.push(u); });
         if (cur.length) pages.push(cur);
+        ancs.clear(); units.forEach(u => { let a = u.parentElement; while (a && a !== bodyEl) { if (!ancs.has(a)) ancs.set(a, []); ancs.get(a).push(u); a = a.parentElement; } });
+        for (let i = 0; i < pages.length - 1; i++) { const pg = pages[i]; while (pg.length > 1 && pg[pg.length - 1].offsetHeight < 34) pages[i + 1].unshift(pg.pop()); } // (장 끝에 남은 작은 제목 줄은 다음 장으로 - '지도' · '신부 측' 같은 이름만 남던 것)
         apply(false);
     };
     if (nx && !nx.dataset.spcTx) nx.dataset.spcTx = nx.textContent;
@@ -13052,8 +13061,9 @@ function spHeroBigLook(box, hb) {
         const navH = (nx.closest('.sp-nav') || nx).offsetHeight || 70, headB = Math.max(...[...document.querySelectorAll('.topbar, #simplePane .spc-top')].map(x => x.getBoundingClientRect().bottom).filter(v => v > 0 && v < innerHeight / 2), 0);
         const hd = el.querySelector('.hlC-hd'), qb = state.spChat ? document.querySelector('#spBody > .wz-h') : null, sk = state.spChat ? document.querySelector('#spBody > .spc-skip') : null;
         let h = innerHeight - headB - navH - 24 - (hd ? hd.offsetHeight + 10 : 40) - (bar ? bar.offsetHeight : 50) - 22;
+        if (!state.spChat) { const r1 = pv.getBoundingClientRect().top, r2 = nx.getBoundingClientRect().top; if (r2 > r1) h = Math.min(h, r2 - r1 - (bar ? bar.offsetHeight : 50) - 34); } // 1019z32 PC: 오른쪽 칸 안에서 [다음] 위까지 (지금 청첩장 카드 · 제목 높이까지 빼서 스크롤 없이)
         if (state.spChat) h = Math.min(h, SPC_BUDGET - (qb ? qb.offsetHeight + 14 : 90) - (hd ? hd.offsetHeight + 10 : 40) - (bar ? bar.offsetHeight + 10 : 60) - (sk ? sk.offsetHeight + 10 : 56) - 56); // 1019z29 대화형 한 장 500px
-        const w = Math.round(Math.max(state.spChat ? 100 : 130, Math.min(250, innerWidth * .64, h * 9 / 19.5 + 10)));
+        const w = Math.round(Math.max(100, Math.min(250, innerWidth * .64, h * 9 / 19.5 + 10)));
         if (w > 0) pv.style.width = w + 'px';
     });
     const redraw = () => { ph.innerHTML = spBigLookMini(hb); if (key) spMiniFocus(key); };

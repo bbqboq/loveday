@@ -5904,3 +5904,9 @@ html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
 .sp-chat .spc-skip { height: 38px; border-radius: 11px; font-size: 13px; margin-top: 6px; }
 .sp-chat .sp-ask-nav .wz-next { height: 48px; border-radius: 14px; font-size: 15px; }
 .sp-chat .hlC-fx { height: 42px; } .sp-chat .hlC-cb { height: 42px; width: 92px; font-size: 13px; } .sp-chat .hlC-rp { height: 28px; font-size: 12px; }
+/* 1019z32 PC 오른쪽 칸 장 나누기 (대화형이 아닐 때도) */
+.spc-pg-off { display: none !important; }
+#simplePane:not(.sp-chat) .wz-h .spc-pgi { display: flex; align-items: center; gap: 10px; margin-top: 6px; font-size: 12px; font-weight: 600; color: #8C847C; }
+#simplePane:not(.sp-chat) .wz-h .spc-pgi b { margin-left: auto; padding: 2px 9px; border-radius: 10px; background: #F1ECE6; color: #5E5750; font-size: 11.5px; }
+#simplePane:not(.sp-chat) .wz-h .spc-pgi button { border: 0; background: none; padding: 4px 0; font: inherit; color: #6F675F; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+@media (min-width: 861px) { #spBody.sp-ask .sp-acc-trial, #spBody.sp-ask .spab-pc, #spBody.sp-ask #spAccMini { display: none !important; } } /* 1019z32 PC 질문 화면 계좌: 무료체험 안내 · 송금 버튼 · 하객 그림은 마지막 목록에서 (스크롤 줄이기) */
