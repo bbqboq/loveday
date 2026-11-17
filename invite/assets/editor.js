@@ -11725,6 +11725,7 @@ function spRenderAsk(pane) {
         const sk = pane.querySelector('#spSkip'); if (sk) { sk.textContent = '나중에 할게요'; sk.className = 'spc-skip'; bodyEl.appendChild(sk); }
         const nx = pane.querySelector('#spNext'); if (nx && nx.textContent === '다음') nx.textContent = '이렇게 할게요';
         const qh = bodyEl.querySelector(':scope > .wz-h'), ql = bodyEl.querySelector(':scope > .wz-lead'); if (qh && ql && ql.textContent.trim()) { qh.insertAdjacentHTML('beforeend', `<small class="spc-sub">${esc(ql.textContent.trim())}</small>`); ql.remove(); } // (설명은 질문 말풍선 안에)
+        if (st && st.k === 'gallery') bodyEl.querySelectorAll('.wz-field').forEach(x => { if (!x.querySelector('.sp-gal') && !x.closest('.sp-incl')) x.remove(); }); // 1019z27n 갤러리는 사진만 (모양 · 꽉 채우기 · 나타나는 방식은 마지막 목록에서) - 스크롤이 너무 길었음
         if (st && st.k === 'venue') bodyEl.querySelectorAll('.wz-field').forEach(x => { if (!x.querySelector('[data-f="venue"], [data-f="addressBase"]') && !x.closest('.sp-incl')) x.remove(); });
     }
     if (st) spSelectStep(st);

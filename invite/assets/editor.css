@@ -5840,3 +5840,9 @@ html.sp-pvp.sp-pvb-err .sp-pvbar .pvb-msg { background: rgba(255,246,240,.92); }
 .spb-pass:active { background: #EDE5DA; }
 .spb-li.open .spb-passw { display: none; }
 .spb-rd-todo .spb-li.spb-now > .spb-passw { background: #FBF6EC; } .spb-rd-todo .spb-li.spb-now .spb-pass { background: #F1E7D6; } /* (지금 할 차례 줄과 한 덩어리로) */
+/* 1019z27n 대화형 갤러리 질문: 사진 칸 촘촘히 (5칸) */
+.sp-chat .sp-gal { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.sp-chat .sp-g { border-radius: 8px; }
+.sp-chat .sp-g em { left: 3px; bottom: 3px; font-size: 9px; padding: 0 5px; }
+.sp-chat .sp-g button { right: 2px; top: 2px; width: 20px; height: 20px; font-size: 9px; }
+.sp-chat .sp-g.add { font-size: 11px; }
