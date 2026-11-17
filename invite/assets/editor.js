@@ -11740,12 +11740,15 @@ function spRenderAsk(pane) {
     if (state.spChat && bodyEl) { // 1019z27d 대화형: [나중에 할게요]는 답 칸 아래 · 아래 버튼은 '이렇게 할게요' · 예식장은 이름 · 주소만
         const must = st && (st.k === 'names' || st.k === 'venue' || st.k === 'hero' && st.part === 'media'); // (목업처럼 이름 · 날짜 · 예식장 · 첫 화면 사진은 '꼭 필요해요' - [나중에] 없음)
         if (must) { pane.querySelector('#spSkip')?.remove(); const tg = pane.querySelector('.spc-tt small'); if (tg) tg.textContent = tg.textContent.replace('안 해도 돼요', '꼭 필요해요'); }
+        if (st && (st.opts || st.k === 'finish')) pane.querySelector('#spSkip')?.remove(); // 1019z29 넣을게요 / 넣지 않을게요 질문은 [나중에]가 겹쳐서 뺌 (한 장 500px)
         const sk = pane.querySelector('#spSkip'); if (sk) { sk.textContent = '나중에 할게요'; sk.className = 'spc-skip'; bodyEl.appendChild(sk); }
         const nx = pane.querySelector('#spNext'); if (nx && nx.textContent === '다음') nx.textContent = '이렇게 할게요';
         const qh = bodyEl.querySelector(':scope > .wz-h'), ql = bodyEl.querySelector(':scope > .wz-lead'); if (qh && ql && ql.textContent.trim()) { qh.insertAdjacentHTML('beforeend', `<small class="spc-sub">${esc(ql.textContent.trim())}</small>`); ql.remove(); } // (설명은 질문 말풍선 안에)
+        if (st && spAskId(st) === 'names:date') { const fOf = el => { let n = el; while (n && n.parentElement !== bodyEl) n = n.parentElement; return n; }; const d = bodyEl.querySelector('#spDateBtn'), t = bodyEl.querySelector('#spTbd'); const fd = d && fOf(d), ft = t && fOf(t); if (fd && ft && fd !== ft) fd.after(ft); } // 1019z29 '아직 일정을 잡지 않았어요'를 날짜 바로 아래로 (장을 나누면 날짜와 같은 장)
         if (st && st.k === 'gallery') bodyEl.querySelectorAll('.wz-field').forEach(x => { if (!x.querySelector('.sp-gal') && !x.closest('.sp-incl')) x.remove(); }); // 1019z27n 갤러리는 사진만 (모양 · 꽉 채우기 · 나타나는 방식은 마지막 목록에서) - 스크롤이 너무 길었음
         if (st && st.k === 'venue') bodyEl.querySelectorAll('.wz-field').forEach(x => { if (!x.querySelector('[data-f="venue"], [data-f="addressBase"]') && !x.closest('.sp-incl')) x.remove(); });
     }
+    if (state.spChat && bodyEl && st && st.k !== 'account') spChatPaginate(pane, bodyEl, spStep + ':' + spAskId(st)); // 1019z29 대화형: 한 장 500px 넘으면 나눠 보기
     if (st) spSelectStep(st);
     if (same) { pane.scrollTop = keepPane; window.scrollTo(0, keepWin); requestAnimationFrame(() => { pane.style.minHeight = ''; pane.scrollTop = keepPane; window.scrollTo(0, keepWin); }); }
     else {
@@ -11919,6 +11922,44 @@ function spListTidy(pane, fill) {
             (rd || spb.firstElementChild).insertAdjacentElement(rd ? 'afterend' : 'beforebegin', bar);
             bar.querySelectorAll('[data-lt]').forEach(b => b.addEventListener('click', () => { spListTab = b.dataset.lt; spRender(); }));
             spb.classList.add('spb-tab-' + (spListTab === 'must' ? 'must' : 'more')); } }
+}
+// ===== 1019z29 대화형 한 장 = 500px 이하 (사용자: '교통 안내 · 부모님 연락처 말이 되냐, 모두 500px로 끊어라') =====
+//  질문 칸이 500px(질문 말풍선 + [나중에] 포함)을 넘으면 안쪽 칸을 위에서부터 묶어 장으로 나눔 - 큰 묶음은 안으로 들어가 쪼갬(그림 · 사진 칸 같은 건 한 덩어리)
+//  [이렇게 할게요] = 다음 장 (마지막 장에서 다음 질문) · 말풍선 오른쪽 '1 / 3' + [‹ 앞 장]. 다시 그려도 같은 질문이면 그 장 그대로
+const SPC_BUDGET = 500, SPC_ATOM = '.hlC, .sp-gal, .hl-row, .hl-grid, .sp-chips, .sp-seg, .spac-face, .spa-face, .sp-bigup, .wz-addr, textarea, input, select, label.sp-sw, .sp-time, .wz-times, img, svg, canvas, iframe';
+let SPC_PG = { key: '', pg: 0, n: 1 };
+function spChatPaginate(pane, bodyEl, key) {
+    if (SPC_PG.key !== key) SPC_PG = { key, pg: 0, n: 1 };
+    const nx = pane.querySelector('#spNext');
+    const pages = [];
+    const apply = scroll => {
+        const n = pages.length; SPC_PG.n = n || 1; if (SPC_PG.pg > n - 1) SPC_PG.pg = Math.max(0, n - 1);
+        pages.forEach((pg, i) => pg.forEach(u => u.classList.toggle('spc-pg-off', i !== SPC_PG.pg)));
+        const head = bodyEl.querySelector(':scope > .wz-h'); head?.querySelector('.spc-pgi')?.remove();
+        pane.classList.toggle('spc-paged', n > 1);
+        if (n > 1 && head) head.insertAdjacentHTML('beforeend', `<span class="spc-pgi">${SPC_PG.pg > 0 ? '<button type="button" data-spc-pgb>‹ 앞 장</button>' : ''}<b>${SPC_PG.pg + 1} / ${n}</b></span>`);
+        head?.querySelector('[data-spc-pgb]')?.addEventListener('click', () => { SPC_PG.pg = Math.max(0, SPC_PG.pg - 1); apply(true); });
+        if (nx && n > 1) nx.textContent = SPC_PG.pg < n - 1 ? '다음 장 ›' : (nx.dataset.spcTx || nx.textContent);
+        if (scroll) { if (window.innerWidth <= 860) window.scrollTo(0, document.documentElement.scrollHeight); else pane.scrollTop = pane.scrollHeight; }
+    };
+    const build = () => {
+        if (!bodyEl.isConnected) return;
+        bodyEl.querySelectorAll('.spc-pg-off').forEach(x => x.classList.remove('spc-pg-off')); pages.length = 0;
+        const head = bodyEl.querySelector(':scope > .wz-h'), skip = bodyEl.querySelector(':scope > .spc-skip');
+        head?.querySelector('.spc-pgi')?.remove();
+        if (bodyEl.offsetHeight <= SPC_BUDGET) { apply(false); return; }
+        const fixed = (head ? head.offsetHeight + 14 : 0) + 30 /* 1 / n 줄 */ + (skip ? skip.offsetHeight + 10 : 0) + 12, bud = Math.max(200, SPC_BUDGET - 16 - fixed), units = [];
+        const vis = c => c.offsetHeight > 0 && !c.matches('script, style, .spc-pg-skip');
+        const walk = el => { const kids = [...el.children].filter(vis); if (el.offsetHeight > bud && kids.length > 1 && !el.matches(SPC_ATOM)) kids.forEach(walk); else units.push(el); };
+        [...bodyEl.children].filter(c => c !== head && c !== skip && vis(c)).forEach(walk);
+        let cur = [], top = null;
+        units.forEach(u => { const r = u.getBoundingClientRect(); if (top === null) top = r.top; if (cur.length && r.bottom - top > bud) { pages.push(cur); cur = []; top = r.top; } cur.push(u); });
+        if (cur.length) pages.push(cur);
+        apply(false);
+    };
+    if (nx && !nx.dataset.spcTx) nx.dataset.spcTx = nx.textContent;
+    nx?.addEventListener('click', ev => { if (SPC_PG.key !== key || SPC_PG.pg >= SPC_PG.n - 1) return; ev.preventDefault(); ev.stopImmediatePropagation(); SPC_PG.pg++; apply(true); }, true);
+    build(); requestAnimationFrame(build); // (글꼴 · 그림이 늦게 잡혀도 다시 재서 나눔)
 }
 // 1019z27k 마지막 화면: 꼭 채울 칸이 예시 그대로여도 고객이 원하면 그대로 넘어가기 - 이름 비공개(예시 이름 그대로) · 갤러리 예시 사진 이대로 사용
 function spPassBtns(spb) {
@@ -13008,7 +13049,10 @@ function spHeroBigLook(box, hb) {
         const pv = el.querySelector('.hlC-pv'), nx = document.getElementById('spNext'), bar = el.querySelector('.hlC-bar'); if (!pv || !nx || !pv.isConnected) return;
         // (1019z27m 화면 높이로만 계산 - 예전엔 [다음] 버튼까지 거리로 재서, 대화형처럼 버튼이 그림 아래 붙어 있으면 다시 그릴 때마다 그림이 점점 커졌음)
         const navH = (nx.closest('.sp-nav') || nx).offsetHeight || 70, headB = Math.max(...[...document.querySelectorAll('.topbar, #simplePane .spc-top')].map(x => x.getBoundingClientRect().bottom).filter(v => v > 0 && v < innerHeight / 2), 0);
-        const hd = el.querySelector('.hlC-hd'), h = innerHeight - headB - navH - 24 - (hd ? hd.offsetHeight + 10 : 40) - (bar ? bar.offsetHeight : 50) - 22, w = Math.round(Math.max(130, Math.min(250, innerWidth * .64, h * 9 / 19.5 + 10)));
+        const hd = el.querySelector('.hlC-hd'), qb = state.spChat ? document.querySelector('#spBody > .wz-h') : null, sk = state.spChat ? document.querySelector('#spBody > .spc-skip') : null;
+        let h = innerHeight - headB - navH - 24 - (hd ? hd.offsetHeight + 10 : 40) - (bar ? bar.offsetHeight : 50) - 22;
+        if (state.spChat) h = Math.min(h, SPC_BUDGET - (qb ? qb.offsetHeight + 14 : 90) - (hd ? hd.offsetHeight + 10 : 40) - (bar ? bar.offsetHeight + 10 : 60) - (sk ? sk.offsetHeight + 10 : 56) - 56); // 1019z29 대화형 한 장 500px
+        const w = Math.round(Math.max(state.spChat ? 100 : 130, Math.min(250, innerWidth * .64, h * 9 / 19.5 + 10)));
         if (w > 0) pv.style.width = w + 'px';
     });
     const redraw = () => { ph.innerHTML = spBigLookMini(hb); if (key) spMiniFocus(key); };
