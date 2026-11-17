@@ -560,6 +560,8 @@ const mgOn = k => !((window.LD_MG_OFF || []).includes(k)) && !(window.matchMedia
 // 여는 장면 (인트로를 안 넣은 청첩장): 종이 색 막 위에 가는 선이 그어지고 제목 글자가 한 자씩 떠오른 뒤, 막이 위아래로 갈라지며 청첩장이 드러남 (약 2초)
 function mgOpening(design, reveal) {
     if (!mgOn('mgIntro') || window.INVITE_SAMPLE) return false;
+    const I = design.intro || {}; if (I.mgOff) return false; // 1019z31 전문가 인트로 화면 '인트로를 안 넣어도 여는 장면' 끔
+    const kind = INTRO_OPENS.includes(I.open) ? I.open : 'split'; // (열리는 방법 - 인트로와 같은 값, 없으면 위아래로 갈라짐)
     let sk = {}; try { sk = resolveSkin(design) || {}; } catch (e) {}
     const bg = design.customBg || sk.bg || '#FAF7F2', ink = sk.text || sk.ink || '#3A302A', acc = sk.accent || '#B08A5A';
     const raw = String(document.title || '').replace(/\s*[|·\-–—]\s*(LOVE ?DAY|러브데이).*$/i, '').trim(), title = raw && raw.length <= 28 ? raw : 'Wedding Invitation';
@@ -567,9 +569,10 @@ function mgOpening(design, reveal) {
     ov.innerHTML = `<i class="mg-h t"></i><i class="mg-h b"></i><div class="mg-c"><i class="mg-ln"></i><p class="mg-t">${[...title].map((c, i) => `<span style="animation-delay:${(.35 + i * .045).toFixed(3)}s">${c === ' ' ? '&nbsp;' : escHtml(c)}</span>`).join('')}</p><i class="mg-ln"></i></div>`;
     document.body.appendChild(ov); window.scrollTo(0, 0);
     const hold = 1150 + Math.min(600, [...title].length * 45);
-    setTimeout(() => { ov.classList.add('out'); reveal(); }, hold);
-    setTimeout(() => ov.remove(), hold + 900);
-    ov.addEventListener('click', () => { ov.classList.add('out'); reveal(); setTimeout(() => ov.remove(), 700); }); // 누르면 바로 넘어감
+    let fx = null, gone = false;
+    const out = () => { if (gone) return; gone = true; if (kind === 'split') ov.classList.add('out'); else fx = introOpenFx(ov, kind); reveal(); setTimeout(() => { if (fx) fx.clean(); ov.remove(); }, kind === 'split' ? 900 : (INTRO_OPEN_MS[kind] || 900) + 80); };
+    const tOut = setTimeout(out, hold);
+    ov.addEventListener('click', () => { if (gone) return; clearTimeout(tOut); gone = true; ov.classList.add('out'); reveal(); setTimeout(() => ov.remove(), 700); }); // 누르면 바로 넘어감
     return true;
 }
 // 스크롤 움직임: 첫 화면 사진이 천천히 다가왔다 멈추고(Ken Burns), 섹션 제목 · 계좌 칸이 화면에 들어올 때 부드럽게 떠오름 (기존 섹션 등장 효과와 따로 - 제목 · 칸 단위)
@@ -1052,14 +1055,35 @@ function fitAllVideoCovers(root) {
 // - 두 번 탭(더블클릭)하면 2.5배 확대, 확대한 상태에서는 끌어서 이리저리 보기
 // - 아래로 쓸어내리면 닫힘, 휴대폰 "뒤로 가기"를 눌러도 청첩장이 아니라 사진 창만 닫힘
 // - 사진을 보는 동안 뒤의 청첩장이 같이 스크롤되던 문제: body를 그 자리에 고정해 두었다가 닫을 때 원래 위치로 되돌린다
+// ===== 1019z31 카톡 인터넷창에서 위아래 막대가 스크롤마다 숨었다 나왔다 하던 것 (관리자 flow kakaoLock, invite_view.php → window.LD_KAKAO_LOCK) =====
+//  카톡 브라우저일 때만: 페이지(html) 대신 body 안에서 스크롤 → 브라우저가 스크롤을 못 느껴 막대가 늘 보인 채 고정, 화면이 들썩이지 않음
+//  window.scrollY · pageYOffset · scrollTo · scrollBy · 'scroll' 이벤트는 body로 이어 줌 (기존 스크롤 효과 · 버튼이 그대로 동작)
+(function ldKakaoLock() {
+    try {
+        if (!window.LD_KAKAO_LOCK || !/KAKAOTALK/i.test(navigator.userAgent || '')) return;
+        const de = document.documentElement; de.classList.add('ld-kk');
+        const st = document.createElement('style');
+        st.textContent = 'html.ld-kk{height:100%;overflow:hidden}html.ld-kk body{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:none}';
+        (document.head || de).appendChild(st);
+        const sc = () => document.body || de;
+        const get = () => sc().scrollTop;
+        ['scrollY', 'pageYOffset'].forEach(k => { try { Object.defineProperty(window, k, { configurable: true, get }); } catch (e) {} });
+        window.scrollTo = function (a, b) { const el = sc(); if (a && typeof a === 'object') el.scrollTo(a); else el.scrollTo(Number(a) || 0, Number(b) || 0); };
+        window.scrollBy = function (a, b) { const el = sc(); if (a && typeof a === 'object') el.scrollBy(a); else el.scrollBy(Number(a) || 0, Number(b) || 0); };
+        const hook = () => sc().addEventListener('scroll', () => window.dispatchEvent(new Event('scroll')), { passive: true });
+        if (document.body) hook(); else document.addEventListener('DOMContentLoaded', hook);
+    } catch (e) {}
+})();
 let lbScrollY = 0;
 function lockPageScroll() {
+    if (document.documentElement.classList.contains('ld-kk')) { document.body.style.overflow = 'hidden'; document.documentElement.classList.add('lbx-lock'); return; } // (카톡 고정: body가 스크롤 상자라 제자리 고정만)
     lbScrollY = window.scrollY || document.documentElement.scrollTop || 0;
     const b = document.body.style;
     b.position = 'fixed'; b.top = -lbScrollY + 'px'; b.left = '0'; b.right = '0'; b.width = '100%';
     document.documentElement.classList.add('lbx-lock');
 }
 function unlockPageScroll() {
+    if (document.documentElement.classList.contains('ld-kk')) { document.body.style.overflow = ''; document.documentElement.classList.remove('lbx-lock'); return; }
     const b = document.body.style;
     b.position = ''; b.top = ''; b.left = ''; b.right = ''; b.width = '';
     document.documentElement.classList.remove('lbx-lock');

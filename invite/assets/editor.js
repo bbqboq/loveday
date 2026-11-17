@@ -6447,6 +6447,7 @@ function renderIntroOpens() { // 1019z28 열리는 방법 칩
     const cur = INTRO_OPEN_IDS.includes(state.intro.open) ? state.intro.open : '';
     box.innerHTML = INTRO_OPEN_LIST.map(([k, l]) => `<button type="button" class="width-btn${cur === k ? ' active' : ''}" data-intro-open="${k}">${esc(l)}</button>`).join('');
     box.querySelectorAll('[data-intro-open]').forEach(b => b.addEventListener('click', () => { delete state.intro.spiOpen; if (b.dataset.introOpen) state.intro.open = b.dataset.introOpen; else delete state.intro.open; renderIntroOpens(); updateIntroAndRestart(); }));
+    const mg = document.getElementById('is2Mg'); if (mg) { mg.checked = !state.intro.mgOff; if (!mg._b) { mg._b = 1; mg.addEventListener('change', () => { if (mg.checked) delete state.intro.mgOff; else state.intro.mgOff = 1; scheduleSnapshot(); }); } } // 1019z31
     const ln = document.getElementById('is2Lines'); if (ln) { ln.checked = !!state.intro.lines; if (!ln._b) { ln._b = 1; ln.addEventListener('change', () => { if (ln.checked) state.intro.lines = 1; else delete state.intro.lines; updateIntroAndRestart(); }); } }
 }
 function renderIntroAnims() {

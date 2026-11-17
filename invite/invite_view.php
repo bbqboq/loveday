@@ -248,6 +248,9 @@ if (is_file(__DIR__ . '/assets/invite-blocks.core.min.css') && is_file(__DIR__ .
 <?php require_once __DIR__ . '/paper_settings.php'; $ldPapers = paper_settings_get(); if ($ldPapers): // 관리자가 올린 종이 질감 그림 ?>
 <script>window.LD_PAPERS = <?= json_encode($ldPapers, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>;</script>
 <?php endif; ?>
+<script>
+    window.LD_KAKAO_LOCK = <?= json_encode(!in_array('kakaoLock', (function () { try { require_once __DIR__ . '/section_defaults.php'; $o = section_defaults_easy_off(); return is_array($o['flow'] ?? null) ? $o['flow'] : []; } catch (\Throwable $e) { return []; } })(), true)) ?>; // 1019z31 카톡 인터넷창 위아래 막대 고정 (관리자 flow kakaoLock)
+</script>
 <script src="<?= ld_asset('invite-blocks.js') ?>"></script>
 <script src="<?= ld_asset('render-invite.js') ?>"></script>
 <script>
